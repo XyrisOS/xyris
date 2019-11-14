@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"C_Cpp.default.includePath": [
+			"${workspaceRoot}",
+			"${workspaceRoot}/include/"
+		],
+		"C_Cpp.default.browse.path": [
+			"${workspaceRoot}",
+			"${workspaceRoot}/include/**"
+		],
+		"C_Cpp.clang_format_fallbackStyle": "Google",
+		"C_Cpp.default.cppStandard": "c++17",
+		"C_Cpp.default.cStandard": "c11",
+		"C_Cpp.default.intelliSenseMode": "gcc-x86",
+		"doxdocgen.file.copyrightTag": [
+			"@copyright Copyright Keeton Feavel et al (c) {year}"
+		],
+		"doxdocgen.generic.authorEmail": "keetonfeavel@cedarville.edu",
+		"doxdocgen.generic.authorName": "Keeton Feavel",
+		"clang-format.fallbackStyle": "Google",
+		"C_Cpp.intelliSenseEngineFallback": "Enabled"
+	}
+}
