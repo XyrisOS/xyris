@@ -16,6 +16,9 @@ isr_t interrupt_handlers[256];
 /* Can't do this with a loop because we need the address
  * of the function names */
 void px_isr_install() {
+    px_print_debug("Installing the ISR.", Info);
+    // Set all of the gate addresses
+    // TODO: Add all of the ISRs to a list and make a for loop
     px_idt_set_gate(0, (uint32_t)isr0);
     px_idt_set_gate(1, (uint32_t)isr1);
     px_idt_set_gate(2, (uint32_t)isr2);
@@ -62,6 +65,7 @@ void px_isr_install() {
     px_write_byte(0xA1, 0x0); 
 
     // Install the IRQs
+    // TODO: Make a list out of this too
     px_idt_set_gate(32, (uint32_t)irq0);
     px_idt_set_gate(33, (uint32_t)irq1);
     px_idt_set_gate(34, (uint32_t)irq2);

@@ -37,13 +37,11 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     kprintSetColor(Blue, Black);
+    // Install the GDT
     px_gdt_install() ? px_print_debug("Loaded GDT.", Success) : panic("Unable to install the GDT!");
     char* smbios_addr = px_get_smbios_addr();
-    px_print_debug("Installing ISR...", Info);
+    // Install the ISR
     px_isr_install();
-    px_print_debug("We got past the ISQ install", Info);
-    __asm__ __volatile__("int $0x2");
-    __asm__ __volatile__("int $0x3");
 }
 
 void px_kernel_print_splash() {

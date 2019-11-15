@@ -51,7 +51,6 @@ void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access,
     // the physical limit or get overlap with other segments) so we have to
     // compensate this by decreasing a higher bit (and might have up to
     // 4095 wasted bytes behind the used memory)
-	kprint("Setting a GDT gate.\n");
 	/* Base Address */
 	gdt.entries[num].base_low = (base & 0xFFFF);
 	gdt.entries[num].base_high = (base >> 16) & 0xFF;
@@ -67,7 +66,7 @@ void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access,
 
 bool px_gdt_install() {
 	// TODO: Add return false to cases where operations don't succeed.
-	kprint("Installing the GDT onto the system...\n");
+	px_print_debug("Installing the GDT onto the system...", Info);
 	//
 	gdt_ptr *gdtp = &gdt.pointer;
 	gdtp->limit = sizeof gdt.entries - 1;
@@ -82,16 +81,16 @@ bool px_gdt_install() {
 	// Write the TSS, then flush / reload the GDT and TSS
 	write_tss(5, 0x10, 0x0);
 	gdt_flush((uintptr_t)gdtp);
-	kprint("Flushed the GDT.\n");
+	px_print_debug("Flushed the GDT.", Success);
 	tss_flush();
-	kprint("Flushed the TSS.\n");
+	px_print_debug("Flushed the TSS.", Success);
 	// We made it to the end. Return true.
 	return true;
 }
 
 static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0) {
 	//
-	kprint("Writing the TSS...\n");
+	px_print_debug("Writing the TSS...", Info);
 	//
 	tss_entry * tss = &gdt.tss;
 	uintptr_t base = (uintptr_t)tss;
@@ -115,7 +114,7 @@ static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0) {
 }
 
 void set_kernel_stack(uintptr_t stack) {
-	kprint("Setting the kernel stack...\n");
+	px_print_debug("Setting the kernel stack...\n", Info);
 	/* Set the kernel stack */
 	gdt.tss.esp0 = stack;
 }

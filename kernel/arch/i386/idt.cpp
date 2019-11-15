@@ -23,8 +23,10 @@ void px_idt_set_gate(int n, uint32_t handler_addr) {
 }
 
 void px_load_idt() {
+    px_print_debug("Loading the IDT...", Info);
     idt_reg.base = (uint32_t) &idt;
     idt_reg.limit = IDT_ENTRIES * sizeof(idt_gate_t) - 1;
     /* Don't make the mistake of loading &idt -- always load &idt_reg */
     __asm__ __volatile__("lidtl (%0)" : : "r" (&idt_reg));
+    px_print_debug("Loaded the IDT.", Success);
 }
