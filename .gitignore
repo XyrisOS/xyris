@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# Ignore all object and archive files
+*.[oa]
+*.bin
+*.raw
+*.elf
+.DS_Store
+# Ignore build directories
+obj/
+dist/
+# Ignore IDE directories
+.vscode/
