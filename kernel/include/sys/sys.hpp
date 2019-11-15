@@ -15,6 +15,9 @@
 #include <types.hpp>
 #include <devices/tty/kprint.hpp>
 
+// Memory functions
 void* memset(void* bufptr, int value, size_t size);
+// Userspace
+extern "C" void jump_usermode(uintptr_t location, uintptr_t stack);;
 
 #endif /* PANIX_SYS_HPP */
