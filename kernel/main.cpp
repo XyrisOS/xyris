@@ -12,6 +12,8 @@
 #include <sys/sys.hpp>
 // Intel i386 architecture
 #include <arch/i386/gdt.hpp>
+#include <arch/i386/idt.hpp>
+#include <arch/i386/isr.hpp>
 // Generic devices
 #include <devices/smbios/smbios.hpp>
 
@@ -35,8 +37,11 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     kprintSetColor(Blue, Black);
-    px_gdt_install() ? px_print_debug("Loaded GDT.\n", Success) : panic("Unable to install the GDT!");
+    px_gdt_install() ? px_print_debug("Loaded GDT.", Success) : panic("Unable to install the GDT!");
     char* smbios_addr = px_get_smbios_addr();
+    px_print_debug("Installing ISR...", Info);
+    px_isr_install();
+    px_print_debug("We got past the ISQ install", Info);
 }
 
 void px_kernel_print_splash() {
