@@ -17,7 +17,7 @@ QEMU = qemu-system-x86_64
 GCC_FLAGS = -m32 -g -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fno-stack-protector -Wno-write-strings -std=c++17
 AS_FLAGS = --32
 LD_FLAGS = -melf_i386
-KERNEL_GCC_FLAGS = -I kernel/include
+KERNEL_GCC_FLAGS = -I kernel/include -D__is_kernel
 
 # Linker file
 LINKER = kernel/arch/i386/linker.ld
