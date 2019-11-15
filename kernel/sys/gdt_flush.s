@@ -1,3 +1,9 @@
+/**
+ * This small function has to be written in assembly and is used
+ * to flush the GDT and reload the new one onto the system.
+ * Thanks to James Molloy for the documentation and to toaruOS
+ * for the translation from NASM to AT&T.
+ */
 .section .text
 .align 4
 

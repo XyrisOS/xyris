@@ -78,8 +78,8 @@ void gdt_install() {
 	gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* User code */
 	gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* User data */
 
+	// Write the TSS, then flush / reload the GDT and TSS
 	write_tss(5, 0x10, 0x0);
-
 	gdt_flush((uintptr_t)gdtp);
 	tss_flush();
 }

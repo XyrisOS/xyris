@@ -16,8 +16,26 @@
 #include <sys/sys.hpp>
 #include <sys/tss.hpp>
 
+/**
+ * @brief Setup and install the GDT onto the system.
+ * 
+ */
 extern void gdt_install();
+/**
+ * @brief 
+ * 
+ * @param num 
+ * @param base 
+ * @param limit 
+ * @param access 
+ * @param gran 
+ */
 extern void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran);
+/**
+ * @brief Set the kernel stack pointer
+ * 
+ * @param stack 
+ */
 extern void set_kernel_stack(uintptr_t stack);
 
 #endif /* PANIX_GLOBAL_DESCRIPTOR_TABLE_HPP */
