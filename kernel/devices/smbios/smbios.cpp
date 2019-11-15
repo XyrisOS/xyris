@@ -32,6 +32,7 @@ char* px_get_smbios_addr() {
     }
     // Perform a check and see if we found the SMBIOS.
     ((unsigned int) mem == 0x100000) ?  px_print_debug("No SMBIOS found!", Error) : px_print_debug("SMBIOS located.", Success);
+    return (char *)mem;
 }
 
 size_t px_get_smbios_table_len(struct SMBIOSHeader *hd) {
