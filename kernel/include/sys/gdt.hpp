@@ -20,7 +20,7 @@
  * @brief Setup and install the GDT onto the system.
  * 
  */
-extern void gdt_install();
+extern bool gdt_install();
 /**
  * @brief 
  * 

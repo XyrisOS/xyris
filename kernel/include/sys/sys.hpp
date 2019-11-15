@@ -14,7 +14,9 @@
 
 #include <types.hpp>
 #include <devices/tty/kprint.hpp>
-
+// Kernel utility functions
+void panic(int exception);
+void panic(char* msg);
 // Memory functions
 void* memset(void* bufptr, int value, size_t size);
 // Userspace

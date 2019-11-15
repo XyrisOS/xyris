@@ -32,9 +32,8 @@ extern "C" void px_call_constructors() {
 extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multiboot_magic) {
     // Print the splash screen to show we've booted into the kernel properly.
     p_kernel_print_splash();
-    gdt_install();
+    gdt_install() ? kprint("Loaded GDT.\n") : panic("Unable to install the GDT!");
     kprintSetColor(Blue, Black);
-    kprint("Loaded the GDT.");
 }
 
 void p_kernel_print_splash() {

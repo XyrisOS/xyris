@@ -65,8 +65,8 @@ void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, ui
 	gdt.entries[num].type = access;
 }
 
-void gdt_install() {
-	//
+bool gdt_install() {
+	// TODO: Add return false to cases where operations don't succeed.
 	kprint("Installing the GDT onto the system...\n");
 	//
 	gdt_ptr *gdtp = &gdt.pointer;
@@ -85,6 +85,8 @@ void gdt_install() {
 	kprint("Flushed the GDT.\n");
 	tss_flush();
 	kprint("Flushed the TSS.\n");
+	// We made it to the end. Return true.
+	return true;
 }
 
 static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0) {
