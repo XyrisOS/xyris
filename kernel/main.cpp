@@ -12,6 +12,8 @@
 #include <types.hpp>
 #include <devices/tty/kprint.hpp>
 
+void p_kernel_print_splash();
+
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
@@ -27,6 +29,15 @@ extern "C" void px_call_constructors() {
  * 
  */
 extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multiboot_magic) {
+    // Print the splash screen to show we've booted into the kernel properly.
+    p_kernel_print_splash();
+}
+
+void p_kernel_print_splash() {
     clearScreen();
-    kprint("Welcome to panix!");
+    kprintSetColor(Yellow, Black);
+    kprint("Welcome to Panix\n");
+    kprint("Developed by graduates and undergraduates of Cedarville University.\n");
+    kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n\n");
+    kprintSetColor(White, Black);
 }
