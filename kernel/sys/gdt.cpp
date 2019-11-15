@@ -40,7 +40,7 @@ static struct {
     tss_entry tss;
 } gdt __attribute__((used));
 
-void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran) {
+void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran) {
     // 32-bit address space
     // Now we have to squeeze the (32-bit) limit into 2.5 regiters (20-bit).
     // This is done by discarding the 12 least significant bits, but this
@@ -65,7 +65,7 @@ void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, ui
 	gdt.entries[num].type = access;
 }
 
-bool gdt_install() {
+bool px_gdt_install() {
 	// TODO: Add return false to cases where operations don't succeed.
 	kprint("Installing the GDT onto the system...\n");
 	//
@@ -73,11 +73,11 @@ bool gdt_install() {
 	gdtp->limit = sizeof gdt.entries - 1;
 	gdtp->base = (uintptr_t)&gdt.entries[0];
 
-	gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment */
-	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment */
-	gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment */
-	gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* Userspace code */
-	gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* Userspace data */
+	px_gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment */
+	px_gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment */
+	px_gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment */
+	px_gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* Userspace code */
+	px_gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* Userspace data */
 
 	// Write the TSS, then flush / reload the GDT and TSS
 	write_tss(5, 0x10, 0x0);
@@ -98,7 +98,7 @@ static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0) {
 	uintptr_t limit = base + sizeof *tss;
 
 	/* Add the TSS descriptor to the GDT */
-	gdt_set_gate(num, base, limit, 0xE9, 0x00);
+	px_gdt_set_gate(num, base, limit, 0xE9, 0x00);
 
 	memset(tss, 0x0, sizeof *tss);
 

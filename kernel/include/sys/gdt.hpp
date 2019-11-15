@@ -20,7 +20,7 @@
  * @brief Setup and install the GDT onto the system.
  * 
  */
-extern bool gdt_install();
+extern bool px_gdt_install();
 /**
  * @brief 
  * 
@@ -30,12 +30,12 @@ extern bool gdt_install();
  * @param access 
  * @param gran 
  */
-extern void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran);
+extern void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran);
 /**
  * @brief Set the kernel stack pointer
  * 
  * @param stack 
  */
-extern void set_kernel_stack(uintptr_t stack);
+extern void px_set_kernel_stack(uintptr_t stack);
 
 #endif /* PANIX_GLOBAL_DESCRIPTOR_TABLE_HPP */
