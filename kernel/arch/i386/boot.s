@@ -7,7 +7,6 @@
     .long FLAGS
     .long CHECKSUM
 
-
 .section .text
 .extern px_kernel_main
 .extern px_call_constructors
