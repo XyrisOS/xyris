@@ -5,6 +5,40 @@ uint8_t ttyCoordsY = 0;
 uint8_t backColor = Black;
 uint8_t foreColor = White;
 
+void px_print_debug(char* msg, px_print_level lvl) {
+    // Reset the color to the default and print the opening bracket
+    kprintSetColor(White, Black);
+    kprint("[ ");
+    char* tag;
+    // Change the color and print the tag according to the level
+    switch (lvl) {
+        case Info:
+            kprintSetColor(LightGrey, Black);
+            kprint("INFO");
+            break;
+        case Warning:
+            kprintSetColor(Yellow, Black);
+            kprint("WARN");
+            break;
+        case Error:
+            kprintSetColor(Red, Black);
+            kprint("ERROR");
+            break;
+        case Success:
+            kprintSetColor(LightGreen, Black);
+            kprint(" OK ");
+            break;
+        default:
+            kprintSetColor(Magenta, Black);
+            kprint("UNKNOWN");
+            break;
+    }
+    // Reset the color to the default and print the closing bracket and message
+    kprintSetColor(White, Black);
+    kprint(" ] ");
+    kprint(msg);
+}
+
 void kprint(const char* str) {
     volatile uint16_t* where;
     uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
@@ -150,7 +184,7 @@ void kprintHex(uint8_t key) {
     kprint(foo);
 }
 
-void kprintSetColor(TTYColor fore, TTYColor back) {
+void kprintSetColor(px_tty_color fore, px_tty_color back) {
     foreColor = fore;
     backColor = back;
 }

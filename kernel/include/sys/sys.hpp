@@ -17,8 +17,14 @@
 // Kernel utility functions
 void panic(int exception);
 void panic(char* msg);
+// String functions
+int strlen(const char* s);
+char* concat(const char *s1, const char *s2);
 // Memory functions
 void* memset(void* bufptr, int value, size_t size);
+int memcmp(const void* aptr, const void* bptr, size_t size);
+void* memmove(void* dstptr, const void* srcptr, size_t size);
+void* memcpy(void* dstptr, const void* srcptr, size_t size);
 // Userspace
 extern "C" void jump_usermode(uintptr_t location, uintptr_t stack);;
 

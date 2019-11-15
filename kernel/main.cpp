@@ -11,6 +11,7 @@
 
 #include <types.hpp>
 #include <sys/gdt.hpp>
+#include <devices/smbios/smbios.hpp>
 #include <devices/tty/kprint.hpp>
 
 void p_kernel_print_splash();
@@ -32,8 +33,9 @@ extern "C" void px_call_constructors() {
 extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multiboot_magic) {
     // Print the splash screen to show we've booted into the kernel properly.
     p_kernel_print_splash();
-    gdt_install() ? kprint("Loaded GDT.\n") : panic("Unable to install the GDT!");
     kprintSetColor(Blue, Black);
+    gdt_install() ? px_print_debug("Loaded GDT.\n", Success) : panic("Unable to install the GDT!");
+    char* smbios_addr = px_get_smbios_addr();
 }
 
 void p_kernel_print_splash() {

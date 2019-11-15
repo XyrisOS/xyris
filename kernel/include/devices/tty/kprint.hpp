@@ -12,8 +12,9 @@
 #define PANIX_KPRINT_HPP
 
 #include <types.hpp>
+#include <sys/sys.hpp>
 
-enum TTYColor {
+enum px_tty_color {
     Black           = 0x0,
     Blue            = 0x1,
     Green           = 0x2,
@@ -32,7 +33,22 @@ enum TTYColor {
     White           = 0xF
 };
 
+enum px_print_level {
+    Info            = 0,
+    Warning         = 1,
+    Error           = 2,
+    Success         = 3
+};
+
 inline uint16_t* videoMemory = (uint16_t*) 0xb8000;
+/**
+ * @brief Prints a debug message to the kernel display and
+ * sets a tag and color according to the debug level.
+ * 
+ * @param msg Message to be printed
+ * @param lvl Message debug level
+ */
+void px_print_debug(char* msg, px_print_level lvl);
 /**
  * @brief Prints a given string to the kernel display.
  * 
@@ -67,7 +83,7 @@ void kprintHex(uint8_t key);
  * @param fore Foreground color
  * @param back Background color
  */
-void kprintSetColor(TTYColor fore, TTYColor back);
+void kprintSetColor(px_tty_color fore, px_tty_color back);
 
 void clearScreen();
 
