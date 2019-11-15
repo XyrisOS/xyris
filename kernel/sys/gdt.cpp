@@ -12,6 +12,7 @@
  */
 #include <sys/gdt.hpp>
 
+// Defined in the gdt_flush.s file.
 extern "C" void gdt_flush(uintptr_t);
 static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0);
 
@@ -19,11 +20,12 @@ static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0);
  * @brief Flushes the TSS. This is necessary for when we want to enter into
  * ring 3 (userspace) because we have to flush out all of the kernel info
  * and load in the new info that's safer for our applications.
+ * Normally this 
  */
-void tss_flush() {
-    asm volatile ("mov $0x2B, %ax");
-    asm volatile ("ltr %ax");
-}
+//void tss_flush() {
+//    asm volatile ("mov $0x2B, %ax");
+//    asm volatile ("ltr %ax");
+//}
 
 // Code/Data Segment Descriptor
 struct gdt_segment {
