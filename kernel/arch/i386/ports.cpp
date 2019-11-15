@@ -1,4 +1,4 @@
-#include <sys/ports.hpp>
+#include <arch/i386/ports.hpp>
 
 uint8_t readByte(uint16_t port) {
     uint8_t result;

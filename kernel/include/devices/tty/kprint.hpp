@@ -11,7 +11,6 @@
 #ifndef PANIX_KPRINT_HPP
 #define PANIX_KPRINT_HPP
 
-#include <types.hpp>
 #include <sys/sys.hpp>
 
 enum px_tty_color {

@@ -10,7 +10,7 @@
  * @copyright Copyright Keeton Feavel et al (c) 2019
  * 
  */
-#include <sys/gdt.hpp>
+#include <arch/i386/gdt.hpp>
 
 // Defined in the gdt_flush.s file.
 extern "C" void gdt_flush(uintptr_t);

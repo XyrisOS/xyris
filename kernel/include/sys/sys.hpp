@@ -12,7 +12,7 @@
 #ifndef PANIX_SYS_HPP
 #define PANIX_SYS_HPP
 
-#include <types.hpp>
+#include <sys/types.hpp>
 #include <devices/tty/kprint.hpp>
 // Kernel utility functions
 void panic(int exception);

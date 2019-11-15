@@ -8,11 +8,12 @@
  * @copyright Copyright Keeton Feavel et al (c) 2019
  * 
  */
-
-#include <types.hpp>
-#include <sys/gdt.hpp>
+// System library functions
+#include <sys/sys.hpp>
+// Intel i386 architecture
+#include <arch/i386/gdt.hpp>
+// Generic devices
 #include <devices/smbios/smbios.hpp>
-#include <devices/tty/kprint.hpp>
 
 void px_kernel_print_splash();
 
