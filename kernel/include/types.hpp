@@ -21,5 +21,6 @@ typedef unsigned int           uint32_t;
 typedef long long int           int64_t;
 typedef unsigned long long int uint64_t;
 typedef unsigned int             size_t;
+typedef unsigned long         uintptr_t;
     
 #endif /* PANIX_TYPES_HPP */
