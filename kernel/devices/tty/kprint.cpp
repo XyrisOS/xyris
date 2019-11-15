@@ -8,25 +8,25 @@ uint8_t foreColor = White;
 void px_print_debug(char* msg, px_print_level lvl) {
     // Reset the color to the default and print the opening bracket
     kprintSetColor(White, Black);
-    kprint("[ ");
+    kprint("[");
     char* tag;
     // Change the color and print the tag according to the level
     switch (lvl) {
         case Info:
             kprintSetColor(LightGrey, Black);
-            kprint("INFO");
+            kprint(" INFO ");
             break;
         case Warning:
             kprintSetColor(Yellow, Black);
-            kprint("WARN");
+            kprint(" WARN ");
             break;
         case Error:
             kprintSetColor(Red, Black);
-            kprint("ERROR");
+            kprint("FAILED");
             break;
         case Success:
             kprintSetColor(LightGreen, Black);
-            kprint(" OK ");
+            kprint("  OK  ");
             break;
         default:
             kprintSetColor(Magenta, Black);
@@ -35,7 +35,7 @@ void px_print_debug(char* msg, px_print_level lvl) {
     }
     // Reset the color to the default and print the closing bracket and message
     kprintSetColor(White, Black);
-    kprint(" ] ");
+    kprint("] ");
     kprint(msg);
     kprint("\n");
 }
