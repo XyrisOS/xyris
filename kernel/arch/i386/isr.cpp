@@ -85,11 +85,11 @@ void px_isr_install() {
 
 extern "C" void px_isr_handler(registers_t r) {
     kprint("Interrupt: ");
-    char s[3];
-    itoa(r.int_no, s);
+    char s[4];
+    itoa(r.int_num, s);
     kprint(s);
     kprint("\n");
-    kprint(px_exception_descriptions[r.int_no]);
+    kprint(px_exception_descriptions[r.int_num]);
     kprint("\n");
 }
 
@@ -100,12 +100,12 @@ void px_isr_register_handler(uint8_t n, isr_t handler) {
 extern "C" void px_irq_handler(registers_t r) {
     /* After every interrupt we need to send an EOI to the PICs
      * or they will not send another interrupt again */
-    if (r.int_no >= 40) px_write_byte(0xA0, 0x20);  /* slave */
+    if (r.int_num >= 40) px_write_byte(0xA0, 0x20);  /* slave */
     px_write_byte(0x20, 0x20);                      /* master */
 
     /* Handle the interrupt in a more modular way */
-    if (interrupt_handlers[r.int_no] != 0) {
-        isr_t handler = interrupt_handlers[r.int_no];
+    if (interrupt_handlers[r.int_num] != 0) {
+        isr_t handler = interrupt_handlers[r.int_num];
         handler(r);
     }
 }

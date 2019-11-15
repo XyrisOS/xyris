@@ -42,6 +42,8 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     px_print_debug("Installing ISR...", Info);
     px_isr_install();
     px_print_debug("We got past the ISQ install", Info);
+    __asm__ __volatile__("int $0x2");
+    __asm__ __volatile__("int $0x3");
 }
 
 void px_kernel_print_splash() {

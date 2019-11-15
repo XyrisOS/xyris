@@ -11,6 +11,18 @@
 
 #include <sys/sys.hpp>
 
+// List of all exceptions and their associated english descriptions
+const char* px_exception_descriptions[] = {
+    "Divide-By-Zero\0", "Debugging\0", "Non-Maskable\0", "Breakpoint\0",
+    "Overflow\0", "Out Bound Range\0", "Invalid Opcode\0", "Device Not Avbl\0",
+    "Double Fault\0", "Co-CPU Overrun\0", "Invalid TSS\0", "Sgmnt !Present\0",
+    "Seg Fault\0", "Protection Flt\0", "Page Fault\0", "RESERVED\0",
+    "Floating Pnt\0", "Alignment Check\0", "Machine Check\0", "SIMD Flt Pnt\0",
+    "Virtualization\0", "RESERVED\0", "RESERVED\0", "RESERVED\0",
+    "RESERVED\0", "RESERVED\0", "RESERVED\0", "RESERVED\0",
+    "RESERVED\0", "Security Excptn\0", "RESERVED\0", "Triple Fault\0", "FPU Error\0"
+};
+
 int strlen(const char* s) {
     int i = 0;
     while (s[i] != '\0') {
@@ -29,6 +41,16 @@ char* concat(const char *s1, const char *s2) {
     return result;
 }
 
+void reverse(char* s) {
+    int c;
+    int j = strlen(s) - 1;
+    for (int i = 0; i < j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
+
 void itoa(int n, char str[]) {
     int i, sign;
     if ((sign = n) < 0) n = -n;
@@ -39,6 +61,8 @@ void itoa(int n, char str[]) {
 
     if (sign < 0) str[i++] = '-';
     str[i] = '\0';
+
+    reverse(str);
 }
 
 // Memory functions
