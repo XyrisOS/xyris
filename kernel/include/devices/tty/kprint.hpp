@@ -40,6 +40,12 @@ inline uint16_t* videoMemory = (uint16_t*) 0xb8000;
  */
 void kprint(const char* str);
 /**
+ * @brief Prints a single character to the kernel display.
+ * 
+ * @param character Character to be printed.
+ */
+void putchar(char character);
+/**
  * @brief Prints a given string to a particular coordinate in the kernel display.
  * 
  * @param str Input string to be printed.

@@ -50,6 +50,49 @@ void kprint(const char* str) {
     }
 }
 
+void putchar(char character) {
+    volatile uint16_t* where;
+    uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
+    // For each character in the string
+    switch(character) {
+        // Backspace
+        case 0x08:
+            if (ttyCoordsX > 0) {
+                ttyCoordsX--;
+            }
+            where = videoMemory + (ttyCoordsY * 80 + ttyCoordsX);
+            *where = ' ' | (attrib << 8);
+            break;
+        // Newline
+        case '\n':
+            ttyCoordsX = 0;
+            ttyCoordsY++;
+            break;
+        // Anything else
+        default:
+            where = videoMemory + (ttyCoordsY * 80 + ttyCoordsX);
+            *where = character | (attrib << 8);
+            ttyCoordsX++;
+            break;
+    }
+    // Move to the next line
+    if(ttyCoordsX >= 80) {
+        ttyCoordsX = 0;
+        ttyCoordsY++;
+    }
+    // Clear the screen
+    if(ttyCoordsY >= 25) {
+        for(ttyCoordsY = 0; ttyCoordsY < 25; ttyCoordsY++) {
+            for(ttyCoordsX = 0; ttyCoordsX < 80; ttyCoordsX++) {
+                where = videoMemory + (ttyCoordsY * 80 + ttyCoordsX);
+                *where = ' ' | (attrib << 8);
+            }
+        }
+        ttyCoordsX = 0;
+        ttyCoordsY = 0;
+    }
+}
+
 void kprintAtPosition(const char* str, uint8_t positionX, uint8_t positionY, bool resetCursor) {
     volatile uint16_t* where;
     uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
