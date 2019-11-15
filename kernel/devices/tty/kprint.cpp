@@ -37,6 +37,7 @@ void px_print_debug(char* msg, px_print_level lvl) {
     kprintSetColor(White, Black);
     kprint(" ] ");
     kprint(msg);
+    kprint("\n");
 }
 
 void kprint(const char* str) {

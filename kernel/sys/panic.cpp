@@ -11,20 +11,6 @@
  */
 #include <sys/sys.hpp>
 
-// This is a freaking massive array. It definitely makes panicking slower.
-// It also eats up a significant chunk of the kernel memory since it's not
-// dynamic, so maybe we need to come back to this eventually?
-const char exceptionDescriptions[33][17] = {
-    "Divide-By-Zero\0", "Debugging\0", "Non-Maskable\0", "Breakpoint\0",
-    "Overflow\0", "Out Bound Range\0", "Invalid Opcode\0", "Device Not Avbl\0",
-    "Double Fault\0", "Co-CPU Overrun\0", "Invalid TSS\0", "Sgmnt !Present\0",
-    "Seg Fault\0", "Protection Flt\0", "Page Fault\0", "RESERVED\0",
-    "Floating Pnt\0", "Alignment Check\0", "Machine Check\0", "SIMD Flt Pnt\0",
-    "Virtualization\0", "RESERVED\0", "RESERVED\0", "RESERVED\0",
-    "RESERVED\0", "RESERVED\0", "RESERVED\0", "RESERVED\0",
-    "RESERVED\0", "Security Excptn\0", "RESERVED\0", "Triple Fault\0", "FPU Error\0"
-};
-
 void printPanicScreen() {
     kprintSetColor(Black, White);
     clearScreen();
@@ -50,7 +36,7 @@ void panic(int exception) {
     panicCode[23] = hex[exception & 0xF];
     // Print the code and associated error name
     kprint(panicCode);
-    kprint(exceptionDescriptions[exception]);
+    kprint(px_exception_descriptions[exception]);
     // Halt the CPU
     asm("hlt");
 }
