@@ -15,6 +15,11 @@
 extern "C" void gdt_flush(uintptr_t);
 static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0);
 
+/**
+ * @brief Flushes the TSS. This is necessary for when we want to enter into
+ * ring 3 (userspace) because we have to flush out all of the kernel info
+ * and load in the new info that's safer for our applications.
+ */
 void tss_flush() {
     asm volatile ("mov $0x2B, %ax");
     asm volatile ("ltr %ax");
@@ -24,9 +29,9 @@ void tss_flush() {
 struct gdt_segment {
     // These are descriptors in the GDT that have S=1. Bit 3 of "type" indicates whether it's (0) Data or (1) Code.
     // See https://wiki.osdev.org/Descriptors#Code.2FData_Segment_Descriptors for details on code & data segments.
-    uint16_t limit_low;  // Limit
-    uint16_t base_low;   // Base
-    uint8_t base_high;    // Base
+    uint16_t limit_low; // Limit
+    uint16_t base_low;  // Base
+    uint8_t base_high;  // Base
     uint8_t type;       // Type
     uint8_t limit;      // Bits 0..3: limit, Bits 4..7: additional data/code attributes
     uint8_t base_vhi;   // Base
@@ -79,8 +84,8 @@ void gdt_install() {
 	gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment */
 	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment */
 	gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment */
-	gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* User code */
-	gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* User data */
+	gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* Userspace code */
+	gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* Userspace data */
 
 	// Write the TSS, then flush / reload the GDT and TSS
 	write_tss(5, 0x10, 0x0);

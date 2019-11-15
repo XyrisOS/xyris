@@ -23,15 +23,15 @@ extern void tss_flush();
  * one or two TSS's are also generally used, as they allow for entering 
  * Ring 0 code after an interrupt. (OSDev Wiki)
  * 
- * Thanks to toaruOS for this section of code.
+ * Thanks to OSDev Wiki for this section of code.
  * 
  */
 
 typedef struct tss_entry {
-	uint32_t	prev;
-	uint32_t	esp0;
-	uint32_t	ss0;
-	uint32_t	esp1;
+	uint32_t	prev;	// The previous TSS - if we used hardware task switching this would form a linked list.
+	uint32_t	esp0;	// The stack pointer to load when we change to kernel mode.
+	uint32_t	ss0;	// The stack segment to load when we change to kernel mode.
+	uint32_t	esp1;	// everything below here is unusued now but required by Intel...
 	uint32_t	ss1;
 	uint32_t	esp2;
 	uint32_t	ss2;
