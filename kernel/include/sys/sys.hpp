@@ -13,6 +13,7 @@
 #define PANIX_SYS_HPP
 
 #include <types.hpp>
+#include <devices/tty/kprint.hpp>
 
 void* memset(void* bufptr, int value, size_t size);
 
