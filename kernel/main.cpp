@@ -9,7 +9,8 @@
  * 
  */
 
-#include <include/types.hpp>
+#include <types.hpp>
+#include <devices/tty/kprint.hpp>
 
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
@@ -26,5 +27,6 @@ extern "C" void px_call_constructors() {
  * 
  */
 extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multiboot_magic) {
-
+    clearScreen();
+    kprint("Welcome to panix!");
 }
