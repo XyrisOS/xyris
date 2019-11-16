@@ -35,6 +35,9 @@ void panic(int exception) {
     panicCode[22] = hex[(exception >> 4) & 0xF];
     panicCode[23] = hex[exception & 0xF];
     // Print the code and associated error name
+    kprintSetColor(Red, White);
+    kprint("\nEXCEPTION CAUGHT IN KERNEL MODE!\n");
+    kprintSetColor(Black, White);
     kprint(panicCode);
     kprint(px_exception_descriptions[exception]);
     // Halt the CPU
