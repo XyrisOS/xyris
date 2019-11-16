@@ -4,7 +4,8 @@
 CPP_SRC  = $(shell find kernel/ -name "*.cpp")
 ATT_SRC  = $(shell find kernel/ -name "*.s")
 NASM_SRC = $(shell find kernel/ -name "*.nasm")
-HEADERS  = $(shell find kernel/include/ -name "*.hpp")
+HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
+SYSROOT  = sysroot
 
 # Compilers/Assemblers/Linkers
 AS   = i686-elf-as
@@ -21,11 +22,13 @@ STD_GDB = gdb
 STD_LD  = ld
 
 # Compiler/Linker flags
-GCC_FLAGS  = -m32 -g -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fno-stack-protector -Wno-write-strings -std=c++17
+GCC_FLAGS  = -m32 -g -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions 
+GCC_FLAGS += -fno-leading-underscore -fno-stack-protector -Wno-write-strings -std=c++17
+
 AS_FLAGS   = --32
 NASM_FLAGS = -f elf
 LD_FLAGS   = -melf_i386
-KRNL_FLAGS = -I kernel/include -D__is_kernel
+KRNL_FLAGS = -D__is_kernel -I ${SYSROOT}/usr/include/kernel/
 
 # Linker file
 LINKER = kernel/arch/i386/linker.ld
