@@ -1,26 +1,31 @@
 # sudo apt-get install g++ binutils qemu-system-i386 grub-pc:i386 xorriso
 
 # Sources and headers
-CPP_SRC = $(shell find kernel/ -name "*.cpp")
-ATT_SRC = $(shell find kernel/ -name "*.s")
+CPP_SRC  = $(shell find kernel/ -name "*.cpp")
+ATT_SRC  = $(shell find kernel/ -name "*.s")
 NASM_SRC = $(shell find kernel/ -name "*.nasm")
-HEADERS = $(shell find kernel/include/ -name "*.hpp")
+HEADERS  = $(shell find kernel/include/ -name "*.hpp")
 
 # Compilers/Assemblers/Linkers
-AS = i686-elf-as
+AS   = i686-elf-as
 NASM = nasm
-GCC = i686-elf-gcc
-GDB = i686-elf-gdb
-LD = i686-elf-ld
-NASM = nasm
+GCC  = i686-elf-gcc
+GDB  = i686-elf-gdb
+LD   = i686-elf-ld
 QEMU = qemu-system-x86_64
 
+# Compilers/Assemblers/Linkers for Automation
+STD_AS  = as
+STD_GCC = gcc
+STD_GDB = gdb
+STD_LD  = ld
+
 # Compiler/Linker flags
-GCC_FLAGS = -m32 -g -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fno-stack-protector -Wno-write-strings -std=c++17
-AS_FLAGS = --32
+GCC_FLAGS  = -m32 -g -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fno-stack-protector -Wno-write-strings -std=c++17
+AS_FLAGS   = --32
 NASM_FLAGS = -f elf
-LD_FLAGS = -melf_i386
-KERNEL_GCC_FLAGS = -I kernel/include -D__is_kernel
+LD_FLAGS   = -melf_i386
+KRNL_FLAGS = -I kernel/include -D__is_kernel
 
 # Linker file
 LINKER = kernel/arch/i386/linker.ld
@@ -33,7 +38,7 @@ OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 # Compile sources to objects
 obj/%.o: kernel/%.cpp $(HEADERS)
 	$(MAKE) obj_directories
-	$(GCC) $(GCC_FLAGS) $(KERNEL_GCC_FLAGS) -c -o $@ $<
+	$(GCC) $(GCC_FLAGS) $(KRNL_FLAGS) -c -o $@ $<
 
 obj/%.o: kernel/%.s
 	$(MAKE) obj_directories
