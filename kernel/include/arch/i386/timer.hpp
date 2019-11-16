@@ -22,5 +22,10 @@
  * @param freq Timer frequency
  */
 void px_timer_init(uint32_t freq);
+/**
+ * @brief Prints out the current tick.
+ * 
+ */
+void px_timer_print();
 
 #endif /* PANIX_I386_TIMER_HPP */

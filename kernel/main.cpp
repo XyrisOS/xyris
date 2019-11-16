@@ -50,7 +50,6 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     // Enable interrupts and then initialize our timer
     px_interrupts_enable();
     px_timer_init(60);
-
     while (true) {
         
     }

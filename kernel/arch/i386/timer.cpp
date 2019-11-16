@@ -33,9 +33,10 @@ void px_timer_init(uint32_t freq) {
 
 static void px_timer_callback(registers_t regs) {
     tick++;
-    kprint("Tick: ");
+}
+
+void px_timer_print() {
     char tick_ascii[256];
     itoa(tick, tick_ascii);
-    kprint(tick_ascii);
-    kprint("\n");
+    px_print_debug(tick_ascii, Info);
 }
