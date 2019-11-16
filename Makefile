@@ -2,11 +2,13 @@
 
 # Sources and headers
 CPP_SRC = $(shell find kernel/ -name "*.cpp")
-S_SRC = $(shell find kernel/ -name "*.s")
+ATT_SRC = $(shell find kernel/ -name "*.s")
+NASM_SRC = $(shell find kernel/ -name "*.nasm")
 HEADERS = $(shell find kernel/include/ -name "*.hpp")
 
 # Compilers/Assemblers/Linkers
-AS = nasm
+AS = i686-elf-as
+NASM = nasm
 GCC = i686-elf-gcc
 GDB = i686-elf-gdb
 LD = i686-elf-ld
@@ -15,7 +17,8 @@ QEMU = qemu-system-x86_64
 
 # Compiler/Linker flags
 GCC_FLAGS = -m32 -g -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fno-stack-protector -Wno-write-strings -std=c++17
-AS_FLAGS = -f elf
+AS_FLAGS = --32
+NASM_FLAGS = -f elf
 LD_FLAGS = -melf_i386
 KERNEL_GCC_FLAGS = -I kernel/include -D__is_kernel
 
@@ -23,7 +26,7 @@ KERNEL_GCC_FLAGS = -I kernel/include -D__is_kernel
 LINKER = kernel/arch/i386/linker.ld
 
 # All objects
-OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) $(patsubst kernel/%.s, obj/%.o, $(S_SRC))
+OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC)) $(patsubst kernel/%.nasm, obj/%.o, $(NASM_SRC))
 # Object directories, mirroring source
 OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 
@@ -35,6 +38,10 @@ obj/%.o: kernel/%.cpp $(HEADERS)
 obj/%.o: kernel/%.s
 	$(MAKE) obj_directories
 	$(AS) $(AS_FLAGS) -o $@ $<
+
+obj/%.o: kernel/%.nasm
+	$(MAKE) obj_directories
+	$(NASM) $(NASM_FLAGS) -o $@ $<
 
 # Link objects into BIN
 dist/panix.kernel: $(LINKER) $(OBJ)
