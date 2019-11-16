@@ -13,6 +13,15 @@
 // Private array of interrupt handlers
 isr_t interrupt_handlers[256];
 
+void px_interrupts_disable() {
+    px_print_debug("Disabling interrupts", Warning);
+    asm volatile("cli");
+}
+void px_interrupts_enable() {
+    px_print_debug("Enabling interrupts", Warning);
+    asm volatile("sti");
+}
+
 /* Can't do this with a loop because we need the address
  * of the function names */
 void px_isr_install() {
@@ -97,15 +106,16 @@ extern "C" void px_isr_handler(registers_t r) {
     kprint("\n");
 }
 
-void px_isr_register_handler(uint8_t n, isr_t handler) {
+extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler) {
     interrupt_handlers[n] = handler;
 }
 
 extern "C" void px_irq_handler(registers_t r) {
+    //px_print_debug("Don't fear, the IRQ handler is here!", Info);
     /* After every interrupt we need to send an EOI to the PICs
      * or they will not send another interrupt again */
     if (r.int_num >= 40) px_write_byte(0xA0, 0x20);  /* slave */
-    px_write_byte(0x20, 0x20);                      /* master */
+    px_write_byte(0x20, 0x20);                       /* master */
 
     /* Handle the interrupt in a more modular way */
     if (interrupt_handlers[r.int_num] != 0) {

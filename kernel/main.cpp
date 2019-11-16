@@ -14,11 +14,16 @@
 #include <arch/i386/gdt.hpp>
 #include <arch/i386/idt.hpp>
 #include <arch/i386/isr.hpp>
+#include <arch/i386/timer.hpp>
 // Generic devices
 #include <devices/smbios/smbios.hpp>
 
 void px_kernel_print_splash();
 
+/**
+ * @brief Global constructor called from the boot assembly
+ * 
+ */
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
@@ -42,6 +47,13 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     char* smbios_addr = px_get_smbios_addr();
     // Install the ISR
     px_isr_install();
+    // Enable interrupts and then initialize our timer
+    px_interrupts_enable();
+    px_timer_init(60);
+
+    while (true) {
+        
+    }
 }
 
 void px_kernel_print_splash() {
