@@ -6,16 +6,16 @@ S_SRC = $(shell find kernel/ -name "*.s")
 HEADERS = $(shell find kernel/include/ -name "*.hpp")
 
 # Compilers/Assemblers/Linkers
-AS = i686-elf-as
+AS = nasm
 GCC = i686-elf-gcc
 GDB = i686-elf-gdb
 LD = i686-elf-ld
-NASM = i686-elf-nasm
+NASM = nasm
 QEMU = qemu-system-x86_64
 
 # Compiler/Linker flags
 GCC_FLAGS = -m32 -g -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fno-stack-protector -Wno-write-strings -std=c++17
-AS_FLAGS = --32
+AS_FLAGS = -f elf
 LD_FLAGS = -melf_i386
 KERNEL_GCC_FLAGS = -I kernel/include -D__is_kernel
 
