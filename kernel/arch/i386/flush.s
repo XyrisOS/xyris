@@ -4,6 +4,7 @@
  * Thanks to James Molloy for the documentation and to toaruOS
  * for the translation from NASM to AT&T.
  *
+ * @todo: Switch flush.s back to NASM?
  * @brief This function is used to flush the GDT when we want to
  * enter into ring 3 (userspace) since we need to flush out all of
  * the kernel information and replace it with info safe for user
