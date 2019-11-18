@@ -61,5 +61,7 @@ void px_kernel_print_splash() {
     kprint("Welcome to Panix\n");
     kprint("Developed by graduates and undergraduates of Cedarville University.\n");
     kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n\n");
+    kprintSetColor(LightCyan, Black);
+    kprint("Gloria in te domine, Gloria exultate\n\n");
     kprintSetColor(White, Black);
 }
