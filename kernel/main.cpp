@@ -17,6 +17,7 @@
 #include <arch/i386/timer.hpp>
 // Generic devices
 #include <devices/smbios/smbios.hpp>
+#include <devices/kbd/kbd.hpp>
 
 void px_kernel_print_splash();
 
@@ -47,6 +48,8 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     char* smbios_addr = px_get_smbios_addr();
     // Install the ISR
     px_isr_install();
+    // Initialize the keyboard
+    px_kbd_init();
     // Enable interrupts and then initialize our timer
     px_interrupts_enable();
     px_timer_init(60);

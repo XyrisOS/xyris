@@ -11,7 +11,6 @@
 
 #include <arch/i386/timer.hpp>
 #include <arch/i386/isr.hpp>    // Needed to register our callback
-#include <arch/i386/ports.hpp>
 
 static void px_timer_callback(registers_t regs);
 uint32_t tick;

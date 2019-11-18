@@ -1,7 +1,12 @@
 /**
  * @file kprint.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief kprint is a small library to print unformatted strings to
+ * the BIOS TTY. The important thing to keep in mind is that these
+ * functions expect a null-terminator at the end of the string, which
+ * C++ seems to take care of *most* of the time. These functions do
+ * NOT accept formatted strings like printf. That is available in
+ * kprintf().
  * @version 0.1
  * @date 2019-09-26
  * 
