@@ -33,11 +33,4 @@ void px_kbd_push_scode(uint8_t scode) {
     px_kbd_scode_buff[px_kbd_scode_buff_pos] = scode;
     // Increment and loop back if necessary
     px_kbd_scode_buff_pos = (px_kbd_scode_buff_pos + 1) % 256;
-
-    char key = px_kbd_usa_ascii[(int) scode];
-    putchar(key);
-}
-
-void px_kbd_register_callback() {
-
 }

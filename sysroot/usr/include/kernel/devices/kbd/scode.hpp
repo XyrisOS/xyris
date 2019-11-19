@@ -25,7 +25,7 @@ const char px_kbd_usa_ascii[] = {
     'b', 'n', 'm', ',', '.', '/', '\0', '*',
     '\0', ' '
 };
-const char px_kbd_usa_scancodeName[64][16] = {
+/*
     "ERROR", "Esc", "1", "2", "3", "4", "5", "6",
     "7", "8", "9", "0", "-", "=", "Backspace", "Tab",
     "Q", "W", "E", "R", "T", "Y", "U", "I",
@@ -34,6 +34,6 @@ const char px_kbd_usa_scancodeName[64][16] = {
     "'", "`", "LShift", "\\", "Z", "X", "C", "V",
     "B", "N", "M", ",", ".", "/", "RShift", "Keypad *",
     "LAlt", "Spacebar"
-};
+*/
 
 #endif /* PANIX_KEYBOARD_SCANCODES_HPP */
