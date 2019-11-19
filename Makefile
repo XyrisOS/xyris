@@ -8,11 +8,11 @@ HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
 SYSROOT  = sysroot
 
 # Compilers/Assemblers/Linkers
-AS   = i686-elf-as
-NASM = nasm
-GCC  = i686-elf-gcc
-GDB  = i686-elf-gdb
-LD   = i686-elf-ld
+NASM = $(shell command -v nasm 			|| echo "Please install nasm")
+AS	 = $(shell command -v i686-elf-as 	|| as)
+GCC  = $(shell command -v i686-elf-gcc 	|| gcc)
+GDB  = $(shell command -v i686-elf-adb 	|| gdb)
+LD   = $(shell command -v i686-elf-ld 	|| ld)
 QEMU = qemu-system-x86_64
 
 # Compilers/Assemblers/Linkers for Automation
@@ -22,13 +22,23 @@ STD_GDB = gdb
 STD_LD  = ld
 
 # Compiler/Linker flags
-GCC_FLAGS  = -m32 -g -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions 
-GCC_FLAGS += -fno-leading-underscore -fno-stack-protector -Wno-write-strings -std=c++17
+GCC_FLAGS = 					\
+	-m32 						\
+	-g							\
+	-fno-use-cxa-atexit			\
+	-nostdlib -fno-builtin		\
+	-fno-rtti -fno-exceptions	\
+	-fno-leading-underscore		\
+	-fno-stack-protector		\
+	-Wno-write-strings			\
+	-std=c++17
 
 AS_FLAGS   = --32
 NASM_FLAGS = -f elf
 LD_FLAGS   = -melf_i386
-KRNL_FLAGS = -D__is_kernel -I ${SYSROOT}/usr/include/kernel/
+KRNL_FLAGS = 							\
+	-D__is_kernel 						\
+	-I ${SYSROOT}/usr/include/kernel/	
 
 # Linker file
 LINKER = kernel/arch/i386/linker.ld

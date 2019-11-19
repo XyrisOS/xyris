@@ -17,6 +17,8 @@
 #include <arch/i386/timer.hpp>
 // Generic devices
 #include <devices/smbios/smbios.hpp>
+#include <devices/kbd/kbd.hpp>
+#include <devices/rtc/rtc.hpp>
 
 void px_kernel_print_splash();
 
@@ -44,15 +46,21 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     kprintSetColor(Blue, Black);
     // Install the GDT
     px_gdt_install() ? px_print_debug("Loaded GDT.", Success) : panic("Unable to install the GDT!");
+    // @todo Make success and fail conditions for all of these and fix SMBIOS
     char* smbios_addr = px_get_smbios_addr();
-    // Install the ISR
-    px_isr_install();
-    // Enable interrupts and then initialize our timer
-    px_interrupts_enable();
-    px_timer_init(60);
+                                // Begin installs and inits
+    px_isr_install();           // Interrupt Service Requests
+    px_kbd_init();              // Keyboard
+    px_rtc_init();              // Real Time Clock
+    px_timer_init(60);          // Programmable Interrupt Timer
+    px_interrupts_enable();     // Enable interrupts
+    // Print some info to show we did things right
+    px_rtc_print();
+    px_print_debug("Done.", Success);
     while (true) {
-        
+        // Keep the kernel alive.
     }
+    panic("0xDEADDEAD\nKernel terminated unexpectedly.");
 }
 
 void px_kernel_print_splash() {
@@ -61,5 +69,7 @@ void px_kernel_print_splash() {
     kprint("Welcome to Panix\n");
     kprint("Developed by graduates and undergraduates of Cedarville University.\n");
     kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n\n");
+    kprintSetColor(LightCyan, Black);
+    kprint("Gloria in te domine, Gloria exultate\n\n");
     kprintSetColor(White, Black);
 }
