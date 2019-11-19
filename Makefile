@@ -8,11 +8,11 @@ HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
 SYSROOT  = sysroot
 
 # Compilers/Assemblers/Linkers
-AS   = i686-elf-as
-NASM = nasm
-GCC  = i686-elf-gcc
-GDB  = i686-elf-gdb
-LD   = i686-elf-ld
+NASM = $(shell command -v nasm 			|| echo "Please install nasm")
+AS	 = $(shell command -v i686-elf-as 	|| as)
+GCC  = $(shell command -v i686-elf-gcc 	|| gcc)
+GDB  = $(shell command -v i686-elf-adb 	|| gdb)
+LD   = $(shell command -v i686-elf-ld 	|| ld)
 QEMU = qemu-system-x86_64
 
 # Compilers/Assemblers/Linkers for Automation
