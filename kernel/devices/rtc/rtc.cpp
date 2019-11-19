@@ -14,12 +14,12 @@
 
 void px_rtc_callback(registers_t regs);
 // Current values from RTC
-uint8_t second; // Current UTC second
-uint8_t minute; // Current UTC minute
-uint8_t hour;   // Current UTC hour
-uint8_t day;    // Current UTC day (not reliable)
-uint8_t month;  // Current UTC month
-uint32_t year;  // Current UTC year
+uint8_t px_rtc_second; // Current UTC second
+uint8_t px_rtc_minute; // Current UTC minute
+uint8_t px_rtc_hour;   // Current UTC hour
+uint8_t px_rtc_day;    // Current UTC day (not reliable)
+uint8_t px_rtc_month;  // Current UTC month
+uint32_t px_rtc_year;  // Current UTC year
 
 void px_rtc_init() {
     px_print_debug("Initializing RTC", Info);
@@ -65,39 +65,39 @@ void px_read_rtc() {
     // Make sure an update isn't in progress
     while (px_rtc_get_update_in_progress());
 
-    second = px_rtc_get_register(0x00);
-    minute = px_rtc_get_register(0x02);
-    hour = px_rtc_get_register(0x04);
-    day = px_rtc_get_register(0x07);
-    month = px_rtc_get_register(0x08);
-    year = px_rtc_get_register(0x09);
+    px_rtc_second = px_rtc_get_register(0x00);
+    px_rtc_minute = px_rtc_get_register(0x02);
+    px_rtc_hour = px_rtc_get_register(0x04);
+    px_rtc_day = px_rtc_get_register(0x07);
+    px_rtc_month = px_rtc_get_register(0x08);
+    px_rtc_year = px_rtc_get_register(0x09);
 
     if (RTC_CURRENT_CENTURY != 0) {
         century = px_rtc_get_register(RTC_CURRENT_CENTURY);
     }
  
-    while  ((last_second != second) || (last_minute != minute) || 
-            (last_hour != hour)     || (last_day != day)       || 
-            (last_month != month)   || (last_year != year)     ||
+    while  ((last_second != px_rtc_second) || (last_minute != px_rtc_minute) || 
+            (last_hour != px_rtc_hour)     || (last_day != px_rtc_day)       || 
+            (last_month != px_rtc_month)   || (last_year != px_rtc_year)     ||
             (last_century != century))
     {
-        last_second = second;
-        last_minute = minute;
-        last_hour = hour;
-        last_day = day;
-        last_month = month;
-        last_year = year;
+        last_second = px_rtc_second;
+        last_minute = px_rtc_minute;
+        last_hour = px_rtc_hour;
+        last_day = px_rtc_day;
+        last_month = px_rtc_month;
+        last_year = px_rtc_year;
         last_century = century;
 
         // Make sure an update isn't in progress
         while (px_rtc_get_update_in_progress());
 
-        second = px_rtc_get_register(0x00);
-        minute = px_rtc_get_register(0x02);
-        hour = px_rtc_get_register(0x04);
-        day = px_rtc_get_register(0x07);
-        month = px_rtc_get_register(0x08);
-        year = px_rtc_get_register(0x09);
+        px_rtc_second = px_rtc_get_register(0x00);
+        px_rtc_minute = px_rtc_get_register(0x02);
+        px_rtc_hour = px_rtc_get_register(0x04);
+        px_rtc_day = px_rtc_get_register(0x07);
+        px_rtc_month = px_rtc_get_register(0x08);
+        px_rtc_year = px_rtc_get_register(0x09);
         if (RTC_CURRENT_CENTURY != 0) {
             century = px_rtc_get_register(RTC_CURRENT_CENTURY);
         }
@@ -107,12 +107,12 @@ void px_read_rtc() {
 
     // Convert BCD to binary values if necessary
     if (!(registerB & 0x04)) {
-        second = (second & 0x0F) + ((second / 16) * 10);
-        minute = (minute & 0x0F) + ((minute / 16) * 10);
-        hour = ( (hour & 0x0F) + (((hour & 0x70) / 16) * 10) ) | (hour & 0x80);
-        day = (day & 0x0F) + ((day / 16) * 10);
-        month = (month & 0x0F) + ((month / 16) * 10);
-        year = (year & 0x0F) + ((year / 16) * 10);
+        px_rtc_second = (px_rtc_second & 0x0F) + ((px_rtc_second / 16) * 10);
+        px_rtc_minute = (px_rtc_minute & 0x0F) + ((px_rtc_minute / 16) * 10);
+        px_rtc_hour = ( (px_rtc_hour & 0x0F) + (((px_rtc_hour & 0x70) / 16) * 10) ) | (px_rtc_hour & 0x80);
+        px_rtc_day = (px_rtc_day & 0x0F) + ((px_rtc_day / 16) * 10);
+        px_rtc_month = (px_rtc_month & 0x0F) + ((px_rtc_month / 16) * 10);
+        px_rtc_year = (px_rtc_year & 0x0F) + ((px_rtc_year / 16) * 10);
 
         if (RTC_CURRENT_CENTURY != 0) {
             century = (century & 0x0F) + ((century / 16) * 10);
@@ -120,16 +120,16 @@ void px_read_rtc() {
     }
 
     // Convert 12 hour clock to 24 hour clock if necessary
-    if (!(registerB & 0x02) && (hour & 0x80)) {
-        hour = ((hour & 0x7F) + 12) % 24;
+    if (!(registerB & 0x02) && (px_rtc_hour & 0x80)) {
+        px_rtc_hour = ((px_rtc_hour & 0x7F) + 12) % 24;
     }
 
     // Calculate the full (4-digit) year
     if(RTC_CURRENT_CENTURY != 0) {
-        year += century * 100;
+        px_rtc_year += century * 100;
     } else {
-        year += (RTC_CURRENT_YEAR / 100) * 100;
-        if(year < RTC_CURRENT_YEAR) year += 100;
+        px_rtc_year += (RTC_CURRENT_YEAR / 100) * 100;
+        if(px_rtc_year < RTC_CURRENT_YEAR) px_rtc_year += 100;
     }
 }
 
@@ -139,10 +139,10 @@ void px_rtc_print() {
     char minuteStr[3];
     char dayStr[3];
     char monthStr[3];
-    itoa(hour, hourStr);
-    itoa(minute, minuteStr);
-    itoa(day, dayStr);
-    itoa(month, monthStr);
+    itoa(px_rtc_hour, hourStr);
+    itoa(px_rtc_minute, minuteStr);
+    itoa(px_rtc_day, dayStr);
+    itoa(px_rtc_month, monthStr);
     kprint("\nToday's Date: ");
     kprint(monthStr);
     kprint("/");
