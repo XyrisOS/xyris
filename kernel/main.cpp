@@ -46,16 +46,16 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     kprintSetColor(Blue, Black);
     // Install the GDT
     px_gdt_install() ? px_print_debug("Loaded GDT.", Success) : panic("Unable to install the GDT!");
+    // @todo Make success and fail conditions for all of these and fix SMBIOS
     char* smbios_addr = px_get_smbios_addr();
-    // Begin installs and inits
+                                // Begin installs and inits
     px_isr_install();           // Interrupt Service Requests
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
     px_timer_init(60);          // Programmable Interrupt Timer
-    // Enable interrupts
-    px_interrupts_enable();
+    px_interrupts_enable();     // Enable interrupts
+    // Print some info to show we did things right
     px_rtc_print();
-
     px_print_debug("Done.", Success);
     while (true) {
         
