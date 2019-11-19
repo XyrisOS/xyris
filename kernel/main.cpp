@@ -18,6 +18,7 @@
 // Generic devices
 #include <devices/smbios/smbios.hpp>
 #include <devices/kbd/kbd.hpp>
+#include <devices/rtc/rtc.hpp>
 
 void px_kernel_print_splash();
 
@@ -50,12 +51,18 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     px_isr_install();
     // Initialize the keyboard
     px_kbd_init();
+    // Initialize the RTC
+    px_rtc_init();
     // Enable interrupts and then initialize our timer
     px_interrupts_enable();
     px_timer_init(60);
+    px_rtc_print();
+
+    px_print_debug("Done.", Success);
     while (true) {
         
     }
+    panic("0xDEADDEAD\nKernel terminated unexpectedly.");
 }
 
 void px_kernel_print_splash() {
