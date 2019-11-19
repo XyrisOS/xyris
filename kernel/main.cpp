@@ -58,7 +58,7 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     px_rtc_print();
     px_print_debug("Done.", Success);
     while (true) {
-        
+        // Keep the kernel alive.
     }
     panic("0xDEADDEAD\nKernel terminated unexpectedly.");
 }
