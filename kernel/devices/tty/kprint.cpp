@@ -9,7 +9,6 @@ void px_print_debug(char* msg, px_print_level lvl) {
     // Reset the color to the default and print the opening bracket
     kprintSetColor(White, Black);
     kprint("[");
-    char* tag;
     // Change the color and print the tag according to the level
     switch (lvl) {
         case Info:

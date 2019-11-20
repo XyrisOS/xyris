@@ -25,14 +25,18 @@ STD_LD  = ld
 GCC_FLAGS = 					\
 	-m32 						\
 	-g							\
+	-nostdlib					\
+	-nostartfiles				\
+	-nodefaultlibs				\
+	-ffreestanding				\
 	-fno-use-cxa-atexit			\
-	-nostdlib -fno-builtin		\
-	-fno-rtti -fno-exceptions	\
+	-fno-builtin				\
+	-fno-rtti					\
+	-fno-exceptions				\
 	-fno-leading-underscore		\
 	-fno-stack-protector		\
 	-Wno-write-strings			\
 	-std=c++17
-
 AS_FLAGS   = --32
 NASM_FLAGS = -f elf
 LD_FLAGS   = -melf_i386
@@ -44,7 +48,9 @@ KRNL_FLAGS = 							\
 LINKER = kernel/arch/i386/linker.ld
 
 # All objects
-OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC)) $(patsubst kernel/%.nasm, obj/%.o, $(NASM_SRC))
+OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) 	\
+	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC)) 		\
+	  $(patsubst kernel/%.nasm, obj/%.o, $(NASM_SRC))
 # Object directories, mirroring source
 OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 
