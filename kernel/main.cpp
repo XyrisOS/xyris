@@ -24,7 +24,9 @@ void px_kernel_print_splash();
 
 /**
  * @brief Global constructor called from the boot assembly
- * 
+ * OSDev Wiki takes a different approach to this and does
+ * all of this in assembly. You can see that for yourself
+ * in the Meaty Skeleton tutorial in the crti.S section.
  */
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
@@ -37,7 +39,7 @@ extern "C" void px_call_constructors() {
 
 /**
  * @brief This is the Panix kernel entry point. This function is called directly from the
- * assembly written in boot.S located in kernel/arch/i386/boot.S.
+ * assembly written in boot.S located in arch/i386/boot.S.
  * 
  */
 extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multiboot_magic) {

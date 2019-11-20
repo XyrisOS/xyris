@@ -86,6 +86,14 @@ dist/panix.iso: dist/panix.kernel
 obj_directories:
 	mkdir -p $(OBJ_DIRS)
 
+MULTIBOOT = $(shell grub-file --is-x86-multiboot dist/panix.kernel)
+verify:
+ifeq ($(.SHELLSTATUS), 1)
+	@ echo Kernel does not have valid multiboot!
+else
+	@ echo Kernel multiboot is valid!
+endif
+
 # Run bootable ISO
 run: dist/panix.iso
 	$(QEMU) -drive format=raw,file=$< -soundhw pcspk -rtc clock=host -vga std

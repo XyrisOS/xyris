@@ -20,7 +20,7 @@ SECTIONS
    */
   .text BLOCK(4K) : ALIGN(4K)
   {
-    *(.multiboot)
+    KEEP(*(.multiboot))
     *(.text*)
   }
   /* Read-Only Data that we give a 4 kilobyte block
