@@ -96,7 +96,12 @@ endif
 
 # Run bootable ISO
 run: dist/panix.iso
-	$(QEMU) -drive format=raw,file=$< -soundhw pcspk -rtc clock=host -vga std
+	$(QEMU) 							\
+	-drive format=raw,file=$< 			\
+	-soundhw pcspk 						\
+	-rtc clock=host 					\
+	-vga std -m 256M 					\
+	-serial serial.log
 
 # Install BIN file to local system
 install: dist/panix.kernel
