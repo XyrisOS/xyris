@@ -98,6 +98,9 @@ endif
 run: dist/panix.iso
 	$(QEMU) -drive format=raw,file=$< -soundhw pcspk -rtc clock=host -vga std
 
+virtualbox:
+	VBoxManage startvm --putenv --debug "Panix"
+
 # Install BIN file to local system
 install: dist/panix.kernel
 	sudo cp $< /boot/panix.kernel
