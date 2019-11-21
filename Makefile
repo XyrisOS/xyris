@@ -103,6 +103,9 @@ run: dist/panix.iso
 	-vga std -m 256M 					\
 	-serial serial.log
 
+virtualbox:
+	VBoxManage startvm --putenv --debug "Panix"
+
 # Install BIN file to local system
 install: dist/panix.kernel
 	sudo cp $< /boot/panix.kernel
