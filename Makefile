@@ -11,9 +11,9 @@ SYSROOT  = sysroot
 NASM = $(shell command -v nasm 			|| echo "Please install nasm")
 AS	 = $(shell command -v i686-elf-as 	|| as)
 GCC  = $(shell command -v i686-elf-gcc 	|| gcc)
-GDB  = $(shell command -v i686-elf-adb 	|| gdb)
+GDB  = $(shell command -v i686-elf-gdb 	|| gdb)
 LD   = $(shell command -v i686-elf-ld 	|| ld)
-QEMU = qemu-system-x86_64
+QEMU = qemu-system-i386
 
 # Compilers/Assemblers/Linkers for Automation
 STD_AS  = as
@@ -71,6 +71,7 @@ obj/%.o: kernel/%.nasm
 dist/panix.kernel: $(LINKER) $(OBJ)
 	@ mkdir -p dist
 	$(LD) $(LD_FLAGS) -T $< -o $@ $(OBJ)
+	objcopy --only-keep-debug dist/panix.kernel dist/panix.sym
 
 # Create bootable ISO
 dist/panix.iso: dist/panix.kernel
@@ -101,7 +102,7 @@ run: dist/panix.iso
 	-soundhw pcspk 						\
 	-rtc clock=host 					\
 	-vga std -m 256M 					\
-	-serial serial.log
+	-serial stdio
 
 virtualbox:
 	VBoxManage startvm --putenv --debug "Panix"
@@ -123,8 +124,7 @@ dist: dist/panix.kernel
 debug: dist/panix.iso
 	@ echo Booting from floppy...
 	$(QEMU) -S -s -drive format=raw,file=$< -soundhw pcspk -rtc clock=host -vga std &
-	@ echo Setting up GDB with qemu...
-	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file dist/panix.kernel"
+	gdb dist/panix.kernel
 
 docs:
 	@ echo Generating docs according to the Doxyfile...

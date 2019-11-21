@@ -15,7 +15,7 @@
 .section .bootstrap_stack, "aw", @nobits # former .bss section
 .align 16
 kernel_stack_bottom:
-.space 16384; # 16 Kb stack size
+.space 0x4000 ;# 16 Kb stack size
 kernel_stack_top:
 
 # Preallocate pages used for paging. Don't hard-code addresses and assume they
@@ -24,9 +24,9 @@ kernel_stack_top:
 .section .bss, "aw", @nobits
 	.align 4096
 boot_page_directory:
-	.skip 4096
+	.skip 8192
 boot_page_table1:
-	.skip 4096
+	.skip 8192
 # Further page tables may be required if the kernel grows beyond 3 MiB.
 
 # Text section of our executable. See linker.ld
