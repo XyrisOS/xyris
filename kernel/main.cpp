@@ -55,7 +55,7 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     /**
      * @todo Make success and fail conditions for all of these and fix SMBIOS
      */
-    char* smbios_addr = px_get_smbios_addr();
+    //char* smbios_addr = px_get_smbios_addr();
     px_isr_install();           // Interrupt Service Requests
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
@@ -66,13 +66,12 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     px_print_debug("Done.", Success);
     while (true) {
         // Keep the kernel alive.
-        px_timer_print();
     }
     panic("Yikes!\nKernel terminated unexpectedly.");
 }
 
 void px_kernel_print_splash() {
-//    clearScreen();
+    clearScreen();
     kprintSetColor(Yellow, Black);
     kprint("Welcome to Panix\n");
     kprint("Developed by graduates and undergraduates of Cedarville University.\n");

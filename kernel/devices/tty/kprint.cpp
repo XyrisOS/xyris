@@ -152,8 +152,8 @@ void kprintSetColor(px_tty_color fore, px_tty_color back) {
 
 void clearScreen() {
     char str[] =  { ' ', '\0' };
-    for (int y = 0; y < 80; y++) {
-        for (int x = 0; x < 25; x++) {
+    for (int y = 0; y < 25; y++) {
+        for (int x = 0; x < 80; x++) {
             kprintAtPosition(str, x, y, true);
         }
     }
