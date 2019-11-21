@@ -87,7 +87,7 @@ void kprintHex(uint8_t key);
  * @param fore Foreground color
  * @param back Background color
  */
-void kprintSetColor(px_tty_color fore, px_tty_color back);
+void px_tty_set_color(px_tty_color fore, px_tty_color back);
 
 void px_clear_tty;
 

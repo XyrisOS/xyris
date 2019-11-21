@@ -7,33 +7,33 @@ uint8_t foreColor = White;
 
 void px_print_debug(char* msg, px_print_level lvl) {
     // Reset the color to the default and print the opening bracket
-    kprintSetColor(White, Black);
+    px_tty_set_color(White, Black);
     kprint("[");
     // Change the color and print the tag according to the level
     switch (lvl) {
         case Info:
-            kprintSetColor(LightGrey, Black);
+            px_tty_set_color(LightGrey, Black);
             kprint(" INFO ");
             break;
         case Warning:
-            kprintSetColor(Yellow, Black);
+            px_tty_set_color(Yellow, Black);
             kprint(" WARN ");
             break;
         case Error:
-            kprintSetColor(Red, Black);
+            px_tty_set_color(Red, Black);
             kprint("FAILED");
             break;
         case Success:
-            kprintSetColor(LightGreen, Black);
+            px_tty_set_color(LightGreen, Black);
             kprint("  OK  ");
             break;
         default:
-            kprintSetColor(Magenta, Black);
+            px_tty_set_color(Magenta, Black);
             kprint("UNKNOWN");
             break;
     }
     // Reset the color to the default and print the closing bracket and message
-    kprintSetColor(White, Black);
+    px_tty_set_color(White, Black);
     kprint("] ");
     kprint(msg);
     kprint("\n");
@@ -145,7 +145,7 @@ void kprintHex(uint8_t key) {
     kprint(foo);
 }
 
-void kprintSetColor(px_tty_color fore, px_tty_color back) {
+void px_tty_set_color(px_tty_color fore, px_tty_color back) {
     foreColor = fore;
     backColor = back;
 }

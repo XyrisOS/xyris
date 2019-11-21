@@ -12,7 +12,7 @@
 #include <sys/sys.hpp>
 
 void printPanicScreen() {
-    kprintSetColor(Black, White);
+    px_tty_set_color(Black, White);
     px_clear_tty;
     kprint(" ________________________\n");
     kprint("< OH NO! Panix panicked! >\n");
@@ -35,9 +35,9 @@ void panic(int exception) {
     panicCode[22] = hex[(exception >> 4) & 0xF];
     panicCode[23] = hex[exception & 0xF];
     // Print the code and associated error name
-    kprintSetColor(Red, White);
+    px_tty_set_color(Red, White);
     kprint("\nEXCEPTION CAUGHT IN KERNEL MODE!\n");
-    kprintSetColor(Black, White);
+    px_tty_set_color(Black, White);
     kprint(panicCode);
     kprint(px_exception_descriptions[exception]);
     // Halt the CPU
