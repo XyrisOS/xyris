@@ -10,6 +10,8 @@
  */
 // System library functions
 #include <sys/sys.hpp>
+// Multiboot Structure
+#include <sys/multiboot.hpp>
 // Intel i386 architecture
 #include <arch/x86/gdt.hpp>
 #include <arch/x86/idt.hpp>
@@ -43,7 +45,7 @@ extern "C" void px_call_constructors() {
  * @todo Figure out how to use the multiboot header passed in to set up virtual memory
  * and other features.
  */
-extern "C" void px_kernel_main(uint32_t multiboot_magic, const void* multiboot_structure, uintptr_t vmem) {
+extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_struct, uintptr_t vmem) {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     kprintSetColor(Blue, Black);

@@ -9,7 +9,7 @@
  * 
  */
 
-#include <arch/i386/isr.hpp>
+#include <arch/x86/isr.hpp>
 // Private array of interrupt handlers
 isr_t interrupt_handlers[256];
 
