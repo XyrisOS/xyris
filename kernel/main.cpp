@@ -59,13 +59,14 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     px_isr_install();           // Interrupt Service Requests
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
-    px_timer_init(60);          // Programmable Interrupt Timer
+    px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
     px_interrupts_enable();     // Enable interrupts
     // Print some info to show we did things right
     px_rtc_print();
     px_print_debug("Done.", Success);
     while (true) {
         // Keep the kernel alive.
+        px_timer_print();
     }
     panic("Yikes!\nKernel terminated unexpectedly.");
 }

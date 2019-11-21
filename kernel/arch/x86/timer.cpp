@@ -39,3 +39,11 @@ void px_timer_print() {
     itoa(tick, tick_ascii);
     px_print_debug(tick_ascii, Info);
 }
+
+/**
+ * @todo Create a basic API wrapper that allows us to register a timer callback
+ * It needs to take two parameters:
+ *  1. the amount of time to delay
+ *  2. function pointer to register as a callback
+ * 
+ */
