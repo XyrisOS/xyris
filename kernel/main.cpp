@@ -72,7 +72,7 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
 }
 
 void px_kernel_print_splash() {
-    clearScreen();
+//    clearScreen();
     kprintSetColor(Yellow, Black);
     kprint("Welcome to Panix\n");
     kprint("Developed by graduates and undergraduates of Cedarville University.\n");

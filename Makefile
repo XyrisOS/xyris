@@ -131,7 +131,8 @@ debug: dist/panix.iso
 	-m 128M						\
 	-soundhw pcspk 				\
 	-rtc clock=host 			\
-	-vga std -m 256M 			\
+	-vga std 					\
+	-m 256M 					\
 	-serial stdio				\
 	-d cpu_reset				
 	# After this start the visual studio debugger

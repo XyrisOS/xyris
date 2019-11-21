@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch with GDB",
+            "name": "Debug Kernel",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/dist/panix.kernel",
@@ -30,7 +30,7 @@
                     "description": "Load binary."
                 }
             ],
-            "preLaunchTask": "Launch QEMU"
+            //"preLaunchTask": "Debug QEMU"
         }
     ]
 }
