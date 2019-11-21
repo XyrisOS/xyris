@@ -13,7 +13,7 @@
 
 void printPanicScreen() {
     px_tty_set_color(Black, White);
-    px_clear_tty;
+    px_clear_tty();
     kprint(" ________________________\n");
     kprint("< OH NO! Panix panicked! >\n");
     kprint(" ------------------------\n");
@@ -26,7 +26,7 @@ void printPanicScreen() {
 
 void panic(int exception) {
     // Clear the screen
-    px_clear_tty;
+    px_clear_tty();
     // Print the panic cow
     printPanicScreen();
     // Get the exception code
@@ -46,7 +46,7 @@ void panic(int exception) {
 
 void panic(char* msg) {
     // Clear the screen
-    px_clear_tty;
+    px_clear_tty();
     // Print the panic cow
     printPanicScreen();
     // Print the message passed in on a new line
