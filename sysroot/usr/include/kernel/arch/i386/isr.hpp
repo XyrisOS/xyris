@@ -13,7 +13,7 @@
 #define PANIX_ISR_HPP
 
 #include <sys/sys.hpp>
-#include <arch/i386/idt.hpp>
+#include <arch/x86/idt.hpp>
 // @todo Update the IRQ definitions to make more sense, or document why they are these values
 #define IRQ0 32
 #define IRQ1 33

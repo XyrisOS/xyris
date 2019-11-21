@@ -13,7 +13,7 @@
 #define PANIX_GLOBAL_DESCRIPTOR_TABLE_HPP
 
 #include <sys/sys.hpp>
-#include <arch/i386/tss.hpp>
+#include <arch/x86/tss.hpp>
 
 /**
  * @brief Setup and install the GDT onto the system.

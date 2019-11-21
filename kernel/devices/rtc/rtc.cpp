@@ -10,7 +10,7 @@
  */
 
 #include <devices/rtc/rtc.hpp>
-#include <arch/i386/isr.hpp>
+#include <arch/x86/isr.hpp>
 
 void px_rtc_callback(registers_t regs);
 // Current values from RTC

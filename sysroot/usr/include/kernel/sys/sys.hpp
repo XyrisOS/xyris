@@ -13,7 +13,7 @@
 #define PANIX_SYS_HPP
 
 #include <sys/types.hpp>            // Every file needs to know the available data types
-#include <arch/i386/ports.hpp>      // We should basically always have access to port functions
+#include <arch/x86/ports.hpp>      // We should basically always have access to port functions
 #include <devices/tty/kprint.hpp>   // Printing is a pretty common need, so we'll include it
 
 // List of all exceptions and their associated english descriptions

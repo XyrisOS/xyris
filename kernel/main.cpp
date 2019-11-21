@@ -11,10 +11,10 @@
 // System library functions
 #include <sys/sys.hpp>
 // Intel i386 architecture
-#include <arch/i386/gdt.hpp>
-#include <arch/i386/idt.hpp>
-#include <arch/i386/isr.hpp>
-#include <arch/i386/timer.hpp>
+#include <arch/x86/gdt.hpp>
+#include <arch/x86/idt.hpp>
+#include <arch/x86/isr.hpp>
+#include <arch/x86/timer.hpp>
 // Generic devices
 #include <devices/smbios/smbios.hpp>
 #include <devices/kbd/kbd.hpp>
@@ -39,10 +39,11 @@ extern "C" void px_call_constructors() {
 
 /**
  * @brief This is the Panix kernel entry point. This function is called directly from the
- * assembly written in boot.S located in arch/i386/boot.S.
- * 
+ * assembly written in boot.S located in arch/x86/boot.S.
+ * @todo Figure out how to use the multiboot header passed in to set up virtual memory
+ * and other features.
  */
-extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multiboot_magic) {
+extern "C" void px_kernel_main(uint32_t multiboot_magic, const void* multiboot_structure, uintptr_t vmem) {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     kprintSetColor(Blue, Black);
@@ -62,7 +63,7 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     while (true) {
         // Keep the kernel alive.
     }
-    panic("0xDEADDEAD\nKernel terminated unexpectedly.");
+    panic("Yikes!\nKernel terminated unexpectedly.");
 }
 
 void px_kernel_print_splash() {

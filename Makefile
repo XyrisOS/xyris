@@ -45,7 +45,7 @@ KRNL_FLAGS = 							\
 	-I ${SYSROOT}/usr/include/kernel/	
 
 # Linker file
-LINKER = kernel/arch/i386/linker.ld
+LINKER = kernel/arch/x86/linker.ld
 
 # All objects
 OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) 	\
