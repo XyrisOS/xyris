@@ -43,8 +43,8 @@ enum px_print_level {
     Error           = 2,
     Success         = 3
 };
-
-inline uint16_t* videoMemory = (uint16_t*) 0xB8000;
+// Updated the address since we moved to a higher-half kernel mapping
+inline uint16_t* videoMemory = (uint16_t*) 0xC03FF000;
 /**
  * @brief Prints a debug message to the kernel display and
  * sets a tag and color according to the debug level.
