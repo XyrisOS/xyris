@@ -97,12 +97,14 @@ endif
 
 # Run bootable ISO
 run: dist/panix.iso
-	$(QEMU) 							\
-	-drive format=raw,file=$< 			\
-	-soundhw pcspk 						\
-	-rtc clock=host 					\
-	-vga std -m 256M 					\
-	-serial stdio
+	$(QEMU) 					\
+	-drive format=raw,file=$< 	\
+	-m 128M						\
+	-soundhw pcspk 				\
+	-rtc clock=host 			\
+	-vga std -m 256M 			\
+	-serial stdio				\
+	-d cpu_reset
 
 virtualbox:
 	VBoxManage startvm --putenv --debug "Panix"
