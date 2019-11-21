@@ -52,7 +52,9 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     // Install the GDT
     px_interrupts_disable();
     px_gdt_install() ? px_print_debug("Loaded GDT.", Success) : panic("Unable to install the GDT!");
-    // @todo Make success and fail conditions for all of these and fix SMBIOS
+    /**
+     * @todo Make success and fail conditions for all of these and fix SMBIOS
+     */
     char* smbios_addr = px_get_smbios_addr();
     px_isr_install();           // Interrupt Service Requests
     px_kbd_init();              // Keyboard

@@ -14,7 +14,9 @@
 
 #include <sys/sys.hpp>
 #include <arch/x86/idt.hpp>
-// @todo Update the IRQ definitions to make more sense, or document why they are these values
+/**
+ * @todo Update the IRQ definitions to make more sense, or document why they are these values
+ */
 #define IRQ0 32
 #define IRQ1 33
 #define IRQ2 34
@@ -32,7 +34,6 @@
 #define IRQ14 46
 #define IRQ15 47
 
-//@todo Document what's up with ISR and IRQ functions
 /* Interrupt Service Routines */
 extern "C" void isr0();
 extern "C" void isr1();
