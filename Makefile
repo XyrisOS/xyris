@@ -124,9 +124,18 @@ dist: dist/panix.kernel
 
 # Open the connection to qemu and load our kernel-object file with symbols
 debug: dist/panix.iso
-	@ echo Booting from floppy...
-	$(QEMU) -S -s -drive format=raw,file=$< -soundhw pcspk -rtc clock=host -vga std &
-	gdb dist/panix.kernel
+	# Start QEMU with debugger
+	$(QEMU) 					\
+	-S -s 						\
+	-drive format=raw,file=$< 	\
+	-m 128M						\
+	-soundhw pcspk 				\
+	-rtc clock=host 			\
+	-vga std -m 256M 			\
+	-serial stdio				\
+	-d cpu_reset				
+	# After this start the visual studio debugger
+	# gdb dist/panix.kernel
 
 docs:
 	@ echo Generating docs according to the Doxyfile...
