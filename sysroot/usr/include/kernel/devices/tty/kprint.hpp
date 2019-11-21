@@ -43,8 +43,8 @@ enum px_print_level {
     Error           = 2,
     Success         = 3
 };
-
-inline uint16_t* videoMemory = (uint16_t*) 0xB8000;
+// Updated the address since we moved to a higher-half kernel mapping
+inline uint16_t* videoMemory = (uint16_t*) 0xC03FF000;
 /**
  * @brief Prints a debug message to the kernel display and
  * sets a tag and color according to the debug level.
@@ -87,8 +87,8 @@ void kprintHex(uint8_t key);
  * @param fore Foreground color
  * @param back Background color
  */
-void kprintSetColor(px_tty_color fore, px_tty_color back);
+void px_tty_set_color(px_tty_color fore, px_tty_color back);
 
-void clearScreen();
+void px_clear_tty();
 
 #endif /* PANIX_KPRINT_HPP */

@@ -48,18 +48,18 @@ extern "C" void px_call_constructors() {
 extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_struct, uintptr_t vmem) {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
-    kprintSetColor(Blue, Black);
+    px_tty_set_color(Blue, Black);
     // Install the GDT
     px_interrupts_disable();
     px_gdt_install() ? px_print_debug("Loaded GDT.", Success) : panic("Unable to install the GDT!");
     /**
      * @todo Make success and fail conditions for all of these and fix SMBIOS
      */
-    char* smbios_addr = px_get_smbios_addr();
+    //char* smbios_addr = px_get_smbios_addr();
     px_isr_install();           // Interrupt Service Requests
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
-    px_timer_init(60);          // Programmable Interrupt Timer
+    px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
     px_interrupts_enable();     // Enable interrupts
     // Print some info to show we did things right
     px_rtc_print();
@@ -71,12 +71,12 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
 }
 
 void px_kernel_print_splash() {
-    clearScreen();
-    kprintSetColor(Yellow, Black);
+    px_clear_tty;
+    px_tty_set_color(Yellow, Black);
     kprint("Welcome to Panix\n");
     kprint("Developed by graduates and undergraduates of Cedarville University.\n");
     kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n\n");
-    kprintSetColor(LightCyan, Black);
+    px_tty_set_color(LightCyan, Black);
     kprint("Gloria in te domine, Gloria exultate\n\n");
-    kprintSetColor(White, Black);
+    px_tty_set_color(White, Black);
 }

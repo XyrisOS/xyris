@@ -97,7 +97,6 @@ void px_isr_install() {
 }
 
 extern "C" void px_isr_handler(registers_t r) {
-    /*
     kprint("Interrupt: ");
     char s[4];
     itoa(r.int_num, s);
@@ -105,7 +104,7 @@ extern "C" void px_isr_handler(registers_t r) {
     kprint("\n");
     kprint(px_exception_descriptions[r.int_num]);
     kprint("\n");
-    */
+    
     panic(r.int_num);
 }
 
