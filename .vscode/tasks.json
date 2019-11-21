@@ -7,7 +7,7 @@
             "label": "Launch QEMU",
             "type": "shell",
             "linux": {
-                "command": "make debug"
+                "command": "qemu-system-i386 -S -gdb tcp::1234 -boot d -cdrom ${workspaceRoot}/dist/panix.iso -m 512 &"
             }
         }
     ]
