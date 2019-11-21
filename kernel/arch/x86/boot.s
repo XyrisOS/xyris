@@ -71,6 +71,11 @@ boot_loader:
 
 3:
 	# Map VGA video memory to 0xC03FF000 as "present, writable".
+    # The VGA video memory buffer give to us by the BIOS is normally
+    # located at 0x000B8000, but since we're mapping everything to a
+    # higher half, we need to get our location provided by boot_page_table1
+    # then subtract off our higher end.
+    # @todo Figure out the math in boot.s because I have no clue
 	movl $(0x000B8000 | 0x003), boot_page_table1 - 0xC0000000 + 1023 * 4
 
 	# The page table is used at both page directory entry 0 (virtually from 0x0
