@@ -150,7 +150,7 @@ void px_tty_set_color(px_tty_color fore, px_tty_color back) {
     backColor = back;
 }
 
-void px_clear_tty {
+void px_clear_tty() {
     char str[] =  { ' ', '\0' };
     for (int y = 0; y < 25; y++) {
         for (int x = 0; x < 80; x++) {

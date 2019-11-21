@@ -89,6 +89,6 @@ void kprintHex(uint8_t key);
  */
 void px_tty_set_color(px_tty_color fore, px_tty_color back);
 
-void px_clear_tty;
+void px_clear_tty();
 
 #endif /* PANIX_KPRINT_HPP */
