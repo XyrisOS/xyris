@@ -55,7 +55,7 @@ typedef struct page_directory
   Sets up the environment, page directories etc and
   enables paging.
 **/
-void px_mem_paging_init();
+void px_paging_init();
 
 /**
   Causes the specified page directory to be loaded into the

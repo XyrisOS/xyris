@@ -10,6 +10,7 @@
  */
 // System library functions
 #include <sys/sys.hpp>
+#include <mem/paging.hpp>
 // Multiboot Structure
 #include <sys/multiboot.hpp>
 // Intel i386 architecture
@@ -60,10 +61,13 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
+    px_paging_init();
     px_interrupts_enable();     // Enable interrupts
     // Print some info to show we did things right
     px_rtc_print();
     px_print_debug("Done.", Success);
+    //uint32_t *ptr = (uint32_t*)0xA0000000;
+    //uint32_t do_page_fault = *ptr;
     while (true) {
         // Keep the kernel alive.
     }

@@ -190,5 +190,5 @@ void px_mem_page_fault(registers_t regs) {
    kprint(") at 0x");
    kprint_hex(faulting_address);
    kprint("\n");
-   panic("Page fault");
+   panic(regs);
 }
