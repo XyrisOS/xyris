@@ -54,6 +54,17 @@ inline uint16_t* videoMemory = (uint16_t*) 0xC03FF000;
  */
 void px_print_debug(char* msg, px_print_level lvl);
 /**
+ * @brief Prints a character to the screen ignoring the current
+ * cursor position and colors
+ *
+ * @param c The character to be printed
+ * @param x The x coordinate
+ * @param y The y coordinate
+ * @param fg The foreground color
+ * @param bg The background color
+ */
+void px_print_raw(char c, uint8_t x, uint8_t y, px_tty_color fg, px_tty_color bg);
+/**
  * @brief Prints a given string to the kernel display.
  * 
  * @param str Input string to be printed.
