@@ -61,7 +61,7 @@ void px_mem_paging_init();
   Causes the specified page directory to be loaded into the
   CR3 register.
 **/
-void px_mem_switch_page_directory(page_directory_t *new);
+void px_mem_switch_page_directory(page_directory_t* newPage);
 
 /**
   Retrieves a pointer to the page required.

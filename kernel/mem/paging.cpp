@@ -11,9 +11,20 @@
 
 #include <mem/paging.hpp>
 
+static void px_frame_set(uint32_t frame_addr);
+static void px_frame_clear(uint32_t frame_addr);
+static uint32_t px_frame_test(uint32_t frame_addr);
+static uint32_t px_frame_get_first();
+void px_paging_init();
+void px_frame_alloc(page_t *page, int is_kernel, int is_writeable);
+void px_frame_free(page_t *page);
+void px_page_switch_dir(page_directory_t *dir);
+void px_mem_page_fault(registers_t regs);
+page_t *px_mem_get_page(uint32_t address, int make, page_directory_t *dir);
+
 // Kernel page directories
-page_directory_t kernel_directory;
-page_directory_t current_directory;
+page_directory_t* kernel_directory;
+page_directory_t* current_directory;
 // A bitset of frames - used or free.
 uint32_t *frames;
 uint32_t nframes;
@@ -22,11 +33,11 @@ uint32_t nframes;
 extern uint32_t placement_address;
 
 // Macros used in the bitset algorithms.
-#define INDEX_FROM_BIT(a) (a / (8 * 4))
+#define INDEX_FROM_BIT(a)  (a / (8 * 4))
 #define OFFSET_FROM_BIT(a) (a % (8 * 4))
 
 // Static function to set a bit in the frames bitset
-static void set_frame(uint32_t frame_addr) {
+static void px_frame_set(uint32_t frame_addr) {
   uint32_t frame = frame_addr / 0x1000;
   uint32_t idx = INDEX_FROM_BIT(frame);
   uint32_t off = OFFSET_FROM_BIT(frame);
@@ -34,7 +45,7 @@ static void set_frame(uint32_t frame_addr) {
 }
 
 // Static function to clear a bit in the frames bitset
-static void clear_frame(uint32_t frame_addr) {
+static void px_frame_clear(uint32_t frame_addr) {
   uint32_t frame = frame_addr / 0x1000;
   uint32_t idx = INDEX_FROM_BIT(frame);
   uint32_t off = OFFSET_FROM_BIT(frame);
@@ -42,7 +53,7 @@ static void clear_frame(uint32_t frame_addr) {
 }
 
 // Static function to test if a bit is set.
-static uint32_t test_frame(uint32_t frame_addr) {
+static uint32_t px_frame_test(uint32_t frame_addr) {
   uint32_t frame = frame_addr / 0x1000;
   uint32_t idx = INDEX_FROM_BIT(frame);
   uint32_t off = OFFSET_FROM_BIT(frame);
@@ -50,7 +61,7 @@ static uint32_t test_frame(uint32_t frame_addr) {
 }
 
 // Static function to find the first free frame.
-static uint32_t first_frame() {
+static uint32_t px_frame_get_first() {
   uint32_t i, j;
     for (i = 0; i < INDEX_FROM_BIT(nframes); i++) {
         // nothing free, exit early.
@@ -66,36 +77,7 @@ static uint32_t first_frame() {
     }
 }
 
-// Function to allocate a frame.
-void px_alloc_frame(page_t *page, int is_kernel, int is_writeable) {
-   if (page->frame != 0) {
-       return; // Frame was already allocated, return straight away.
-   } else {
-       uint32_t idx = first_frame(); // idx is now the index of the first free frame.
-       if (idx == (uint32_t) - 1) {
-           // PANIC is just a macro that prints a message to the screen then hits an infinite loop.
-           panic("No free frames!");
-       }
-       set_frame(idx*0x1000);               // this frame is now ours!
-       page->present = 1;                   // Mark it as present.
-       page->rw = (is_writeable) ? 1 : 0;   // Should the page be writeable?
-       page->user = (is_kernel) ? 0 : 1;    // Should the page be user-mode?
-       page->frame = idx;
-   }
-}
-
-// Function to deallocate a frame.
-void free_frame(page_t *page) {
-   uint32_t frame;
-   if (!(frame=page->frame)) {
-       return; // The given page didn't actually have an allocated frame!
-   } else {
-       clear_frame(frame); // Frame is now free again.
-       page->frame = 0x0; // Page now doesn't have a frame.
-   }
-}
-
-void initialise_paging() {
+void px_paging_init() {
    // The size of physical memory. For the moment we
    // assume it is 16MB big.
    uint32_t mem_end_page = 0x1000000;
@@ -119,18 +101,46 @@ void initialise_paging() {
    int i = 0;
    while (i < placement_address) {
        // Kernel code is readable but not writeable from userspace.
-       px_alloc_frame( get_page(i, 1, kernel_directory), 0, 0);
+       px_frame_alloc(px_mem_get_page(i, 1, kernel_directory), 0, 0);
        i += 0x1000;
    }
    // Before we enable paging, we must register our page fault handler.
-   px_register_interrupt_handler(14, page_fault);
+   px_register_interrupt_handler(IRQ14, px_mem_page_fault);
 
    // Now, enable paging!
    px_page_switch_dir(kernel_directory);
 }
 
-void px_page_switch_dir(page_directory_t *dir)
-{
+// Function to allocate a frame.
+void px_frame_alloc(page_t *page, int is_kernel, int is_writeable) {
+   if (page->frame != 0) {
+       return; // Frame was already allocated, return straight away.
+   } else {
+       uint32_t idx = px_frame_get_first(); // idx is now the index of the first free frame.
+       if (idx == (uint32_t) - 1) {
+           // PANIC is just a macro that prints a message to the screen then hits an infinite loop.
+           panic("No free frames!");
+       }
+       px_frame_set(idx*0x1000);               // this frame is now ours!
+       page->present = 1;                   // Mark it as present.
+       page->rw = (is_writeable) ? 1 : 0;   // Should the page be writeable?
+       page->user = (is_kernel) ? 0 : 1;    // Should the page be user-mode?
+       page->frame = idx;
+   }
+}
+
+// Function to deallocate a frame.
+void px_frame_free(page_t *page) {
+   uint32_t frame;
+   if (!(frame=page->frame)) {
+       return; // The given page didn't actually have an allocated frame!
+   } else {
+       px_frame_clear(frame); // Frame is now free again.
+       page->frame = 0x0; // Page now doesn't have a frame.
+   }
+}
+
+void px_page_switch_dir(page_directory_t *dir) {
    current_directory = dir;
    asm volatile("mov %0, %%cr3":: "r"(&dir->tablesPhysical));
    uint32_t cr0;
@@ -139,7 +149,7 @@ void px_page_switch_dir(page_directory_t *dir)
    asm volatile("mov %0, %%cr0":: "r"(cr0));
 }
 
-page_t *get_page(uint32_t address, int make, page_directory_t *dir) {
+page_t *px_mem_get_page(uint32_t address, int make, page_directory_t *dir) {
     // Turn the address into an index.
     address /= 0x1000;
     // Find the page table containing this address.
@@ -158,7 +168,7 @@ page_t *get_page(uint32_t address, int make, page_directory_t *dir) {
     }
 }
 
-void page_fault(registers_t regs) {
+void px_mem_page_fault(registers_t regs) {
    // A page fault has occurred.
    // The faulting address is stored in the CR2 register.
    uint32_t faulting_address;
