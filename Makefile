@@ -94,7 +94,7 @@ obj_directories:
 run: dist/panix.iso
 	$(QEMU) 					\
 	-drive format=raw,file=$< 	\
-	-m 128M						\
+	-m 4G						\
 	-soundhw pcspk 				\
 	-rtc clock=host 			\
 	-vga std -m 256M 			\
@@ -110,7 +110,7 @@ debug: dist/panix.iso
 	$(QEMU) 					\
 	-S -s 						\
 	-drive format=raw,file=$< 	\
-	-m 128M						\
+	-m 4G						\
 	-soundhw pcspk 				\
 	-rtc clock=host 			\
 	-vga std 					\

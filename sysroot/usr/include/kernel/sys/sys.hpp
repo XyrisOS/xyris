@@ -15,6 +15,7 @@
 #include <sys/types.hpp>            // Every file needs to know the available data types
 #include <arch/x86/ports.hpp>      // We should basically always have access to port functions
 #include <devices/tty/kprint.hpp>   // Printing is a pretty common need, so we'll include it
+#include <mem/alloc.hpp>
 
 // List of all exceptions and their associated english descriptions
 extern const char* px_exception_descriptions[];
