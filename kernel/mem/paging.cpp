@@ -10,11 +10,15 @@
  */
 
 #include <mem/paging.hpp>
+
+// Kernel page directories
+page_directory_t kernel_directory;
+page_directory_t current_directory;
 // A bitset of frames - used or free.
 uint32_t *frames;
 uint32_t nframes;
 
-// Defined in kheap.c
+// Defined in alloc.cpp
 extern uint32_t placement_address;
 
 // Macros used in the bitset algorithms.
@@ -63,7 +67,7 @@ static uint32_t first_frame() {
 }
 
 // Function to allocate a frame.
-void alloc_frame(page_t *page, int is_kernel, int is_writeable) {
+void px_alloc_frame(page_t *page, int is_kernel, int is_writeable) {
    if (page->frame != 0) {
        return; // Frame was already allocated, return straight away.
    } else {
@@ -91,8 +95,7 @@ void free_frame(page_t *page) {
    }
 }
 
-void initialise_paging()
-{
+void initialise_paging() {
    // The size of physical memory. For the moment we
    // assume it is 16MB big.
    uint32_t mem_end_page = 0x1000000;
@@ -116,17 +119,17 @@ void initialise_paging()
    int i = 0;
    while (i < placement_address) {
        // Kernel code is readable but not writeable from userspace.
-       alloc_frame( get_page(i, 1, kernel_directory), 0, 0);
+       px_alloc_frame( get_page(i, 1, kernel_directory), 0, 0);
        i += 0x1000;
    }
    // Before we enable paging, we must register our page fault handler.
    px_register_interrupt_handler(14, page_fault);
 
    // Now, enable paging!
-   switch_page_directory(kernel_directory);
+   px_page_switch_dir(kernel_directory);
 }
 
-void switch_page_directory(page_directory_t *dir)
+void px_page_switch_dir(page_directory_t *dir)
 {
    current_directory = dir;
    asm volatile("mov %0, %%cr3":: "r"(&dir->tablesPhysical));

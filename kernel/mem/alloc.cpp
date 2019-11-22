@@ -11,6 +11,8 @@
 
 #include <mem/alloc.hpp>
 
+uint32_t placement_address;
+
 uint32_t px_kmalloc(uint32_t sz, int align, uint32_t *phys) {
     // If the address is not already page-aligned
     if (align == 1 && (placement_address & 0xFFFFF000)) {

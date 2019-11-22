@@ -137,7 +137,7 @@ void kprintAtPosition(const char* str, uint8_t positionX, uint8_t positionY, boo
     }
 }
 
-void kprintHex(uint8_t key) {
+void kprint_hex(uint8_t key) {
     char* foo = "00";
     char* hex = "0123456789ABCDEF";
     foo[0] = hex[(key >> 4) & 0xF];

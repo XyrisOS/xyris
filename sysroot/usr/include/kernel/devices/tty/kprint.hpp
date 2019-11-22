@@ -79,7 +79,7 @@ void kprintAtPosition(const char* str, uint8_t x, uint8_t y, bool resetCursor = 
  * 
  * @param key Hexidecimal value to print.
  */
-void kprintHex(uint8_t key);
+void kprint_hex(uint8_t key);
 
 /**
  * @brief Set the color of the text when the next kprint is called.
