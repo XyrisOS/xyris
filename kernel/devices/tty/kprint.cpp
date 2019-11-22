@@ -8,38 +8,38 @@ uint8_t foreColor = White;
 void px_print_debug(char* msg, px_print_level lvl) {
     // Reset the color to the default and print the opening bracket
     px_tty_set_color(White, Black);
-    kprint("[");
+    px_kprint("[");
     // Change the color and print the tag according to the level
     switch (lvl) {
         case Info:
             px_tty_set_color(LightGrey, Black);
-            kprint(" INFO ");
+            px_kprint(" INFO ");
             break;
         case Warning:
             px_tty_set_color(Yellow, Black);
-            kprint(" WARN ");
+            px_kprint(" WARN ");
             break;
         case Error:
             px_tty_set_color(Red, Black);
-            kprint("FAILED");
+            px_kprint("FAILED");
             break;
         case Success:
             px_tty_set_color(LightGreen, Black);
-            kprint("  OK  ");
+            px_kprint("  OK  ");
             break;
         default:
             px_tty_set_color(Magenta, Black);
-            kprint("UNKNOWN");
+            px_kprint("UNKNOWN");
             break;
     }
     // Reset the color to the default and print the closing bracket and message
     px_tty_set_color(White, Black);
-    kprint("] ");
-    kprint(msg);
-    kprint("\n");
+    px_kprint("] ");
+    px_kprint(msg);
+    px_kprint("\n");
 }
 
-void kprint(const char* str) {
+void px_kprint(const char* str) {
     volatile uint16_t* where;
     uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
     // For each character in the string
@@ -84,11 +84,7 @@ void kprint(const char* str) {
     }
 }
 
-void putchar(char character) {
-    kprint(&character);
-}
-
-void kprintAtPosition(const char* str, uint8_t positionX, uint8_t positionY, bool resetCursor) {
+void px_kprintAtPosition(const char* str, uint8_t positionX, uint8_t positionY, bool resetCursor) {
     volatile uint16_t* where;
     uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
     for(int i = 0; str[i] != '\0'; ++i) {
@@ -137,12 +133,18 @@ void kprintAtPosition(const char* str, uint8_t positionX, uint8_t positionY, boo
     }
 }
 
-void kprintHex(uint8_t key) {
+void px_kprint_hex(uint8_t key) {
     char* foo = "00";
     char* hex = "0123456789ABCDEF";
     foo[0] = hex[(key >> 4) & 0xF];
     foo[1] = hex[key & 0xF];
-    kprint(foo);
+    px_kprint(foo);
+}
+
+void px_kprint_color(char* str, px_tty_color color) {
+    px_tty_set_color(color, (px_tty_color)backColor);
+    px_kprint(str);
+    px_tty_set_color((px_tty_color)foreColor, (px_tty_color)backColor);
 }
 
 void px_tty_set_color(px_tty_color fore, px_tty_color back) {
@@ -154,7 +156,11 @@ void px_clear_tty() {
     char str[] =  { ' ', '\0' };
     for (int y = 0; y < 25; y++) {
         for (int x = 0; x < 80; x++) {
-            kprintAtPosition(str, x, y, true);
+            px_kprintAtPosition(str, x, y, true);
         }
     }
+}
+
+void putchar(char character) {
+    px_kprint(&character);
 }
