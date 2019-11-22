@@ -39,6 +39,13 @@ void px_print_debug(char* msg, px_print_level lvl) {
     kprint("\n");
 }
 
+void px_print_raw(char c, uint8_t x, uint8_t y, px_tty_color fg, px_tty_color bg) {
+    volatile uint16_t* where;
+    uint16_t attrib = (bg << 4) | (fg & 0x0F);
+    where = videoMemory + (y * 80 + x);
+    *where = c | (attrib << 8);
+}
+
 void kprint(const char* str) {
     volatile uint16_t* where;
     uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
