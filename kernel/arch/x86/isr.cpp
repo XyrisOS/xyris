@@ -96,15 +96,7 @@ void px_isr_install() {
     px_load_idt();
 }
 
-extern "C" void px_isr_handler(registers_t r) {
-    px_kprint("Interrupt: ");
-    char s[4];
-    itoa(r.int_num, s);
-    px_kprint(s);
-    px_kprint("\n");
-    px_kprint(px_exception_descriptions[r.int_num]);
-    px_kprint("\n");
-    
+extern "C" void px_isr_handler(registers_t r) {    
     panic(r, __FILE__, __LINE__);
 }
 

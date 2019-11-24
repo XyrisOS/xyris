@@ -12,6 +12,7 @@
 #include <sys/sys.hpp>
 
 void panic_print_file(const char *file, uint32_t line);
+void panic_print_register(registers_t regs);
 
 void printPanicScreen() {
     px_tty_set_color(Black, White);
@@ -64,6 +65,21 @@ void panic(registers_t regs, const char *file, uint32_t line) {
     px_clear_tty();
     // Print the panic cow
     printPanicScreen();
+
+    px_kprint("Exception: ");
+    char s[11];
+    itoa(regs.int_num, s);
+    px_kprint(s);
+    px_kprint(" ( ");
+    px_kprint(px_exception_descriptions[regs.int_num]);
+    px_kprint(" )");
+    if (regs.err_code) {
+        itoa(regs.err_code, s);
+        px_kprint(s);
+    }
+    px_kprint("\n");
+    panic_print_register(regs);
+
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
     uint32_t faulting_address;
@@ -98,5 +114,39 @@ void panic_print_file(const char *file, uint32_t line) {
     itoa(line, lineStr);
     px_kprint("Line: ");
     px_kprint(lineStr);
+    px_kprint("\n");
+}
+
+void panic_print_register(registers_t regs) {
+    px_kprint("DS: ");
+    px_kprint_hex(regs.ds);
+    px_kprint("\nEDI: ");
+    px_kprint_hex(regs.edi);
+    px_kprint(" ESI: ");
+    px_kprint_hex(regs.esi);
+    px_kprint(" EBP: ");
+    px_kprint_hex(regs.ebp);
+    px_kprint(" ESP: ");
+    px_kprint_hex(regs.esp);
+    px_kprint(" EBX: ");
+    px_kprint_hex(regs.ebx);
+    px_kprint(" EDX: ");
+    px_kprint_hex(regs.edx);
+    px_kprint(" ECX: ");
+    px_kprint_hex(regs.ecx);
+    px_kprint(" EAX: ");
+    px_kprint_hex(regs.eax);
+    px_kprint("\nERR: ");
+    px_kprint_hex(regs.err_code);
+    px_kprint("\nEIP: ");
+    px_kprint_hex(regs.eip);
+    px_kprint("\nCS: ");
+    px_kprint_hex(regs.cs);
+    px_kprint("\nEFLAG: ");
+    px_kprint_hex(regs.eflags);
+    px_kprint("\nUSER: ");
+    px_kprint_hex(regs.useresp);
+    px_kprint("\nSS: ");
+    px_kprint_hex(regs.ss);
     px_kprint("\n");
 }
