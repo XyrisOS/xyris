@@ -82,4 +82,6 @@ void panic(registers_t regs) {
     px_kprint(") at 0x");
     px_kprint_hex(faulting_address);
     px_kprint("\n");
+    // Halt the CPU
+    asm("hlt");
 }
