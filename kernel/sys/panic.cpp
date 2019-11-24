@@ -14,14 +14,14 @@
 void printPanicScreen() {
     px_tty_set_color(Black, White);
     px_clear_tty();
-    kprint(" ________________________\n");
-    kprint("< OH NO! Panix panicked! >\n");
-    kprint(" ------------------------\n");
-    kprint("        \\   ^__^\n");
-    kprint("         \\  (XX)\\_______\n");
-    kprint("            (__)\\       )\\/\\\n");
-    kprint("                ||----w |\n");
-    kprint("                ||     ||\n");
+    px_kprint(" ________________________\n");
+    px_kprint("< OH NO! Panix panicked! >\n");
+    px_kprint(" ------------------------\n");
+    px_kprint("        \\   ^__^\n");
+    px_kprint("         \\  (XX)\\_______\n");
+    px_kprint("            (__)\\       )\\/\\\n");
+    px_kprint("                ||----w |\n");
+    px_kprint("                ||     ||\n");
 }
 
 void panic(int exception) {
@@ -36,10 +36,10 @@ void panic(int exception) {
     panicCode[23] = hex[exception & 0xF];
     // Print the code and associated error name
     px_tty_set_color(Red, White);
-    kprint("\nEXCEPTION CAUGHT IN KERNEL MODE!\n");
+    px_kprint("\nEXCEPTION CAUGHT IN KERNEL MODE!\n");
     px_tty_set_color(Black, White);
-    kprint(panicCode);
-    kprint(px_exception_descriptions[exception]);
+    px_kprint(panicCode);
+    px_kprint(px_exception_descriptions[exception]);
     // Halt the CPU
     asm("hlt");
 }
@@ -50,8 +50,8 @@ void panic(char* msg) {
     // Print the panic cow
     printPanicScreen();
     // Print the message passed in on a new line
-    kprint("\n");
-    kprint(msg);
+    px_kprint("\n");
+    px_kprint(msg);
     // Halt the CPU
     asm("hlt");
 }
@@ -74,12 +74,12 @@ void panic(registers_t regs) {
     int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
  
     // Output an error message.
-    kprint("Page fault! ( ");
-    if (present) { kprint("present "); }
-    if (rw) { kprint("read-only "); }
-    if (us) { kprint("user-mode "); }
-    if (reserved) { kprint("reserved "); }
-    kprint(") at 0x");
-    kprint_hex(faulting_address);
-    kprint("\n");
+    px_kprint("Page fault! ( ");
+    if (present) { px_kprint("present "); }
+    if (rw) { px_kprint("read-only "); }
+    if (us) { px_kprint("user-mode "); }
+    if (reserved) { px_kprint("reserved "); }
+    px_kprint(") at 0x");
+    px_kprint_hex(faulting_address);
+    px_kprint("\n");
 }

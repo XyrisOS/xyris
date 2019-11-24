@@ -61,7 +61,7 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
-    px_paging_init();
+    // px_paging_init();
     px_interrupts_enable();     // Enable interrupts
     // Print some info to show we did things right
     px_rtc_print();
@@ -77,10 +77,10 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
 void px_kernel_print_splash() {
     px_clear_tty();
     px_tty_set_color(Yellow, Black);
-    kprint("Welcome to Panix\n");
-    kprint("Developed by graduates and undergraduates of Cedarville University.\n");
-    kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n\n");
+    px_kprint("Welcome to Panix\n");
+    px_kprint("Developed by graduates and undergraduates of Cedarville University.\n");
+    px_kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n\n");
     px_tty_set_color(LightCyan, Black);
-    kprint("Gloria in te domine, Gloria exultate\n\n");
+    px_kprint("Gloria in te domine, Gloria exultate\n\n");
     px_tty_set_color(White, Black);
 }
