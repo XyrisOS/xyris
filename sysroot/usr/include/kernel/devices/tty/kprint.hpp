@@ -86,12 +86,18 @@ void putchar(char character);
  */
 void px_kprint_pos(const char* str, uint8_t x, uint8_t y, bool resetCursor = false);
 /**
+ * @brief Prints out an integer in the given base
+ * 
+ * @param value Value to be printed
+ * @param base Base number (decimal, octal, hex, etc.)
+ */
+void px_kprint_base(int value, int base);
+/**
  * @brief Prints a hexidecimal address to the kernel console.
  * 
  * @param key Hexidecimal value to print.
  */
-void px_kprint_hex(uint8_t key);
-
+void px_kprint_hex(int key);
 /**
  * @brief Set the color of the text when the next px_kprint is called.
  * 

@@ -144,7 +144,15 @@ void px_kprint_pos(const char* str, uint8_t positionX, uint8_t positionY, bool r
     }
 }
 
-void px_kprint_hex(uint8_t key) {
+void px_kprint_base(int value, int base) {
+    char* digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+    if ((value / base) != 0 ) {
+        px_kprint_base(value / base, base);
+    }
+    putchar(digits[ value % base ]);
+}
+
+void px_kprint_hex(int key) {
     char* foo = "00";
     char* hex = "0123456789ABCDEF";
     foo[0] = hex[(key >> 4) & 0xF];

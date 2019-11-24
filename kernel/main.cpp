@@ -24,7 +24,7 @@
 #include <devices/rtc/rtc.hpp>
 
 void px_kernel_print_splash();
-
+extern uint32_t placement_address;
 /**
  * @brief Global constructor called from the boot assembly
  * OSDev Wiki takes a different approach to this and does
@@ -61,8 +61,17 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
-    // px_paging_init();
-    px_interrupts_enable();     // Enable interrupts
+    // Now that we've initialized our core kernel necessities
+    // we can initalize paging.
+    // Get our multiboot header info for paging first though.
+    // Reference: https://github.com/dipolukarov/osdev/blob/master/main.c
+    uint32_t initrd_location = *((uint32_t*)mb_struct->mods_addr);
+	uint32_t initrd_end	= *(uint32_t*)(mb_struct->mods_addr+4);
+	// Dont't trample our module with placement accesses, please!
+	placement_address = initrd_end;
+    px_paging_init();
+    // Enable interrupts now that we're out of a critical area
+    px_interrupts_enable();
     // Print some info to show we did things right
     px_rtc_print();
     px_print_debug("Done.", Success);

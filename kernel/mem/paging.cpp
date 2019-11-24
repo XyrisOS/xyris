@@ -25,8 +25,8 @@ void px_mem_page_fault(registers_t regs);
 page_t *px_mem_get_page(uint32_t address, int make, page_directory_t *dir);
 
 // Kernel page directories
-page_directory_t* kernel_directory;
-page_directory_t* current_directory;
+page_directory_t* kernel_directory = 0;
+page_directory_t* current_directory = 0;
 // A bitset of frames - used or free.
 uint32_t *frames;
 uint32_t nframes;
