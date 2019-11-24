@@ -8,6 +8,8 @@
  * @copyright Copyright Keeton Feavel et al (c) 2019
  *
  */
+// TODO: Reference Toarous for help with paging
+// https://github.com/klange/toaruos/blob/master/kernel/mem/mem.c
 
 #include <mem/paging.hpp>
 
@@ -76,6 +78,10 @@ static uint32_t px_frame_get_first() {
             }
         }
     }
+    // Out of usable memory
+    px_print_debug("System out of usable memory. Likely overwrote page frames.", Error);
+    // TODO: Panic when out of usable memory?
+    return -1;
 }
 
 void px_paging_init() {
