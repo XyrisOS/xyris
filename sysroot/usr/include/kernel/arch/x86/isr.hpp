@@ -14,6 +14,8 @@
 
 #include <sys/sys.hpp>
 #include <arch/x86/idt.hpp>
+#include <devices/tty/indicator.hpp>
+
 /**
  * @todo Update the IRQ definitions to make more sense, or document why they are these values
  */
