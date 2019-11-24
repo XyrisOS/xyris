@@ -105,7 +105,7 @@ extern "C" void px_isr_handler(registers_t r) {
     px_kprint(px_exception_descriptions[r.int_num]);
     px_kprint("\n");
     
-    panic(r);
+    panic(r, __FILE__, __LINE__);
 }
 
 extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler) {

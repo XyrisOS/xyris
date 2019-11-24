@@ -52,7 +52,7 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     px_tty_set_color(Blue, Black);
     // Install the GDT
     px_interrupts_disable();
-    px_gdt_install() ? px_print_debug("Loaded GDT.", Success) : panic("Unable to install the GDT!");
+    px_gdt_install() ? px_print_debug("Loaded GDT.", Success) : panic("Unable to install the GDT!", __FILE__, __LINE__);
     /**
      * @todo Make success and fail conditions for all of these and fix SMBIOS
      */
@@ -80,7 +80,7 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     while (true) {
         // Keep the kernel alive.
     }
-    panic("Yikes!\nKernel terminated unexpectedly.");
+    panic("Yikes!\nKernel terminated unexpectedly.", __FILE__, __LINE__);
 }
 
 void px_kernel_print_splash() {

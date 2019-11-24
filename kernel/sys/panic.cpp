@@ -11,6 +11,8 @@
  */
 #include <sys/sys.hpp>
 
+void panic_print_file(const char *file, uint32_t line);
+
 void printPanicScreen() {
     px_tty_set_color(Black, White);
     px_clear_tty();
@@ -44,7 +46,7 @@ void panic(int exception) {
     asm("hlt");
 }
 
-void panic(char* msg) {
+void panic(char* msg, const char *file, uint32_t line) {
     // Clear the screen
     px_clear_tty();
     // Print the panic cow
@@ -52,11 +54,12 @@ void panic(char* msg) {
     // Print the message passed in on a new line
     px_kprint("\n");
     px_kprint(msg);
+    panic_print_file(file, line);
     // Halt the CPU
     asm("hlt");
 }
 
-void panic(registers_t regs) {
+void panic(registers_t regs, const char *file, uint32_t line) {
     // Clear the screen
     px_clear_tty();
     // Print the panic cow
@@ -74,7 +77,7 @@ void panic(registers_t regs) {
     int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
  
     // Output an error message.
-    px_kprint("Page fault! ( ");
+    px_kprint("Page fault ( ");
     if (present) { px_kprint("present "); }
     if (rw) { px_kprint("read-only "); }
     if (us) { px_kprint("user-mode "); }
@@ -82,6 +85,18 @@ void panic(registers_t regs) {
     px_kprint(") at 0x");
     px_kprint_hex(faulting_address);
     px_kprint("\n");
+    panic_print_file(file, line);
     // Halt the CPU
     asm("hlt");
+}
+
+void panic_print_file(const char *file, uint32_t line) {
+    char lineStr[9];    // 8 digits + 1 terminator
+    px_kprint("File: ");
+    px_kprint(file);
+    px_kprint("\n");
+    itoa(line, lineStr);
+    px_kprint("Line: ");
+    px_kprint(lineStr);
+    px_kprint("\n");
 }

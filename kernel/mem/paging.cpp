@@ -126,7 +126,7 @@ void px_frame_alloc(page_t *page, int is_kernel, int is_writeable) {
        uint32_t idx = px_frame_get_first(); // idx is now the index of the first free frame.
        if (idx == (uint32_t) - 1) {
            // PANIC is just a macro that prints a message to the screen then hits an infinite loop.
-           panic("No free frames!");
+           panic("No free frames!", __FILE__, __LINE__);
        }
        px_frame_set(idx*0x1000);               // this frame is now ours!
        page->present = 1;                   // Mark it as present.
@@ -176,5 +176,5 @@ page_t *px_mem_get_page(uint32_t address, int make, page_directory_t *dir) {
 }
 
 void px_mem_page_fault(registers_t regs) {
-   panic(regs);
+   panic(regs, __FILE__, __LINE__);
 }
