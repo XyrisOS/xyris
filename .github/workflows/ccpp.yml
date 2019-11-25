@@ -1,0 +1,15 @@
+name: Make and Verify on Push
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: make
+      run: make
+    - name: make verify
+      run: make verify
