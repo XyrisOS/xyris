@@ -2,8 +2,8 @@
 
 uint8_t ttyCoordsX = 0;
 uint8_t ttyCoordsY = 0;
-uint8_t backColor = Black;
-uint8_t foreColor = White;
+px_tty_color backColor = Black;
+px_tty_color foreColor = White;
 
 void px_print_debug(char* msg, px_print_level lvl) {
     // Reset the color to the default and print the opening bracket
@@ -163,9 +163,11 @@ void px_kprint_hex(int key) {
 }
 
 void px_kprint_color(char* str, px_tty_color color) {
-    px_tty_set_color(color, (px_tty_color)backColor);
+    px_tty_color oldBack = backColor;
+    px_tty_color oldFore = foreColor;
+    px_tty_set_color(color, backColor);
     px_kprint(str);
-    px_tty_set_color((px_tty_color)foreColor, (px_tty_color)backColor);
+    px_tty_set_color(oldFore, oldBack);
 }
 
 void px_tty_set_color(px_tty_color fore, px_tty_color back) {

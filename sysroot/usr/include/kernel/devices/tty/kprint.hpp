@@ -99,6 +99,13 @@ void px_kprint_base(int value, int base);
  */
 void px_kprint_hex(int key);
 /**
+ * @brief Prints out a string in a specified color
+ * 
+ * @param str Input string to be printed
+ * @param color Text color
+ */
+void px_kprint_color(char* str, px_tty_color color);
+/**
  * @brief Set the color of the text when the next px_kprint is called.
  * 
  * @param fore Foreground color

@@ -118,35 +118,35 @@ void panic_print_file(const char *file, uint32_t line) {
 }
 
 void panic_print_register(registers_t regs) {
-    px_kprint("DS: ");
+    px_kprint_color(" DS: ", Red);
     px_kprint_hex(regs.ds);
-    px_kprint("\nEDI: ");
+    px_kprint_color("\nEDI: ", Red);
     px_kprint_hex(regs.edi);
-    px_kprint(" ESI: ");
+    px_kprint_color(" ESI: ", Red);
     px_kprint_hex(regs.esi);
-    px_kprint(" EBP: ");
+    px_kprint_color(" EBP: ", Red);
     px_kprint_hex(regs.ebp);
-    px_kprint(" ESP: ");
+    px_kprint_color(" ESP: ", Red);
     px_kprint_hex(regs.esp);
-    px_kprint("\nEBX: ");
+    px_kprint_color("\nEBX: ", Red);
     px_kprint_hex(regs.ebx);
-    px_kprint(" EDX: ");
+    px_kprint_color(" EDX: ", Red);
     px_kprint_hex(regs.edx);
-    px_kprint(" ECX: ");
+    px_kprint_color(" ECX: ", Red);
     px_kprint_hex(regs.ecx);
-    px_kprint(" EAX: ");
+    px_kprint_color(" EAX: ", Red);
     px_kprint_hex(regs.eax);
-    px_kprint("\nERR: ");
+    px_kprint_color("\nERR: ", Red);
     px_kprint_hex(regs.err_code);
-    px_kprint(" EIP: ");
+    px_kprint_color(" EIP: ", Red);
     px_kprint_hex(regs.eip);
-    px_kprint("  CS: ");
+    px_kprint_color("  CS: ", Red);
     px_kprint_hex(regs.cs);
-    px_kprint("\nFLG: ");
+    px_kprint_color("\nFLG: ", Red);
     px_kprint_hex(regs.eflags);
-    px_kprint(" USR: ");
+    px_kprint_color(" USR: ", Red);
     px_kprint_hex(regs.useresp);
-    px_kprint("  SS: ");
+    px_kprint_color("  SS: ", Red);
     px_kprint_hex(regs.ss);
     px_kprint("\n\n");
 }
