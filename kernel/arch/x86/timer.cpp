@@ -47,3 +47,12 @@ void px_timer_print() {
  *  2. function pointer to register as a callback
  * 
  */
+void sleep(uint32_t ms) {
+    uint32_t start = tick;
+    uint32_t final = start + ms;
+    // Waste CPU cycles like a slob
+    // TODO: Sleep function needs to not waste cycles
+    while (tick != final);
+    // Return now that we've waited long enough
+    return;
+}
