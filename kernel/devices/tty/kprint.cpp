@@ -153,10 +153,12 @@ void px_kprint_base(int value, int base) {
 }
 
 void px_kprint_hex(int key) {
-    char* foo = "00";
-    char* hex = "0123456789ABCDEF";
-    foo[0] = hex[(key >> 4) & 0xF];
-    foo[1] = hex[key & 0xF];
+    char* foo = "00000000";
+    static const char* hex = "0123456789ABCDEF";
+    size_t len = sizeof(key);
+    for (size_t i = 0, j = (len - 1) * 4; i < len; ++i, j -= 4) {
+        foo[i] = hex[(key >> j) & 0x0f];
+    }
     px_kprint(foo);
 }
 

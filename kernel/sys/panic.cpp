@@ -128,7 +128,7 @@ void panic_print_register(registers_t regs) {
     px_kprint_hex(regs.ebp);
     px_kprint(" ESP: ");
     px_kprint_hex(regs.esp);
-    px_kprint(" EBX: ");
+    px_kprint("\nEBX: ");
     px_kprint_hex(regs.ebx);
     px_kprint(" EDX: ");
     px_kprint_hex(regs.edx);
@@ -138,15 +138,15 @@ void panic_print_register(registers_t regs) {
     px_kprint_hex(regs.eax);
     px_kprint("\nERR: ");
     px_kprint_hex(regs.err_code);
-    px_kprint("\nEIP: ");
+    px_kprint(" EIP: ");
     px_kprint_hex(regs.eip);
-    px_kprint("\nCS: ");
+    px_kprint("  CS: ");
     px_kprint_hex(regs.cs);
-    px_kprint("\nEFLAG: ");
+    px_kprint("\nFLG: ");
     px_kprint_hex(regs.eflags);
-    px_kprint("\nUSER: ");
+    px_kprint(" USR: ");
     px_kprint_hex(regs.useresp);
-    px_kprint("\nSS: ");
+    px_kprint("  SS: ");
     px_kprint_hex(regs.ss);
-    px_kprint("\n");
+    px_kprint("\n\n");
 }
