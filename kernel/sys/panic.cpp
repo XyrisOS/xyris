@@ -72,12 +72,13 @@ void panic(registers_t regs, const char *file, uint32_t line) {
     px_kprint(s);
     px_kprint(" ( ");
     px_kprint(px_exception_descriptions[regs.int_num]);
-    px_kprint(" )");
+    px_kprint(" ) ");
     if (regs.err_code) {
+        px_kprint("Error code: ");
         itoa(regs.err_code, s);
         px_kprint(s);
     }
-    px_kprint("\n");
+    px_kprint("\n\n");
     panic_print_register(regs);
 
     // A page fault has occurred.
@@ -94,10 +95,10 @@ void panic(registers_t regs, const char *file, uint32_t line) {
  
     // Output an error message.
     px_kprint("Page fault ( ");
-    if (present) { px_kprint("present "); }
-    if (rw) { px_kprint("read-only "); }
-    if (us) { px_kprint("user-mode "); }
-    if (reserved) { px_kprint("reserved "); }
+    (present) ? px_kprint("present ") : px_kprint("missing ");
+    (rw) ? px_kprint("reading ") : px_kprint("writing ");
+    (us) ? px_kprint("user-mode ") : px_kprint("kernel ");
+    (reserved) ? px_kprint("reserved ") : px_kprint("available");
     px_kprint(") at 0x");
     px_kprint_hex(faulting_address);
     px_kprint("\n");
