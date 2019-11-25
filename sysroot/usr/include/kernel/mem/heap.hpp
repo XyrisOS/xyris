@@ -1,5 +1,5 @@
 /**
- * @file alloc.hpp
+ * @file heap.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief 
  * @version 0.1

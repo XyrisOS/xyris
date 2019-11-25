@@ -9,7 +9,7 @@
  * 
  */
 
-#include <mem/alloc.hpp>
+#include <mem/heap.hpp>
 
 uint32_t placement_address;
 

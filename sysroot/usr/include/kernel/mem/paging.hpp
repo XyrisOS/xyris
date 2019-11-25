@@ -14,7 +14,7 @@
 
 #include <sys/sys.hpp>
 #include <arch/x86/isr.hpp>
-#include <mem/alloc.hpp>
+#include <mem/heap.hpp>
 
 typedef struct page
 {
