@@ -27,6 +27,8 @@ boot_page_directory:
 	.skip 8192
 boot_page_table1:
 	.skip 8192
+kernel_heap:
+	.skip 8192
 # Further page tables may be required if the kernel grows beyond 3 MiB.
 
 # Text section of our executable. See linker.ld
@@ -51,10 +53,11 @@ boot_loader:
 	movl $1023, %ecx
 1:
     # Only map the kernel.
-	cmpl $(_kernel_start - 0xC0000000), %esi
-	jl 2f
-	cmpl $(_kernel_end - 0xC0000000), %esi
-	jge 3f
+	# this code is commented out so that all of pages get mapped in
+	# cmpl $(_kernel_start - 0xC0000000), %esi
+	# jl 2f
+	# cmpl $(_kernel_end - 0xC0000000), %esi
+	# jge 3f
 	# Map physical address as "present, writable". Note that this maps
 	# .text and .rodata as writable. Mind security and map them as non-writable.
 	movl %esi, %edx
@@ -121,7 +124,13 @@ boot_loader:
 	movl %ecx, %cr3
 
 	# Set up the stack.
-	mov $kernel_stack_top, %esp
+	movl $kernel_stack_top, %esp
+
+	# adjust the multiboot information addresss to be in the higher-half
+	addl $0xC0000000, %ebx
+	# push it as a parameter
+	pushl %ebx
+	pushl $kernel_heap
 
 	# Enter the high-level kernel.
     call px_kernel_main
