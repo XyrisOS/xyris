@@ -1,4 +1,10 @@
-# sudo apt-get install g++ binutils qemu-system-i386 grub-pc:i386 xorriso
+# Panix Kernel Makefile
+# Compiles the kernel source code located in the kernel/ folder.
+#
+# TODO: Create seperate makefiles as needed and integrate into one makefile
+#
+# Necessary packages (not including cross compiler)
+# brew / apt install qemu-system-i386 grub-pc:i386 xorriso
 
 # Sources and headers
 CPP_SRC  = $(shell find kernel/ -name "*.cpp")
