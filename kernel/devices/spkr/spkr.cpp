@@ -35,9 +35,9 @@ static void px_spkr_stop() {
 }
 
 // Make a beep
-void px_spkr_beep() {
-    px_spkr_tone(1000);
-    sleep(100); // 100 ms
+void px_spkr_beep(uint32_t freq, uint32_t ms) {
+    px_spkr_tone(freq);
+    sleep(ms);
     px_spkr_stop();
     // set_PIT_2(old_frequency);
 }

@@ -25,6 +25,7 @@
 #include <devices/spkr/spkr.hpp>
 
 void px_kernel_print_splash();
+void px_kernel_boot_tone();
 extern uint32_t placement_address;
 /**
  * @brief Global constructor called from the boot assembly
@@ -68,8 +69,7 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     // Print some info to show we did things right
     px_rtc_print();
     px_print_debug("Done.", Success);
-    // Beep beep!
-    px_spkr_beep();
+    px_kernel_boot_tone();
     while (true) {
         // Keep the kernel alive.
     }
@@ -85,4 +85,11 @@ void px_kernel_print_splash() {
     px_tty_set_color(LightCyan, Black);
     px_kprint("Gloria in te domine, Gloria exultate\n\n");
     px_tty_set_color(White, Black);
+}
+
+void px_kernel_boot_tone() {
+    // Beep beep!
+    px_spkr_beep(1000, 50);
+    sleep(100);
+    px_spkr_beep(1000, 50);
 }
