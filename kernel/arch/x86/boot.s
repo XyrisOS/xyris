@@ -75,7 +75,7 @@ boot_loader:
     # located at 0x000B8000, but since we're mapping everything to a
     # higher half, we need to get our location provided by boot_page_table1
     # then subtract off our higher end.
-    # @todo Figure out the math in boot.s because I have no clue
+    # We multiply by 4 to make sure it's aligned to a 4Kb segment
 	movl $(0x000B8000 | 0x003), boot_page_table1 - 0xC0000000 + 1023 * 4
 
 	# The page table is used at both page directory entry 0 (virtually from 0x0
@@ -86,7 +86,15 @@ boot_loader:
 	# would instead page fault if there was no identity mapping.
 
 	# Map the page table to both virtual addresses 0x00000000 and 0xC0000000.
+	# These two lines map the page table directory to both the kernel and the beginning
+	# of memory at 0x00000000.
 	movl $(boot_page_table1 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
+	# The reason we add 768 is because 0x300 (768) is the offset into the page directory
+	# that represents the start of the 0xC0100000 address. We multiply it by 4 to align
+	# the value to a 4Kb line. The reason we OR with 0x003 is because 0x003 corresponds
+	# to 12 bits, which is (0000 0000 0011), which correspont to Read/Write & Present.
+	# This identifies the page as mapped into memory and writable.
+	# See Intel Handbook Volume: 3A Page: 4-7 Section: 4.3
 	movl $(boot_page_table1 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 768 * 4
 
 	# Set cr3 to the address of the boot_page_directory.

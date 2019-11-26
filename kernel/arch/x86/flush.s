@@ -4,16 +4,15 @@
  * Thanks to James Molloy for the documentation and to toaruOS
  * for the translation from NASM to AT&T.
  *
- * @todo Switch flush.s back to NASM?
  * @brief This function is used to flush the GDT when we want to
  * enter into ring 3 (userspace) since we need to flush out all of
  * the kernel information and replace it with info safe for user
- * applications.
+ * applications. The following function flushes the TSS.
  */
 .section .text
 .align 4
-
-.global gdt_flush   // Allows our code to call gdt_flush().
+// Allows our code to call gdt_flush().
+.global gdt_flush
 
 gdt_flush:
     /* Load GDT */
@@ -26,12 +25,13 @@ gdt_flush:
     mov %ax, %fs
     mov %ax, %ss
     mov %ax, %gs
-
+    // Do a long jump back and return
     ljmp $0x08, $.flush
 .flush:
     ret
 
-.global tss_flush   // Allows our code to call tss_flush().
+// Allows our code to call tss_flush().
+.global tss_flush
 tss_flush:
    mov $0x2B, %ax    // Load the index of our TSS structure - The index is
                      // 0x28, as it is the 5th selector and each is 8 bytes
