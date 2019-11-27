@@ -40,5 +40,3 @@
 # Ignore build directories
 obj/
 dist/
-# Ignore IDE directories
-.vscode/

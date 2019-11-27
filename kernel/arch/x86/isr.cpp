@@ -9,7 +9,7 @@
  * 
  */
 
-#include <arch/i386/isr.hpp>
+#include <arch/x86/isr.hpp>
 // Private array of interrupt handlers
 isr_t interrupt_handlers[256];
 
@@ -97,15 +97,14 @@ void px_isr_install() {
 }
 
 extern "C" void px_isr_handler(registers_t r) {
-    /*
-    kprint("Interrupt: ");
+    px_kprint("Interrupt: ");
     char s[4];
     itoa(r.int_num, s);
-    kprint(s);
-    kprint("\n");
-    kprint(px_exception_descriptions[r.int_num]);
-    kprint("\n");
-    */
+    px_kprint(s);
+    px_kprint("\n");
+    px_kprint(px_exception_descriptions[r.int_num]);
+    px_kprint("\n");
+    
     panic(r.int_num);
 }
 
@@ -114,6 +113,7 @@ extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler) {
 }
 
 extern "C" void px_irq_handler(registers_t r) {
+    px_set_indicator(Red);
     //px_print_debug("Don't fear, the IRQ handler is here!", Info);
     /* After every interrupt we need to send an EOI to the PICs
      * or they will not send another interrupt again */
@@ -122,7 +122,9 @@ extern "C" void px_irq_handler(registers_t r) {
 
     /* Handle the interrupt in a more modular way */
     if (interrupt_handlers[r.int_num] != 0) {
+        px_set_indicator(Yellow);
         isr_t handler = interrupt_handlers[r.int_num];
         handler(r);
     }
+    px_set_indicator(Green);
 }

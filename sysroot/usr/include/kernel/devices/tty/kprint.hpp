@@ -1,20 +1,20 @@
 /**
  * @file kprint.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief kprint is a small library to print unformatted strings to
+ * @brief px_kprint is a small library to print unformatted strings to
  * the BIOS TTY. The important thing to keep in mind is that these
  * functions expect a null-terminator at the end of the string, which
  * C++ seems to take care of *most* of the time. These functions do
  * NOT accept formatted strings like printf. That is available in
- * kprintf().
+ * px_kprintf().
  * @version 0.1
  * @date 2019-09-26
  * 
  * @copyright Copyright Keeton Feavel (c) 2019
  * 
  */
-#ifndef PANIX_KPRINT_HPP
-#define PANIX_KPRINT_HPP
+#ifndef PANIX_px_kprint_HPP
+#define PANIX_px_kprint_HPP
 
 #include <sys/sys.hpp>
 
@@ -43,8 +43,8 @@ enum px_print_level {
     Error           = 2,
     Success         = 3
 };
-
-inline uint16_t* videoMemory = (uint16_t*) 0xb8000;
+// Updated the address since we moved to a higher-half kernel mapping
+inline uint16_t* videoMemory = (uint16_t*) 0xC03FF000;
 /**
  * @brief Prints a debug message to the kernel display and
  * sets a tag and color according to the debug level.
@@ -54,11 +54,22 @@ inline uint16_t* videoMemory = (uint16_t*) 0xb8000;
  */
 void px_print_debug(char* msg, px_print_level lvl);
 /**
+ * @brief Prints a character to the screen ignoring the current
+ * cursor position and colors
+ *
+ * @param c The character to be printed
+ * @param x The x coordinate
+ * @param y The y coordinate
+ * @param fg The foreground color
+ * @param bg The background color
+ */
+void px_print_raw(char c, uint8_t x, uint8_t y, px_tty_color fg, px_tty_color bg);
+/**
  * @brief Prints a given string to the kernel display.
  * 
  * @param str Input string to be printed.
  */
-void kprint(const char* str);
+void px_kprint(const char* str);
 /**
  * @brief Prints a single character to the kernel display.
  * 
@@ -73,22 +84,22 @@ void putchar(char character);
  * @param y Y-coordinate of the kernel display.
  * @param resetCursor Determines whether or not the cursor should be reset to the starting position.
  */
-void kprintAtPosition(const char* str, uint8_t x, uint8_t y, bool resetCursor = false);
+void px_kprintAtPosition(const char* str, uint8_t x, uint8_t y, bool resetCursor = false);
 /**
  * @brief Prints a hexidecimal address to the kernel console.
  * 
  * @param key Hexidecimal value to print.
  */
-void kprintHex(uint8_t key);
+void px_kprint_hex(uint8_t key);
 
 /**
- * @brief Set the color of the text when the next kprint is called.
+ * @brief Set the color of the text when the next px_kprint is called.
  * 
  * @param fore Foreground color
  * @param back Background color
  */
-void kprintSetColor(px_tty_color fore, px_tty_color back);
+void px_tty_set_color(px_tty_color fore, px_tty_color back);
 
-void clearScreen();
+void px_clear_tty();
 
-#endif /* PANIX_KPRINT_HPP */
+#endif /* PANIX_px_kprint_HPP */

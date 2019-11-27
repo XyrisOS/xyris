@@ -10,11 +10,13 @@
  */
 // System library functions
 #include <sys/sys.hpp>
+// Multiboot Structure
+#include <sys/multiboot.hpp>
 // Intel i386 architecture
-#include <arch/i386/gdt.hpp>
-#include <arch/i386/idt.hpp>
-#include <arch/i386/isr.hpp>
-#include <arch/i386/timer.hpp>
+#include <arch/x86/gdt.hpp>
+#include <arch/x86/idt.hpp>
+#include <arch/x86/isr.hpp>
+#include <arch/x86/timer.hpp>
 // Generic devices
 #include <devices/smbios/smbios.hpp>
 #include <devices/kbd/kbd.hpp>
@@ -24,7 +26,9 @@ void px_kernel_print_splash();
 
 /**
  * @brief Global constructor called from the boot assembly
- * 
+ * OSDev Wiki takes a different approach to this and does
+ * all of this in assembly. You can see that for yourself
+ * in the Meaty Skeleton tutorial in the crti.S section.
  */
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
@@ -37,22 +41,25 @@ extern "C" void px_call_constructors() {
 
 /**
  * @brief This is the Panix kernel entry point. This function is called directly from the
- * assembly written in boot.S located in kernel/arch/i386/boot.S.
- * 
+ * assembly written in boot.S located in arch/x86/boot.S.
+ * @todo Figure out how to use the multiboot header passed in to set up virtual memory
+ * and other features.
  */
-extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multiboot_magic) {
+extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_struct, uintptr_t vmem) {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
-    kprintSetColor(Blue, Black);
+    px_tty_set_color(Blue, Black);
     // Install the GDT
+    px_interrupts_disable();
     px_gdt_install() ? px_print_debug("Loaded GDT.", Success) : panic("Unable to install the GDT!");
-    // @todo Make success and fail conditions for all of these and fix SMBIOS
-    char* smbios_addr = px_get_smbios_addr();
-                                // Begin installs and inits
+    /**
+     * @todo Make success and fail conditions for all of these and fix SMBIOS
+     */
+    //char* smbios_addr = px_get_smbios_addr();
     px_isr_install();           // Interrupt Service Requests
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
-    px_timer_init(60);          // Programmable Interrupt Timer
+    px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
     px_interrupts_enable();     // Enable interrupts
     // Print some info to show we did things right
     px_rtc_print();
@@ -60,16 +67,16 @@ extern "C" void px_kernel_main(const void* multiboot_structure, uint32_t multibo
     while (true) {
         // Keep the kernel alive.
     }
-    panic("0xDEADDEAD\nKernel terminated unexpectedly.");
+    panic("Yikes!\nKernel terminated unexpectedly.");
 }
 
 void px_kernel_print_splash() {
-    clearScreen();
-    kprintSetColor(Yellow, Black);
-    kprint("Welcome to Panix\n");
-    kprint("Developed by graduates and undergraduates of Cedarville University.\n");
-    kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n\n");
-    kprintSetColor(LightCyan, Black);
-    kprint("Gloria in te domine, Gloria exultate\n\n");
-    kprintSetColor(White, Black);
+    px_clear_tty();
+    px_tty_set_color(Yellow, Black);
+    px_kprint("Welcome to Panix\n");
+    px_kprint("Developed by graduates and undergraduates of Cedarville University.\n");
+    px_kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n\n");
+    px_tty_set_color(LightCyan, Black);
+    px_kprint("Gloria in te domine, Gloria exultate\n\n");
+    px_tty_set_color(White, Black);
 }

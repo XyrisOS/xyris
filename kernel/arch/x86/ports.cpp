@@ -1,4 +1,4 @@
-#include <arch/i386/ports.hpp>
+#include <arch/x86/ports.hpp>
 
 uint8_t px_read_byte(uint16_t port) {
     uint8_t result;

@@ -8,12 +8,15 @@ HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
 SYSROOT  = sysroot
 
 # Compilers/Assemblers/Linkers
-NASM = $(shell command -v nasm 			|| echo "Please install nasm")
-AS	 = $(shell command -v i686-elf-as 	|| as)
-GCC  = $(shell command -v i686-elf-gcc 	|| gcc)
-GDB  = $(shell command -v i686-elf-adb 	|| gdb)
-LD   = $(shell command -v i686-elf-ld 	|| ld)
-QEMU = qemu-system-x86_64
+NASM 	= $(shell command -v nasm 				|| echo "Please install nasm")
+AS	 	= $(shell command -v i686-elf-as 		|| as)
+GCC  	= $(shell command -v i686-elf-gcc 		|| gcc)
+GDB  	= $(shell command -v i686-elf-gdb 		|| gdb)
+LD   	= $(shell command -v i686-elf-ld 		|| ld)
+OBCP 	= $(shell command -v i686-elf-objcopy 	|| objcopy)
+QEMU 	= $(shell command -v qemu-system-i386	|| echo "Please install qemu")
+MKGRUB 	= $(shell command -v grub-mkrescue		|| echo "You're likely on macOS. Please refer to Installing_GRUB_2_on_OS_X on the OSDev Wiki")
+VBOX	= $(shell command -v VBoxManage			|| echo "Please install Virtualbox")
 
 # Compilers/Assemblers/Linkers for Automation
 STD_AS  = as
@@ -25,14 +28,18 @@ STD_LD  = ld
 GCC_FLAGS = 					\
 	-m32 						\
 	-g							\
+	-nostdlib					\
+	-nostartfiles				\
+	-nodefaultlibs				\
+	-ffreestanding				\
 	-fno-use-cxa-atexit			\
-	-nostdlib -fno-builtin		\
-	-fno-rtti -fno-exceptions	\
+	-fno-builtin				\
+	-fno-rtti					\
+	-fno-exceptions				\
 	-fno-leading-underscore		\
 	-fno-stack-protector		\
 	-Wno-write-strings			\
 	-std=c++17
-
 AS_FLAGS   = --32
 NASM_FLAGS = -f elf
 LD_FLAGS   = -melf_i386
@@ -41,10 +48,12 @@ KRNL_FLAGS = 							\
 	-I ${SYSROOT}/usr/include/kernel/	
 
 # Linker file
-LINKER = kernel/arch/i386/linker.ld
+LINKER = kernel/arch/x86/linker.ld
 
 # All objects
-OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC)) $(patsubst kernel/%.nasm, obj/%.o, $(NASM_SRC))
+OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) 	\
+	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC)) 		\
+	  $(patsubst kernel/%.nasm, obj/%.o, $(NASM_SRC))
 # Object directories, mirroring source
 OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 
@@ -65,13 +74,14 @@ obj/%.o: kernel/%.nasm
 dist/panix.kernel: $(LINKER) $(OBJ)
 	@ mkdir -p dist
 	$(LD) $(LD_FLAGS) -T $< -o $@ $(OBJ)
+	$(OBCP) --only-keep-debug dist/panix.kernel dist/panix.sym
 
 # Create bootable ISO
 dist/panix.iso: dist/panix.kernel
 	@ mkdir -p iso/boot/grub
 	@ cp $< iso/boot/
 	@ cp boot/grub.cfg iso/boot/grub/
-	@ grub-mkrescue -o dist/panix.iso iso
+	@ $(MKGRUB) -o dist/panix.iso iso
 	@ rm -rf iso
 
 # Create object file directories
@@ -82,7 +92,33 @@ obj_directories:
 
 # Run bootable ISO
 run: dist/panix.iso
-	$(QEMU) -drive format=raw,file=$< -soundhw pcspk -rtc clock=host -vga std
+	$(QEMU) 					\
+	-drive format=raw,file=$< 	\
+	-m 128M						\
+	-soundhw pcspk 				\
+	-rtc clock=host 			\
+	-vga std -m 256M 			\
+	-serial stdio				\
+	-d cpu_reset
+
+virtualbox:
+	$(VBOX) startvm --putenv --debug "Panix"
+
+# Open the connection to qemu and load our kernel-object file with symbols
+debug: dist/panix.iso
+	# Start QEMU with debugger
+	$(QEMU) 					\
+	-S -s 						\
+	-drive format=raw,file=$< 	\
+	-m 128M						\
+	-soundhw pcspk 				\
+	-rtc clock=host 			\
+	-vga std 					\
+	-m 256M 					\
+	-serial stdio				\
+	-d cpu_reset				
+	# After this start the visual studio debugger
+	# gdb dist/panix.kernel
 
 # Install BIN file to local system
 install: dist/panix.kernel
@@ -97,12 +133,13 @@ dist: dist/panix.kernel
 	@ qemu-img convert -f raw -O vmdk dist/panix.kernel dist/panix.vmdk
 	@ echo Done building VMDK image of Panix!
 
-# Open the connection to qemu and load our kernel-object file with symbols
-debug: dist/panix.iso
-	@ echo Booting from floppy...
-	$(QEMU) -S -s -drive format=raw,file=$< -soundhw pcspk -rtc clock=host -vga std &
-	@ echo Setting up GDB with qemu...
-	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file dist/panix.kernel"
+verify:
+	$(shell grub-file --is-x86-multiboot dist/panix.kernel)
+ifeq ($(.SHELLSTATUS), 1)
+	@ echo Kernel does not have valid multiboot!
+else
+	@ echo Kernel multiboot is valid!
+endif
 
 docs:
 	@ echo Generating docs according to the Doxyfile...
