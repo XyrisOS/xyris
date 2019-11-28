@@ -41,6 +41,24 @@ char* concat(const char *s1, const char *s2) {
     return result;
 }
 
+void strcpy(const char* source, char* destination) {
+    int i = 0;
+    while (source[i] != '\0') {
+        destination[i] = source[i];
+        ++i;
+    }
+    destination[i] = '\0';
+}
+
+char* to_upper(char* string) {
+    for(char* p=string; *p != '\0'; p++) {
+        if(*p >= 'a' && *p <= 'z') {  //Only if it's a lower letter
+          *p -= 32;
+        }
+    }
+    return string;
+}
+
 void reverse(char* s) {
     int c;
     int j = strlen(s) - 1;

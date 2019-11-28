@@ -21,6 +21,8 @@
 #include <devices/smbios/smbios.hpp>
 #include <devices/kbd/kbd.hpp>
 #include <devices/rtc/rtc.hpp>
+// Services
+#include <shell/shell.hpp>
 
 void px_kernel_print_splash();
 
@@ -64,6 +66,7 @@ extern "C" void px_kernel_main(uint32_t mb_magic, const multiboot_info_t* mb_str
     // Print some info to show we did things right
     px_rtc_print();
     px_print_debug("Done.", Success);
+    px_shell_init();
     while (true) {
         // Keep the kernel alive.
     }

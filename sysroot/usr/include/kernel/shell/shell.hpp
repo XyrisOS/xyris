@@ -16,6 +16,6 @@
 #include <devices/kbd/kbd.hpp>
 #include <devices/kbd/scode.hpp>
 
-
+void px_shell_init();
 
 #endif /* PANIX_SHELL_HPP */
