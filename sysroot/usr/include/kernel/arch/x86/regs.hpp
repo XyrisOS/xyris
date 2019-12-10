@@ -13,6 +13,12 @@
 #define PANIX_X86_REGISTERS_HPP
 
 #include <sys/types.hpp>
+// R/W CR0 register macros
+#define read_cr0(x) asm volatile("mov %%cr0, %0": "=r"(x))
+#define write_cr0(x) asm volatile("mov %0, %%cr0":: "r"(x))
+// R/W CR3 register macros
+#define read_cr3(x) asm volatile("mov %%cr3, %0": "=r"(x))
+#define write_cr3(x) asm volatile("mov %0, %%cr3":: "r"(x))
 
 typedef struct px_register_cr0
 {
