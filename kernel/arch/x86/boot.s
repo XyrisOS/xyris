@@ -130,6 +130,7 @@ boot_loader:
 	addl $0xC0000000, %ebx
 	# push it as a parameter
 	pushl %ebx
+	# Push the kernel heap address onto the stack so we can use it as a parameter in main
 	pushl $kernel_heap
 
 	# Enter the high-level kernel.

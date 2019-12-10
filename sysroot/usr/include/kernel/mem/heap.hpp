@@ -14,9 +14,9 @@
 
 #include <sys/sys.hpp>
 
-uint32_t px_kmalloc_a(uint32_t sz);                     // page aligned.
-uint32_t px_kmalloc_p(uint32_t sz, uint32_t *phys);     // returns a physical address.
-uint32_t px_kmalloc_ap(uint32_t sz, uint32_t *phys);    // page aligned and returns a physical address.
-uint32_t px_kmalloc(uint32_t sz);                       // vanilla (normal).
+size_t px_kmalloc_a(size_t sz);                 // page aligned.
+size_t px_kmalloc_p(size_t sz, size_t *phys);   // returns a physical address.
+size_t px_kmalloc_ap(size_t sz, size_t *phys);  // page aligned and returns a physical address.
+size_t px_kmalloc(size_t sz);                   // vanilla (normal).
 
 #endif /* PANIX_MEM_ALLOC */

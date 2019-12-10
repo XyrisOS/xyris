@@ -67,8 +67,8 @@ extern "C" void px_kernel_main(uint32_t kernel_heap, const multiboot_info_t* mb_
     // we can initalize paging.
     // Get our multiboot header info for paging first though.
     // Reference: https://github.com/dipolukarov/osdev/blob/master/main.c
-    //uint32_t initrd_location = *((uint32_t*)mb_struct->mods_addr);
-	//uint32_t initrd_end	= *(uint32_t*)(mb_struct->mods_addr+4);
+    // uint32_t initrd_location = *((uint32_t*)mb_struct->mods_addr);
+	// uint32_t initrd_end	= *(uint32_t*)(mb_struct->mods_addr+4);
 	// Dont't trample our module with placement accesses, please!
 	placement_address = kernel_heap;
     px_paging_init();

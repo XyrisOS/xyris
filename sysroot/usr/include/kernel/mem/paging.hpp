@@ -15,40 +15,47 @@
 #include <sys/sys.hpp>
 #include <arch/x86/isr.hpp>
 #include <mem/heap.hpp>
-
-typedef struct page
+/**
+ * @brief Page table entry defined in accordance to the
+ * Intel Developer Manual Vol. 3a p. 4-12
+ * 
+ */
+typedef struct px_page_entry
 {
-   uint32_t present    : 1;   // Page present in memory
-   uint32_t rw         : 1;   // Read-only if clear, readwrite if set
-   uint32_t user       : 1;   // Supervisor level only if clear
-   uint32_t accessed   : 1;   // Has the page been accessed since last refresh?
-   uint32_t dirty      : 1;   // Has the page been written to since last refresh?
-   uint32_t unused     : 7;   // Amalgamation of unused and reserved bits
-   uint32_t frame      : 20;  // Frame address (shifted right 12 bits)
-} page_t;
+   uint32_t present           : 1;  // Page present in memory
+   uint32_t read_write        : 1;  // Read-only if clear, readwrite if set
+   uint32_t usermode          : 1;  // Supervisor level only if clear
+   uint32_t write_through     : 1;  // Page level write through
+   uint32_t cached_disable    : 1;  // Disables TLB caching of page entry
+   uint32_t accessed          : 1;  // Has the page been accessed since last refresh?
+   uint32_t dirty             : 1;  // Has the page been written to since last refresh?
+   uint32_t page_att_table    : 1;  // Page attribute table (memory cache control)
+   uint32_t global            : 1;  // Prevents the TLB from updating the address
+   uint32_t unused            : 3;  // Amalgamation of unused and reserved bits
+   uint32_t frame             : 20; // Frame address (shifted right 12 bits)
+} px_page_entry_t;
 
-typedef struct page_table
+/**
+ * @brief 
+ * 
+ */
+typedef struct px_page_table
 {
-   page_t pages[1024];
-} page_table_t;
+   px_page_entry_t pages[1024];
+} px_page_table_t;
 
-typedef struct page_directory
+/**
+ * @brief Page directory contains pointers to all of the virtual memory addresses for the
+ * page tables along with their corresponding physical memory locations of the page tables.
+ * Page table entry defined in accordance to the Intel Developer Manual Vol. 3a p. 4-12.
+ * 
+ */
+typedef struct px_page_directory
 {
-   /**
-      Array of pointers to pagetables.
-   **/
-   page_table_t *tables[1024];
-   /**
-      Array of pointers to the pagetables above, but gives their *physical*
-      location, for loading into the CR3 register.
-   **/
-   uint32_t tablesPhysical[1024];
-   /**
-      The physical address of tablesPhysical. This comes into play
-      when we get our kernel heap allocated and the directory
-      may be in a different location in virtual memory.
-   **/
-   uint32_t physicalAddr;
+   px_page_table_t *tables[1024];         // Pointers that Panix uses to access the pages in memory
+   uint32_t tablesPhysical[1024];         // Pointers that the Intel CPU uses to access pages in memory
+   uint32_t present                 : 1;  // 
+   uint32_t physical_addr;                // Physical address of this 4Kb aligned page table referenced by this entry
 } page_directory_t;
 
 /**
@@ -68,7 +75,7 @@ void px_mem_switch_page_directory(page_directory_t* newPage);
   If make == 1, if the page-table in which this page should
   reside isn't created, create it!
 **/
-page_t *px_mem_get_page(uint32_t address, int make, page_directory_t *dir);
+px_page_entry_t *px_mem_get_page(uint32_t address, int make, page_directory_t *dir);
 
 /**
   Handler for page faults.
