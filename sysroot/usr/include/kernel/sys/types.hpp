@@ -29,6 +29,6 @@ typedef struct registers {
    uint32_t int_num, err_code;                           /* Interrupt number and error code (if applicable) */
    uint32_t eip, cs, eflags, esp, ss;                    /* Pushed by the processor automatically */
 } registers_t;
-typedef void (*isr_t)(registers_t);
+typedef void (*isr_t)(registers_t*);
     
 #endif /* PANIX_TYPES_HPP */

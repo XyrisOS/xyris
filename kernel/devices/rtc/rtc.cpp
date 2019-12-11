@@ -12,7 +12,7 @@
 #include <devices/rtc/rtc.hpp>
 #include <arch/x86/isr.hpp>
 
-void px_rtc_callback(registers_t regs);
+void px_rtc_callback(registers_t *regs);
 // Current values from RTC
 uint8_t px_rtc_second; // Current UTC second
 uint8_t px_rtc_minute; // Current UTC minute
@@ -35,7 +35,7 @@ void px_rtc_init() {
     px_register_interrupt_handler(IRQ8, px_rtc_callback);
 }
 
-void px_rtc_callback(registers_t regs) {
+void px_rtc_callback(registers_t *regs) {
     px_kprint("RTC update here.\n");
 }
 

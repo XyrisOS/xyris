@@ -13,12 +13,13 @@ isr_common_stub:
     movw %ax,%es
     movw %ax,%fs
     movw %ax,%gs
-
+    push %esp        # Push registers_t *r
     # 2. Clear the directory flag (eflags) & call C handler
-    cld
+    cld              # C code following the sysV ABI requires DF to be clear on function entry
     call px_isr_handler
 
     # 3. Restore state
+    popl %eax
     popl %eax
     movw %ax,%ds
     movw %ax,%es
@@ -26,7 +27,6 @@ isr_common_stub:
     movw %ax,%gs
     popa
     addl $8,%esp # Cleans up the pushed error code and pushed ISR number
-    sti
     iret # pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 # Common IRQ code. Identical to ISR code except for the 'call' 
@@ -40,6 +40,7 @@ irq_common_stub:
     movw %ax,%es
     movw %ax,%fs
     movw %ax,%gs
+    cld
     call px_irq_handler # Different than the ISR code
     popl %ebx # Different than the ISR code
     movw %bx,%ds
@@ -48,7 +49,6 @@ irq_common_stub:
     movw %bx,%gs
     popa
     addl $8,%esp
-    sti
     iret
 
 # We don't get information about which interrupt was called

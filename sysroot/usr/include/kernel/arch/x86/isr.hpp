@@ -107,7 +107,7 @@ void px_isr_install();
  * 
  * @param r Register information struct
  */
-extern "C" void px_isr_handler(registers_t r);
+extern "C" void px_isr_handler(registers_t *t);
 /**
  * @brief 
  * 
@@ -119,6 +119,6 @@ extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler);
  * @brief 
  * 
  */
-extern "C" void px_irq_handler(registers_t r);
+extern "C" void px_irq_handler(registers_t *regs);
 
 #endif /* PANIX_ISR_HPP */

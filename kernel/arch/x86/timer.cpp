@@ -12,7 +12,7 @@
 #include <arch/x86/timer.hpp>
 #include <arch/x86/isr.hpp>    // Needed to register our callback
 
-static void px_timer_callback(registers_t regs);
+static void px_timer_callback(registers_t *regs);
 uint32_t tick;
 
 /**
@@ -38,7 +38,7 @@ void px_timer_init(uint32_t freq) {
     px_print_debug("Started timer", Success);
 }
 
-static void px_timer_callback(registers_t regs) {
+static void px_timer_callback(registers_t *regs) {
     tick++;
 }
 
