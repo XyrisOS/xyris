@@ -18,7 +18,7 @@
 #include <mem/heap.hpp>
 // Macros for panic and assert
 #define PANIC(x) panic((x), __FILE__, __LINE__)
-#define assert(x) ((x) ? (PANIC("Assert failed at ")) : 0)
+#define assert(x) (!(x) ? (PANIC("Assert failed at ")) : (void)0)
 
 // List of all exceptions and their associated english descriptions
 extern const char* px_exception_descriptions[];
