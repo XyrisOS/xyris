@@ -104,19 +104,18 @@ extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler) {
     interrupt_handlers[n] = handler;
 }
 
-extern "C" void px_irq_handler(registers_t r) {
+extern "C" void px_irq_handler(registers_t regs) {
     px_set_indicator(Red);
-    //px_print_debug("Don't fear, the IRQ handler is here!", Info);
     /* After every interrupt we need to send an EOI to the PICs
      * or they will not send another interrupt again */
-    if (r.int_num >= 40) px_write_byte(0xA0, 0x20);  /* slave */
+    if (regs.int_num >= 40) px_write_byte(0xA0, 0x20);  /* slave */
     px_write_byte(0x20, 0x20);                       /* master */
 
     /* Handle the interrupt in a more modular way */
-    if (interrupt_handlers[r.int_num] != 0) {
+    if (interrupt_handlers[regs.int_num] != 0) {
         px_set_indicator(Yellow);
-        isr_t handler = interrupt_handlers[r.int_num];
-        handler(r);
+        isr_t handler = interrupt_handlers[regs.int_num];
+        handler(regs);
     }
     px_set_indicator(Green);
 }

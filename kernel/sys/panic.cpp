@@ -145,8 +145,6 @@ void panic_print_register(registers_t regs) {
     px_kprint_hex(regs.cs);
     px_kprint_color("\nFLG: ", Red);
     px_kprint_hex(regs.eflags);
-    px_kprint_color(" USR: ", Red);
-    px_kprint_hex(regs.useresp);
     px_kprint_color("  SS: ", Red);
     px_kprint_hex(regs.ss);
     px_kprint("\n\n");
