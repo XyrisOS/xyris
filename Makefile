@@ -26,7 +26,6 @@ VBOX	= $(shell command -v VBoxManage			|| echo "Please install Virtualbox")
 GCC_FLAGS = 					\
 	-m32 						\
 	-g							\
-	-nostdlib					\
 	-nostartfiles				\
 	-nodefaultlibs				\
 	-ffreestanding				\
