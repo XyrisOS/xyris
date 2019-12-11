@@ -5,50 +5,50 @@
 # Common ISR code
 isr_common_stub:
     # 1. Save CPU state
-    pusha           # Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
-    movw %ds,%ax    # Lower 16-bits of eax = ds.
-    pushl %eax      # save the data segment descriptor
-    movw $0x10,%ax  # kernel data segment descriptor
-    movw %ax,%ds
-    movw %ax,%es
-    movw %ax,%fs
-    movw %ax,%gs
-    push %esp        # Push registers_t *r
+    pusha               # Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
+    movw %ds, %ax       # Lower 16-bits of eax = ds.
+    pushl %eax          # save the data segment descriptor
+    movw $0x10, %ax     # kernel data segment descriptor
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    push %esp           # Push registers_t *r
     # 2. Clear the directory flag (eflags) & call C handler
-    cld              # C code following the sysV ABI requires DF to be clear on function entry
+    cld                 # C code following the sysV ABI requires DF to be clear on function entry
     call px_isr_handler
 
     # 3. Restore state
     popl %eax
     popl %eax
-    movw %ax,%ds
-    movw %ax,%es
-    movw %ax,%fs
-    movw %ax,%gs
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
     popa
-    addl $8,%esp # Cleans up the pushed error code and pushed ISR number
-    iret # pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
+    addl $8, %esp       # Cleans up the pushed error code and pushed ISR number
+    iret                # pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 # Common IRQ code. Identical to ISR code except for the 'call' 
 # and the 'pop ebx'
 irq_common_stub:
     pusha
-    movw %ds,%ax
+    movw %ds, %ax
     pushl %eax
-    movw $0x10,%ax
-    movw %ax,%ds
-    movw %ax,%es
-    movw %ax,%fs
-    movw %ax,%gs
+    movw $0x10, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
     cld
     call px_irq_handler # Different than the ISR code
-    popl %ebx # Different than the ISR code
-    movw %bx,%ds
-    movw %bx,%es
-    movw %bx,%fs
-    movw %bx,%gs
+    popl %ebx           # Different than the ISR code
+    movw %bx, %ds
+    movw %bx, %es
+    movw %bx, %fs
+    movw %bx, %gs
     popa
-    addl $8,%esp
+    addl $8, %esp
     iret
 
 # We don't get information about which interrupt was called
