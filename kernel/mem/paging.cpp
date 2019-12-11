@@ -69,5 +69,5 @@ px_page_table_entry_t *px_mem_get_page(uint32_t address, int make, page_director
 }
 
 void px_mem_page_fault(registers_t regs) {
-   panic(regs, __FILE__, __LINE__);
+   PANIC(regs);
 }

@@ -64,7 +64,7 @@ void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access,
 	gdt.entries[num].type = access;
 }
 
-bool px_gdt_install() {
+void px_gdt_install() {
 	// TODO: Add return false to cases where operations don't succeed.
 	px_print_debug("Installing the GDT onto the system...", Info);
 	//
@@ -84,8 +84,6 @@ bool px_gdt_install() {
 	px_print_debug("Flushed the GDT.", Success);
 	tss_flush();
 	px_print_debug("Flushed the TSS.", Success);
-	// We made it to the end. Return true.
-	return true;
 }
 
 static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0) {

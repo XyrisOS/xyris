@@ -19,7 +19,7 @@
  * @brief Setup and install the GDT onto the system.
  * 
  */
-extern bool px_gdt_install();
+extern void px_gdt_install();
 /**
  * @brief 
  * 

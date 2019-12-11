@@ -16,6 +16,9 @@
 #include <arch/x86/ports.hpp>       // We should basically always have access to port functions
 #include <devices/tty/kprint.hpp>   // Printing is a pretty common need, so we'll include it
 #include <mem/heap.hpp>
+// Macros for panic and assert
+#define PANIC(x) panic((x), __FILE__, __LINE__)
+#define assert(x) ((x) ? (PANIC("Assert failed at ")) : 0)
 
 // List of all exceptions and their associated english descriptions
 extern const char* px_exception_descriptions[];
