@@ -20,20 +20,22 @@
  * 
  */
 extern void px_gdt_install();
+// TODO: Create access byte struct to be more verbose with how the GDT works.
+// Reference: https://wiki.osdev.org/Global_Descriptor_Table
 /**
  * @brief 
  * 
- * @param num 
- * @param base 
- * @param limit 
- * @param access 
- * @param gran 
+ * @param num Specifies the index for the GDT entry
+ * @param base The linear address where the segment begins
+ * @param limit Maximum addressable unit 
+ * @param access Access byte. Contains various flags.
+ * @param gran Page granularity
  */
 extern void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran);
 /**
  * @brief Set the kernel stack pointer
  * 
- * @param stack 
+ * @param stack Stack pointer address
  */
 extern void px_set_kernel_stack(uintptr_t stack);
 
