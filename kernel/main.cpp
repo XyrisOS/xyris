@@ -28,16 +28,28 @@ void px_kernel_print_splash();
 void px_kernel_boot_tone();
 extern uint32_t placement_address;
 /**
- * @brief Global constructor called from the boot assembly
- * OSDev Wiki takes a different approach to this and does
- * all of this in assembly. You can see that for yourself
- * in the Meaty Skeleton tutorial in the crti.S section.
+ * @brief The global constuctor is a necessary step when using
+ * global objects which need to be constructed before the main
+ * function, px_kernel_main() in our case, is ever called. This
+ * is much more necessary in an object-oriented architecture,
+ * so it is less of a concern now. Regardless, the OSDev Wiki
+ * take a *very* different approach to this, so refactoring
+ * this might be on the eventual todo list.
+ * 
+ * According to the OSDev Wiki this is only necessary for C++
+ * objects. However, it is useful to know that the
+ * global constructors are "stored in a sorted array of 
+ * function pointers and invoking these is as simple as 
+ * traversing the array and running each element."
+ * 
  */
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
 extern "C" void px_call_constructors() {
+    // For each global object with a constructor starting at start_ctors,
     for (constructor* i = &start_ctors; i != &end_ctors; i++) {
+        // Get the object and call the constructor manually.
         (*i)();
     }
 }
