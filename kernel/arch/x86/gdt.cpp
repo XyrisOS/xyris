@@ -17,29 +17,6 @@ extern "C" void gdt_flush(uintptr_t);
 // Function definitions
 static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0);
 
-// Code/Data Segment Descriptor
-struct gdt_segment {
-    // These are descriptors in the GDT that have S=1. Bit 3 of "type" indicates whether it's (0) Data or (1) Code.
-    // See https://wiki.osdev.org/Descriptors#Code.2FData_Segment_Descriptors for details on code & data segments.
-    uint16_t limit_low; // Limit
-    uint16_t base_low;  // Base
-    uint8_t base_high;  // Base
-    uint8_t type;       // Type
-    uint8_t limit;      // Bits 0..3: limit, Bits 4..7: additional data/code attributes
-    uint8_t base_vhi;   // Base
-} __attribute__((packed));
-
-struct gdt_ptr {
-    unsigned short limit;
-    unsigned int base;
-} __attribute__((packed));
-
-static struct {
-    gdt_segment entries[6];
-    gdt_ptr pointer;
-    tss_entry tss;
-} gdt __attribute__((used));
-
 void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran) {
     // 32-bit address space
     // Now we have to squeeze the (32-bit) limit into 2.5 regiters (20-bit).
