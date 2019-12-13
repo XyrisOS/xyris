@@ -57,8 +57,6 @@ extern "C" void px_call_constructors() {
 /**
  * @brief This is the Panix kernel entry point. This function is called directly from the
  * assembly written in boot.S located in arch/x86/boot.S.
- * @todo Figure out how to use the multiboot header passed in to set up virtual memory
- * and other features.
  */
 extern "C" void px_kernel_main(uint32_t kernel_heap, const multiboot_info_t* mb_struct) {
     // Print the splash screen to show we've booted into the kernel properly.
@@ -67,9 +65,6 @@ extern "C" void px_kernel_main(uint32_t kernel_heap, const multiboot_info_t* mb_
     // Install the GDT
     px_interrupts_disable();
     px_gdt_install();
-    /**
-     * @todo Make success and fail conditions for all of these and fix SMBIOS
-     */
     //char* smbios_addr = px_get_smbios_addr();
     px_isr_install();           // Interrupt Service Requests
     px_kbd_init();              // Keyboard

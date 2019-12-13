@@ -50,10 +50,10 @@ void px_gdt_install() {
 	gdtp->base = (uintptr_t)&gdt.entries[0];
 
 	px_gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment */
-	px_gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment */
-	px_gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment */
-	px_gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* Userspace code */
-	px_gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* Userspace data */
+	px_gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Kernel Code segment */
+	px_gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Kernel Data segment */
+	px_gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* User Code segment */
+	px_gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* User Data segment */
 
 	// Write the TSS, then flush / reload the GDT and TSS
 	write_tss(5, 0x10, 0x0);
@@ -64,7 +64,8 @@ void px_gdt_install() {
 }
 
 static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0) {
-	//
+	// @todo TSS Writing needs documentation
+	// Flags and values should be explained well
 	px_print_debug("Writing the TSS...", Info);
 	//
 	tss_entry * tss = &gdt.tss;

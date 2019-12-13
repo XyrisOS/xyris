@@ -79,7 +79,10 @@ boot_loader:
     # higher half, we need to get our location provided by boot_page_table1
     # then subtract off our higher end.
     # We multiply by 4 to make sure it's aligned to a 4Kb segment
-	movl $(0x000B8000 | 0x003), boot_page_table1 - 0xC0000000 + 1023 * 4
+	#
+	# Note: I don't think this is necessary since we can just address
+	# the video memory as 0xC00B8000 instead.
+	# movl $(0x000B8000 | 0x003), boot_page_table1 - 0xC0000000 + 1023 * 4
 
 	# The page table is used at both page directory entry 0 (virtually from 0x0
 	# to 0x3FFFFF) (thus identity mapping the kernel) and page directory entry
