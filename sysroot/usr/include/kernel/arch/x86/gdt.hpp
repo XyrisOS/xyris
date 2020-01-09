@@ -15,71 +15,83 @@
 #include <sys/sys.hpp>
 #include <arch/x86/tss.hpp>
 
-// TODO: Do we want to use this for our access? It would be a lot more code...
-struct gdt_access {
-    uint8_t accessed    : 1; // The CPU sets this to 1 when the segment is accessed
-    uint8_t rw          : 1; // Readable for code selectors, writable for data selectors
-    uint8_t dir_conf    : 1; // Direction/Conforming bit. See OSDev for details
-    uint8_t executable  : 1; // If 1 code in this segment can be executed, otherwise data
-    uint8_t desc_type   : 1; // Set for code or data segments and cleared for system segments
-    uint8_t privilege   : 2; // Ring level (0 - kernel, 3 - usermode)
-    uint8_t present     : 1; // This must be 1 for all valid selectors
-} __attribute__((packed));
+/**
+ * @brief Thanks to the OSDev Wiki for this solution. We had previously
+ * used the James Molloy / os-tutorial repo version but it was a lot more
+ * code and a lot less elegant.
+ * 
+ */
+#define SEG_TYPE(x)  ((x) << 0x04) // Descriptor type (0 for system, 1 for code/data)
+#define SEG_PRES(x)  ((x) << 0x07) // Present
+#define SEG_SAVL(x)  ((x) << 0x0C) // Available for system use
+#define SEG_LONG(x)  ((x) << 0x0D) // Long mode
+#define SEG_SIZE(x)  ((x) << 0x0E) // Size (0 for 16-bit, 1 for 32)
+#define SEG_GRAN(x)  ((x) << 0x0F) // Granularity (0 for 1B - 1MB, 1 for 4KB - 4GB)
+#define SEG_PRIV(x) (((x) &  0x03) << 0x05)   // Set privilege level (0 - 3)
+ 
+#define SEG_DATA_RD        0x00 // Read-Only
+#define SEG_DATA_RDA       0x01 // Read-Only, accessed
+#define SEG_DATA_RDWR      0x02 // Read/Write
+#define SEG_DATA_RDWRA     0x03 // Read/Write, accessed
+#define SEG_DATA_RDEXPD    0x04 // Read-Only, expand-down
+#define SEG_DATA_RDEXPDA   0x05 // Read-Only, expand-down, accessed
+#define SEG_DATA_RDWREXPD  0x06 // Read/Write, expand-down
+#define SEG_DATA_RDWREXPDA 0x07 // Read/Write, expand-down, accessed
+#define SEG_CODE_EX        0x08 // Execute-Only
+#define SEG_CODE_EXA       0x09 // Execute-Only, accessed
+#define SEG_CODE_EXRD      0x0A // Execute/Read
+#define SEG_CODE_EXRDA     0x0B // Execute/Read, accessed
+#define SEG_CODE_EXC       0x0C // Execute-Only, conforming
+#define SEG_CODE_EXCA      0x0D // Execute-Only, conforming, accessed
+#define SEG_CODE_EXRDC     0x0E // Execute/Read, conforming
+#define SEG_CODE_EXRDCA    0x0F // Execute/Read, conforming, accessed
+ 
+#define GDT_CODE_PL0 SEG_TYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
+                       SEG_LONG(0) | SEG_SIZE(1) | SEG_GRAN(1) | \
+                     SEG_PRIV(0) | SEG_CODE_EXRD
+ 
+#define GDT_DATA_PL0 SEG_TYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
+                       SEG_LONG(0) | SEG_SIZE(1) | SEG_GRAN(1) | \
+                     SEG_PRIV(0) | SEG_DATA_RDWR
+ 
+#define GDT_CODE_PL3 SEG_TYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
+                       SEG_LONG(0) | SEG_SIZE(1) | SEG_GRAN(1) | \
+                     SEG_PRIV(3) | SEG_CODE_EXRD
+ 
+#define GDT_DATA_PL3 SEG_TYPE(1) | SEG_PRES(1) | SEG_SAVL(0) | \
+                       SEG_LONG(0) | SEG_SIZE(1) | SEG_GRAN(1) | \
+                     SEG_PRIV(3) | SEG_DATA_RDWR
 
 /**
  * @brief GDT Code & Data Segment Selector Struct
  * 
  */
-struct gdt_segment {
+struct gdt_entry {
     // These are descriptors in the GDT that have S=1. Bit 3 of "type" indicates whether it's (0) Data or (1) Code.
     // See https://wiki.osdev.org/Descriptors#Code.2FData_Segment_Descriptors for details on code & data segments.
-    uint16_t limit_low; // Limit
-    uint16_t base_low;  // Base
-    uint8_t  base_high; // Base
-    uint8_t  type;      // Type
-    uint8_t  limit;     // Bits 0..3: limit, Bits 4..7: additional data/code attributes
-    uint8_t  base_vhi;  // Base
+    uint16_t limit_low;     // Limit
+    uint16_t base_low;      // Base
+    uint8_t  base_middle;   // Base
+    uint8_t  access;        // Type
+    uint8_t  granularity;   // Bits 0..3: limit, Bits 4..7: additional data/code attributes
+    uint8_t  base_high;     // Base
 } __attribute__((packed));
+typedef struct gdt_entry gdt_entry_t;
+
 /**
  * @brief GDT Pointer Struct
  * 
  */
 struct gdt_ptr {
-    unsigned short limit;
-    unsigned int base;
+    unsigned short limit;   // The upper 16 bits of all selector limits
+    unsigned int base;      // The address of the first gdt_segment
 } __attribute__((packed));
-/**
- * @brief GDT Struct
- * 
- */
-static struct {
-    gdt_segment entries[6];
-    gdt_ptr pointer;
-    tss_entry tss;
-} gdt __attribute__((used));
+typedef struct gdt_ptr gdt_ptr_t;
 
 /**
  * @brief Setup and install the GDT onto the system.
  * 
  */
 extern void px_gdt_install();
-// TODO: Create access byte struct to be more verbose with how the GDT works.
-// Reference: https://wiki.osdev.org/Global_Descriptor_Table
-/**
- * @brief 
- * 
- * @param num Specifies the index for the GDT entry
- * @param base The linear address where the segment begins
- * @param limit Maximum addressable unit 
- * @param access Access byte. Contains various flags.
- * @param gran Page granularity
- */
-extern void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran);
-/**
- * @brief Set the kernel stack pointer
- * 
- * @param stack Stack pointer address
- */
-extern void px_set_kernel_stack(uintptr_t stack);
 
 #endif /* PANIX_GLOBAL_DESCRIPTOR_TABLE_HPP */
