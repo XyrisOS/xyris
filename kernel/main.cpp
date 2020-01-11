@@ -11,9 +11,8 @@
 // System library functions
 #include <sys/sys.hpp>
 #include <mem/paging.hpp>
-// Multiboot Structure
-#include <sys/multiboot.hpp>
 // Intel i386 architecture
+#include <arch/x86/multiboot.hpp>
 #include <arch/x86/gdt.hpp>
 #include <arch/x86/idt.hpp>
 #include <arch/x86/isr.hpp>
@@ -25,6 +24,7 @@
 #include <devices/spkr/spkr.hpp>
 
 void px_kernel_print_splash();
+void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_boot_tone();
 extern uint32_t placement_address;
 /**
@@ -62,6 +62,8 @@ extern "C" void px_kernel_main(uint32_t kernel_heap, const multiboot_info_t* mb_
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     px_tty_set_color(Blue, Black);
+    // Print multiboot information
+    px_kernel_print_multiboot(mb_struct);
     // Install the GDT
     px_interrupts_disable();
     px_gdt_install();
@@ -100,6 +102,42 @@ void px_kernel_print_splash() {
     px_tty_set_color(LightCyan, Black);
     px_kprint("Gloria in te domine, Gloria exultate\n\n");
     px_tty_set_color(White, Black);
+}
+
+void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
+    // Panix requires a multiboot header, so panic if not provided
+    assert(mb_struct != nullptr);
+    // Print out our memory size information if provided
+    if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
+        uint32_t mem_total = mb_struct->mem_lower + mb_struct->mem_upper;
+        px_kprint("Memory Lower: ");
+        px_kprint_hex(mb_struct->mem_lower);
+        px_kprint("\nMemory Upper: ");
+        px_kprint_hex(mb_struct->mem_upper);
+        px_kprint("\nTotal Memory: ");
+        px_kprint_hex(mem_total);
+    }
+    // Print out our memory map if provided
+    if (mb_struct->flags & MULTIBOOT_INFO_MEM_MAP) {
+        uint32_t *mem_info_ptr = (uint32_t *)mb_struct->mmap_addr;
+        // While there are still entries in the memory map
+        while (mem_info_ptr < (uint32_t *)(mb_struct->mmap_addr + mb_struct->mmap_length)) {
+            multiboot_memory_map_t *curr = (multiboot_memory_map_t *)mem_info_ptr;
+            // If the length of the current map entry is not empty
+            if (curr->len > 0) {
+                // Print out the memory map information
+                px_kprint("\n[");
+                px_kprint_hex(curr->addr);
+                px_kprint("-");
+                px_kprint_hex((curr->addr + curr->len));
+                px_kprint("] ");
+                // Print out if the entry is available or reserved
+                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprint("AVAIL") : px_kprint("RESVD");
+            }
+            // Increment the curr pointer to the next entry
+            mem_info_ptr += curr->size + sizeof(curr->size);
+        }
+    }
 }
 
 void px_kernel_boot_tone() {
