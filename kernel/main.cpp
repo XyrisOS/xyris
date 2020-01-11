@@ -24,6 +24,7 @@
 #include <devices/spkr/spkr.hpp>
 
 void px_kernel_print_splash();
+void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_boot_tone();
 extern uint32_t placement_address;
@@ -61,9 +62,10 @@ extern "C" void px_call_constructors() {
 extern "C" void px_kernel_main(uint32_t kernel_heap, const multiboot_info_t* mb_struct) {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
+    // Panix requires a multiboot header, so panic if not provided
+    px_kernel_check_multiboot(mb_struct);
+    // Passed multiboot check, so continue printing boot info
     px_tty_set_color(Blue, Black);
-    // Print multiboot information
-    px_kernel_print_multiboot(mb_struct);
     // Install the GDT
     px_interrupts_disable();
     px_gdt_install();
@@ -90,7 +92,7 @@ extern "C" void px_kernel_main(uint32_t kernel_heap, const multiboot_info_t* mb_
     while (true) {
         // Keep the kernel alive.
     }
-    PANIC("Yikes!\nKernel terminated unexpectedly.");
+    PANIC("Kernel terminated unexpectedly!");
 }
 
 void px_kernel_print_splash() {
@@ -104,9 +106,15 @@ void px_kernel_print_splash() {
     px_tty_set_color(White, Black);
 }
 
+void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
+    if (mb_struct == nullptr) {
+        PANIC("Multiboot info missing. Please use a Multiboot compliant bootloader (like GRUB).");
+    }
+    // Print multiboot information
+    px_kernel_print_multiboot(mb_struct);
+}
+
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
-    // Panix requires a multiboot header, so panic if not provided
-    assert(mb_struct != nullptr);
     // Print out our memory size information if provided
     if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
         uint32_t mem_total = mb_struct->mem_lower + mb_struct->mem_upper;
@@ -114,7 +122,7 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
         px_kprint_hex(mb_struct->mem_lower);
         px_kprint("\nMemory Upper: ");
         px_kprint_hex(mb_struct->mem_upper);
-        px_kprint("\nTotal Memory: ");
+        px_kprint_color("\nTotal Memory: ", Magenta);
         px_kprint_hex(mem_total);
     }
     // Print out our memory map if provided
@@ -132,7 +140,9 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
                 px_kprint_hex((curr->addr + curr->len));
                 px_kprint("] ");
                 // Print out if the entry is available or reserved
-                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprint("AVAIL") : px_kprint("RESVD");
+                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprint("Available") : px_kprint("Reserved");
+            } else {
+                px_kprint_color("Missing!", Red);
             }
             // Increment the curr pointer to the next entry
             mem_info_ptr += curr->size + sizeof(curr->size);
