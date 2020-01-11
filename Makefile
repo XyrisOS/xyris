@@ -23,11 +23,14 @@ MKGRUB 	= $(shell command -v grub-mkrescue		|| echo "You're likely on macOS. Ple
 VBOX	= $(shell command -v VBoxManage			|| echo "Please install Virtualbox")
 
 # Compiler/Linker flags
+# The -lgcc flag is included because it includes helpful functions used
+# by GCC that would be ineffective to duplicate.
 GCC_FLAGS = 					\
 	-m32 						\
 	-g							\
 	-nostartfiles				\
 	-nodefaultlibs				\
+	-lgcc						\
 	-ffreestanding				\
 	-fno-use-cxa-atexit			\
 	-fno-builtin				\
