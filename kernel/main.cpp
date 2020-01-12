@@ -45,11 +45,11 @@ extern uint32_t placement_address;
  * 
  */
 typedef void (*constructor)();
-extern "C" constructor start_ctors;
-extern "C" constructor end_ctors;
+extern "C" constructor _CTORS_START;
+extern "C" constructor _CTORS_END;
 extern "C" void px_call_constructors() {
     // For each global object with a constructor starting at start_ctors,
-    for (constructor* i = &start_ctors; i != &end_ctors; i++) {
+    for (constructor* i = &_CTORS_START; i != &_CTORS_END; i++) {
         // Get the object and call the constructor manually.
         (*i)();
     }
@@ -59,7 +59,7 @@ extern "C" void px_call_constructors() {
  * @brief This is the Panix kernel entry point. This function is called directly from the
  * assembly written in boot.S located in arch/x86/boot.S.
  */
-extern "C" void px_kernel_main(uint32_t kernel_heap, const multiboot_info_t* mb_struct) {
+extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic) {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     // Panix requires a multiboot header, so panic if not provided
@@ -75,14 +75,14 @@ extern "C" void px_kernel_main(uint32_t kernel_heap, const multiboot_info_t* mb_
     px_rtc_init();              // Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
     // Now that we've initialized our core kernel necessities
-    // we can initalize paging.
+    // we can initialize paging.
     // Get our multiboot header info for paging first though.
     // Reference: https://github.com/dipolukarov/osdev/blob/master/main.c
     // uint32_t initrd_location = *((uint32_t*)mb_struct->mods_addr);
 	// uint32_t initrd_end	= *(uint32_t*)(mb_struct->mods_addr+4);
 	// Dont't trample our module with placement accesses, please!
-	placement_address = kernel_heap;
-    px_paging_init();
+	//placement_address = kernel_heap;
+    //px_paging_init();
     // Enable interrupts now that we're out of a critical area
     px_interrupts_enable();
     // Print some info to show we did things right
@@ -148,6 +148,7 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
             mem_info_ptr += curr->size + sizeof(curr->size);
         }
     }
+    px_kprint("\n");
 }
 
 void px_kernel_boot_tone() {

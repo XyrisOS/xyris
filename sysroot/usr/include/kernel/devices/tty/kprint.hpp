@@ -44,7 +44,7 @@ enum px_print_level {
     Success         = 3
 };
 // Updated the address since we moved to a higher-half kernel mapping
-inline uint16_t* videoMemory = (uint16_t*) 0xC00B8000;
+inline uint16_t* videoMemory = (uint16_t*) 0x000B8000;
 //Note: Use this value if the memory mapping in boot.s is uncommented: 0xC03FF000
 /**
  * @brief Prints a debug message to the kernel display and
