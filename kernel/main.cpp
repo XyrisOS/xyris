@@ -100,9 +100,14 @@ void px_kernel_print_splash() {
     px_tty_set_color(Yellow, Black);
     px_kprint("Welcome to Panix\n");
     px_kprint("Developed by graduates and undergraduates of Cedarville University.\n");
-    px_kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n\n");
+    px_kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n");
+    px_tty_set_color(White, Black);
+    px_kprint("Built on ");
+    px_kprint(__DATE__);
+    px_kprint(" at ");
+    px_kprint(__TIME__);
     px_tty_set_color(LightCyan, Black);
-    px_kprint("Gloria in te domine, Gloria exultate\n\n");
+    px_kprint(".\n\n");
     px_tty_set_color(White, Black);
 }
 

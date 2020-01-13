@@ -59,12 +59,12 @@ void px_isr_install() {
     px_print_debug("Loaded the IDT.", Success);
 }
 
-extern "C" void px_isr_handler(registers_t *r) {
-    PANIC(*r);
-}
-
 extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler) {
     interrupt_handlers[n] = handler;
+}
+
+extern "C" void px_isr_handler(registers_t *r) {
+    PANIC(*r);
 }
 
 extern "C" void px_irq_handler(registers_t *regs) {
