@@ -13,12 +13,33 @@
 #define PANIX_MEM_PAGING
 
 #include <sys/sys.hpp>
-#include <arch/x86/isr.hpp>
 #include <mem/heap.hpp>
 
-#define PAGE_SIZE 0x1000
-#define PAGE_ALIGN 0xfffff000
-#define NOT_ALIGNED ~(PAGE_ALIGN)
+// Information about the Kernel from the linker
+extern uint32_t _KERNEL_START;
+extern uint32_t _KERNEL_END;
+extern uint32_t _EARLY_KMALLOC_START;
+extern uint32_t _EARLY_KMALLOC_END;
+// Thanks to Grant Hernandez for uOS and the absolutely amazing code
+// that he wrote. It helped us fix a lot of bugs and has provided a
+// lot of quality of life defines such as the ones below that we would
+// not have thought to use otherwise.
+#define PAGE_SIZE           0x1000
+#define PAGE_ALIGN          0xfffff000
+#define NOT_ALIGNED         ~(PAGE_ALIGN)
+#define PAGE_ALIGN_UP(addr) (((addr) & NOT_ALIGNED) ? (((addr) & PAGE_ALIGN) + PAGE_SIZE) : ((addr)))
+#define KERNEL_START        (uint32_t)&_KERNEL_START;
+#define KERNEL_END          (uint32_t)&_KERNEL_END;
+#define EARLY_KMALLOC_START (uint32_t)&_EARLY_KMALLOC_START;
+#define EARLY_KMALLOC_END   (uint32_t)&_EARLY_KMALLOC_END;
+#define PAGE_ENTRY_PRESENT  0x1
+#define PAGE_ENTRY_RW       0x2
+#define PAGE_ENTRY_ACCESS   0x20
+#define PAGE_ENTRIES        1024
+#define PAGE_TABLE_SIZE     (sizeof(uint32)*PAGE_ENTRIES)
+#define PAGES_PER_KB(kb)    (PAGE_ALIGN_UP((kb) * 1024) / PAGE_SIZE)
+#define PAGES_PER_MB(mb)    (PAGE_ALIGN_UP((mb) * 1024 * 1024) / PAGE_SIZE)
+#define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
 
 /**
  * @brief Page table entry defined in accordance to the

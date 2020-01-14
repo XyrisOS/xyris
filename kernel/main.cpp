@@ -72,7 +72,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_interrupts_disable();
     px_gdt_install();
     px_isr_install();           // Interrupt Service Requests
-    px_heap_init();             // Early kernel memory allocation
+    px_heap_init((uint32_t)&_EARLY_KMALLOC_START, (uint32_t)&_EARLY_KMALLOC_END);             // Early kernel memory allocation
     px_paging_init();           // Initialize paging service
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock

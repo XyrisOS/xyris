@@ -50,6 +50,20 @@ void px_paging_init() {
    
 }
 
+static inline void px_paging_enable() {
+  uint32_t cr0;
+  asm volatile("mov %%cr0, %0": "=b"(cr0));
+  cr0 |= 0x80000000;
+  asm volatile("mov %0, %%cr0":: "b"(cr0));
+}
+
+static inline void px_paging_disable() {
+  uint32_t cr0;
+  asm volatile("mov %%cr0, %0": "=b"(cr0));
+  cr0 &= ~(0x80000000U);
+  asm volatile("mov %0, %%cr0":: "b"(cr0));
+}
+
 // Function to allocate a frame.
 void px_frame_alloc(px_page_table_entry_t *page, int is_kernel, int is_writeable) {
    
