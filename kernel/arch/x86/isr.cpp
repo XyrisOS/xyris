@@ -34,7 +34,7 @@ void px_isr_install() {
     px_print_debug("Initializing the IDT...", Info);
     // Set all of the gate addresses
     px_print_debug("Setting the ISRs...", Info);
-    for (int isr = 0; isr < 32; isr++) {
+    for (int isr = 0; isr < 32; ++isr) {
         px_idt_set_gate(isr, (uint32_t)isr_func_ptr[isr]);
     }
     px_print_debug("Remapping the PIC...", Info);
@@ -51,8 +51,8 @@ void px_isr_install() {
     px_write_byte(0xA1, 0x0);
     // Install the IRQs
     px_print_debug("Setting the IRQs...", Info);
-    for (int irq = 32; irq < 48; irq++) {
-        px_idt_set_gate(irq, (uint32_t)irq_func_ptr[irq]);
+    for (int irq = 0; irq < 16; ++irq) {
+        px_idt_set_gate(32 + irq, (uint32_t)irq_func_ptr[irq]);
     }
     // Load the IDT now that we've registered all of our IDT, IRQ, and ISR addresses
     px_load_idt();
