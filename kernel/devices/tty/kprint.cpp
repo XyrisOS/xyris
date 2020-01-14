@@ -152,12 +152,11 @@ void px_kprint_base(int value, int base) {
     putchar(digits[ value % base ]);
 }
 
-void px_kprint_hex(int key) {
+void px_kprint_hex(uint32_t key) {
     char* foo = "00000000";
     static const char* hex = "0123456789ABCDEF";
-    size_t len = sizeof(key);
-    for (size_t i = 0, j = (len - 1) * 4; i < len; ++i, j -= 4) {
-        foo[i] = hex[(key >> j) & 0x0f];
+    for (size_t i = 0; i < 8; ++i) {
+        foo[7 - i] = hex[(key >> (i * 4)) & 0x0f];
     }
     px_kprint(foo);
 }

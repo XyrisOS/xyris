@@ -98,7 +98,7 @@ void px_kprint_base(int value, int base);
  * 
  * @param key Hexidecimal value to print.
  */
-void px_kprint_hex(int key);
+void px_kprint_hex(uint32_t key);
 /**
  * @brief Prints out a string in a specified color
  * 
