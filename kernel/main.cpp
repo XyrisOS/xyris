@@ -10,6 +10,8 @@
  */
 // System library functions
 #include <sys/sys.hpp>
+// Memory management & paging
+#include <mem/heap.hpp>
 #include <mem/paging.hpp>
 // Intel i386 architecture
 #include <arch/x86/multiboot.hpp>
@@ -70,20 +72,13 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_interrupts_disable();
     px_gdt_install();
     px_isr_install();           // Interrupt Service Requests
-                                // Early kernel memory allocation
-                                // Initialize paging service
+    px_heap_init();             // Early kernel memory allocation
+    px_paging_init();           // Initialize paging service
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
     // Now that we've initialized our core kernel necessities
     // we can initialize paging.
-    // Get our multiboot header info for paging first though.
-    // Reference: https://github.com/dipolukarov/osdev/blob/master/main.c
-    // uint32_t initrd_location = *((uint32_t*)mb_struct->mods_addr);
-	// uint32_t initrd_end	= *(uint32_t*)(mb_struct->mods_addr+4);
-	// Dont't trample our module with placement accesses, please!
-	//placement_address = kernel_heap;
-    //px_paging_init();
     // Enable interrupts now that we're out of a critical area
     px_interrupts_enable();
     // Print some info to show we did things right

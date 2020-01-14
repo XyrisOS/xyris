@@ -15,6 +15,11 @@
 #include <sys/sys.hpp>
 #include <arch/x86/isr.hpp>
 #include <mem/heap.hpp>
+
+#define PAGE_SIZE 0x1000
+#define PAGE_ALIGN 0xfffff000
+#define NOT_ALIGNED ~(PAGE_ALIGN)
+
 /**
  * @brief Page table entry defined in accordance to the
  * Intel Developer Manual Vol. 3a p. 4-12
