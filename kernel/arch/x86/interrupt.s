@@ -1,11 +1,12 @@
 # Defined in isr.c
 .extern px_isr_handler
 .extern px_irq_handler
+.align 4
 
 # Common ISR code
 isr_common_stub:
     # 1. Save CPU state
-    pusha               # Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
+    pushal               # Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
     movw %ds, %ax       # Lower 16-bits of eax = ds.
     pushl %eax          # save the data segment descriptor
     movw $0x10, %ax     # kernel data segment descriptor
@@ -19,20 +20,20 @@ isr_common_stub:
     call px_isr_handler
 
     # 3. Restore state
-    popl %eax
+    addl $4, %esp
     popl %eax
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
-    popa
+    popal
     addl $8, %esp       # Cleans up the pushed error code and pushed ISR number
     iret                # pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 # Common IRQ code. Identical to ISR code except for the 'call' 
 # and the 'pop ebx'
 irq_common_stub:
-    pusha
+    pushal
     movw %ds, %ax
     pushl %eax
     movw $0x10, %ax
@@ -40,14 +41,16 @@ irq_common_stub:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
+    pushl %esp
     cld
     call px_irq_handler # Different than the ISR code
+    add $4, %esp
     popl %ebx           # Different than the ISR code
     movw %bx, %ds
     movw %bx, %es
     movw %bx, %fs
     movw %bx, %gs
-    popa
+    popal
     addl $8, %esp
     iret
 
