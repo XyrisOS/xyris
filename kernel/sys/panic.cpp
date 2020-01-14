@@ -11,7 +11,7 @@
  */
 #include <sys/sys.hpp>
 
-void panic_print_file(const char *file, uint32_t line);
+void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(registers_t regs);
 
 void printPanicScreen() {
@@ -47,7 +47,7 @@ void panic(int exception) {
     asm("hlt");
 }
 
-void panic(char* msg, const char *file, uint32_t line) {
+void panic(char* msg, const char *file, uint32_t line, const char *func) {
     // Clear the screen
     px_clear_tty();
     // Print the panic cow
@@ -55,17 +55,16 @@ void panic(char* msg, const char *file, uint32_t line) {
     // Print the message passed in on a new line
     px_kprint("\n");
     px_kprint(msg);
-    panic_print_file(file, line);
+    panic_print_file(file, line, func);
     // Halt the CPU
     asm("hlt");
 }
 
-void panic(registers_t regs, const char *file, uint32_t line) {
+void panic(registers_t regs, const char *file, uint32_t line, const char *func) {
     // Clear the screen
     px_clear_tty();
-    // Print the panic cow
+    // Print the panic cow and exception description
     printPanicScreen();
-
     px_kprint("Exception: ");
     char s[11];
     itoa(regs.int_num, s);
@@ -80,37 +79,40 @@ void panic(registers_t regs, const char *file, uint32_t line) {
     }
     px_kprint("\n\n");
     panic_print_register(regs);
-
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
     uint32_t faulting_address;
     asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
- 
     // The error code gives us details of what happened.
     int present = !(regs.err_code & 0x1);   // Page not present
     int rw = regs.err_code & 0x2;           // Write operation?
     int us = regs.err_code & 0x4;           // Processor was in user-mode?
     int reserved = regs.err_code & 0x8;     // Overwritten CPU-reserved bits of page entry?
     int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
- 
-    // Output an error message.
-    px_kprint("Page fault ( ");
-    (present) ? px_kprint("present ") : px_kprint("missing ");
-    (rw) ? px_kprint("reading ") : px_kprint("writing ");
-    (us) ? px_kprint("user-mode ") : px_kprint("kernel ");
-    (reserved) ? px_kprint("reserved ") : px_kprint("available");
-    px_kprint(") at 0x");
-    px_kprint_hex(faulting_address);
+    // If we have a page fault, print out page fault info
+    if (regs.int_num == 14) {
+        // Output an error message.
+        px_kprint("Page fault ( ");
+        (present) ? px_kprint("present ") : px_kprint("missing ");
+        (rw) ? px_kprint("reading ") : px_kprint("writing ");
+        (us) ? px_kprint("user-mode ") : px_kprint("kernel ");
+        (reserved) ? px_kprint("reserved ") : px_kprint("available");
+        px_kprint(") at 0x");
+        px_kprint_hex(faulting_address);
+    }
     px_kprint("\n");
-    panic_print_file(file, line);
+    panic_print_file(file, line, func);
     // Halt the CPU
     asm("hlt");
 }
 
-void panic_print_file(const char *file, uint32_t line) {
+void panic_print_file(const char *file, uint32_t line, const char *func) {
     char lineStr[9];    // 8 digits + 1 terminator
     px_kprint("File: ");
     px_kprint(file);
+    px_kprint("\n");
+    px_kprint("Func: ");
+    px_kprint(func);
     px_kprint("\n");
     itoa(line, lineStr);
     px_kprint("Line: ");
