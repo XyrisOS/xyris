@@ -14,11 +14,15 @@
 void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(registers_t regs);
 
-void printPanicScreen() {
+void printPanicScreen(int exception) {
     px_tty_set_color(Black, White);
     px_clear_tty();
     px_kprint(" ________________________\n");
-    px_kprint("< OH NO! Panix panicked! >\n");
+    if (exception == 13) {
+        px_kprint("< Wait... That's Illegal >\n");
+    } else {
+        px_kprint("< OH NO! Panix panicked! >\n");
+    }
     px_kprint(" ------------------------\n");
     px_kprint("        \\   ^__^\n");
     px_kprint("         \\  (XX)\\_______\n");
@@ -31,7 +35,7 @@ void panic(int exception) {
     // Clear the screen
     px_clear_tty();
     // Print the panic cow
-    printPanicScreen();
+    printPanicScreen(exception);
     // Get the exception code
     char* panicCode = (char*) "UNHANDLED EXCEPTION 0x00 - ";
     char* hex = (char*) "0123456789ABCDEF";
@@ -51,7 +55,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
     // Clear the screen
     px_clear_tty();
     // Print the panic cow
-    printPanicScreen();
+    printPanicScreen(0);
     // Print the message passed in on a new line
     px_kprint("\n");
     px_kprint(msg);
@@ -64,7 +68,7 @@ void panic(registers_t regs, const char *file, uint32_t line, const char *func) 
     // Clear the screen
     px_clear_tty();
     // Print the panic cow and exception description
-    printPanicScreen();
+    printPanicScreen(regs.int_num);
     px_kprint("Exception: ");
     char s[11];
     itoa(regs.int_num, s);
