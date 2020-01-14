@@ -1,76 +1,64 @@
 /* Tell our linker that our entry point is the boot_loader function
  * which we defined in the boot.s file.
  */
-ENTRY(boot_loader)
+ENTRY(_start)
 OUTPUT_FORMAT(elf32-i386)
 OUTPUT_ARCH(i386:i386)
 
 SECTIONS
 {
-  /* This line signifies where we want to start putting our
-   * data sections in memory. This tells us that we want to
-   * start at the 1 megabyte mark, which makes it a bit
-   * easier for us to grab data from later.
-   *
-   * The kernel will live at 3GB + 1MB in the virtual address space,
-	 * which will be mapped to 1MB in the physical address space.
-	 * Note that we page-align the sections.
-   * 0xC0000000 = 3GB mark
-   * 0x00100000 = 1MB mark
-   *
-   * Please read this excellent blog post explaining why a higher
-   * kernel is important for userspace and virtual memory:
-   * https://medium.com/@connorstack/how-does-a-higher-half-kernel-work-107194e46a64
-   */
-	. = 0xC0100000;
-  /* Add a symbol that indicates the start address of the kernel. */
-  _kernel_start = .;
+  /* Early kernel section, linked at 1MB */
+  . = 0x00100000;
+  _EARLY_KERNEL_START = .;
 
-  /* Text section which contains our multiboot header and
-   * all of our text data. We make it a 4 kilobyte block
-   * that we align to a 4 kilobyte segment of memory.
-   */
-  .text ALIGN(4K) : AT (ADDR (.text) - 0xC0000000)
+  .__mbHeader : { *(.__mbHeader) }
+  .early_text ALIGN (4K) : { *(.early_text) }
+  .early_data ALIGN (4K) : { *(.early_data) }
+  .early_bss ALIGN (4K) :
   {
-    *(.multiboot)
-    *(.text*)
+    _EARLY_BSS_START = .;
+    *(.early_bss)
+    _EARLY_BSS_END = .;
   }
-  /* Read-Only Data that we give a 4 kilobyte block
-   * that we align to a 4 kilobyte segment of memory
-   * like in the text section above.
-   */
-  .rodata ALIGN (4K) : AT (ADDR (.rodata) - 0xC0000000)
-  {
-    *(.rodata)
-  }
-  /*
-   * Read-Write data that contains our global constructor
-   * and all of our assembled kernel code.
-   */
-  .data ALIGN (4K) : AT (ADDR (.data) - 0xC0000000)
-  {
-    /* Global constructors data. This was leftover from the WYOOS tutorial 
-     * and if I'm being honest, I don't understand it at all because no one
-     * on the OSDev Wiki does it like this. 
-     */
-    start_ctors = .;
-    KEEP(*( .init_array ));
-    KEEP(*(SORT_BY_INIT_PRIORITY( .init_array.* )));
-    end_ctors = .;
 
+  _EARLY_KERNEL_END = .;
+
+  /* Higher half kernel, linked at 3GB */
+  . += 0xC0000000;
+
+  _KERNEL_START = .;
+
+  .text ALIGN (4K) : AT(ADDR(.text) - 0xC0000000) { *(.text) }
+  .rodata ALIGN (4K) : AT(ADDR(.rodata) - 0xC0000000) { *(.rodata*) }
+  .data ALIGN (4K) : AT(ADDR(.data) - 0xC0000000)
+  {
+    _CTORS_START = .;
+    KEEP(*(.init_array));
+    KEEP(*(SORT_BY_INIT_PRIORITY(.init_array.*)));
+    _CTORS_END = .;
     *(.data)
   }
-  /*
-   * Uninitialized Read-Write data and our Stack
-   */
-  .bss ALIGN (4K) : AT (ADDR (.bss) - 0xC0000000)
+  .bss ALIGN (4K) : AT(ADDR(.bss) - 0xC0000000)
   {
-    *(COMMON)
+    _BSS_START = .;
     *(.bss)
-    *(.bootstrap_stack)
+    *(COMMON)
+    _BSS_END = .;
   }
-  /* Add a symbol that indicates the end address of the kernel. */
-	_kernel_end = .;
+  .early_kmalloc ALIGN (4K) : AT(ADDR(.early_kmalloc) - 0xC0000000)
+  {
+    _EARLY_KMALLOC_START = .;
+    . += 4K; /* 1MB of heap space */
+    _EARLY_KMALLOC_END = .;
+  }
+
+  _KERNEL_END = .;
+
+  _EARLY_BSS_SIZE = _EARLY_BSS_END - _EARLY_BSS_START;
+  _BSS_SIZE = _BSS_END - _BSS_START;
+  _KERNEL_SIZE = _KERNEL_END - _KERNEL_START;
 
   /DISCARD/ : { *(.fini_array*) *(.comment) }
 }
+
+ASSERT(_KERNEL_SIZE < 0x300000, "Kernel exceeds the 3 MB limit. loader.s must be updated to work a larger kernel.");

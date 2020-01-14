@@ -2,8 +2,8 @@
 
 uint8_t ttyCoordsX = 0;
 uint8_t ttyCoordsY = 0;
-uint8_t backColor = Black;
-uint8_t foreColor = White;
+px_tty_color backColor = Black;
+px_tty_color foreColor = White;
 
 void px_print_debug(char* msg, px_print_level lvl) {
     // Reset the color to the default and print the opening bracket
@@ -91,7 +91,11 @@ void px_kprint(const char* str) {
     }
 }
 
-void px_kprintAtPosition(const char* str, uint8_t positionX, uint8_t positionY, bool resetCursor) {
+void putchar(char character) {
+    px_kprint(&character);
+}
+
+void px_kprint_pos(const char* str, uint8_t positionX, uint8_t positionY, bool resetCursor) {
     volatile uint16_t* where;
     uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
     for(int i = 0; str[i] != '\0'; ++i) {
@@ -140,18 +144,29 @@ void px_kprintAtPosition(const char* str, uint8_t positionX, uint8_t positionY, 
     }
 }
 
-void px_kprint_hex(uint8_t key) {
-    char* foo = "00";
-    char* hex = "0123456789ABCDEF";
-    foo[0] = hex[(key >> 4) & 0xF];
-    foo[1] = hex[key & 0xF];
+void px_kprint_base(int value, int base) {
+    char* digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+    if ((value / base) != 0 ) {
+        px_kprint_base(value / base, base);
+    }
+    putchar(digits[ value % base ]);
+}
+
+void px_kprint_hex(uint32_t key) {
+    char* foo = "00000000";
+    static const char* hex = "0123456789ABCDEF";
+    for (size_t i = 0; i < 8; ++i) {
+        foo[7 - i] = hex[(key >> (i * 4)) & 0x0f];
+    }
     px_kprint(foo);
 }
 
 void px_kprint_color(char* str, px_tty_color color) {
-    px_tty_set_color(color, (px_tty_color)backColor);
+    px_tty_color oldBack = backColor;
+    px_tty_color oldFore = foreColor;
+    px_tty_set_color(color, backColor);
     px_kprint(str);
-    px_tty_set_color((px_tty_color)foreColor, (px_tty_color)backColor);
+    px_tty_set_color(oldFore, oldBack);
 }
 
 void px_tty_set_color(px_tty_color fore, px_tty_color back) {
@@ -163,11 +178,7 @@ void px_clear_tty() {
     char str[] =  { ' ', '\0' };
     for (int y = 0; y < 25; y++) {
         for (int x = 0; x < 80; x++) {
-            px_kprintAtPosition(str, x, y, true);
+            px_kprint_pos(str, x, y, true);
         }
     }
-}
-
-void putchar(char character) {
-    px_kprint(&character);
 }

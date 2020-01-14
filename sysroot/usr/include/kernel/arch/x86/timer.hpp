@@ -27,5 +27,11 @@ void px_timer_init(uint32_t freq);
  * 
  */
 void px_timer_print();
+/**
+ * @brief Sleeps for a certain length of time.
+ * 
+ * @param ms Sleep length in milliseconds
+ */
+void sleep(uint32_t ms);
 
 #endif /* PANIX_I386_TIMER_HPP */

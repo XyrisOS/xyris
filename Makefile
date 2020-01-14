@@ -1,36 +1,36 @@
-# sudo apt-get install g++ binutils qemu-system-i386 grub-pc:i386 xorriso
+# Panix Kernel Makefile
+# Compiles the kernel source code located in the kernel/ folder.
+#
+# TODO: Create seperate makefiles as needed and integrate into one makefile
+#
+# Necessary packages (not including cross compiler)
+# brew / apt install qemu-system-i386 grub-pc:i386 xorriso
 
 # Sources and headers
 CPP_SRC  = $(shell find kernel/ -name "*.cpp")
 ATT_SRC  = $(shell find kernel/ -name "*.s")
-NASM_SRC = $(shell find kernel/ -name "*.nasm")
 HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
 SYSROOT  = sysroot
 
 # Compilers/Assemblers/Linkers
-NASM 	= $(shell command -v nasm 				|| echo "Please install nasm")
-AS	 	= $(shell command -v i686-elf-as 		|| as)
-GCC  	= $(shell command -v i686-elf-gcc 		|| gcc)
-GDB  	= $(shell command -v i686-elf-gdb 		|| gdb)
-LD   	= $(shell command -v i686-elf-ld 		|| ld)
-OBCP 	= $(shell command -v i686-elf-objcopy 	|| objcopy)
+AS	 	= $(shell command -v i686-elf-as 		|| command -v as)
+GCC  	= $(shell command -v i686-elf-gcc 		|| command -v gcc)
+GDB  	= $(shell command -v i686-elf-gdb 		|| command -v gdb)
+LD   	= $(shell command -v i686-elf-ld 		|| command -v ld)
+OBCP 	= $(shell command -v i686-elf-objcopy 	|| command -v objcopy)
 QEMU 	= $(shell command -v qemu-system-i386	|| echo "Please install qemu")
 MKGRUB 	= $(shell command -v grub-mkrescue		|| echo "You're likely on macOS. Please refer to Installing_GRUB_2_on_OS_X on the OSDev Wiki")
 VBOX	= $(shell command -v VBoxManage			|| echo "Please install Virtualbox")
 
-# Compilers/Assemblers/Linkers for Automation
-STD_AS  = as
-STD_GCC = gcc
-STD_GDB = gdb
-STD_LD  = ld
-
 # Compiler/Linker flags
+# The -lgcc flag is included because it includes helpful functions used
+# by GCC that would be ineffective to duplicate.
 GCC_FLAGS = 					\
 	-m32 						\
 	-g							\
-	-nostdlib					\
 	-nostartfiles				\
 	-nodefaultlibs				\
+	-lgcc						\
 	-ffreestanding				\
 	-fno-use-cxa-atexit			\
 	-fno-builtin				\
@@ -41,7 +41,6 @@ GCC_FLAGS = 					\
 	-Wno-write-strings			\
 	-std=c++17
 AS_FLAGS   = --32
-NASM_FLAGS = -f elf
 LD_FLAGS   = -melf_i386
 KRNL_FLAGS = 							\
 	-D__is_kernel 						\
@@ -52,8 +51,7 @@ LINKER = kernel/arch/x86/linker.ld
 
 # All objects
 OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) 	\
-	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC)) 		\
-	  $(patsubst kernel/%.nasm, obj/%.o, $(NASM_SRC))
+	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC))
 # Object directories, mirroring source
 OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 
@@ -65,10 +63,6 @@ obj/%.o: kernel/%.cpp $(HEADERS)
 obj/%.o: kernel/%.s
 	$(MAKE) obj_directories
 	$(AS) $(AS_FLAGS) -o $@ $<
-
-obj/%.o: kernel/%.nasm
-	$(MAKE) obj_directories
-	$(NASM) $(NASM_FLAGS) -o $@ $<
 
 # Link objects into BIN
 dist/panix.kernel: $(LINKER) $(OBJ)
@@ -94,7 +88,7 @@ obj_directories:
 run: dist/panix.iso
 	$(QEMU) 					\
 	-drive format=raw,file=$< 	\
-	-m 128M						\
+	-m 4G						\
 	-soundhw pcspk 				\
 	-rtc clock=host 			\
 	-vga std -m 256M 			\
@@ -110,7 +104,7 @@ debug: dist/panix.iso
 	$(QEMU) 					\
 	-S -s 						\
 	-drive format=raw,file=$< 	\
-	-m 128M						\
+	-m 4G						\
 	-soundhw pcspk 				\
 	-rtc clock=host 			\
 	-vga std 					\

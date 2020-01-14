@@ -1,129 +1,146 @@
-.set MULTIBOOT_MAGIC,       0x1badb002
-.set MULTIBOOT_PAGE_ALIGN,  1<<0
-.set MULTIBOOT_MEM_INFO,    1<<1
-.set MULTIBOOT_FLAGS,       (MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEM_INFO)
-.set MULTIBOOT_CHECKSUM,    -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)
+# make the _start function available to the linker
+.global _start
 
-# Multiboot header section of our executable. See linker.ld
-.section .multiboot
-.long MULTIBOOT_MAGIC
-.long MULTIBOOT_FLAGS
-.long MULTIBOOT_CHECKSUM
-
-# Bootstrap Stack Section which reserves 16 Kb space for our kernel thread stack.
-# See linker.ld
-.section .bootstrap_stack, "aw", @nobits # former .bss section
-.align 16
-kernel_stack_bottom:
-.space 0x4000 ;# 16 Kb stack size
-kernel_stack_top:
-
-# Preallocate pages used for paging. Don't hard-code addresses and assume they
-# are available, as the bootloader might have loaded its multiboot structures or
-# modules there. This lets the bootloader know it must avoid the addresses.
-.section .bss, "aw", @nobits
-	.align 4096
-boot_page_directory:
-	.skip 8192
-boot_page_table1:
-	.skip 8192
-# Further page tables may be required if the kernel grows beyond 3 MiB.
-
-# Text section of our executable. See linker.ld
-# This is the kernel entry point
-.section .text
 # external reference to our global constructors and kernel main functions
 # which are defined in our main.cpp file. This allows assembly to call
 # function in C++ by telling the compiler they exist "somewhere"
 .extern px_kernel_main
 .extern px_call_constructors
-.global boot_loader
-.type boot_loader @function
-boot_loader:
-    # Physical address of boot_page_table1.
-	movl $(boot_page_table1 - 0xC0000000), %edi
-	# First address to map is address 0.
-	# TODO: Start at the first kernel page instead. Alternatively map the first
-	#       1 MiB as it can be generally useful, and there's no need to
-	#       specially map the VGA buffer.
-	movl $0, %esi
-	# Map 1023 pages. The 1024th will be the VGA text buffer.
-	movl $1023, %ecx
-1:
-    # Only map the kernel.
-	cmpl $(_kernel_start - 0xC0000000), %esi
-	jl 2f
-	cmpl $(_kernel_end - 0xC0000000), %esi
-	jge 3f
-	# Map physical address as "present, writable". Note that this maps
-	# .text and .rodata as writable. Mind security and map them as non-writable.
-	movl %esi, %edx
-	orl $0x003, %edx
-	movl %edx, (%edi)
 
-2:
-    # Size of page is 4096 bytes.
-	addl $4096, %esi
-	# Size of entries in boot_page_table1 is 4 bytes.
-	addl $4, %edi
-	# Loop to the next entry if we haven't finished.
-	loop 1b
+.extern _KERNEL_START
+.extern _KERNEL_END
+.extern _BSS_START
+.extern _BSS_SIZE
 
-3:
-	# Map VGA video memory to 0xC03FF000 as "present, writable".
-    # The VGA video memory buffer give to us by the BIOS is normally
-    # located at 0x000B8000, but since we're mapping everything to a
-    # higher half, we need to get our location provided by boot_page_table1
-    # then subtract off our higher end.
-    # @todo Figure out the math in boot.s because I have no clue
-	movl $(0x000B8000 | 0x003), boot_page_table1 - 0xC0000000 + 1023 * 4
+.extern _EARLY_KERNEL_START
+.extern _EARLY_KERNEL_END
+.extern _EARLY_BSS_START
+.extern _EARLY_BSS_SIZE
 
-	# The page table is used at both page directory entry 0 (virtually from 0x0
-	# to 0x3FFFFF) (thus identity mapping the kernel) and page directory entry
-	# 768 (virtually from 0xC0000000 to 0xC03FFFFF) (thus mapping it in the
-	# higher half). The kernel is identity mapped because enabling paging does
-	# not change the next instruction, which continues to be physical. The CPU
-	# would instead page fault if there was no identity mapping.
+.equ KERNEL_BASE, 0xC0000000
+.equ LOWMEM_END, _EARLY_KERNEL_END        # lowmem ends at the 1st MB
+.equ PAGE_SIZE, 4096
+.equ PAGE_SHIFT, 12                 # 2^12 = 4096 = PAGE_SIZE
+.equ PAGE_PERM, 3                  # default page permissions: present, read/write
+.equ STACK_SIZE, 4*PAGE_SIZE        # initial kernel stack space size of 16k
 
-	# Map the page table to both virtual addresses 0x00000000 and 0xC0000000.
-	movl $(boot_page_table1 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
-	movl $(boot_page_table1 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 768 * 4
+.equ MULTIBOOT_MAGIC,       0x1badb002
+.equ MULTIBOOT_PAGE_ALIGN,  1<<0
+.equ MULTIBOOT_MEM_INFO,    1<<1
+.equ MULTIBOOT_FLAGS,       (MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEM_INFO)
+.equ MULTIBOOT_CHECKSUM,    -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)
 
-	# Set cr3 to the address of the boot_page_directory.
-	movl $(boot_page_directory - 0xC0000000), %ecx
-	movl %ecx, %cr3
+# Multiboot header section of our executable. See linker.ld
+.section .__mbHeader, "ax", @progbits
+.long MULTIBOOT_MAGIC
+.long MULTIBOOT_FLAGS
+.long MULTIBOOT_CHECKSUM
 
-	# Enable paging and the write-protect bit.
-	movl %cr0, %ecx
-	orl $0x80010000, %ecx
-	movl %ecx, %cr0
+# Text section of our executable. See linker.ld
+# This is the kernel entry point
+.section .early_text, "ax", @progbits
+_start:
+    # save our multiboot information from grub before messing with registers
+	# these can't be saved on the stack as we are about to zero it
+	movl %eax, multiboot_magic
+	movl %ebx, multiboot_info
 
-	# Jump to higher half with an absolute jump. 
-	lea 4f, %ecx
-	jmp *%ecx
+	# zero the early BSS to start things off well
+	movl $_EARLY_BSS_SIZE, %ecx
+	xorb %al, %al
+	movl $_EARLY_BSS_START, %edi
+	rep
+	stosb
 
-4:
-	# At this point, paging is fully set up and enabled.
+	# identity map from 0x00000000 -> EARLY_KERNEL_END
+	# WARNING: code assumes that the kernel won't be greater than 3MB
+	movl $lowmem_pt, %eax
+	movl %eax, page_directory
+    orl $PAGE_PERM, page_directory
 
-	# Unmap the identity mapping as it is now unnecessary. 
-	movl $0, boot_page_directory + 0
+    xor %eax, %eax
+    _start.lowmem:
+    movl %eax, %ecx
+    shrl $PAGE_SHIFT, %ecx
+    andl $0x3ff, %ecx
+    movl %eax, lowmem_pt(,%ecx,4)
+    orl $PAGE_PERM, lowmem_pt(,%ecx,4)
 
-	# Reload crc3 to force a TLB flush so the changes to take effect.
-	movl %cr3, %ecx
-	movl %ecx, %cr3
+    addl $PAGE_SIZE, %eax
+    cmpl $LOWMEM_END, %eax
+    jl _start.lowmem
 
-	# Set up the stack.
-	mov $kernel_stack_top, %esp
+	# create virtual mappings for the kernel in the higher-half
+	movl $KERNEL_BASE, %edx
+	shrl $22, %edx       # find which page table we need to use
+
+	movl $kernel_pt, %eax
+	movl %eax, page_directory(,%edx,4)
+	orl $PAGE_PERM, page_directory(,%edx,4)
+
+	movl $_KERNEL_START, %eax # the kernel's current virtual start
+	_start.higher:
+	movl %eax, %ecx
+	shrl $PAGE_SHIFT, %ecx
+	andl $0x3ff, %ecx # generate kernel PTE index
+
+	movl %eax, %ebx
+	subl $KERNEL_BASE, %ebx # convert virt->physical
+	movl %ebx, kernel_pt(,%ecx,4)
+	orl $PAGE_PERM, kernel_pt(,%ecx,4)
+
+	addl $PAGE_SIZE, %eax  # move on to the next page
+	cmpl $_KERNEL_END, %eax # are we done mapping in the kernel?
+	jl _start.higher
+
+	movl $page_directory, %eax
+	movl %eax, %cr3 # load CR3 with our page directory
+
+	movl %cr0, %eax
+	orl $0x80000000, %eax
+	movl %eax, %cr0 # enable paging! make sure the next instruction fetch doesnt page fault
+
+	# zero the kernel BSS
+	movl $_BSS_SIZE, %ecx
+	xorb %al, %al
+	movl $_BSS_START, %edi
+	rep
+	stosb
+
+	# adjust the stack in to the virtual area
+	# setup and adjust the stack 
+	movl  $(stack + STACK_SIZE), %esp
+
+	pushl multiboot_magic               # Multiboot magic number
+	pushl multiboot_info                # Multiboot info structure
 
 	# Enter the high-level kernel.
     call px_kernel_main
     # By this point we should be into the wild world of C++
     # So, this should never be called unless the kernel returns
-    cli
-    jmp _stop
+    _start.catchfire: 
+	hlt
+	jmp _start.catchfire
 
-# When the kernel is done we move down to stop, so we disable interrupts
-# and then halt the CPU
-_stop:
-    hlt
-    jmp _stop
+.section .early_bss, "aw", @nobits
+.align 4096
+page_directory:       # should also be page aligned (hopefully)
+	.space 1024*4      # reserve 1024 DWORDs for our page table pointers
+lowmem_pt: 
+	.space 1024*4      # lowmem identity mappings 
+kernel_pt: 
+	.space 1024*4      # our kernel page table mappings 
+
+.section .early_data, "aw", @nobits
+multiboot_magic: 
+	.long 0
+multiboot_info: 
+	.long 0
+
+.section .bss, "aw", @nobits
+.align 4
+stack: 
+	.space STACK_SIZE
+
+/* vim: ft=gas : 
+*/
