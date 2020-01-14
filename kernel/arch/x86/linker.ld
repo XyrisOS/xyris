@@ -49,7 +49,7 @@ SECTIONS
   {
     _EARLY_KMALLOC_START = .;
     . += 4K; /* 1MB of heap space */
-    _KERNEL_KMALLOC_END = .;
+    _EARLY_KMALLOC_END = .;
   }
 
   _KERNEL_END = .;
