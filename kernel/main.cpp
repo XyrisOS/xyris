@@ -69,8 +69,9 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Install the GDT
     px_interrupts_disable();
     px_gdt_install();
-    //char* smbios_addr = px_get_smbios_addr();
     px_isr_install();           // Interrupt Service Requests
+                                // Early kernel memory allocation
+                                // Initialize paging service
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)

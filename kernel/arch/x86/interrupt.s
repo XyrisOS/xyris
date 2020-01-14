@@ -286,7 +286,7 @@ isr31:
 # the IRQ value (starting at 0) along with their
 # corresponding hardware interrupt value (starting at 32).
 #
-# IRQ handlers
+# Interrupt Request handlers
 # System timer (PIT)
 .global irq0
 irq0:
