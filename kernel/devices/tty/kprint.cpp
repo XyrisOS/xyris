@@ -42,8 +42,21 @@ void px_print_debug(char* msg, px_print_level lvl) {
 void px_print_raw(char c, uint8_t x, uint8_t y, px_tty_color fg, px_tty_color bg) {
     volatile uint16_t* where;
     uint16_t attrib = (bg << 4) | (fg & 0x0F);
-    where = videoMemory + (y * 80 + x);
+    where = videoMemory + (y * TTY_WIDTH + x);
     *where = c | (attrib << 8);
+}
+
+void px_shift_tty_up() {
+    // start on the second row
+    volatile uint16_t* where = videoMemory + TTY_WIDTH;
+    for (size_t row = 1; row < TTY_HEIGHT; ++row) {
+        for (size_t col = 0; col < TTY_WIDTH; ++col) {
+            // copy the char to the previous row
+            *(where - TTY_WIDTH) = *where;
+            // increment the pointer
+            ++where;
+        }
+    }
 }
 
 void px_kprint(const char* str) {
@@ -57,7 +70,7 @@ void px_kprint(const char* str) {
                 if (ttyCoordsX > 0) {
                     ttyCoordsX--;
                 }
-                where = videoMemory + (ttyCoordsY * 80 + ttyCoordsX);
+                where = videoMemory + (ttyCoordsY * TTY_WIDTH + ttyCoordsX);
                 *where = ' ' | (attrib << 8);
                 break;
             // Newline
@@ -67,26 +80,25 @@ void px_kprint(const char* str) {
                 break;
             // Anything else
             default:
-                where = videoMemory + (ttyCoordsY * 80 + ttyCoordsX);
+                where = videoMemory + (ttyCoordsY * TTY_WIDTH + ttyCoordsX);
                 *where = str[i] | (attrib << 8);
                 ttyCoordsX++;
                 break;
         }
         // Move to the next line
-        if(ttyCoordsX >= 80) {
+        if(ttyCoordsX >= TTY_WIDTH) {
             ttyCoordsX = 0;
             ttyCoordsY++;
         }
         // Clear the screen
-        if(ttyCoordsY >= 25) {
-            for(ttyCoordsY = 0; ttyCoordsY < 25; ttyCoordsY++) {
-                for(ttyCoordsX = 0; ttyCoordsX < 80; ttyCoordsX++) {
-                    where = videoMemory + (ttyCoordsY * 80 + ttyCoordsX);
-                    *where = ' ' | (attrib << 8);
-                }
+        if(ttyCoordsY >= TTY_HEIGHT) {
+            px_shift_tty_up();
+            where = videoMemory + ((TTY_HEIGHT - 1) * TTY_WIDTH - 1);
+            for (size_t col = 0; col < TTY_WIDTH; ++col) {
+                *(++where) = ' ' | (attrib << 8);
             }
             ttyCoordsX = 0;
-            ttyCoordsY = 0;
+            ttyCoordsY = TTY_HEIGHT - 1;
         }
     }
 }
@@ -105,7 +117,7 @@ void px_kprint_pos(const char* str, uint8_t positionX, uint8_t positionY, bool r
                 if (positionX > 0) {
                     positionX--;
                 }
-                where = videoMemory + (positionY * 80 + positionX);
+                where = videoMemory + (positionY * TTY_WIDTH + positionX);
                 *where = ' ' | (attrib << 8);
                 break;
             // Newline
@@ -115,26 +127,25 @@ void px_kprint_pos(const char* str, uint8_t positionX, uint8_t positionY, bool r
                 break;
             // Anything else
             default:
-                where = videoMemory + (positionY * 80 + positionX);
+                where = videoMemory + (positionY * TTY_WIDTH + positionX);
                 *where = str[i] | (attrib << 8);
                 positionX++;
                 break;
         }
         // Move to the next line
-        if(positionX >= 80) {
+        if(positionX >= TTY_WIDTH) {
             positionX = 0;
             positionY++;
         }
         // Clear the screen
-        if(positionY >= 25) {
-            for(positionY = 0; positionY < 25; positionY++) {
-                for(positionX = 0; positionX < 80; positionX++) {
-                    where = videoMemory + (positionY * 80 + positionX);
-                    *where = ' ' | (attrib << 8);
-                }
+        if(positionY >= TTY_HEIGHT) {
+            px_shift_tty_up();
+            where = videoMemory + ((TTY_HEIGHT - 1) * TTY_WIDTH - 1);
+            for (size_t col = 0; col < TTY_WIDTH; ++col) {
+                *(++where) = ' ' | (attrib << 8);
             }
             positionX = 0;
-            positionY = 0;
+            positionY = TTY_HEIGHT - 1;
         }
     }
     // If we are told to reset the cursor
@@ -176,8 +187,8 @@ void px_tty_set_color(px_tty_color fore, px_tty_color back) {
 
 void px_clear_tty() {
     char str[] =  { ' ', '\0' };
-    for (int y = 0; y < 25; y++) {
-        for (int x = 0; x < 80; x++) {
+    for (int y = 0; y < TTY_HEIGHT; y++) {
+        for (int x = 0; x < TTY_WIDTH; x++) {
             px_kprint_pos(str, x, y, true);
         }
     }
