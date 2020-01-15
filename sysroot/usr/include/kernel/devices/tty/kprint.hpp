@@ -18,6 +18,9 @@
 
 #include <sys/sys.hpp>
 
+#define TTY_WIDTH 80
+#define TTY_HEIGHT 25
+
 enum px_tty_color {
     Black           = 0x0,
     Blue            = 0x1,
