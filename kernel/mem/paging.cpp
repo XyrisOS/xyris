@@ -31,23 +31,26 @@ uint32_t nframes;
 
 // Static function to set a bit in the frames bitset
 static void px_frame_set(uint32_t frame_addr) {
+  // Stubbed
 }
 
 // Static function to clear a bit in the frames bitset
 static void px_frame_clear(uint32_t frame_addr) {
+  // Stubbed
 }
 
 // Static function to test if a bit is set.
 static uint32_t px_frame_test(uint32_t frame_addr) {
+  // Stubbed
 }
 
 // Static function to find the first free frame.
 static uint32_t px_frame_get_first() {
-    
+    // Stubbed
 }
 
 void px_paging_init() {
-   
+   // Stubbed
 }
 
 static inline void px_paging_enable() {
@@ -66,20 +69,20 @@ static inline void px_paging_disable() {
 
 // Function to allocate a frame.
 void px_frame_alloc(px_page_table_entry_t *page, int is_kernel, int is_writeable) {
-   
+   // Stubbed
 }
 
 // Function to deallocate a frame.
 void px_frame_free(px_page_table_entry_t *page) {
-   
+   // Stubbed
 }
 
 void px_page_switch_dir(page_directory_t *dir) {
-   
+   // Stubbed
 }
 
 px_page_table_entry_t *px_mem_get_page(uint32_t address, int make, page_directory_t *dir) {
-    
+    // Stubbed
 }
 
 void px_mem_page_fault(registers_t regs) {

@@ -59,7 +59,7 @@ void px_shell_scancode_handler(uint8_t scode) {
 }
 
 void px_shell_shift_handler() {
-
+    //
 }
 
 void px_shell_new_line_handler() {
