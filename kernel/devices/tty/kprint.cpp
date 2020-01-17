@@ -1,4 +1,6 @@
 #include <devices/tty/kprint.hpp>
+#define IND_X 79
+#define IND_Y 0
 
 uint8_t ttyCoordsX = 0;
 uint8_t ttyCoordsY = 0;
@@ -192,4 +194,8 @@ void px_clear_tty() {
             px_kprint_pos(str, x, y, true);
         }
     }
+}
+
+void px_set_indicator(px_tty_color color) {
+    px_print_raw(' ', IND_X, IND_Y, color, color);
 }
