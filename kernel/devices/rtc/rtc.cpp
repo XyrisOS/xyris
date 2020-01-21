@@ -22,7 +22,7 @@ uint8_t px_rtc_month;  // Current UTC month
 uint32_t px_rtc_year;  // Current UTC year
 
 void px_rtc_init() {
-    px_print_debug("Initializing RTC", Info);
+    px_print_debug("Initializing RTC...", Info);
     // Initializer
     px_write_byte(RTC_CMOS_PORT, 0x8A);
     px_write_byte(RTC_DATA_PORT, 0x20);
@@ -36,7 +36,7 @@ void px_rtc_init() {
 }
 
 void px_rtc_callback(registers_t *regs) {
-    px_print_debug("RTC updated.\n", Info);
+    px_print_debug("RTC updated.", Info);
 }
 
 int px_rtc_get_update_in_progress() {
