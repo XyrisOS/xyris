@@ -36,7 +36,7 @@ void px_rtc_init() {
 }
 
 void px_rtc_callback(registers_t *regs) {
-    px_kprint("RTC update here.\n");
+    px_print_debug("RTC updated.\n", Info);
 }
 
 int px_rtc_get_update_in_progress() {
@@ -143,13 +143,13 @@ void px_rtc_print() {
     itoa(px_rtc_minute, minuteStr);
     itoa(px_rtc_day, dayStr);
     itoa(px_rtc_month, monthStr);
-    px_kprint("\nToday's Date: ");
+    px_kprint("Today's Date: ");
     px_kprint(monthStr);
     px_kprint("/");
     px_kprint(dayStr);
-    px_kprint(" - UTC: ");
+    px_kprint(" ");
     px_kprint(hourStr);
     px_kprint(":");
     px_kprint(minuteStr);
-    px_kprint("\n\n");
+    px_kprint("\n");
 }
