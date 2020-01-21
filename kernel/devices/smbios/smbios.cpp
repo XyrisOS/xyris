@@ -16,9 +16,13 @@
 #include <devices/smbios/smbios.hpp>
 
 char* px_get_smbios_addr() {
+    // Start at a location above the 0x10000 location and
+    // continue searching for the SMBIOS information
     uintptr_t *mem = (uintptr_t *) 0xF0000;
     int length, i;
     unsigned char checksum;
+    // 0x100000 is the start of non-BIOS reserved memory
+    // So we can't read anything after that point.
     while ((uintptr_t) mem < 0x100000) {
         if (mem[0] == '_' && mem[1] == 'S' && mem[2] == 'M' && mem[3] == '_') {
             length = mem[5];

@@ -12,7 +12,7 @@
 #include <devices/rtc/rtc.hpp>
 #include <arch/x86/isr.hpp>
 
-void px_rtc_callback(registers_t regs);
+void px_rtc_callback(registers_t *regs);
 // Current values from RTC
 uint8_t px_rtc_second; // Current UTC second
 uint8_t px_rtc_minute; // Current UTC minute
@@ -22,7 +22,7 @@ uint8_t px_rtc_month;  // Current UTC month
 uint32_t px_rtc_year;  // Current UTC year
 
 void px_rtc_init() {
-    px_print_debug("Initializing RTC", Info);
+    px_print_debug("Initializing RTC...", Info);
     // Initializer
     px_write_byte(RTC_CMOS_PORT, 0x8A);
     px_write_byte(RTC_DATA_PORT, 0x20);
@@ -35,8 +35,8 @@ void px_rtc_init() {
     px_register_interrupt_handler(IRQ8, px_rtc_callback);
 }
 
-void px_rtc_callback(registers_t regs) {
-    px_kprint("RTC update here.\n");
+void px_rtc_callback(registers_t *regs) {
+    px_print_debug("RTC updated.", Info);
 }
 
 int px_rtc_get_update_in_progress() {
@@ -143,13 +143,13 @@ void px_rtc_print() {
     itoa(px_rtc_minute, minuteStr);
     itoa(px_rtc_day, dayStr);
     itoa(px_rtc_month, monthStr);
-    px_kprint("\nToday's Date: ");
+    px_kprint("Today's Date: ");
     px_kprint(monthStr);
     px_kprint("/");
     px_kprint(dayStr);
-    px_kprint(" - UTC: ");
+    px_kprint(" ");
     px_kprint(hourStr);
     px_kprint(":");
     px_kprint(minuteStr);
-    px_kprint("\n\n");
+    px_kprint("\n");
 }

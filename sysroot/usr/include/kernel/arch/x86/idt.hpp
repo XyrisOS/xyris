@@ -21,14 +21,20 @@
 /* How every interrupt gate (handler) is defined */
 typedef struct {
     uint16_t low_offset;    /* Lower 16 bits of handler function address */
-    uint16_t sel;           /* Kernel segment selector */
+    uint16_t selector;      /* Kernel segment selector */
     uint8_t always0;
     /* First byte
      * Bit 7: "Interrupt is present"
      * Bits 6-5: Privilege level of caller (0=kernel..3=user)
      * Bit 4: Set to 0 for interrupt gates
      * Bits 3-0: bits 1110 = decimal 14 = "32 bit interrupt gate" */
-    uint8_t flags; 
+    /** Diagram for flags from OSDev Wiki. See IDT page for details.
+     *     7                           0
+     *   +---+---+---+---+---+---+---+---+
+     *   | P |  DPL  | S |    GateType   |
+     *   +---+---+---+---+---+---+---+---+
+     */
+    uint8_t flags;
     uint16_t high_offset; /* Higher 16 bits of handler function address */
 } __attribute__((packed)) idt_gate_t ;
 

@@ -3,7 +3,7 @@
         {
             "name": "Linux",
             "defines": [],
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "/usr/bin/gcc",
             "includePath": [
                 "${default}",
                 "${workspaceFolder}/sysroot/usr/include/kernel"

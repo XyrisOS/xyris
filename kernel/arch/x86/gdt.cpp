@@ -14,33 +14,11 @@
 
 // Defined in the gdt_flush.s file.
 extern "C" void gdt_flush(uintptr_t);
-// Function definitions
-static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0);
+// Define our local variables
+gdt_entry_t gdt_entries[5];
+gdt_ptr_t   gdt_ptr;
 
-// Code/Data Segment Descriptor
-struct gdt_segment {
-    // These are descriptors in the GDT that have S=1. Bit 3 of "type" indicates whether it's (0) Data or (1) Code.
-    // See https://wiki.osdev.org/Descriptors#Code.2FData_Segment_Descriptors for details on code & data segments.
-    uint16_t limit_low; // Limit
-    uint16_t base_low;  // Base
-    uint8_t base_high;  // Base
-    uint8_t type;       // Type
-    uint8_t limit;      // Bits 0..3: limit, Bits 4..7: additional data/code attributes
-    uint8_t base_vhi;   // Base
-} __attribute__((packed));
-
-struct gdt_ptr {
-    unsigned short limit;
-    unsigned int base;
-} __attribute__((packed));
-
-static struct {
-    gdt_segment entries[6];
-    gdt_ptr pointer;
-    tss_entry tss;
-} gdt __attribute__((used));
-
-void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran) {
+void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags) {
     // 32-bit address space
     // Now we have to squeeze the (32-bit) limit into 2.5 regiters (20-bit).
     // This is done by discarding the 12 least significant bits, but this
@@ -51,70 +29,36 @@ void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint8_t access,
     // the physical limit or get overlap with other segments) so we have to
     // compensate this by decreasing a higher bit (and might have up to
     // 4095 wasted bytes behind the used memory)
-	/* Base Address */
-	gdt.entries[num].base_low = (base & 0xFFFF);
-	gdt.entries[num].base_high = (base >> 16) & 0xFF;
-	gdt.entries[num].base_vhi = (base >> 24) & 0xFF;
-	/* Limits */
-	gdt.entries[num].limit_low = (limit & 0xFFFF);
-	gdt.entries[num].limit = (limit >> 16) & 0X0F;
-	/* Granularity */
-	gdt.entries[num].limit |= (gran & 0xF0);
-	/* Access flags */
-	gdt.entries[num].type = access;
+	uint64_t descriptor = 0;
+
+	// Create the high 32 bit segment
+	descriptor =  base         & 0xFF000000;	// base direct map
+	descriptor |= (base >> 16) & 0x000000FF;	// base 23-16 : 7-0
+	descriptor |= (flags << 8) & 0x00F0FF00;	// flags 16-11 : 24-19 7-0 : 15-8
+	descriptor |= limit        & 0x000F0000;	// limit direct map
+	// Shift by 32 to move to the lower half of the section
+	descriptor <<= 32;
+	// Create the low 32 bit segment
+	descriptor |= (base << 16) & 0xFFFF0000;	// base 15-0 : 31-16
+	descriptor |= limit        & 0x0000FFFF;	// limit direct map
+	// Copy the descriptor value into our GDT entries array
+	// TODO: Change GDT memcpy to a simple index assignment?
+	memcpy(&gdt_entries[num], &descriptor, sizeof(uint64_t));
 }
 
-bool px_gdt_install() {
+//gdt_flush((uintptr_t)gdtp);
+void px_gdt_install() {
 	// TODO: Add return false to cases where operations don't succeed.
-	px_print_debug("Installing the GDT onto the system...", Info);
-	//
-	gdt_ptr *gdtp = &gdt.pointer;
-	gdtp->limit = sizeof gdt.entries - 1;
-	gdtp->base = (uintptr_t)&gdt.entries[0];
+	px_print_debug("Installing the GDT...", Info);
+	gdt_ptr.limit = (sizeof(gdt_entry_t) * 5) - 1;
+    gdt_ptr.base  = (uint32_t)&gdt_entries;
 
-	px_gdt_set_gate(0, 0, 0, 0, 0);                /* NULL segment */
-	px_gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); /* Code segment */
-	px_gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); /* Data segment */
-	px_gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); /* Userspace code */
-	px_gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); /* Userspace data */
+    px_gdt_set_gate(0, 0, 0, 0);                     // Null segment
+    px_gdt_set_gate(1, 0, 0x000FFFFF, GDT_CODE_PL0); // Kernel code segment
+    px_gdt_set_gate(2, 0, 0x000FFFFF, GDT_DATA_PL0); // Kernel data segment
+    px_gdt_set_gate(3, 0, 0x000FFFFF, GDT_CODE_PL3); // User mode code segment
+    px_gdt_set_gate(4, 0, 0x000FFFFF, GDT_DATA_PL3); // User mode data segment
 
-	// Write the TSS, then flush / reload the GDT and TSS
-	write_tss(5, 0x10, 0x0);
-	gdt_flush((uintptr_t)gdtp);
-	px_print_debug("Flushed the GDT.", Success);
-	tss_flush();
-	px_print_debug("Flushed the TSS.", Success);
-	// We made it to the end. Return true.
-	return true;
-}
-
-static void write_tss(int32_t num, uint16_t ss0, uint32_t esp0) {
-	//
-	px_print_debug("Writing the TSS...", Info);
-	//
-	tss_entry * tss = &gdt.tss;
-	uintptr_t base = (uintptr_t)tss;
-	uintptr_t limit = base + sizeof *tss;
-
-	/* Add the TSS descriptor to the GDT */
-	px_gdt_set_gate(num, base, limit, 0xE9, 0x00);
-
-	memset(tss, 0x0, sizeof *tss);
-
-	tss->ss0 = ss0;
-	tss->esp0 = esp0;
-	tss->cs = 0x0b;
-	tss->ss = 0x13;
-	tss->ds = 0x13;
-	tss->es = 0x13;
-	tss->fs = 0x13;
-	tss->gs = 0x13;
-
-	tss->iomap_base = sizeof *tss;
-}
-
-void set_kernel_stack(uintptr_t stack) {
-	px_print_debug("Setting the kernel stack...\n", Info);
-	/* Set the kernel stack */
-	gdt.tss.esp0 = stack;
+    gdt_flush((uint32_t)&gdt_ptr); 
+	px_print_debug("Installed the GDT.", Success);
 }

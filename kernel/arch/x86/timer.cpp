@@ -12,8 +12,16 @@
 #include <arch/x86/timer.hpp>
 #include <arch/x86/isr.hpp>    // Needed to register our callback
 
-static void px_timer_callback(registers_t regs);
+static void px_timer_callback(registers_t *regs);
 uint32_t tick;
+
+/**
+ * Sleep Timer Non-Busy Waiting Idea:
+ * Create a struct that contains the end time and the callback
+ * function pointer that should be called when tick = end
+ * After each tick we check our end time and call the function
+ * if we're equal. 
+ */
 
 void px_timer_init(uint32_t freq) {
     px_print_debug("Initializing timer", Info);
@@ -30,7 +38,7 @@ void px_timer_init(uint32_t freq) {
     px_print_debug("Started timer", Success);
 }
 
-static void px_timer_callback(registers_t regs) {
+static void px_timer_callback(registers_t *regs) {
     tick++;
 }
 
@@ -40,10 +48,12 @@ void px_timer_print() {
     px_print_debug(tick_ascii, Info);
 }
 
-/**
- * @todo Create a basic API wrapper that allows us to register a timer callback
- * It needs to take two parameters:
- *  1. the amount of time to delay
- *  2. function pointer to register as a callback
- * 
- */
+void sleep(uint32_t ms) {
+    uint32_t start = tick;
+    uint32_t final = start + ms;
+    // Waste CPU cycles like a slob
+    // TODO: Sleep function needs to not waste cycles
+    while (tick != final);
+    // Return now that we've waited long enough
+    return;
+}
