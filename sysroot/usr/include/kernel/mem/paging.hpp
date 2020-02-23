@@ -120,19 +120,6 @@ typedef struct px_page_directory
 void px_paging_init();
 
 /**
-  Causes the specified page directory to be loaded into the
-  CR3 register.
-**/
-void px_mem_switch_page_directory(page_directory_t* newPage);
-
-/**
-  Retrieves a pointer to the page required.
-  If make == 1, if the page-table in which this page should
-  reside isn't created, create it!
-**/
-px_page_table_entry_t *px_mem_get_page(uint32_t address, int make, page_directory_t *dir);
-
-/**
   Handler for page faults.
 **/
 void px_mem_page_fault(registers_t regs);
