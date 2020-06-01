@@ -31,7 +31,7 @@ int strlen(const char* s) {
     return i;
 }
 
-char* concat(const char *s1, const char *s2) {
+char* strcat(const char *s1, const char *s2) {
     const size_t len1 = strlen(s1);
     const size_t len2 = strlen(s2);
     char *result = ""; // = malloc(len1 + len2 + 1); // +1 for the null-terminator
