@@ -127,7 +127,7 @@ void px_shell_on_key_down(char c) {
     // Append the letter to the buffer
     // Move this into the handler
     char str[2] = {c, '\0'};
-    concat(px_shell_key_buff, &c);
+    strcat(px_shell_key_buff, &c);
     ++px_shell_len_command;
 }
 

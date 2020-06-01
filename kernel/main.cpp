@@ -14,11 +14,8 @@
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
 // Intel i386 architecture
-#include <arch/x86/multiboot.hpp>
-#include <arch/x86/gdt.hpp>
-#include <arch/x86/idt.hpp>
-#include <arch/x86/isr.hpp>
-#include <arch/x86/timer.hpp>
+#include <arch/arch.hpp>
+#include <gnu/multiboot.hpp>
 // Generic devices
 #include <devices/smbios/smbios.hpp>
 #include <devices/kbd/kbd.hpp>
@@ -86,6 +83,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Print some info to show we did things right
     px_rtc_print();
     px_print_debug("Done.", Success);
+    px_print_debug((char *)px_cpu_get_vendor(), Info);
     px_kernel_boot_tone();
     px_shell_init();
     while (true) {
