@@ -143,13 +143,15 @@ void px_rtc_print() {
     itoa(px_rtc_minute, minuteStr);
     itoa(px_rtc_day, dayStr);
     itoa(px_rtc_month, monthStr);
-    px_kprint("Today's Date: ");
-    px_kprint(monthStr);
-    px_kprint("/");
-    px_kprint(dayStr);
-    px_kprint(" ");
-    px_kprint(hourStr);
-    px_kprint(":");
-    px_kprint(minuteStr);
-    px_kprint("\n");
+    char* str = "Date: ";
+    str = strcat(str, monthStr);
+    str = strcat(str, "/");
+    str = strcat(str, dayStr);
+    px_print_debug(str, Info);
+    str = "";
+    str = strcat(str, "Time: ");
+    str = strcat(str, hourStr);
+    str = strcat(str, ":");
+    str = strcat(str, minuteStr);
+    px_print_debug(str, Info);
 }

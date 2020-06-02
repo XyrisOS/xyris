@@ -21,8 +21,6 @@
 #include <devices/kbd/kbd.hpp>
 #include <devices/rtc/rtc.hpp>
 #include <devices/spkr/spkr.hpp>
-// Services
-#include <shell/shell.hpp>
 
 void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
@@ -82,11 +80,10 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_interrupts_enable();
     // Print some info to show we did things right
     px_rtc_print();
-    px_print_debug("Done.", Success);
     px_print_debug((char *)px_cpu_get_vendor(), Info);
     px_print_debug((char *)px_cpu_get_model(), Info);
+    px_print_debug("Done.", Success);
     px_kernel_boot_tone();
-    px_shell_init();
     while (true) {
         // Keep the kernel alive.
         asm("hlt");
