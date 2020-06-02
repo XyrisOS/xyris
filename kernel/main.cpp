@@ -84,6 +84,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_rtc_print();
     px_print_debug("Done.", Success);
     px_print_debug((char *)px_cpu_get_vendor(), Info);
+    px_print_debug((char *)px_cpu_get_model(), Info);
     px_kernel_boot_tone();
     px_shell_init();
     while (true) {

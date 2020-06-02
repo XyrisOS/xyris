@@ -10,9 +10,9 @@
  */
 
 #include <sys/sys.hpp>
-#include <gnu/cpuid.hpp>
 
 const char* const px_cpu_get_vendor();
+const char* const px_cpu_get_model();
 
 #if defined(__i386__) | defined(__i686__)
 /* Include i386 (x86) headers */
