@@ -19,6 +19,9 @@
 #define IDT_ENTRIES 256
 
 /* How every interrupt gate (handler) is defined */
+/* Reference: See mmu.h in XV6 for an alternative to this system where 
+ * bitfields are used for the uint8_t flag parameter instead of a magic
+ * number like we use. */
 typedef struct {
     uint16_t low_offset;    /* Lower 16 bits of handler function address */
     uint16_t selector;      /* Kernel segment selector */
