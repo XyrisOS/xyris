@@ -16,7 +16,12 @@
 #include <arch/x86/idt.hpp>
 
 /**
- * @todo Update the IRQ definitions to make more sense, or document why they are these values
+ * All of the following values are Interrupt Request (IRQ) identifiers
+ * These values start at 32 because there are 32 prior values reserved
+ * for processor level exceptions. Look at interrupt.s for the ASM on
+ * how the IRQs call functions (and how they pass their value to said
+ * function). Each Interrupt Request pushes the IRQ value along with 
+ * their corresponding hardware interrupt value (starting at 32).
  */
 #define IRQ0 32
 #define IRQ1 33
