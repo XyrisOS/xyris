@@ -15,7 +15,7 @@ void px_paging_init();
 void px_mem_page_fault(registers_t* regs);
 
 void px_mem_page_fault(registers_t* regs) {
-   PANIC(*regs);
+   PANIC(regs);
 }
 
 void px_paging_init() {

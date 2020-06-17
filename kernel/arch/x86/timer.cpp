@@ -52,7 +52,6 @@ void sleep(uint32_t ms) {
     uint32_t start = tick;
     uint32_t final = start + ms;
     // Waste CPU cycles like a slob
-    // TODO: Sleep function needs to not waste cycles
     while (tick != final);
     // Return now that we've waited long enough
     return;

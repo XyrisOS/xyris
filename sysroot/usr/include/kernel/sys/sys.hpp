@@ -26,7 +26,7 @@ extern const char* px_exception_descriptions[];
 // Kernel utility functions
 void panic(int exception);
 void panic(char* msg, const char *file, uint32_t line, const char *func);
-void panic(registers_t regs, const char *file, uint32_t line, const char *func);
+void panic(registers_t *regs, const char *file, uint32_t line, const char *func);
 // String functions
 int strlen(const char* s);
 void strcpy(const char* source, char* destination);
