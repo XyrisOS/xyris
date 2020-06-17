@@ -15,6 +15,8 @@
 #include <sys/sys.hpp>
 #include <mem/paging.hpp>
 
+extern size_t base_curr;
+
 void px_heap_init(uint32_t base, uint32_t max); // Panix early kernel heap initialization.
 size_t px_kmalloc_a(size_t sz);                 // page aligned.
 size_t px_kmalloc_p(size_t sz, size_t *phys);   // returns a physical address.

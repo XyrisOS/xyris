@@ -30,7 +30,7 @@ void panic(registers_t regs, const char *file, uint32_t line, const char *func);
 // String functions
 int strlen(const char* s);
 void strcpy(const char* source, char* destination);
-char* concat(const char *s1, const char *s2);
+char* strcat(const char *s1, const char *s2);
 char* to_upper(char* string);
 void reverse(char* s);
 void itoa(int n, char str[]);
