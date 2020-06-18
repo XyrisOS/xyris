@@ -13,6 +13,7 @@
 #define PANIX_I386_TIMER_HPP
 
 #include <sys/panix.hpp>
+
 #define TIMER_COMMAND_PORT 0x43
 #define TIMER_DATA_PORT 0x40
 
