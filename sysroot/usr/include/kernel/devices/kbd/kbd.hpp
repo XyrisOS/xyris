@@ -1,18 +1,18 @@
 /**
  * @file kbd.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2019-11-18
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2019
- * 
+ *
  */
 
 #ifndef PANIX_KEYBOARD_HPP
 #define PANIX_KEYBOARD_HPP
 
-#include <sys/sys.hpp>
+#include <sys/panix.hpp>
 
 #define KBD_COMMAND_PORT 0x64
 #define KBD_DATA_PORT 0x60

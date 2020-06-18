@@ -1,21 +1,21 @@
 /**
- * @file sys.hpp
+ * @file panix.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief Includes many commonly used system functions.
  * @version 0.1
  * @date 2019-11-14
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2019
- * 
+ *
  */
 
 #ifndef PANIX_SYS_HPP
 #define PANIX_SYS_HPP
 
-#include <sys/types.hpp>            // Every file needs to know the available data types
-#include <arch/x86/ports.hpp>       // We should basically always have access to port functions
-#include <devices/tty/kprint.hpp>   // Printing is a pretty common need, so we'll include it
-#include <mem/heap.hpp>
+#include <sys/types.hpp>            // Data type definitions
+#include <arch/x86/ports.hpp>       // Necessary for accessign CPU ports
+#include <devices/tty/kprint.hpp>   // Necessary for printing to the TTY
+
 // Macros for panic and assert
 #define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)
 #define assert(x) (!(x) ? (PANIC("Assert failed at ")) : (void)0)
@@ -40,6 +40,6 @@ int memcmp(const void* aptr, const void* bptr, size_t size);
 void* memmove(void* dstptr, const void* srcptr, size_t size);
 void* memcpy(void* dstptr, const void* srcptr, size_t size);
 // Userspace
-extern "C" void jump_usermode(uintptr_t location, uintptr_t stack);;
+extern "C" void jump_usermode(uintptr_t location, uintptr_t stack);
 
 #endif /* PANIX_SYS_HPP */

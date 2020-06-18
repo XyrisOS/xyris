@@ -1,15 +1,15 @@
 /**
  * @file sys.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2019-11-14
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2019
- * 
+ *
  */
 
-#include <sys/sys.hpp>
+#include <sys/panix.hpp>
 
 // List of all exceptions and their associated english descriptions
 const char* px_exception_descriptions[] = {

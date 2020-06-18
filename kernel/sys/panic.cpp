@@ -5,11 +5,11 @@
  * encounters an error from which it cannot recover.
  * @version 0.1
  * @date 2019-11-15
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2019
- * 
+ *
  */
-#include <sys/sys.hpp>
+#include <sys/panix.hpp>
 
 // Function prototypes
 void panic_print_file(const char *file, uint32_t line, const char *func);

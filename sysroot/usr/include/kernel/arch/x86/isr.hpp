@@ -4,15 +4,15 @@
  * @brief Interrupt Service Routine header.
  * @version 0.1
  * @date 2019-11-15
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2019
- * 
+ *
  */
 
 #ifndef PANIX_ISR_HPP
 #define PANIX_ISR_HPP
 
-#include <sys/sys.hpp>
+#include <sys/panix.hpp>
 #include <arch/x86/idt.hpp>
 
 /**
@@ -20,7 +20,7 @@
  * These values start at 32 because there are 32 prior values reserved
  * for processor level exceptions. Look at interrupt.s for the ASM on
  * how the IRQs call functions (and how they pass their value to said
- * function). Each Interrupt Request pushes the IRQ value along with 
+ * function). Each Interrupt Request pushes the IRQ value along with
  * their corresponding hardware interrupt value (starting at 32).
  */
 #define IRQ0 32
@@ -93,35 +93,35 @@ extern "C" void irq15();
 
 /**
  * @brief Disables interrupts.
- * 
+ *
  */
 void px_interrupts_disable();
 /**
  * @brief Enables interrupts.
- * 
+ *
  */
 void px_interrupts_enable();
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
 void px_isr_install();
 /**
  * @brief Handler for the Interrupt Service Request
- * 
+ *
  * @param r Register information struct
  */
 extern "C" void px_isr_handler(registers_t *t);
 /**
- * @brief 
- * 
- * @param n 
- * @param handler 
+ * @brief
+ *
+ * @param n
+ * @param handler
  */
 extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler);
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
 extern "C" void px_irq_handler(registers_t *regs);
 
