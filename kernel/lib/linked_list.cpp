@@ -1,7 +1,7 @@
 /**
  * @file linked_list.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief
+ * @brief Standard linked list library
  * @version 0.1
  * @date 2020-06-17
  *
@@ -10,12 +10,6 @@
  */
 
 #include <lib/linked_list.hpp>
-
-typedef struct DList DList;
-struct DList {
-    DList *next;
-    DList *prev;
-};
 
 // initialize a one element DList
 static inline void dlist_init(DList *dlist) {
