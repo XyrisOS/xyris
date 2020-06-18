@@ -9,14 +9,14 @@
  * px_kprintf().
  * @version 0.1
  * @date 2019-09-26
- * 
+ *
  * @copyright Copyright Keeton Feavel (c) 2019
- * 
+ *
  */
 #ifndef PANIX_px_kprint_HPP
 #define PANIX_px_kprint_HPP
 
-#include <sys/sys.hpp>
+#include <sys/panix.hpp>
 
 #define TTY_WIDTH 80
 #define TTY_HEIGHT 25
@@ -52,7 +52,7 @@ inline uint16_t* videoMemory = (uint16_t*) 0x000B8000;
 /**
  * @brief Prints a debug message to the kernel display and
  * sets a tag and color according to the debug level.
- * 
+ *
  * @param msg Message to be printed
  * @param lvl Message debug level
  */
@@ -70,19 +70,19 @@ void px_print_debug(char* msg, px_print_level lvl);
 void px_print_raw(char c, uint8_t x, uint8_t y, px_tty_color fg, px_tty_color bg);
 /**
  * @brief Prints a given string to the kernel display.
- * 
+ *
  * @param str Input string to be printed.
  */
 void px_kprint(const char* str);
 /**
  * @brief Prints a single character to the kernel display.
- * 
+ *
  * @param character Character to be printed.
  */
 void putchar(char character);
 /**
  * @brief Prints a given string to a particular coordinate in the kernel display.
- * 
+ *
  * @param str Input string to be printed.
  * @param x X-coordinate of the kernel display.
  * @param y Y-coordinate of the kernel display.
@@ -91,27 +91,27 @@ void putchar(char character);
 void px_kprint_pos(const char* str, uint8_t x, uint8_t y, bool resetCursor = false);
 /**
  * @brief Prints out an integer in the given base
- * 
+ *
  * @param value Value to be printed
  * @param base Base number (decimal, octal, hex, etc.)
  */
 void px_kprint_base(int value, int base);
 /**
  * @brief Prints a hexidecimal address to the kernel console.
- * 
+ *
  * @param key Hexidecimal value to print.
  */
 void px_kprint_hex(uint32_t key);
 /**
  * @brief Prints out a string in a specified color
- * 
+ *
  * @param str Input string to be printed
  * @param color Text color
  */
 void px_kprint_color(char* str, px_tty_color color);
 /**
  * @brief Set the color of the text when the next px_kprint is called.
- * 
+ *
  * @param fore Foreground color
  * @param back Background color
  */

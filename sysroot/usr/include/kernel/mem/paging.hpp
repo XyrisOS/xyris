@@ -1,18 +1,18 @@
 /**
  * @file paging.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2019-11-22
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2019
- * 
+ *
  */
 
 #ifndef PANIX_MEM_PAGING
 #define PANIX_MEM_PAGING
 
-#include <sys/sys.hpp>
+#include <sys/panix.hpp>
 #include <mem/heap.hpp>
 #include <arch/x86/isr.hpp>
 
@@ -54,7 +54,7 @@ typedef struct px_virtual_address
 /**
  * @brief Page table entry defined in accordance to the
  * Intel Developer Manual Vol. 3a p. 4-12
- * 
+ *
  */
 typedef struct px_page_table_entry
 {
@@ -72,9 +72,9 @@ typedef struct px_page_table_entry
 } px_page_table_entry_t;
 
 /**
- * @brief Page table structure as defined in accordance to the 
+ * @brief Page table structure as defined in accordance to the
  * Intel Developer Manual Vol. 3a p. 4-12
- * 
+ *
  */
 typedef struct px_page_table
 {
@@ -82,9 +82,9 @@ typedef struct px_page_table
 } px_page_table_t;
 
 /**
- * @brief Page directory entry structure as defined in accordance to the 
+ * @brief Page directory entry structure as defined in accordance to the
  * Intel Developer Manual Vol. 3a p. 4-12
- * 
+ *
  */
 typedef struct px_page_directory_entry
 {
@@ -104,7 +104,7 @@ typedef struct px_page_directory_entry
  * @brief Page directory contains pointers to all of the virtual memory addresses for the
  * page tables along with their corresponding physical memory locations of the page tables.
  * Page table entry defined in accordance to the Intel Developer Manual Vol. 3a p. 4-12.
- * 
+ *
  */
 typedef struct px_page_directory
 {

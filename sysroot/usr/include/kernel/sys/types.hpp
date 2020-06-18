@@ -4,13 +4,15 @@
  * @brief Defines the shorthand names for their equivalent variable types.
  * @version 0.1
  * @date 2019-09-26
- * 
+ *
  * @copyright Copyright Keeton Feavel (c) 2019
- * 
+ *
  */
 
 #ifndef PANIX_TYPES_HPP
 #define PANIX_TYPES_HPP
+
+#define NULL 0
 
 typedef char                     int8_t;
 typedef unsigned char           uint8_t;
@@ -30,5 +32,5 @@ typedef struct registers {
    uint32_t eip, cs, eflags, esp, ss;                    /* Pushed by the processor automatically */
 } registers_t;
 typedef void (*isr_t)(registers_t*);
-    
+
 #endif /* PANIX_TYPES_HPP */

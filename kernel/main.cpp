@@ -4,12 +4,12 @@
  * @brief The entry point into the Panix kernel. Everything is loaded from here.
  * @version 0.1
  * @date 2019-11-14
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2019
- * 
+ *
  */
 // System library functions
-#include <sys/sys.hpp>
+#include <sys/panix.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
@@ -35,13 +35,13 @@ extern uint32_t placement_address;
  * so it is less of a concern now. Regardless, the OSDev Wiki
  * take a *very* different approach to this, so refactoring
  * this might be on the eventual todo list.
- * 
+ *
  * According to the OSDev Wiki this is only necessary for C++
  * objects. However, it is useful to know that the
- * global constructors are "stored in a sorted array of 
- * function pointers and invoking these is as simple as 
+ * global constructors are "stored in a sorted array of
+ * function pointers and invoking these is as simple as
  * traversing the array and running each element."
- * 
+ *
  */
 typedef void (*constructor)();
 extern "C" constructor _CTORS_START;
@@ -69,7 +69,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_interrupts_disable();
     px_gdt_install();
     px_isr_install();           // Interrupt Service Requests
-    px_heap_init((uint32_t)&_EARLY_KMALLOC_START, (uint32_t)&_EARLY_KMALLOC_END);             // Early kernel memory allocation
+    // px_heap_init((uint32_t)&_EARLY_KMALLOC_START, (uint32_t)&_EARLY_KMALLOC_END);             // Early kernel memory allocation
     px_paging_init();           // Initialize paging service
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
