@@ -14,6 +14,7 @@
 #define PANIX_MEM_HEAP
 
 #include <sys/panix.hpp>
+#include <lib/linked_list.hpp>
 
 
 #endif /* PANIX_MEM_HEAP */
