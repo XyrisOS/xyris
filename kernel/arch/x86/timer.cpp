@@ -1,16 +1,17 @@
 /**
  * @file timer.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2019-11-15
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2019
- * 
+ *
  */
 
 #include <arch/x86/timer.hpp>
 #include <arch/x86/isr.hpp>    // Needed to register our callback
+#include <lib/string.hpp>
 
 static void px_timer_callback(registers_t *regs);
 uint32_t tick;
@@ -20,7 +21,7 @@ uint32_t tick;
  * Create a struct that contains the end time and the callback
  * function pointer that should be called when tick = end
  * After each tick we check our end time and call the function
- * if we're equal. 
+ * if we're equal.
  */
 
 void px_timer_init(uint32_t freq) {

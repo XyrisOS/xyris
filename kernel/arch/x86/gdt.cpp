@@ -6,11 +6,13 @@
  * It contains entries telling the CPU about memory segments.
  * @version 0.1
  * @date 2019-11-14
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2019
- * 
+ *
  */
 #include <arch/x86/gdt.hpp>
+#include <arch/x86/tss.hpp>
+#include <lib/string.hpp>
 
 // Defined in the gdt_flush.s file.
 extern "C" void gdt_flush(uintptr_t);
@@ -59,6 +61,6 @@ void px_gdt_install() {
     px_gdt_set_gate(3, 0, 0x000FFFFF, GDT_CODE_PL3); // User mode code segment
     px_gdt_set_gate(4, 0, 0x000FFFFF, GDT_DATA_PL3); // User mode data segment
 
-    gdt_flush((uint32_t)&gdt_ptr); 
+    gdt_flush((uint32_t)&gdt_ptr);
 	px_print_debug("Installed the GDT.", Success);
 }

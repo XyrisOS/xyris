@@ -27,18 +27,6 @@ extern const char* px_exception_descriptions[];
 void panic(int exception);
 void panic(char* msg, const char *file, uint32_t line, const char *func);
 void panic(registers_t *regs, const char *file, uint32_t line, const char *func);
-// String functions
-int strlen(const char* s);
-void strcpy(const char* source, char* destination);
-char* strcat(const char *s1, const char *s2);
-char* to_upper(char* string);
-void reverse(char* s);
-void itoa(int n, char str[]);
-// Memory functions
-void* memset(void* bufptr, int value, size_t size);
-int memcmp(const void* aptr, const void* bptr, size_t size);
-void* memmove(void* dstptr, const void* srcptr, size_t size);
-void* memcpy(void* dstptr, const void* srcptr, size_t size);
 // Userspace
 extern "C" void jump_usermode(uintptr_t location, uintptr_t stack);
 

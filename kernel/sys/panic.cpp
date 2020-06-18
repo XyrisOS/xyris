@@ -10,6 +10,7 @@
  *
  */
 #include <sys/panix.hpp>
+#include <lib/string.hpp>
 
 // Function prototypes
 void panic_print_file(const char *file, uint32_t line, const char *func);
