@@ -15,6 +15,9 @@
 #define MAX_BLOCK (1024*1024)
 #define NUM_SLOTS 1024
 
+#define typeof __typeof__
+typedef int intptr_t;
+
 #define DLIST_REMOVE_FROM(h, d, l)					\
     {									            \
         typeof(**h) **h_ = h, *d_ = d;				\
