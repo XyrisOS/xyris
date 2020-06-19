@@ -10,6 +10,7 @@
  */
 
 #include <mem/heap.hpp>
+#include <lib/linked_list.hpp>
 
 #define MEM_SIZE (1024*1024*256)
 #define MAX_BLOCK (1024*1024)
