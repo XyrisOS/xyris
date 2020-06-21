@@ -66,7 +66,7 @@ void px_paging_map_early_mem() {
             .present = 1,
             .read_write = 1,
             .usermode = 0,
-            .frame = KADDR_TO_PHYS(i) >> 12
+            .frame = i >> 12
         };
         SET_PAGE_MAPPED(i);
     }
