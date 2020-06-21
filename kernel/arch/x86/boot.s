@@ -52,7 +52,7 @@ _start:
 	rep
 	stosb
 
-	# identity map from 0x00000000 -> EARLY_KERNEL_END
+	# identity map from 0x00000000 -> LOWMEM_END
 	# WARNING: code assumes that the kernel won't be greater than 3MB
 	movl $lowmem_pt, %eax
 	movl %eax, page_directory
@@ -71,23 +71,37 @@ _start:
     jl _start.lowmem
 
 	# create virtual mappings for the kernel in the higher-half
-	movl $KERNEL_BASE, %edx
-	shrl $22, %edx       # find which page table we need to use
+	movl $_KERNEL_START, %edx
+	shrl $22, %edx       # find which directory entry we need to use
 
+        # the first page table
 	movl $kernel_pt, %eax
 	movl %eax, page_directory(,%edx,4)
 	orl $PAGE_PERM, page_directory(,%edx,4)
 
+        # the second page table
+        incl %edx
+        movl $pages_pt, %eax
+        movl %eax, page_directory(,%edx,4)
+        orl $PAGE_PERM, page_directory(,%edx,4)
+
 	movl $_KERNEL_START, %eax # the kernel's current virtual start
 	_start.higher:
-	movl %eax, %ecx
+        # compute the page table offset
+        # this only works because the two page tables are adjacent
+	movl %eax, %edx
+        shrl $22, %edx
+        subl $0x300, %edx
+        imull $PAGE_SIZE, %edx
+
+        movl %eax, %ecx
 	shrl $PAGE_SHIFT, %ecx
 	andl $0x3ff, %ecx # generate kernel PTE index
 
 	movl %eax, %ebx
 	subl $KERNEL_BASE, %ebx # convert virt->physical
-	movl %ebx, kernel_pt(,%ecx,4)
-	orl $PAGE_PERM, kernel_pt(,%ecx,4)
+	movl %ebx, kernel_pt(%edx,%ecx,4)
+	orl $PAGE_PERM, kernel_pt(%edx,%ecx,4)
 
 	addl $PAGE_SIZE, %eax  # move on to the next page
 	cmpl $_KERNEL_END, %eax # are we done mapping in the kernel?
@@ -130,6 +144,8 @@ lowmem_pt:
 	.space 1024*4      # lowmem identity mappings 
 kernel_pt: 
 	.space 1024*4      # our kernel page table mappings 
+pages_pt:
+        .space 1024*4      # a page table that maps pages that contain page tables
 
 .section .early_data, "aw", @nobits
 multiboot_magic: 
