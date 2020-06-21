@@ -1,6 +1,7 @@
 /**
  * @file paging.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
+ * @author Micah Switzer (mswitzer@cedarville.edu)
  * @brief
  * @version 0.1
  * @date 2019-11-22
@@ -19,22 +20,24 @@
     &= ~(1UL << OFFSET_FROM_BIT((addr) / PAGE_SIZE))
 
 /* one bit for every page */
-static uint32_t mapped_pages[ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8)];
+static uint32_t mapped_pages[ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8)] = { 0 };
+
+static uint32_t                  page_dir_addr;
+static px_page_table_t *         page_dir_virt[PAGE_ENTRIES];
 
 /* both of these must be page aligned for anything to work right at all */
-static page_directory_t page_dir;
-static px_page_table_t page_tables[PAGE_ENTRIES];
+static px_page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((section (".page_tables")));
+static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables")));
 
 void px_paging_init();
-void px_mem_page_fault(registers_t* regs);
 
-void px_mem_page_fault(registers_t* regs) {
+static void px_mem_page_fault(registers_t* regs) {
    PANIC(regs);
 }
 
 static inline void px_map_kern_page_table(uint32_t pd_idx, px_page_table_t *table) {
-    page_dir.tables[pd_idx] = table;
-    page_dir.tablesPhysical[pd_idx] = {
+    page_dir_virt[pd_idx] = table;
+    page_dir_phys[pd_idx] = {
         .present = 1,
         .read_write = 1,
         .usermode = 0,
@@ -52,9 +55,9 @@ void px_paging_init_dir() {
         px_map_kern_page_table(i, &page_tables[i]);
     }
     // recursivly map the last page table to the page directory
-    px_map_kern_page_table(PAGE_ENTRIES - 1, (px_page_table_t*)&page_dir.tablesPhysical[0]);
+    px_map_kern_page_table(PAGE_ENTRIES - 1, (px_page_table_t*)&page_dir_phys[0]);
     // store the physical address of the page directory for quick access
-    page_dir.physical_addr = KADDR_TO_PHYS((uint32_t)&page_dir.tablesPhysical[0]);
+    page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
 }
 
 void px_paging_map_early_mem() {
@@ -109,7 +112,7 @@ void px_paging_init() {
     px_paging_map_early_mem();
     px_paging_map_hh_kernel();
     // use our new set of page tables
-    px_set_pd(page_dir.physical_addr & PAGE_ALIGN);
+    px_set_pd(page_dir_addr & PAGE_ALIGN);
     // flush the tlb and we're off to the races!
     px_paging_enable();
 }

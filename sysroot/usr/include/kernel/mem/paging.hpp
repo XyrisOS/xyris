@@ -121,10 +121,5 @@ typedef struct px_page_directory
 **/
 void px_paging_init();
 
-/**
-  Handler for page faults.
-**/
-void px_mem_page_fault(registers_t regs);
-
 #endif /* PANIX_MEM_PAGING */
 

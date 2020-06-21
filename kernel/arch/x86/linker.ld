@@ -45,11 +45,9 @@ SECTIONS
     *(COMMON)
     _BSS_END = .;
   }
-  .early_kmalloc ALIGN (4K) : AT(ADDR(.early_kmalloc) - 0xC0000000)
+  .page_tables ALIGN (4K) : AT(ADDR(.page_tables) - 0xC0000000)
   {
-    _EARLY_KMALLOC_START = .;
-    . += 4K; /* 1MB of heap space */
-    _EARLY_KMALLOC_END = .;
+    *(.page_tables)
   }
 
   _KERNEL_END = .;
