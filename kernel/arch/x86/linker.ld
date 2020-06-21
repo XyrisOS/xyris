@@ -61,4 +61,5 @@ SECTIONS
   /DISCARD/ : { *(.fini_array*) *(.comment) }
 }
 
-ASSERT(_KERNEL_SIZE < 0x300000, "Kernel exceeds the 3 MB limit. loader.s must be updated to work a larger kernel.");
+ASSERT(_KERNEL_SIZE < 0x700000, "Kernel exceeds the 7 MB limit. boot.s must be updated to work a larger kernel.");
+
