@@ -25,14 +25,15 @@ extern uint32_t _EARLY_KMALLOC_END;
 // that he wrote. It helped us fix a lot of bugs and has provided a
 // lot of quality of life defines such as the ones below that we would
 // not have thought to use otherwise.
+#define ADDRESS_SPACE_SIZE  0x100000000
 #define PAGE_SIZE           0x1000
 #define PAGE_ALIGN          0xfffff000
 #define NOT_ALIGNED         ~(PAGE_ALIGN)
 #define PAGE_ALIGN_UP(addr) (((addr) & NOT_ALIGNED) ? (((addr) & PAGE_ALIGN) + PAGE_SIZE) : ((addr)))
-#define KERNEL_START        (uint32_t)&_KERNEL_START;
-#define KERNEL_END          (uint32_t)&_KERNEL_END;
-#define EARLY_KMALLOC_START (uint32_t)&_EARLY_KMALLOC_START;
-#define EARLY_KMALLOC_END   (uint32_t)&_EARLY_KMALLOC_END;
+#define KERNEL_START        (uint32_t)&_KERNEL_START
+#define KERNEL_END          (uint32_t)&_KERNEL_END
+#define EARLY_KMALLOC_START (uint32_t)&_EARLY_KMALLOC_START
+#define EARLY_KMALLOC_END   (uint32_t)&_EARLY_KMALLOC_END
 #define PAGE_ENTRY_PRESENT  0x1
 #define PAGE_ENTRY_RW       0x2
 #define PAGE_ENTRY_ACCESS   0x20
@@ -43,12 +44,13 @@ extern uint32_t _EARLY_KMALLOC_END;
 #define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
 #define INDEX_FROM_BIT(a)   (a / (8*4))
 #define OFFSET_FROM_BIT(a)  (a % (8*4))
+#define KERNEL_BASE         0xC0000000
 
 typedef struct px_virtual_address
 {
     uintptr_t page_offset       : 12;  // Page offset address
     uintptr_t page_table_index  : 10;  // Page table entry
-    uintptr_t page_dir_index   : 10;  // Page directory entry
+    uintptr_t page_dir_index    : 10;  // Page directory entry
 } px_virtual_address_t;
 
 /**
@@ -125,3 +127,4 @@ void px_paging_init();
 void px_mem_page_fault(registers_t regs);
 
 #endif /* PANIX_MEM_PAGING */
+
