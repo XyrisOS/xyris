@@ -14,13 +14,16 @@
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 
-#define SET_PAGE_MAPPED(addr) mapped_pages[INDEX_FROM_BIT((addr) & PAGE_ALIGN / PAGE_SIZE)] \
+#define SET_BIT(bmp, addr) (bmp)[INDEX_FROM_BIT((addr) & PAGE_ALIGN / PAGE_SIZE)] \
     |= 1UL << OFFSET_FROM_BIT((addr) / PAGE_SIZE)
-#define SET_PAGE_UNMAPPED(addr) mapped_pages[INDEX_FROM_BIT((addr) & PAGE_ALIGN / PAGE_SIZE)] \
+#define UNSET_BIT(bpm, addr) (bmp)[INDEX_FROM_BIT((addr) & PAGE_ALIGN / PAGE_SIZE)] \
     &= ~(1UL << OFFSET_FROM_BIT((addr) / PAGE_SIZE))
 
+#define BITMAP_SIZE ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8)
+
 /* one bit for every page */
-static uint32_t mapped_pages[ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8)] = { 0 };
+static uint32_t mapped_mem[BITMAP_SIZE] = { 0 };
+static uint32_t mapped_pages[BITMAP_SIZE] = { 0 };
 
 static uint32_t                  page_dir_addr;
 static px_page_table_t *         page_dir_virt[PAGE_ENTRIES];
@@ -50,7 +53,7 @@ static inline void px_map_kern_page_table(uint32_t pd_idx, px_page_table_t *tabl
     };
 }
 
-void px_paging_init_dir() {
+static void px_paging_init_dir() {
     for (int i = 0; i < PAGE_ENTRIES - 1; i++) {
         px_map_kern_page_table(i, &page_tables[i]);
     }
@@ -60,29 +63,36 @@ void px_paging_init_dir() {
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
 }
 
-void px_paging_map_early_mem() {
-   for (uint32_t i = 0; i < 0x100000; i += PAGE_SIZE) {
-        page_tables[0].pages[i / PAGE_SIZE] = {
-            .present = 1,
-            .read_write = 1,
-            .usermode = 0,
-            .frame = i >> 12
-        };
-        SET_PAGE_MAPPED(i);
+static void px_map_kern_page(px_virtual_address_t vaddr, uint32_t paddr) {
+    uint32_t pde = vaddr.page_dir_index;
+    uint32_t pte = vaddr.page_table_index;
+    if (vaddr.page_offset) {
+        PANIC("attempted to map a non-page-aligned virtual address");
+    }
+    if (page_tables[pde].pages[pte].present) {
+        PANIC("attempted to map already mapped page");
+    }
+    page_tables[pde].pages[pte] = {
+        .present = 1,
+        .read_write = 1,
+        .usermode = 0,
+        .frame = paddr >> 12
+    };
+    SET_BIT(mapped_mem, paddr);
+    SET_BIT(mapped_pages, vaddr.intval);
+}
+
+static void px_paging_map_early_mem() {
+    for (px_virtual_address_t i = { .intval = 0 }; i.intval < 0x100000; i.intval += PAGE_SIZE) {
+        // identity map the early memory
+        px_map_kern_page(i, i.intval);
     }
 }
 
-void px_paging_map_hh_kernel() {
-    for (uint32_t addr = KERNEL_START; addr < KERNEL_END; addr += PAGE_SIZE) {
-        uint32_t pde = addr >> 22;
-        uint32_t pte = (addr >> 12) & 0b1111111111;
-        page_tables[pde].pages[pte] = {
-            .present = 1,
-            .read_write = 1,
-            .usermode = 0,
-            .frame = KADDR_TO_PHYS(addr) >> 12
-        };
-        SET_PAGE_MAPPED(addr);
+static void px_paging_map_hh_kernel() {
+    for (px_virtual_address_t addr = { .intval = KERNEL_START }; addr.intval < KERNEL_END; addr.intval += PAGE_SIZE) {
+        // map the higher-half kernel in
+        px_map_kern_page(addr, KADDR_TO_PHYS(addr.intval));
     }
 }
 
@@ -109,7 +119,9 @@ void px_paging_init() {
     px_register_interrupt_handler(14, px_mem_page_fault);
     // init our structures
     px_paging_init_dir();
+    // identity map the first 1 MiB of RAM
     px_paging_map_early_mem();
+    // map in our higher-half kernel
     px_paging_map_hh_kernel();
     // use our new set of page tables
     px_set_pd(page_dir_addr & PAGE_ALIGN);
