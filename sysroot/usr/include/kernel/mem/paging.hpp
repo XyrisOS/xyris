@@ -42,15 +42,18 @@ extern uint32_t _EARLY_KMALLOC_END;
 #define PAGES_PER_KB(kb)    (PAGE_ALIGN_UP((kb) * 1024) / PAGE_SIZE)
 #define PAGES_PER_MB(mb)    (PAGE_ALIGN_UP((mb) * 1024 * 1024) / PAGE_SIZE)
 #define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
-#define INDEX_FROM_BIT(a)   (a / (8*4))
-#define OFFSET_FROM_BIT(a)  (a % (8*4))
+#define INDEX_FROM_BIT(a)   ((a) / (8*4))
+#define OFFSET_FROM_BIT(a)  ((a) % (8*4))
 #define KERNEL_BASE         0xC0000000
 
-typedef struct px_virtual_address
+typedef union px_virtual_address
 {
-    uintptr_t page_offset       : 12;  // Page offset address
-    uintptr_t page_table_index  : 10;  // Page table entry
-    uintptr_t page_dir_index    : 10;  // Page directory entry
+    struct {
+        uint32_t page_offset       : 12;  // Page offset address
+        uint32_t page_table_index  : 10;  // Page table entry
+        uint32_t page_dir_index    : 10;  // Page directory entry
+    };
+    uint32_t intval;
 } px_virtual_address_t;
 
 /**
