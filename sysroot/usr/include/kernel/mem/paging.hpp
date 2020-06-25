@@ -23,13 +23,14 @@ extern uint32_t _KERNEL_END;
 // that he wrote. It helped us fix a lot of bugs and has provided a
 // lot of quality of life defines such as the ones below that we would
 // not have thought to use otherwise.
+#define KERNEL_START        (uint32_t)&_KERNEL_START
+#define KERNEL_END          (uint32_t)&_KERNEL_END
+#define KERNEL_BASE         0xC0000000
 #define ADDRESS_SPACE_SIZE  0x100000000
 #define PAGE_SIZE           0x1000
 #define PAGE_ALIGN          0xfffff000
-#define NOT_ALIGNED         ~(PAGE_ALIGN)
-#define PAGE_ALIGN_UP(addr) (((addr) & NOT_ALIGNED) ? (((addr) & PAGE_ALIGN) + PAGE_SIZE) : ((addr)))
-#define KERNEL_START        (uint32_t)&_KERNEL_START
-#define KERNEL_END          (uint32_t)&_KERNEL_END
+#define NOT_PAGE_ALIGN      ~(PAGE_ALIGN)
+#define PAGE_ALIGN_UP(addr) (((addr) & NOT_PAGE_ALIGN) ? (((addr) & PAGE_ALIGN) + PAGE_SIZE) : ((addr)))
 #define PAGE_ENTRY_PRESENT  0x1
 #define PAGE_ENTRY_RW       0x2
 #define PAGE_ENTRY_ACCESS   0x20
@@ -40,9 +41,12 @@ extern uint32_t _KERNEL_END;
 #define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
 #define INDEX_FROM_BIT(a)   ((a) / (8*4))
 #define OFFSET_FROM_BIT(a)  ((a) % (8*4))
-#define KERNEL_BASE         0xC0000000
 #define VADDR(ADDR)         ((px_virtual_address_t){ .val = (ADDR) })
 
+/**
+ * @brief Provides a structure for defining the necessary fields
+ * which comprise a virtual address.
+ */
 typedef union px_virtual_address
 {
     struct {
@@ -113,15 +117,21 @@ typedef struct px_page_directory
     px_page_table_t *tables[1024];                  // Pointers that Panix uses to access the pages in memory
     px_page_directory_entry_t tablesPhysical[1024]; // Pointers that the Intel CPU uses to access pages in memory
     uint32_t physical_addr;                         // Physical address of this 4Kb aligned page table referenced by this entry
-} page_directory_t;
+} px_page_directory_t;
 
 /**
-  Sets up the environment, page directories etc and
-  enables paging.
-**/
+ * @brief Sets up the environment, page directories etc and enables paging.
+ *
+ */
 void px_paging_init();
 
-void *px_get_new_page(uint32_t size);
+/**
+ * @brief Returns a new page in memory for use.
+ *
+ * @param size Page size in bytes
+ * @return void* Page memory address
+ */
+void* px_get_new_page(uint32_t size);
 
 #endif /* PANIX_MEM_PAGING */
 
