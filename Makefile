@@ -26,18 +26,19 @@ VBOX	= $(shell command -v VBoxManage			|| echo "Please install Virtualbox")
 # The -lgcc flag is included because it includes helpful functions used
 # by GCC that would be ineffective to duplicate.
 GCC_FLAGS = 					\
-	-m32 						\
-	-g							\
+	-m32 					\
+	-g					\
 	-nostartfiles				\
 	-nodefaultlibs				\
-	-lgcc						\
+	-lgcc					\
 	-ffreestanding				\
+        -fpermissive                            \
 	-fno-use-cxa-atexit			\
 	-fno-builtin				\
-	-fno-rtti					\
+	-fno-rtti				\
 	-fno-exceptions				\
-	-fno-leading-underscore		\
-	-fno-stack-protector		\
+	-fno-leading-underscore		        \
+	-fno-stack-protector		        \
 	-Wno-write-strings			\
 	-std=c++17
 AS_FLAGS   = --32
@@ -89,11 +90,9 @@ run: dist/panix.iso
 	$(QEMU) 					\
 	-drive format=raw,file=$< 	\
 	-m 4G						\
-	-soundhw pcspk 				\
 	-rtc clock=host 			\
 	-vga std -m 256M 			\
 	-serial stdio				\
-	-d cpu_reset
 
 virtualbox:
 	$(VBOX) startvm --putenv --debug "Panix"
@@ -101,7 +100,7 @@ virtualbox:
 # Open the connection to qemu and load our kernel-object file with symbols
 debug: dist/panix.iso
 	# Start QEMU with debugger
-	$(QEMU) 					\
+	($(QEMU) 					\
 	-S -s 						\
 	-drive format=raw,file=$< 	\
 	-m 4G						\
@@ -110,7 +109,9 @@ debug: dist/panix.iso
 	-vga std 					\
 	-m 256M 					\
 	-serial stdio				\
-	-d cpu_reset				
+	-d cpu_reset &)
+	sleep 2
+	wmctrl -xr qemu.Qemu-system-i386 -b add,above
 	# After this start the visual studio debugger
 	# gdb dist/panix.kernel
 
@@ -147,3 +148,4 @@ clean:
 	@ rm -rf dist/*.kernel
 	@ rm -rf iso
 	@ echo "Done cleaning!"
+
