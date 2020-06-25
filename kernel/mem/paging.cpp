@@ -14,12 +14,12 @@
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 
-#define SET_BIT(bmp, addr) (bmp)[INDEX_FROM_BIT((addr) & PAGE_ALIGN / PAGE_SIZE)] \
+#define SET_BIT(bmp, addr) (bmp)[INDEX_FROM_BIT(((addr) & PAGE_ALIGN) / PAGE_SIZE)] \
     |= 1UL << OFFSET_FROM_BIT((addr) / PAGE_SIZE)
-#define UNSET_BIT(bpm, addr) (bmp)[INDEX_FROM_BIT((addr) & PAGE_ALIGN / PAGE_SIZE)] \
+#define UNSET_BIT(bpm, addr) (bmp)[INDEX_FROM_BIT(((addr) & PAGE_ALIGN) / PAGE_SIZE)] \
     &= ~(1UL << OFFSET_FROM_BIT((addr) / PAGE_SIZE))
 
-#define BITMAP_SIZE ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8)
+#define BITMAP_SIZE (ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8))
 
 /* one bit for every page */
 static uint32_t mapped_mem[BITMAP_SIZE] = { 0 };
@@ -79,20 +79,22 @@ static void px_map_kern_page(px_virtual_address_t vaddr, uint32_t paddr) {
         .frame = paddr >> 12
     };
     SET_BIT(mapped_mem, paddr);
-    SET_BIT(mapped_pages, vaddr.intval);
+    SET_BIT(mapped_pages, vaddr.val);
 }
 
 static void px_paging_map_early_mem() {
-    for (px_virtual_address_t i = { .intval = 0 }; i.intval < 0x100000; i.intval += PAGE_SIZE) {
+    px_virtual_address_t a;
+    for (a = VADDR(0); a.val < 0x100000; a.val += PAGE_SIZE) {
         // identity map the early memory
-        px_map_kern_page(i, i.intval);
+        px_map_kern_page(a, a.val);
     }
 }
 
 static void px_paging_map_hh_kernel() {
-    for (px_virtual_address_t addr = { .intval = KERNEL_START }; addr.intval < KERNEL_END; addr.intval += PAGE_SIZE) {
+    px_virtual_address_t addr;
+    for (addr = VADDR(KERNEL_START); addr.val < KERNEL_END; addr.val += PAGE_SIZE) {
         // map the higher-half kernel in
-        px_map_kern_page(addr, KADDR_TO_PHYS(addr.intval));
+        px_map_kern_page(addr, KADDR_TO_PHYS(addr.val));
     }
 }
 
@@ -127,5 +129,45 @@ void px_paging_init() {
     px_set_pd(page_dir_addr & PAGE_ALIGN);
     // flush the tlb and we're off to the races!
     px_paging_enable();
+}
+
+/**
+ * note: this can't find more than 32 sequential pages
+ * @param seq the number of sequential pages to get
+ */
+static int find_free(int seq)
+{
+    uint32_t check;
+    uint32_t mask = (1 << seq) - 1;
+    for (int i = 0; i < (ADDRESS_SPACE_SIZE / PAGE_SIZE); i++) {
+        check = mapped_mem[i / 32] >> (i % 32);
+        check |= mapped_mem[(i / 32) + 1] << (32 - (i % 32));
+        if (!(check & mask)) return i;
+    }
+    return -1;
+}
+
+static int get_next_free_phys_page()
+{
+    for (int i = 0; i < (ADDRESS_SPACE_SIZE / PAGE_SIZE); i++) {
+        if (!((mapped_pages[INDEX_FROM_BIT(i)] >> OFFSET_FROM_BIT(i)) & 1)) return i;
+    }
+    return -1;
+}
+
+/**
+ * map in a new page. if you request less than one page, you will get exactly one page
+ */
+void * px_get_new_page(uint32_t size)
+{
+    int page_count = (size / PAGE_SIZE) + 1;
+    int free_idx = find_free(page_count);
+    if (free_idx == -1) return NULL;
+    for (int i = free_idx; i < free_idx + page_count; i++) {
+        int phys_page_idx = get_next_free_phys_page();
+        if (phys_page_idx == -1) return NULL;
+        px_map_kern_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
+    }
+    return (void *)(free_idx * PAGE_SIZE);
 }
 

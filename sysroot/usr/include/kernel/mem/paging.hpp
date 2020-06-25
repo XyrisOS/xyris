@@ -19,8 +19,6 @@
 // Information about the Kernel from the linker
 extern uint32_t _KERNEL_START;
 extern uint32_t _KERNEL_END;
-extern uint32_t _EARLY_KMALLOC_START;
-extern uint32_t _EARLY_KMALLOC_END;
 // Thanks to Grant Hernandez for uOS and the absolutely amazing code
 // that he wrote. It helped us fix a lot of bugs and has provided a
 // lot of quality of life defines such as the ones below that we would
@@ -32,8 +30,6 @@ extern uint32_t _EARLY_KMALLOC_END;
 #define PAGE_ALIGN_UP(addr) (((addr) & NOT_ALIGNED) ? (((addr) & PAGE_ALIGN) + PAGE_SIZE) : ((addr)))
 #define KERNEL_START        (uint32_t)&_KERNEL_START
 #define KERNEL_END          (uint32_t)&_KERNEL_END
-#define EARLY_KMALLOC_START (uint32_t)&_EARLY_KMALLOC_START
-#define EARLY_KMALLOC_END   (uint32_t)&_EARLY_KMALLOC_END
 #define PAGE_ENTRY_PRESENT  0x1
 #define PAGE_ENTRY_RW       0x2
 #define PAGE_ENTRY_ACCESS   0x20
@@ -45,6 +41,7 @@ extern uint32_t _EARLY_KMALLOC_END;
 #define INDEX_FROM_BIT(a)   ((a) / (8*4))
 #define OFFSET_FROM_BIT(a)  ((a) % (8*4))
 #define KERNEL_BASE         0xC0000000
+#define VADDR(ADDR)         ((px_virtual_address_t){ .val = (ADDR) })
 
 typedef union px_virtual_address
 {
@@ -53,7 +50,7 @@ typedef union px_virtual_address
         uint32_t page_table_index  : 10;  // Page table entry
         uint32_t page_dir_index    : 10;  // Page directory entry
     };
-    uint32_t intval;
+    uint32_t val;
 } px_virtual_address_t;
 
 /**
@@ -123,6 +120,8 @@ typedef struct px_page_directory
   enables paging.
 **/
 void px_paging_init();
+
+void *px_get_new_page(uint32_t size);
 
 #endif /* PANIX_MEM_PAGING */
 
