@@ -12,7 +12,7 @@
 #ifndef PANIX_TYPES_HPP
 #define PANIX_TYPES_HPP
 
-#define NULL 0
+#define NULL nullptr
 
 typedef char                     int8_t;
 typedef unsigned char           uint8_t;
@@ -24,6 +24,7 @@ typedef long long int           int64_t;
 typedef unsigned long long int uint64_t;
 typedef unsigned int             size_t;
 typedef unsigned long         uintptr_t;
+typedef long                   intptr_t;
 
 typedef struct registers {
    uint32_t ds;                                          /* Data segment selector */

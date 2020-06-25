@@ -21,6 +21,8 @@
 #include <devices/kbd/kbd.hpp>
 #include <devices/rtc/rtc.hpp>
 #include <devices/spkr/spkr.hpp>
+// memcpy
+#include <lib/string.hpp>
 
 void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
@@ -79,9 +81,21 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Enable interrupts now that we're out of a critical area
     px_interrupts_enable();
     // Print some info to show we did things right
-    px_rtc_print();
+    //px_rtc_print();
     px_print_debug((char *)px_cpu_get_vendor(), Info);
     px_print_debug((char *)px_cpu_get_model(), Info);
+
+    px_print_debug("mapping in new page", Warning);
+    char * test_addr = (char *)px_get_new_page(0);
+    if (test_addr == NULL) {
+        px_print_debug("failed to map in new page", Error);
+    }
+    px_print_debug("writing test data to page", Warning);
+    char test_str[] ="this is a test. please do not panic.";
+    memcpy(test_addr, test_str, sizeof(test_str));
+    px_print_debug("didn't crash so printing back results", Warning);
+    px_print_debug(test_addr, Info); 
+
     px_print_debug("Done.", Success);
     px_kernel_boot_tone();
     while (true) {
