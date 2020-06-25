@@ -1,0 +1,7 @@
+target remote localhost:1234
+file dist/panix.kernel
+break px_kernel_main
+set disassembly-flavor intel
+layout asm
+focus cmd
+
