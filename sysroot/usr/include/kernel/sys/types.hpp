@@ -13,6 +13,7 @@
 #define PANIX_TYPES_HPP
 
 #define NULL nullptr
+#define typeof __typeof__
 
 typedef char                     int8_t;
 typedef unsigned char           uint8_t;
