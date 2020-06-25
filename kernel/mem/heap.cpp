@@ -12,12 +12,9 @@
 #include <mem/heap.hpp>
 #include <lib/linked_list.hpp>
 
-#define MEM_SIZE (1024*1024*256)
+#define MEM_SIZE (1024*1024*2) // 256
 #define MAX_BLOCK (1024*1024)
 #define NUM_SLOTS 1024
-
-#define typeof __typeof__
-typedef int intptr_t;
 
 #define DLIST_REMOVE_FROM(h, d, l)					\
     {									            \
