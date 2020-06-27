@@ -90,7 +90,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_interrupts_disable();
     px_gdt_install();           // Initialize the Global Descriptor Table
     px_isr_install();           // Initialize Interrupt Service Requests
-    px_paging_init();           // Initialize paging service
+    px_paging_init(0);           // Initialize paging service
     px_kbd_init();              // Initialize PS/2 Keyboard
     px_rtc_init();              // Initialize Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
@@ -114,10 +114,29 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_rs232_print(model);
     px_rs232_print("\n");
     // Now that we're done make a joyful noise
+
+    px_kprintf(DBG_WARN "mapping in test pages");
+    
+    char test_str[] ="this is a test. please do not panic.";
+    char *pages[32];
+    uint32_t i;
+    for (i = 0; i < 32; i++) {
+        pages[i] = (char *)px_get_new_page(0);
+        if (pages[i] == NULL) {
+            px_kprintf(DBG_FAIL "failed to map in new page at %p", pages[i]);
+            break;
+        }
+        memcpy(pages[i], test_str, sizeof(test_str));
+    }
+ 
+    for (; i >= 0; i--) { 
+        px_free_page(pages[i], 1);
+    }
+
     px_kprintf(DBG_OKAY "Done.\n");
     px_kernel_boot_tone();
     // Keep the kernel alive.
-    int i = 0;
+    i = 0;
     while (true) {
         // Display a spinner to know that we're still running.
         switch (i) {
