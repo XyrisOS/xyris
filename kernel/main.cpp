@@ -73,7 +73,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_gdt_install();
     px_isr_install();           // Interrupt Service Requests
     // px_heap_init((uint32_t)&_EARLY_KMALLOC_START, (uint32_t)&_EARLY_KMALLOC_END);             // Early kernel memory allocation
-    px_paging_init();           // Initialize paging service
+    px_paging_init(0);           // Initialize paging service
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
@@ -92,6 +92,25 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_rs_232_print((char *)px_cpu_get_vendor());
     px_rs_232_print((char *)px_cpu_get_model());
     // Now that we're done make a joyful noise
+
+    px_print_debug("mapping in new page", Warning);
+    
+    char test_str[] ="this is a test. please do not panic.";
+    char *pages[32];
+    uint32_t i;
+    for (i = 0; i < 32; i++) {
+        pages[i] = (char *)px_get_new_page(0);
+        if (pages[i] == NULL) {
+            px_print_debug("failed to map in new page", Error);
+            break;
+        }
+        memcpy(pages[i], test_str, sizeof(test_str));
+    }
+ 
+    for (; i >= 0; i--) { 
+        px_free_page(pages[i], 1);
+    }
+
     px_print_debug("Done.", Success);
     px_kernel_boot_tone();
     while (true) {
