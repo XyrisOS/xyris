@@ -24,6 +24,8 @@
 
 #define BITMAP_SIZE (ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8))
 
+static uint32_t machine_page_count;
+
 /* one bit for every page */
 static uint32_t mapped_mem[BITMAP_SIZE] = { 0 };
 static uint32_t mapped_pages[BITMAP_SIZE] = { 0 };
@@ -36,21 +38,20 @@ static px_page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((sec
 static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables")));
 
 // Function prototypes
-void px_paging_init();
 static void px_mem_page_fault(registers_t* regs);
-static inline void px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *table);
 static void px_paging_init_dir();
 static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr);
 static void px_paging_map_early_mem();
 static void px_paging_map_hh_kernel();
+static int find_next_free_virt_addr(int seq);
+static int find_next_free_phys_page();
+static inline void px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *table);
 static inline void px_set_page_dir(uint32_t page_directory);
 static inline void px_paging_enable();
 static inline void px_paging_disable();
-static int find_free(int seq);
-static int get_next_free_phys_page();
-void* px_get_new_page(uint32_t size);
 
-void px_paging_init() {
+void px_paging_init(uint32_t page_count) {
+    machine_page_count = page_count;
     // we can set breakpoints or make a futile attempt to recover.
     px_register_interrupt_handler(14, px_mem_page_fault);
     // init our structures
@@ -157,7 +158,7 @@ static inline void px_paging_disable() {
  * note: this can't find more than 32 sequential pages
  * @param seq the number of sequential pages to get
  */
-static int find_free(int seq) {
+static int find_next_free_virt_addr(int seq) {
     uint32_t check;
     uint32_t mask = (1 << seq) - 1;
     for (int i = 0; i < (ADDRESS_SPACE_SIZE / PAGE_SIZE); i++) {
@@ -168,7 +169,7 @@ static int find_free(int seq) {
     return -1;
 }
 
-static int get_next_free_phys_page() {
+static int find_next_free_phys_page() {
     for (int i = 0; i < (ADDRESS_SPACE_SIZE / PAGE_SIZE); i++) {
         if (!((mapped_pages[INDEX_FROM_BIT(i)] >> OFFSET_FROM_BIT(i)) & 1)) return i;
     }
@@ -180,10 +181,10 @@ static int get_next_free_phys_page() {
  */
 void* px_get_new_page(uint32_t size) {
     int page_count = (size / PAGE_SIZE) + 1;
-    int free_idx = find_free(page_count);
+    int free_idx = find_next_free_virt_addr(page_count);
     if (free_idx == -1) return NULL;
     for (int i = free_idx; i < free_idx + page_count; i++) {
-        int phys_page_idx = get_next_free_phys_page();
+        int phys_page_idx = find_next_free_phys_page();
         if (phys_page_idx == -1) return NULL;
         px_map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
     }
