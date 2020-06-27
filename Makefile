@@ -13,39 +13,47 @@ HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
 SYSROOT  = sysroot
 
 # Compilers/Assemblers/Linkers
-AS	 	= $(shell command -v i686-elf-as 		|| command -v as)
-GCC  	= $(shell command -v i686-elf-gcc 		|| command -v gcc)
-GDB  	= $(shell command -v i686-elf-gdb 		|| command -v gdb)
-LD   	= $(shell command -v i686-elf-ld 		|| command -v ld)
+AS 	= $(shell command -v i686-elf-as 	|| command -v as)
+GCC  	= $(shell command -v i686-elf-gcc	|| command -v gcc)
+GDB  	= $(shell command -v i686-elf-gdb	|| command -v gdb)
+LD   	= $(shell command -v i686-elf-ld 	|| command -v ld)
 OBCP 	= $(shell command -v i686-elf-objcopy 	|| command -v objcopy)
 QEMU 	= $(shell command -v qemu-system-i386	|| echo "Please install qemu")
-MKGRUB 	= $(shell command -v grub-mkrescue		|| echo "You're likely on macOS. Please refer to Installing_GRUB_2_on_OS_X on the OSDev Wiki")
-VBOX	= $(shell command -v VBoxManage			|| echo "Please install Virtualbox")
+MKGRUB 	= $(shell command -v grub-mkrescue	|| echo "You're likely on macOS. Please refer to Installing_GRUB_2_on_OS_X on the OSDev Wiki")
+VBOX	= $(shell command -v VBoxManage		|| echo "Please install Virtualbox")
 
 # Compiler/Linker flags
 # The -lgcc flag is included because it includes helpful functions used
 # by GCC that would be ineffective to duplicate.
-GCC_FLAGS = 					\
-	-m32 						\
-	-g							\
-	-nostartfiles				\
-	-nodefaultlibs				\
-	-lgcc						\
-	-ffreestanding				\
-	-fno-use-cxa-atexit			\
-	-fno-builtin				\
-	-fno-rtti					\
-	-fno-exceptions				\
-	-fno-leading-underscore		\
-	-fno-stack-protector		\
-	-Wno-write-strings			\
+GCC_FLAGS = 				\
+	-m32				\
+	-g				\
+	-nostartfiles			\
+	-nodefaultlibs			\
+	-lgcc				\
+	-ffreestanding			\
+	-fpermissive			\
+	-fno-use-cxa-atexit		\
+	-fno-builtin			\
+	-fno-rtti			\
+	-fno-exceptions			\
+	-fno-leading-underscore	        \
+	-fno-stack-protector	        \
+	-Wno-write-strings		\
 	-std=c++17
 AS_FLAGS   = --32
 LD_FLAGS   = -melf_i386
-KRNL_FLAGS = 							\
-	-D__is_kernel 						\
+KRNL_FLAGS = 					\
+	-D__is_kernel 				\
 	-I ${SYSROOT}/usr/include/kernel/	
-
+QEMU_FLAGS =                            \
+        -m 4G                           \
+        -soundhw pcspk                  \
+        -rtc clock=host                 \
+        -vga std                        \
+        -m 256M                         \
+        -serial stdio                   \
+        -d cpu_reset
 # Linker file
 LINKER = kernel/arch/x86/linker.ld
 
@@ -79,38 +87,31 @@ dist/panix.iso: dist/panix.kernel
 	@ rm -rf iso
 
 # Create object file directories
-.PHONY: 
-	obj_directories
+.PHONY: obj_directories
 obj_directories:
 	mkdir -p $(OBJ_DIRS)
 
 # Run bootable ISO
+.PHONY: run
 run: dist/panix.iso
-	$(QEMU) 					\
+	$(QEMU) 			\
 	-drive format=raw,file=$< 	\
-	-m 4G						\
-	-soundhw pcspk 				\
-	-rtc clock=host 			\
-	-vga std -m 256M 			\
-	-serial stdio				\
-	-d cpu_reset
+	$(QEMU_FLAGS)
 
+.PHONY: virtualbox
 virtualbox:
 	$(VBOX) startvm --putenv --debug "Panix"
 
 # Open the connection to qemu and load our kernel-object file with symbols
+.PHONY: debug
 debug: dist/panix.iso
 	# Start QEMU with debugger
-	$(QEMU) 					\
-	-S -s 						\
+	($(QEMU) 			\
+	-S -s 				\
 	-drive format=raw,file=$< 	\
-	-m 4G						\
-	-soundhw pcspk 				\
-	-rtc clock=host 			\
-	-vga std 					\
-	-m 256M 					\
-	-serial stdio				\
-	-d cpu_reset				
+	$(QEMU_FLAGS) &)
+	sleep 2
+	wmctrl -xr qemu.Qemu-system-i386 -b add,above
 	# After this start the visual studio debugger
 	# gdb dist/panix.kernel
 
@@ -127,6 +128,7 @@ dist: dist/panix.kernel
 	@ qemu-img convert -f raw -O vmdk dist/panix.kernel dist/panix.vmdk
 	@ echo Done building VMDK image of Panix!
 
+.PHONY: verify
 verify:
 	$(shell grub-file --is-x86-multiboot dist/panix.kernel)
 ifeq ($(.SHELLSTATUS), 1)
@@ -140,6 +142,7 @@ docs:
 	@ doxygen ./Doxyfile
 
 # Clear out objects and BIN
+.PHONY: clean
 clean:
 	@ echo Cleaning obj directory...
 	@ rm -rf obj
@@ -147,3 +150,4 @@ clean:
 	@ rm -rf dist/*.kernel
 	@ rm -rf iso
 	@ echo "Done cleaning!"
+
