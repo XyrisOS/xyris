@@ -35,6 +35,7 @@ void printPanicScreen(int exception) {
 }
 
 void panic(int exception) {
+    asm volatile ("cli");
     // Clear the screen
     px_clear_tty();
     // Print the panic cow
@@ -55,6 +56,7 @@ void panic(int exception) {
 }
 
 void panic(char* msg, const char *file, uint32_t line, const char *func) {
+    asm volatile ("cli");
     // Clear the screen
     px_clear_tty();
     // Print the panic cow
@@ -68,6 +70,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
 }
 
 void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
+    asm volatile ("cli");
     // Clear the screen
     px_clear_tty();
     // Print the panic cow and exception description
