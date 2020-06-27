@@ -47,8 +47,25 @@ void printPanicScreen(int exception) {
     px_rs232_print(cow);
 }
 
+void panic(int exception) {
+    asm volatile ("cli");
+    // Print the panic cow
+    printPanicScreen(exception);
+    // Get the exception code
+    char* panicCode = (char*) "UNHANDLED EXCEPTION 0x00 - ";
+    char* hex = (char*) "0123456789ABCDEF";
+    panicCode[22] = hex[(exception >> 4) & 0xF];
+    panicCode[23] = hex[exception & 0xF];
+    // Print the code and associated error name
+    px_kprintf("\n\033[91mEXCEPTION CAUGHT IN KERNEL MODE!\n");
+    px_kprintf(panicCode);
+    px_kprintf(px_exception_descriptions[exception]);
+    // Halt the CPU
+    asm("hlt");
+}
+
 void panic(char* msg, const char *file, uint32_t line, const char *func) {
-    asm("cli");
+    asm volatile ("cli");
     // Print the panic cow
     printPanicScreen(0);
     // Print the message passed in on a new line
@@ -65,7 +82,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
 }
 
 void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
-    asm("cli");
+    asm volatile ("cli");
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
     char msg[64];
