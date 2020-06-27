@@ -19,7 +19,7 @@
 #define SET_BIT_IN_MAP(bmp, addr) (bmp)[INDEX_FROM_BIT(((addr) & PAGE_ALIGN) / PAGE_SIZE)] \
     |= 1UL << OFFSET_FROM_BIT((addr) / PAGE_SIZE)
 
-#define UNSET_BIT_IN_MAP(bpm, addr) (bmp)[INDEX_FROM_BIT(((addr) & PAGE_ALIGN) / PAGE_SIZE)] \
+#define UNSET_BIT_IN_MAP(bmp, addr) (bmp)[INDEX_FROM_BIT(((addr) & PAGE_ALIGN) / PAGE_SIZE)] \
     &= ~(1UL << OFFSET_FROM_BIT((addr) / PAGE_SIZE))
 
 #define BITMAP_SIZE (ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8))
@@ -190,3 +190,22 @@ void* px_get_new_page(uint32_t size) {
     }
     return (void *)(free_idx * PAGE_SIZE);
 }
+
+void px_free_page(void *page, uint32_t size) {
+    int page_count = (size / PAGE_SIZE) + 1;
+    for (uint32_t i = (uint32_t)page >> 12; i < ((uint32_t)page >> 12) + page_count; i++) {
+        UNSET_BIT_IN_MAP(mapped_pages, i);
+        // how much more UN-readable can we make this?? (pls, i need to know...)
+        //*(uint32_t*)((uint32_t)page_tables + i * 4) = 0;
+        // this is the same as the line above
+        px_page_table_entry_t *pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
+        // the frame field is actually the page frame's index
+        // basically it's frame 0, 1...(2^21-1)
+        UNSET_BIT_IN_MAP(mapped_mem, pte->frame);
+        // zero it out to unmap it
+        *pte = (px_page_table_entry_t){ 0 };
+        // clear that tlb
+        px_invalidate_page(page);
+    }
+}
+

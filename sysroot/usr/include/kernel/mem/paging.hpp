@@ -20,6 +20,8 @@
 // Information about the Kernel from the linker
 extern uint32_t _KERNEL_START;
 extern uint32_t _KERNEL_END;
+extern "C" void px_invalidate_page(void *page_addr);
+
 // Thanks to Grant Hernandez for uOS and the absolutely amazing code
 // that he wrote. It helped us fix a lot of bugs and has provided a
 // lot of quality of life defines such as the ones below that we would
@@ -124,7 +126,7 @@ typedef struct px_page_directory
  * @brief Sets up the environment, page directories etc and enables paging.
  *
  */
-void px_paging_init();
+void px_paging_init(uint32_t num_pages);
 
 /**
  * @brief Returns a new page in memory for use.
@@ -132,7 +134,8 @@ void px_paging_init();
  * @param size Page size in bytes
  * @return void* Page memory address
  */
-void* px_get_new_page(size_t size);
+void* px_get_new_page(uint32_t size);
+void  px_free_page(void *page, uint32_t size);
 
 #endif /* PANIX_MEM_PAGING */
 
