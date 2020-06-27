@@ -46,7 +46,14 @@ LD_FLAGS   = -melf_i386
 KRNL_FLAGS = 					\
 	-D__is_kernel 				\
 	-I ${SYSROOT}/usr/include/kernel/	
-
+QEMU_FLAGS =                            \
+        -m 4G                           \
+        -soundhw pcspk                  \
+        -rtc clock=host                 \
+        -vga std                        \
+        -m 256M                         \
+        -serial stdio                   \
+        -d cpu_reset
 # Linker file
 LINKER = kernel/arch/x86/linker.ld
 
@@ -89,10 +96,7 @@ obj_directories:
 run: dist/panix.iso
 	$(QEMU) 			\
 	-drive format=raw,file=$< 	\
-	-m 4G				\
-	-rtc clock=host 		\
-	-vga std -m 256M 		\
-	-serial stdio
+	$(QEMU_FLAGS)
 
 .PHONY: virtualbox
 virtualbox:
@@ -105,13 +109,7 @@ debug: dist/panix.iso
 	($(QEMU) 			\
 	-S -s 				\
 	-drive format=raw,file=$< 	\
-	-m 4G				\
-	-soundhw pcspk 			\
-	-rtc clock=host 		\
-	-vga std 			\
-	-m 256M 			\
-	-serial stdio			\
-	-d cpu_reset &)
+	$(QEMU_FLAGS) &)
 	sleep 2
 	wmctrl -xr qemu.Qemu-system-i386 -b add,above
 	# After this start the visual studio debugger
