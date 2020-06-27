@@ -18,7 +18,7 @@ GCC  	= $(shell command -v i686-elf-gcc	|| command -v gcc)
 GDB  	= $(shell command -v i686-elf-gdb	|| command -v gdb)
 LD   	= $(shell command -v i686-elf-ld 	|| command -v ld)
 OBCP 	= $(shell command -v i686-elf-objcopy 	|| command -v objcopy)
-QEMU 	= $(shell command -v qemu-system-i386	|| echo "Please install qemu")
+QEMU 	= $(shell command -v qemu-system-x86_64	|| echo "Please install qemu")
 MKGRUB 	= $(shell command -v grub-mkrescue	|| echo "You're likely on macOS. Please refer to Installing_GRUB_2_on_OS_X on the OSDev Wiki")
 VBOX	= $(shell command -v VBoxManage		|| echo "Please install Virtualbox")
 
