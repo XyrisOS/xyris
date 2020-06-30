@@ -86,12 +86,12 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     //px_rtc_print();
     px_print_debug((char *)px_cpu_get_vendor(), Info);
     px_print_debug((char *)px_cpu_get_model(), Info);
-
-    px_print_debug("Starting serial debugger...\n", Info);
-    px_rs_232_print("Panix v3 Serial Out Debugger:\n");
+    // Start the serial debugger
+    px_print_debug("Starting serial debugger...", Info);
+    px_rs_232_print("Panix v3 Serial Out Debugger:");
     px_rs_232_print((char *)px_cpu_get_vendor());
     px_rs_232_print((char *)px_cpu_get_model());
-
+    // Now that we're done make a joyful noise
     px_print_debug("Done.", Success);
     px_kernel_boot_tone();
     while (true) {
