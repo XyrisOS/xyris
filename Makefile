@@ -47,13 +47,11 @@ KRNL_FLAGS = 					\
 	-D__is_kernel 				\
 	-I ${SYSROOT}/usr/include/kernel/	
 QEMU_FLAGS =                            \
-        -m 4G                           \
-        -soundhw pcspk                  \
+        -m 256M                         \
         -rtc clock=host                 \
         -vga std                        \
-        -m 256M                         \
         -serial stdio                   \
-        -d cpu_reset
+
 # Linker file
 LINKER = kernel/arch/x86/linker.ld
 
