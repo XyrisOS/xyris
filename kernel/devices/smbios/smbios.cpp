@@ -6,7 +6,7 @@
  * because once we find the information we don't really do anything
  * with it. It still needs to be loaded into the struct to be
  * accessed later.
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-15
  * 
  * @copyright Copyright Keeton Feavel et al (c) 2019

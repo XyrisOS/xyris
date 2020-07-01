@@ -2,7 +2,7 @@
  * @file panix.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief Includes many commonly used system functions.
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-14
  *
  * @copyright Copyright Keeton Feavel et al (c) 2019
