@@ -8,7 +8,7 @@
  * provides communication with devices in a fixed 
  * order and size, and was used as an alternative 
  * to memory access. (https://wiki.osdev.org/I/O_Ports)
- * @version 0.1
+ * @version 0.3
  * @date 2019-09-26
  * 
  * @copyright Copyright Keeton Feavel (c) 2019
