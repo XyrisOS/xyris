@@ -21,7 +21,7 @@
 #include <devices/kbd/kbd.hpp>
 #include <devices/rtc/rtc.hpp>
 #include <devices/spkr/spkr.hpp>
-#include <devices/serial/rs232/rs232.hpp>
+#include <devices/serial/rs232.hpp>
 // memcpy
 #include <lib/string.hpp>
 

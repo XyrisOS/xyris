@@ -9,7 +9,7 @@
  * 
  */
 
-#include <devices/serial/rs232/rs232.hpp>
+#include <devices/serial/rs232.hpp>
 #include <arch/arch.hpp>
 
 char* lineBuffer[RS_232_BUF_SIZE];
