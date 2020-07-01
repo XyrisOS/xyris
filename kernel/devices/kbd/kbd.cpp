@@ -9,9 +9,9 @@
  * 
  */
 
+#include <arch/arch.hpp>
 #include <devices/kbd/kbd.hpp>
 #include <devices/kbd/scode.hpp>
-#include <arch/x86/isr.hpp>
 
 uint8_t px_kbd_scode_buff[256];
 uint8_t px_kbd_scode_buff_pos = 0;

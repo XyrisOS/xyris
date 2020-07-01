@@ -9,7 +9,7 @@
  * 
  */
 
-#include <arch/x86/idt.hpp>
+#include <arch/arch.hpp>
 
 idt_gate_t idt[IDT_ENTRIES];
 idt_register_t idt_reg;

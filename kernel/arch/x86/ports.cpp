@@ -8,7 +8,8 @@
  * @copyright Copyright Keeton Feavel et al (c) 2020
  * 
  */
-#include <arch/x86/ports.hpp>
+ 
+#include <arch/arch.hpp>
 
 uint8_t px_read_byte(uint16_t port) {
     uint8_t result;

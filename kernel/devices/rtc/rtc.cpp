@@ -9,8 +9,8 @@
  * 
  */
 
+#include <arch/arch.hpp>
 #include <devices/rtc/rtc.hpp>
-#include <arch/x86/isr.hpp>
 #include <lib/string.hpp>
 
 void px_rtc_callback(registers_t *regs);

@@ -23,6 +23,7 @@ const char* const px_cpu_get_model();
 #include <arch/x86/idt.hpp>
 #include <arch/x86/isr.hpp>
 #include <arch/x86/timer.hpp>
+#include <arch/x86/ports.hpp>
 
 #endif
 #if defined(__amd64__) | defined(__x86_64__)

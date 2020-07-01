@@ -12,7 +12,7 @@
 #ifndef PANIX_TASK_STATE_SEGMENT
 #define PANIX_TASK_STATE_SEGMENT
 
-#include <sys/types.hpp>
+#include <sys/panix.hpp>
 
 /**
  * @brief This function is defined in flush.s (assembly) and is
