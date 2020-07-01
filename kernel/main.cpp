@@ -2,7 +2,7 @@
  * @file main.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief The entry point into the Panix kernel. Everything is loaded from here.
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-14
  *
  * @copyright Copyright Keeton Feavel et al (c) 2019
