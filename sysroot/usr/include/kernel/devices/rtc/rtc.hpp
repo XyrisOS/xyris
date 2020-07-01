@@ -2,7 +2,7 @@
  * @file rtc.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-18
  *
  * @copyright Copyright Keeton Feavel et al (c) 2019
