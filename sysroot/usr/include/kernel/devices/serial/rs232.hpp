@@ -3,7 +3,7 @@
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief A simple, write-only driver for the RS232 serial
  * device standard. Code mostly ported from Panix v2.
- * @version 0.1
+ * @version 0.3
  * @date 2020-06-29
  *
  * @copyright Copyright Keeton Feavel et al (c) 2020

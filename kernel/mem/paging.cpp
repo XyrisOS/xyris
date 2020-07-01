@@ -3,7 +3,7 @@
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @author Micah Switzer (mswitzer@cedarville.edu)
  * @brief
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-22
  *
  * @copyright Copyright Keeton Feavel and Micah Switzer (c) 2019
