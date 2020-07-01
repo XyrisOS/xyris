@@ -9,8 +9,7 @@
  *
  */
 
-#include <arch/x86/timer.hpp>
-#include <arch/x86/isr.hpp>    // Needed to register our callback
+#include <arch/arch.hpp>
 #include <lib/string.hpp>
 
 static void px_timer_callback(registers_t *regs);

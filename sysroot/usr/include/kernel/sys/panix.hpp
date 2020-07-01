@@ -13,7 +13,6 @@
 #define PANIX_SYS_HPP
 
 #include <sys/types.hpp>            // Data type definitions
-#include <arch/x86/ports.hpp>       // Necessary for accessign CPU ports
 #include <devices/tty/kprint.hpp>   // Necessary for printing to the TTY
 
 // Macros for panic and assert

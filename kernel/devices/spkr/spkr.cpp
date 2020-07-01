@@ -9,7 +9,7 @@
  *
  */
 
-#include <arch/x86/timer.hpp>
+#include <arch/arch.hpp>
 #include <devices/spkr/spkr.hpp>
 
 static void px_spkr_tone(uint32_t freq) {
