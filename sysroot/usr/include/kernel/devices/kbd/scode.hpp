@@ -4,7 +4,7 @@
  * @brief Contains all of the sets of available keyboard scancodes
  * and their corresponding ASCII values. To be updated later with
  * more keyboard options for other countries.
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-18
  * 
  * @copyright Copyright Keeton Feavel et al (c) 2019

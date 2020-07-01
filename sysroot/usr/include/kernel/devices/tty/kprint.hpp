@@ -7,7 +7,7 @@
  * C++ seems to take care of *most* of the time. These functions do
  * NOT accept formatted strings like printf. That is available in
  * px_kprintf().
- * @version 0.1
+ * @version 0.3
  * @date 2019-09-26
  *
  * @copyright Copyright Keeton Feavel (c) 2019
