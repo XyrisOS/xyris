@@ -37,15 +37,25 @@ typedef void (*isr_t)(registers_t *);
  * Used when in various x86 architecture functions and panic.
  */
 typedef struct registers {
-   uint32_t ds;                                          /* Data segment selector */
-   uint32_t edi, esi, ebp, ignored, ebx, edx, ecx, eax;  /* Pushed by pusha. */
-   uint32_t int_num, err_code;                           /* Interrupt number and error code (if applicable) */
-   uint32_t eip, cs, eflags, esp, ss;                    /* Pushed by the processor automatically */
+    uint32_t ds;                                          /* Data segment selector */
+    uint32_t edi, esi, ebp, ignored, ebx, edx, ecx, eax;  /* Pushed by pusha. */
+    uint32_t int_num, err_code;                           /* Interrupt number and error code (if applicable) */
+    uint32_t eip, cs, eflags, esp, ss;                    /* Pushed by the processor automatically */
 } registers_t;
 
 #endif
 #if defined(__amd64__) | defined(__x86_64__)
 /* Include amd64 (x86_64) headers */
+/**
+ * @brief A structure definining values for every since x86_64 register.
+ * Used when in various x86_64 architecture functions and panic.
+ */
+typedef struct registers {
+    uint64_t rax, rbx, rcx, rdx, rsi, rdi, rsp, rbp;    /* General purpose registers */
+    uint64_t r8, r9, r10, r11, r12, r13, r14, r15;      /* General purpose registers */
+    uint64_t rip, cs, ds, ss, es, fs, gs;               /* Pointer and segment registers */
+    uint64_t rflags, cr0, cr2, cr3, cr4, cr8;           /* Flags and control registers */
+} registers_t;
 
 #endif
 #if defined(__aarch64__)
