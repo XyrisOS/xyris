@@ -43,7 +43,7 @@ typedef struct registers {
     uint32_t eip, cs, eflags, esp, ss;                    /* Pushed by the processor automatically */
 } registers_t;
 
-#endif
+#endif/* x86 */
 #if defined(__amd64__) | defined(__x86_64__)
 /* Include amd64 (x86_64) headers */
 /**
@@ -57,10 +57,13 @@ typedef struct registers {
     uint64_t rflags, cr0, cr2, cr3, cr4, cr8;           /* Flags and control registers */
 } registers_t;
 
-#endif
+#endif /* x86_64 */
+#if defined(__arm__)
+/* Include headers for ARM 32 */
+
+#endif /* arm */
 #if defined(__aarch64__)
 /* Include headers for ARM 64 */
 
+#endif /* arm64 */
 #endif /* PANIX_ARCH_HPP */
-
-#endif
