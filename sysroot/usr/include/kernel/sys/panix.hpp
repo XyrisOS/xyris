@@ -13,6 +13,7 @@
 #define PANIX_SYS_HPP
 
 #include <sys/types.hpp>            // Data type definitions
+#include <arch/arch.hpp>            // Architecture specific features
 #include <devices/tty/kprint.hpp>   // Necessary for printing to the TTY
 
 // Macros for panic and assert
@@ -22,10 +23,11 @@
 // List of all exceptions and their associated english descriptions
 extern const char* px_exception_descriptions[];
 
-// Kernel utility functions
+// Kernel panic functions
 void panic(int exception);
 void panic(char* msg, const char *file, uint32_t line, const char *func);
 void panic(registers_t *regs, const char *file, uint32_t line, const char *func);
+
 // Userspace
 extern "C" void jump_usermode(uintptr_t location, uintptr_t stack);
 

@@ -13,6 +13,7 @@
 #define PANIX_ISR_HPP
 
 #include <sys/panix.hpp>
+#include <arch/arch.hpp>
 
 /**
  * All of the following values are Interrupt Request (IRQ) identifiers
