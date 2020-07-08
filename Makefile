@@ -12,15 +12,17 @@ ATT_SRC  = $(shell find kernel/ -name "*.s")
 HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
 SYSROOT  = sysroot
 
+EMU_ARCH = i386
+
 # Compilers/Assemblers/Linkers
-AS 	= $(shell command -v i686-elf-as 	|| command -v as)
-GCC  	= $(shell command -v i686-elf-gcc	|| command -v gcc)
-GDB  	= $(shell command -v i686-elf-gdb	|| command -v gdb)
-LD   	= $(shell command -v i686-elf-ld 	|| command -v ld)
-OBCP 	= $(shell command -v i686-elf-objcopy 	|| command -v objcopy)
-QEMU 	= $(shell command -v qemu-system-i386	|| echo "Please install qemu")
-MKGRUB 	= $(shell command -v grub-mkrescue	|| echo "You're likely on macOS. Please refer to Installing_GRUB_2_on_OS_X on the OSDev Wiki")
-VBOX	= $(shell command -v VBoxManage		|| echo "Please install Virtualbox")
+AS 	= $(shell command -v i686-elf-as 	     || command -v as)
+GCC  	= $(shell command -v i686-elf-gcc	     || command -v gcc)
+GDB  	= $(shell command -v i686-elf-gdb	     || command -v gdb)
+LD   	= $(shell command -v i686-elf-ld 	     || command -v ld)
+OBCP 	= $(shell command -v i686-elf-objcopy        || command -v objcopy)
+QEMU 	= $(shell command -v qemu-system-$(EMU_ARCH) || echo "Please install qemu")
+MKGRUB 	= $(shell command -v grub-mkrescue	     || echo "You're likely on macOS. Please refer to Installing_GRUB_2_on_OS_X on the OSDev Wiki")
+VBOX	= $(shell command -v VBoxManage		     || echo "Please install Virtualbox")
 
 # Compiler/Linker flags
 # The -lgcc flag is included because it includes helpful functions used
@@ -126,8 +128,8 @@ debug: dist/panix.iso
 	-S -s 				\
 	-drive format=raw,file=$< 	\
 	$(QEMU_FLAGS) &)
-	sleep 2
-	wmctrl -xr qemu.Qemu-system-i386 -b add,above
+	sleep 1
+	wmctrl -xr qemu.Qemu-system-$(EMU_ARCH) -b add,above
 	# After this start the visual studio debugger
 	# gdb dist/panix.kernel
 
