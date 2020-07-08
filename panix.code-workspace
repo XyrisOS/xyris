@@ -20,7 +20,7 @@
 		"C_Cpp.default.cStandard": "c11",
 		"C_Cpp.default.intelliSenseMode": "gcc-x86",
 		"doxdocgen.file.copyrightTag": [
-			"@copyright Copyright Keeton Feavel et al (c) {year}"
+			"@copyright Copyright the Panix Contributors (c) {year}"
 		],
 		"doxdocgen.generic.authorEmail": "keetonfeavel@cedarville.edu",
 		"doxdocgen.generic.authorName": "Keeton Feavel",
