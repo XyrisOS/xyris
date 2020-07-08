@@ -25,8 +25,8 @@ extern "C" void px_invalidate_page(void *page_addr);
 // that he wrote. It helped us fix a lot of bugs and has provided a
 // lot of quality of life defines such as the ones below that we would
 // not have thought to use otherwise.
-#define KERNEL_START        (uint32_t)&_KERNEL_START
-#define KERNEL_END          (uint32_t)&_KERNEL_END
+#define KERNEL_START        ((uint32_t)&_KERNEL_START)
+#define KERNEL_END          ((uint32_t)&_KERNEL_END)
 #define KERNEL_BASE         0xC0000000
 #define ADDRESS_SPACE_SIZE  0x100000000
 #define PAGE_SIZE           0x1000

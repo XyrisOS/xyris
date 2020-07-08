@@ -91,14 +91,13 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_rs_232_print("Panix v3 Serial Out Debugger:");
     px_rs_232_print((char *)px_cpu_get_vendor());
     px_rs_232_print((char *)px_cpu_get_model());
-    // Now that we're done make a joyful noise
 
     px_print_debug("mapping in new page", Warning);
     
     char test_str[] ="this is a test. please do not panic.";
     char *pages[32];
-    uint32_t i;
-    for (i = 0; i < 32; i++) {
+    int32_t i;
+    for (i = 0; i < 10; i++) {
         pages[i] = (char *)px_get_new_page(0);
         if (pages[i] == NULL) {
             px_print_debug("failed to map in new page", Error);
@@ -107,11 +106,12 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
         memcpy(pages[i], test_str, sizeof(test_str));
     }
  
-    for (; i >= 0; i--) { 
+    for (i -= 1; i >= 0; i--) {
         px_free_page(pages[i], 1);
     }
 
     px_print_debug("Done.", Success);
+    // Now that we're done make a joyful noise
     px_kernel_boot_tone();
     while (true) {
         // Keep the kernel alive.
