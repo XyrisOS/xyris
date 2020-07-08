@@ -147,8 +147,8 @@ dist: dist/panix.kernel
 	@ echo Done building VMDK image of Panix!
 
 .PHONY: verify
-verify:
-	$(shell grub-file --is-x86-multiboot dist/panix.kernel)
+verify: dist/panix.kernel
+	$(shell grub-file --is-x86-multiboot $<)
 ifeq ($(.SHELLSTATUS), 1)
 	@ echo Kernel does not have valid multiboot!
 else
