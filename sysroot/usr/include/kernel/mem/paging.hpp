@@ -42,8 +42,6 @@ extern "C" void px_invalidate_page(void *page_addr);
 #define PAGES_PER_KB(kb)    (PAGE_ALIGN_UP((kb) * 1024) / PAGE_SIZE)
 #define PAGES_PER_MB(mb)    (PAGE_ALIGN_UP((mb) * 1024 * 1024) / PAGE_SIZE)
 #define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
-#define INDEX_FROM_BIT(a)   ((a) / (8*4))
-#define OFFSET_FROM_BIT(a)  ((a) % (8*4))
 #define VADDR(ADDR)         ((px_virtual_address_t){ .val = (ADDR) })
 
 /**

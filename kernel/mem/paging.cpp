@@ -12,23 +12,18 @@
 
 #include <mem/paging.hpp>
 #include <sys/panic.hpp>
+#include <lib/bitmap.hpp>
 #include <stddef.h>
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 
-#define SET_BIT_IN_MAP(bmp, addr) (bmp)[INDEX_FROM_BIT((addr))] \
-    |= 1UL << OFFSET_FROM_BIT((addr))
-
-#define UNSET_BIT_IN_MAP(bmp, addr) (bmp)[INDEX_FROM_BIT((addr))] \
-    &= ~(1UL << OFFSET_FROM_BIT((addr)))
-
-#define BITMAP_SIZE (ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8))
-
 static uint32_t machine_page_count;
 
+#define MEM_BITMAP_SIZE BITMAP_SIZE(ADDRESS_SPACE_SIZE / PAGE_SIZE)
+
 /* one bit for every page */
-static uint32_t mapped_mem[BITMAP_SIZE] = { 0 };
-static uint32_t mapped_pages[BITMAP_SIZE] = { 0 };
+static bitmap_t mapped_mem[MEM_BITMAP_SIZE] = { 0 };
+static bitmap_t mapped_pages[MEM_BITMAP_SIZE] = { 0 };
 
 static uint32_t                  page_dir_addr;
 static px_page_table_t *         page_dir_virt[PAGE_ENTRIES];
@@ -94,11 +89,11 @@ static void px_paging_init_dir() {
             page_tables[i].pages[j] = (px_page_table_entry_t){ 0 };
         }
     }
-    // recursivly map the last page table to the page directory
+    // recursively map the last page table to the page directory
     px_map_kernel_page_table(PAGE_ENTRIES - 1, (px_page_table_t*)&page_dir_phys[0]);
     for (uint32_t i = PAGE_ENTRIES * (PAGE_ENTRIES - 1); i < PAGE_ENTRIES * PAGE_ENTRIES; i++) {
-        SET_BIT_IN_MAP(mapped_mem, i);
-        SET_BIT_IN_MAP(mapped_pages, i);
+        bitmap_set_bit(mapped_mem, i);
+        bitmap_set_bit(mapped_pages, i);
     }
     // store the physical address of the page directory for quick access
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
@@ -124,8 +119,8 @@ static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
         .frame = paddr >> 12    // The last 12 bits are the frame
     };
     // Set the associated bit in the bitmaps
-    SET_BIT_IN_MAP(mapped_mem, paddr >> 12);
-    SET_BIT_IN_MAP(mapped_pages, vaddr.val >> 12);
+    bitmap_set_bit(mapped_mem, paddr >> 12);
+    bitmap_set_bit(mapped_pages, vaddr.val >> 12);
 }
 
 static void px_paging_map_early_mem() {
@@ -167,25 +162,11 @@ static inline void px_paging_disable() {
  * @param seq the number of sequential pages to get
  */
 static uint32_t find_next_free_virt_addr(int seq) {
-    uint32_t bm, check_lo, check_hi, check, masked, idx, ofst;
-    uint32_t mask = (1UL << seq) - 1UL;
-    for (uint32_t i = 1UL; i < (ADDRESS_SPACE_SIZE / PAGE_SIZE); i++) {
-        idx = i / 32;
-        ofst = i % 32;
-        check_lo = mapped_mem[idx] >> ofst;
-        check_hi = ofst ? mapped_mem[idx + 1] << (32 - ofst) : 0;
-        check = check_lo | check_hi;
-        masked = check & mask;
-        if (!(check & mask)) return i;
-    }
-    return 0;
+    return bitmap_find_first_range_clear(mapped_mem, ADDRESS_SPACE_SIZE / PAGE_SIZE, seq);
 }
 
 static uint32_t find_next_free_phys_page() {
-    for (uint32_t i = 1UL; i < (ADDRESS_SPACE_SIZE / PAGE_SIZE); i++) {
-        if (!((mapped_pages[INDEX_FROM_BIT(i)] >> OFFSET_FROM_BIT(i)) & 1)) return i;
-    }
-    return 0;
+    return bitmap_find_first_bit_clear(mapped_pages, ADDRESS_SPACE_SIZE / PAGE_SIZE);
 }
 
 /**
@@ -194,10 +175,10 @@ static uint32_t find_next_free_phys_page() {
 void* px_get_new_page(uint32_t size) {
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t free_idx = find_next_free_virt_addr(page_count);
-    if (free_idx == 0) return NULL;
+    if (free_idx == SIZE_T_MAX_VALUE) return NULL;
     for (uint32_t i = free_idx; i < free_idx + page_count; i++) {
         uint32_t phys_page_idx = find_next_free_phys_page();
-        if (phys_page_idx == 0) return NULL;
+        if (phys_page_idx == SIZE_T_MAX_VALUE) return NULL;
         px_map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
     }
     return (void *)(free_idx * PAGE_SIZE);
@@ -207,14 +188,14 @@ void px_free_page(void *page, uint32_t size) {
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t page_index = (uint32_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
-        UNSET_BIT_IN_MAP(mapped_pages, i);
+        bitmap_clear_bit(mapped_pages, i);
         // how much more UN-readable can we make this?? (pls, i need to know...)
         //*(uint32_t*)((uint32_t)page_tables + i * 4) = 0;
         // this is the same as the line above
         px_page_table_entry_t *pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
         // the frame field is actually the page frame's index
         // basically it's frame 0, 1...(2^21-1)
-        UNSET_BIT_IN_MAP(mapped_mem, pte->frame);
+        bitmap_clear_bit(mapped_mem, pte->frame);
         // zero it out to unmap it
         *pte = { 0 };
         // clear that tlb
