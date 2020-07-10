@@ -117,18 +117,17 @@ void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
         PANIC("Multiboot info missing. Please use a Multiboot compliant bootloader (like GRUB).");
     }
     // Print multiboot information
-    // px_kernel_print_multiboot(mb_struct);
+    px_kernel_print_multiboot(mb_struct);
 }
 
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
     // Print out our memory size information if provided
     if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
-        uint32_t mem_total = mb_struct->mem_lower + mb_struct->mem_upper;
         px_kprintf(
-            "Memory Lower: %x\nMemory Upper: %x\nTotal Memory: %x\n", 
+            "Memory Lower: 0x%08X\nMemory Upper: 0x%08X\nTotal Memory: 0x%08X\n", 
             mb_struct->mem_lower,
             mb_struct->mem_upper,
-            mem_total
+            (mb_struct->mem_lower + mb_struct->mem_upper)
         );
     }
     // Print out our memory map if provided
@@ -140,7 +139,7 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
             // If the length of the current map entry is not empty
             if (curr->len > 0) {
                 // Print out the memory map information
-                px_kprintf("\n[%x-%x]", curr->addr, (curr->addr + curr->len));
+                px_kprintf("\n[0x%08X-0x%08X]", curr->addr, (curr->addr + curr->len));
                 // Print out if the entry is available or reserved
                 curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprintf("Available") : px_kprintf("Reserved");
             } else {

@@ -71,7 +71,7 @@ void px_kprint(const char* str) {
 }
 
 void px_kprint_hex(uint32_t key) {
-    px_kprintf("%x", key);
+    px_kprintf("0x%08X", key);
 }
 
 void px_kprint_color(char* str, px_tty_color color) {

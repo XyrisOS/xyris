@@ -98,7 +98,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         (rw) ? px_kprintf("reading ") : px_kprintf("writing ");
         (us) ? px_kprintf("user-mode ") : px_kprintf("kernel ");
         (reserved) ? px_kprintf("reserved ") : px_kprintf("available");
-        px_kprintf(") at 0x%x", faulting_address);
+        px_kprintf(") at 0x0x%08X", faulting_address);
     }
     px_kprintf("\n");
     panic_print_file(file, line, func);
