@@ -1,5 +1,5 @@
 /**
- * @file px_kprint.hpp
+ * @file px_tty.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief px_kprint is a small library to print unformatted strings to
  * the BIOS TTY. The important thing to keep in mind is that these

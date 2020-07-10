@@ -14,7 +14,7 @@
 
 #include <sys/types.hpp>            // Data type definitions
 #include <arch/arch.hpp>            // Architecture specific features
-#include <devices/tty/kprint.hpp>   // Necessary for printing to the TTY
+#include <devices/tty/tty.hpp>   // Necessary for printing to the TTY
 
 // Macros for panic and assert
 #define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)

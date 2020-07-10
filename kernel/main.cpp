@@ -24,6 +24,7 @@
 #include <devices/serial/rs232.hpp>
 // memcpy
 #include <lib/string.hpp>
+#include <lib/stdio.hpp>
 
 void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
@@ -94,6 +95,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Now that we're done make a joyful noise
     px_print_debug("Done.", Success);
     px_kernel_boot_tone();
+    printf("This -> %X is a number\n", 0x100);
     while (true) {
         // Keep the kernel alive.
         asm("hlt");

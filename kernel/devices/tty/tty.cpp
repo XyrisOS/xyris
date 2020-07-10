@@ -13,9 +13,7 @@
  * @copyright Copyright Keeton Feavel et al (c) 2020
  * 
  */
-#include <devices/tty/kprint.hpp>
-#define IND_X 79
-#define IND_Y 0
+#include <devices/tty/tty.hpp>
 
 uint8_t ttyCoordsX = 0;
 uint8_t ttyCoordsY = 0;
@@ -38,7 +36,7 @@ void px_print_debug(char* msg, px_print_level lvl) {
             break;
         case Error:
             px_tty_set_color(Red, Black);
-            px_kprint("FAILED");
+            px_kprint(" FAIL ");
             break;
         case Success:
             px_tty_set_color(LightGreen, Black);
@@ -46,7 +44,7 @@ void px_print_debug(char* msg, px_print_level lvl) {
             break;
         default:
             px_tty_set_color(Magenta, Black);
-            px_kprint("UNKNOWN");
+            px_kprint(" ???? ");
             break;
     }
     // Reset the color to the default and print the closing bracket and message
@@ -115,7 +113,7 @@ void px_clear_tty() {
 void px_set_indicator(px_tty_color color) {
     volatile uint16_t* where;
     uint16_t attrib = (color << 4) | (color & 0x0F);
-    where = x86_bios_vga_mem + (IND_Y * X86_TTY_WIDTH + IND_X);
+    where = x86_bios_vga_mem + (X86_IND_Y * X86_TTY_WIDTH + X86_IND_X);
     *where = ' ' | (attrib << 8);
 }
 
