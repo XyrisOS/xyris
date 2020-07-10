@@ -1,7 +1,7 @@
 /**
  * @file kprint.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief px_kprint is a small library to print unformatted strings to
+ * @brief TTY is a small library to print unformatted strings to
  * the BIOS TTY. The important thing to keep in mind is that these
  * functions expect a null-terminator at the end of the string, which
  * C++ seems to take care of *most* of the time. These functions do
@@ -29,23 +29,23 @@ void px_print_debug(char* msg, px_print_level lvl) {
     switch (lvl) {
         case Info:
             px_tty_set_color(LightGrey, Black);
-            px_kprint(" INFO ");
+            px_kprintf(" INFO ");
             break;
         case Warning:
             px_tty_set_color(Yellow, Black);
-            px_kprint(" WARN ");
+            px_kprintf(" WARN ");
             break;
         case Error:
             px_tty_set_color(Red, Black);
-            px_kprint(" FAIL ");
+            px_kprintf(" FAIL ");
             break;
         case Success:
             px_tty_set_color(LightGreen, Black);
-            px_kprint("  OK  ");
+            px_kprintf("  OK  ");
             break;
         default:
             px_tty_set_color(Magenta, Black);
-            px_kprint(" ???? ");
+            px_kprintf(" ???? ");
             break;
     }
     // Reset the color to the default and print the closing bracket and message
@@ -64,14 +64,6 @@ void px_shift_tty_up() {
             ++where;
         }
     }
-}
-
-void px_kprint(const char* str) {
-    px_kprintf(str);
-}
-
-void px_kprint_hex(uint32_t key) {
-    px_kprintf("0x%08X", key);
 }
 
 void px_kprint_color(char* str, px_tty_color color) {

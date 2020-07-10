@@ -1,7 +1,7 @@
 /**
  * @file px_tty.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief px_kprint is a small library to print unformatted strings to
+ * @brief TTY is a small library to print unformatted strings to
  * the BIOS TTY. The important thing to keep in mind is that these
  * functions expect a null-terminator at the end of the string, which
  * C++ seems to take care of *most* of the time. These functions do
@@ -60,18 +60,6 @@ void putchar(char c);
  */
 void px_print_debug(char* msg, px_print_level lvl);
 /**
- * @brief Prints a given string to the kernel display.
- *
- * @param str Input string to be printed.
- */
-void px_kprint(const char* str);
-/**
- * @brief Prints a hexidecimal address to the kernel console.
- *
- * @param key Hexidecimal value to print.
- */
-void px_kprint_hex(uint32_t key);
-/**
  * @brief Prints out a string in a specified color
  *
  * @param str Input string to be printed
@@ -79,7 +67,7 @@ void px_kprint_hex(uint32_t key);
  */
 void px_kprint_color(char* str, px_tty_color color);
 /**
- * @brief Set the color of the text when the next px_kprint is called.
+ * @brief Set the color of the text when the next print is called.
  *
  * @param fore Foreground color
  * @param back Background color
