@@ -139,7 +139,7 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
             // If the length of the current map entry is not empty
             if (curr->len > 0) {
                 // Print out the memory map information
-                px_kprintf("\n[0x%08X-0x%08X]", curr->addr, (curr->addr + curr->len));
+                px_kprintf("\n[0x%08X-0x%08X] ", curr->addr, (curr->addr + curr->len));
                 // Print out if the entry is available or reserved
                 curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprintf("Available") : px_kprintf("Reserved");
             } else {
@@ -149,7 +149,7 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
             mem_info_ptr += curr->size + sizeof(curr->size);
         }
     }
-    px_kprintf("\n");
+    px_kprintf("\n\n");
 }
 
 void px_kernel_boot_tone() {
