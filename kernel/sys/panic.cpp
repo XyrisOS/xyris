@@ -12,6 +12,7 @@
 
 #include <sys/panix.hpp>
 #include <lib/string.hpp>
+#include <lib/stdio.hpp>
 
 // Function prototypes
 void panic_print_file(const char *file, uint32_t line, const char *func);
@@ -20,18 +21,20 @@ void panic_print_register(registers_t *regs);
 void printPanicScreen(int exception) {
     px_tty_set_color(Black, White);
     px_clear_tty();
-    px_kprint(" ________________________\n");
+    px_kprintf(" ________________________\n");
     if (exception == 13) {
-        px_kprint("< Wait... That's Illegal >\n");
+        px_kprintf("< Wait... That's Illegal >\n");
     } else {
-        px_kprint("< OH NO! Panix panicked! >\n");
+        px_kprintf("< OH NO! Panix panicked! >\n");
     }
-    px_kprint(" ------------------------\n");
-    px_kprint("        \\   ^__^\n");
-    px_kprint("         \\  (XX)\\_______\n");
-    px_kprint("            (__)\\       )\\/\\\n");
-    px_kprint("                ||----w |\n");
-    px_kprint("                ||     ||\n");
+    px_kprintf(
+        " ------------------------\n"
+        "        \\   ^__^\n"
+        "         \\  (XX)\\_______\n"
+        "            (__)\\       )\\/\\\n"
+        "                ||----w |\n"
+        "                ||     ||\n"
+    );
 }
 
 void panic(int exception) {
@@ -46,10 +49,10 @@ void panic(int exception) {
     panicCode[23] = hex[exception & 0xF];
     // Print the code and associated error name
     px_tty_set_color(Red, White);
-    px_kprint("\nEXCEPTION CAUGHT IN KERNEL MODE!\n");
+    px_kprintf("\nEXCEPTION CAUGHT IN KERNEL MODE!\n");
     px_tty_set_color(Black, White);
-    px_kprint(panicCode);
-    px_kprint(px_exception_descriptions[exception]);
+    px_kprintf(panicCode);
+    px_kprintf(px_exception_descriptions[exception]);
     // Halt the CPU
     asm("hlt");
 }
@@ -60,8 +63,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
     // Print the panic cow
     printPanicScreen(0);
     // Print the message passed in on a new line
-    px_kprint("\n");
-    px_kprint(msg);
+    px_kprintf("\n%s", msg);
     panic_print_file(file, line, func);
     // Halt the CPU
     asm("hlt");
@@ -72,19 +74,11 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     px_clear_tty();
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
-    px_kprint("Exception: ");
-    char s[11];
-    itoa(regs->int_num, s);
-    px_kprint(s);
-    px_kprint(" ( ");
-    px_kprint(px_exception_descriptions[regs->int_num]);
-    px_kprint(" ) ");
+    px_kprintf("Exception: %i (%s)", regs->int_num, px_exception_descriptions[regs->int_num]);
     if (regs->err_code) {
-        px_kprint("Error code: ");
-        itoa(regs->err_code, s);
-        px_kprint(s);
+        px_kprintf("Error code: %i", regs->err_code);
     }
-    px_kprint("\n\n");
+    px_kprintf("\n\n");
     panic_print_register(regs);
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
@@ -99,32 +93,21 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     // If we have a page fault, print out page fault info
     if (regs->int_num == 14) {
         // Output an error message.
-        px_kprint("Page fault ( ");
-        (present) ? px_kprint("present ") : px_kprint("missing ");
-        (rw) ? px_kprint("reading ") : px_kprint("writing ");
-        (us) ? px_kprint("user-mode ") : px_kprint("kernel ");
-        (reserved) ? px_kprint("reserved ") : px_kprint("available");
-        px_kprint(") at 0x");
-        px_kprint_hex(faulting_address);
+        px_kprintf("Page fault ( ");
+        (present) ? px_kprintf("present ") : px_kprintf("missing ");
+        (rw) ? px_kprintf("reading ") : px_kprintf("writing ");
+        (us) ? px_kprintf("user-mode ") : px_kprintf("kernel ");
+        (reserved) ? px_kprintf("reserved ") : px_kprintf("available");
+        px_kprintf(") at 0x%x", faulting_address);
     }
-    px_kprint("\n");
+    px_kprintf("\n");
     panic_print_file(file, line, func);
     // Halt the CPU
     asm("hlt");
 }
 
 void panic_print_file(const char *file, uint32_t line, const char *func) {
-    char lineStr[9];    // 8 digits + 1 terminator
-    px_kprint("File: ");
-    px_kprint(file);
-    px_kprint("\n");
-    px_kprint("Func: ");
-    px_kprint(func);
-    px_kprint("\n");
-    itoa(line, lineStr);
-    px_kprint("Line: ");
-    px_kprint(lineStr);
-    px_kprint("\n");
+    px_kprintf("File: %s\nFunc: %s\nLine: %i\n", file, func, line);
 }
 
 void panic_print_register(registers_t *regs) {

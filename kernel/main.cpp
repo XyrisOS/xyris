@@ -84,7 +84,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Enable interrupts now that we're out of a critical area
     px_interrupts_enable();
     // Print some info to show we did things right
-    //px_rtc_print();
+    px_rtc_print();
     px_print_debug((char *)px_cpu_get_vendor(), Info);
     px_print_debug((char *)px_cpu_get_model(), Info);
     // Start the serial debugger
@@ -95,7 +95,6 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Now that we're done make a joyful noise
     px_print_debug("Done.", Success);
     px_kernel_boot_tone();
-    printf("This -> %X is a number\n", 0x100);
     while (true) {
         // Keep the kernel alive.
         asm("hlt");
@@ -106,17 +105,11 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
 void px_kernel_print_splash() {
     px_clear_tty();
     px_tty_set_color(Yellow, Black);
-    px_kprint("Welcome to Panix\n");
-    px_kprint("Developed by graduates and undergraduates of Cedarville University.\n");
-    px_kprint("Copyright the Panix Contributors (c) 2019. All rights reserved.\n");
+    px_kprintf("Welcome to Panix\n"
+                "Developed by graduates and undergraduates of Cedarville University.\n"
+                "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n", __YEAR__);
     px_tty_set_color(White, Black);
-    px_kprint("Built on ");
-    px_kprint(__DATE__);
-    px_kprint(" at ");
-    px_kprint(__TIME__);
-    px_tty_set_color(LightCyan, Black);
-    px_kprint(".\n\n");
-    px_tty_set_color(White, Black);
+    px_kprintf("Built on %s at %s.\n\n", __DATE__, __TIME__);
 }
 
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
@@ -124,19 +117,19 @@ void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
         PANIC("Multiboot info missing. Please use a Multiboot compliant bootloader (like GRUB).");
     }
     // Print multiboot information
-    px_kernel_print_multiboot(mb_struct);
+    // px_kernel_print_multiboot(mb_struct);
 }
 
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
     // Print out our memory size information if provided
     if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
         uint32_t mem_total = mb_struct->mem_lower + mb_struct->mem_upper;
-        px_kprint("Memory Lower: ");
-        px_kprint_hex(mb_struct->mem_lower);
-        px_kprint("\nMemory Upper: ");
-        px_kprint_hex(mb_struct->mem_upper);
-        px_kprint_color("\nTotal Memory: ", Magenta);
-        px_kprint_hex(mem_total);
+        px_kprintf(
+            "Memory Lower: %x\nMemory Upper: %x\nTotal Memory: %x\n", 
+            mb_struct->mem_lower,
+            mb_struct->mem_upper,
+            mem_total
+        );
     }
     // Print out our memory map if provided
     if (mb_struct->flags & MULTIBOOT_INFO_MEM_MAP) {
@@ -147,13 +140,9 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
             // If the length of the current map entry is not empty
             if (curr->len > 0) {
                 // Print out the memory map information
-                px_kprint("\n[");
-                px_kprint_hex(curr->addr);
-                px_kprint("-");
-                px_kprint_hex((curr->addr + curr->len));
-                px_kprint("] ");
+                px_kprintf("\n[%x-%x]", curr->addr, (curr->addr + curr->len));
                 // Print out if the entry is available or reserved
-                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprint("Available") : px_kprint("Reserved");
+                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprintf("Available") : px_kprintf("Reserved");
             } else {
                 px_kprint_color("Missing!", Red);
             }
@@ -161,7 +150,7 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
             mem_info_ptr += curr->size + sizeof(curr->size);
         }
     }
-    px_kprint("\n");
+    px_kprintf("\n");
 }
 
 void px_kernel_boot_tone() {

@@ -43,13 +43,11 @@ void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags)
 	descriptor |= (base << 16) & 0xFFFF0000;	// base 15-0 : 31-16
 	descriptor |= limit        & 0x0000FFFF;	// limit direct map
 	// Copy the descriptor value into our GDT entries array
-	// TODO: Change GDT memcpy to a simple index assignment?
 	memcpy(&gdt_entries[num], &descriptor, sizeof(uint64_t));
 }
 
 //gdt_flush((uintptr_t)gdtp);
 void px_gdt_install() {
-	// TODO: Add return false to cases where operations don't succeed.
 	px_print_debug("Installing the GDT...", Info);
 	gdt_ptr.limit = (sizeof(gdt_entry_t) * 5) - 1;
     gdt_ptr.base  = (uint32_t)&gdt_entries;

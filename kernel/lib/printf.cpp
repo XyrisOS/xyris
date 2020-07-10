@@ -308,7 +308,7 @@ static int vsprintf_help(unsigned c, void** ptr)
 }
 /*****************************************************************************
 *****************************************************************************/
-int vsprintf(char* buf, const char* fmt, va_list args)
+int px_kvsprintf(char* buf, const char* fmt, va_list args)
 {
     int ret_val;
 
@@ -318,19 +318,17 @@ int vsprintf(char* buf, const char* fmt, va_list args)
 }
 /*****************************************************************************
 *****************************************************************************/
-int sprintf(char* buf, const char* fmt, ...)
+int px_ksprintf(char* buf, const char* fmt, ...)
 {
     va_list args;
     int ret_val;
 
     va_start(args, fmt);
-    ret_val = vsprintf(buf, fmt, args);
+    ret_val = px_kvsprintf(buf, fmt, args);
     va_end(args);
     return ret_val;
 }
 /*****************************************************************************
-PRINTF
-You must write your own putchar()
 *****************************************************************************/
 int vprintf_help(unsigned c, void** ptr)
 {
@@ -339,20 +337,20 @@ int vprintf_help(unsigned c, void** ptr)
 }
 /*****************************************************************************
 *****************************************************************************/
-int vprintf(const char* fmt, va_list args)
+int px_kvprintf(const char* fmt, va_list args)
 {
     return do_printf(fmt, args, vprintf_help, NULL);
 }
 /*****************************************************************************
 *****************************************************************************/
 
-int printf(const char* fmt, ...)
+int px_kprintf(const char* fmt, ...)
 {
     va_list args;
     int ret_val;
 
     va_start(args, fmt);
-    ret_val = vprintf(fmt, args);
+    ret_val = px_kvprintf(fmt, args);
     va_end(args);
     return ret_val;
 }

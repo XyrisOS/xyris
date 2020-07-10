@@ -14,16 +14,17 @@
  * 
  */
 #include <devices/tty/tty.hpp>
+#include <lib/stdio.hpp>
 
-uint8_t ttyCoordsX = 0;
-uint8_t ttyCoordsY = 0;
-px_tty_color backColor = Black;
-px_tty_color foreColor = White;
+uint8_t tty_coords_x = 0;
+uint8_t tty_coords_y = 0;
+px_tty_color color_back = Black;
+px_tty_color color_fore = White;
 
 void px_print_debug(char* msg, px_print_level lvl) {
     // Reset the color to the default and print the opening bracket
     px_tty_set_color(White, Black);
-    px_kprint("[");
+    px_kprintf("[");
     // Change the color and print the tag according to the level
     switch (lvl) {
         case Info:
@@ -49,9 +50,7 @@ void px_print_debug(char* msg, px_print_level lvl) {
     }
     // Reset the color to the default and print the closing bracket and message
     px_tty_set_color(White, Black);
-    px_kprint("] ");
-    px_kprint(msg);
-    px_kprint("\n");
+    px_kprintf("] %s\n", msg);
 }
 
 void px_shift_tty_up() {
@@ -68,37 +67,29 @@ void px_shift_tty_up() {
 }
 
 void px_kprint(const char* str) {
-    // For each character in the string
-    for(int i = 0; str[i] != '\0'; ++i) {
-        putchar(str[i]);
-    }
+    px_kprintf(str);
 }
 
 void px_kprint_hex(uint32_t key) {
-    char* foo = "00000000";
-    static const char* hex = "0123456789ABCDEF";
-    for (size_t i = 0; i < 8; ++i) {
-        foo[7 - i] = hex[(key >> (i * 4)) & 0x0f];
-    }
-    px_kprint(foo);
+    px_kprintf("%x", key);
 }
 
 void px_kprint_color(char* str, px_tty_color color) {
-    px_tty_color oldBack = backColor;
-    px_tty_color oldFore = foreColor;
-    px_tty_set_color(color, backColor);
-    px_kprint(str);
+    px_tty_color oldBack = color_back;
+    px_tty_color oldFore = color_fore;
+    px_tty_set_color(color, color_back);
+    px_kprintf(str);
     px_tty_set_color(oldFore, oldBack);
 }
 
 void px_tty_set_color(px_tty_color fore, px_tty_color back) {
-    foreColor = fore;
-    backColor = back;
+    color_fore = fore;
+    color_back = back;
 }
 
 void px_clear_tty() {
-    ttyCoordsX = 0;
-    ttyCoordsY = 0;
+    tty_coords_x = 0;
+    tty_coords_y = 0;
     char c = ' ';
     for (int y = 0; y < X86_TTY_HEIGHT; y++) {
         for (int x = 0; x < X86_TTY_WIDTH; x++) {
@@ -106,8 +97,8 @@ void px_clear_tty() {
         }
     }
     // Reset the cursor position
-    ttyCoordsX = 0;
-    ttyCoordsY = 0;
+    tty_coords_x = 0;
+    tty_coords_y = 0;
 }
 
 void px_set_indicator(px_tty_color color) {
@@ -119,41 +110,41 @@ void px_set_indicator(px_tty_color color) {
 
 void putchar(char c) {
     volatile uint16_t* where;
-    uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
+    uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
     switch(c) {
         // Backspace
         case 0x08:
-            if (ttyCoordsX > 0) {
-                ttyCoordsX--;
+            if (tty_coords_x > 0) {
+                tty_coords_x--;
             }
-            where = x86_bios_vga_mem + (ttyCoordsY * X86_TTY_WIDTH + ttyCoordsX);
+            where = x86_bios_vga_mem + (tty_coords_y * X86_TTY_WIDTH + tty_coords_x);
             *where = ' ' | (attrib << 8);
             break;
         // Newline
         case '\n':
-            ttyCoordsX = 0;
-            ttyCoordsY++;
+            tty_coords_x = 0;
+            tty_coords_y++;
             break;
         // Anything else
         default:
-            where = x86_bios_vga_mem + (ttyCoordsY * X86_TTY_WIDTH + ttyCoordsX);
+            where = x86_bios_vga_mem + (tty_coords_y * X86_TTY_WIDTH + tty_coords_x);
             *where = c | (attrib << 8);
-            ttyCoordsX++;
+            tty_coords_x++;
             break;
     }
     // Move to the next line
-    if(ttyCoordsX >= X86_TTY_WIDTH) {
-        ttyCoordsX = 0;
-        ttyCoordsY++;
+    if(tty_coords_x >= X86_TTY_WIDTH) {
+        tty_coords_x = 0;
+        tty_coords_y++;
     }
     // Clear the screen
-    if(ttyCoordsY >= X86_TTY_HEIGHT) {
+    if(tty_coords_y >= X86_TTY_HEIGHT) {
         px_shift_tty_up();
         where = x86_bios_vga_mem + ((X86_TTY_HEIGHT - 1) * X86_TTY_WIDTH - 1);
         for (size_t col = 0; col < X86_TTY_WIDTH; ++col) {
             *(++where) = ' ' | (attrib << 8);
         }
-        ttyCoordsX = 0;
-        ttyCoordsY = X86_TTY_HEIGHT - 1;
+        tty_coords_x = 0;
+        tty_coords_y = X86_TTY_HEIGHT - 1;
     }
 }

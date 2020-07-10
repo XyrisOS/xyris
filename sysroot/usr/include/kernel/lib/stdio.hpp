@@ -18,7 +18,7 @@
  * @param args 
  * @return int 
  */
-int vsprintf(char* buf, const char* fmt, va_list args);
+int px_kvsprintf(char* buf, const char* fmt, va_list args);
 /**
  * @brief Sends formatted output to a string.
  * 
@@ -27,7 +27,7 @@ int vsprintf(char* buf, const char* fmt, va_list args);
  * @param ... 
  * @return int 
  */
-int sprintf(char* buf, const char* fmt, ...);
+int px_ksprintf(char* buf, const char* fmt, ...);
 /**
  * @brief Sends formatted output to stdout using an argument list.
  * 
@@ -35,7 +35,7 @@ int sprintf(char* buf, const char* fmt, ...);
  * @param args 
  * @return int 
  */
-int vprintf(const char* fmt, va_list args);
+int px_kvprintf(const char* fmt, va_list args);
 /**
  * @brief Sends formatted output to stdout.
  * 
@@ -43,4 +43,4 @@ int vprintf(const char* fmt, va_list args);
  * @param ... 
  * @return int 
  */
-int printf(const char* fmt, ...);
+int px_kprintf(const char* fmt, ...);

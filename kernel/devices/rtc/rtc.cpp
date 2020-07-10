@@ -12,6 +12,7 @@
 #include <arch/arch.hpp>
 #include <devices/rtc/rtc.hpp>
 #include <lib/string.hpp>
+#include <lib/stdio.hpp>
 
 void px_rtc_callback(registers_t *regs);
 // Current values from RTC
@@ -136,23 +137,12 @@ void px_read_rtc() {
 
 void px_rtc_print() {
     px_read_rtc();
-    char hourStr[3];
-    char minuteStr[3];
-    char dayStr[3];
-    char monthStr[3];
-    itoa(px_rtc_hour, hourStr);
-    itoa(px_rtc_minute, minuteStr);
-    itoa(px_rtc_day, dayStr);
-    itoa(px_rtc_month, monthStr);
-    char* str = "Date: ";
-    str = strcat(str, monthStr);
-    str = strcat(str, "/");
-    str = strcat(str, dayStr);
-    px_print_debug(str, Info);
-    str = "";
-    str = strcat(str, "Time: ");
-    str = strcat(str, hourStr);
-    str = strcat(str, ":");
-    str = strcat(str, minuteStr);
-    px_print_debug(str, Info);
+    px_kprintf(
+        "UTC: %i/%i/%i %i:%i\n",
+        px_rtc_month,
+        px_rtc_day,
+        px_rtc_year,
+        px_rtc_hour,
+        px_rtc_minute
+    );
 }
