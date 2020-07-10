@@ -17,9 +17,7 @@
 #define PANIX_px_kprint_HPP
 
 #include <sys/panix.hpp>
-
-#define TTY_WIDTH 80
-#define TTY_HEIGHT 25
+#include <arch/arch.hpp>
 
 enum px_tty_color {
     Black           = 0x0,
@@ -46,9 +44,13 @@ enum px_print_level {
     Error           = 2,
     Success         = 3
 };
-// Updated the address since we moved to a higher-half kernel mapping
-inline uint16_t* videoMemory = (uint16_t*) 0x000B8000;
-//Note: Use this value if the memory mapping in boot.s is uncommented: 0xC03FF000
+
+/**
+ * @brief Prints a single character to the kernel display.
+ *
+ * @param c Character to be printed.
+ */
+void putchar(char c);
 /**
  * @brief Prints a debug message to the kernel display and
  * sets a tag and color according to the debug level.
@@ -58,44 +60,11 @@ inline uint16_t* videoMemory = (uint16_t*) 0x000B8000;
  */
 void px_print_debug(char* msg, px_print_level lvl);
 /**
- * @brief Prints a character to the screen ignoring the current
- * cursor position and colors
- *
- * @param c The character to be printed
- * @param x The x coordinate
- * @param y The y coordinate
- * @param fg The foreground color
- * @param bg The background color
- */
-void px_print_raw(char c, uint8_t x, uint8_t y, px_tty_color fg, px_tty_color bg);
-/**
  * @brief Prints a given string to the kernel display.
  *
  * @param str Input string to be printed.
  */
 void px_kprint(const char* str);
-/**
- * @brief Prints a single character to the kernel display.
- *
- * @param character Character to be printed.
- */
-void putchar(char character);
-/**
- * @brief Prints a given string to a particular coordinate in the kernel display.
- *
- * @param str Input string to be printed.
- * @param x X-coordinate of the kernel display.
- * @param y Y-coordinate of the kernel display.
- * @param resetCursor Determines whether or not the cursor should be reset to the starting position.
- */
-void px_kprint_pos(const char* str, uint8_t x, uint8_t y, bool resetCursor = false);
-/**
- * @brief Prints out an integer in the given base
- *
- * @param value Value to be printed
- * @param base Base number (decimal, octal, hex, etc.)
- */
-void px_kprint_base(int value, int base);
 /**
  * @brief Prints a hexidecimal address to the kernel console.
  *
@@ -116,9 +85,17 @@ void px_kprint_color(char* str, px_tty_color color);
  * @param back Background color
  */
 void px_tty_set_color(px_tty_color fore, px_tty_color back);
-
+/**
+ * @brief Clears the TTY and resets the cursor position.
+ * 
+ */
 void px_clear_tty();
-
+/**
+ * @brief Sets the indicator in the top right corner.
+ * Used mostly for debugging interrupts.
+ * 
+ * @param color Indicator color
+ */
 void px_set_indicator(px_tty_color color);
 
 #endif /* PANIX_px_kprint_HPP */

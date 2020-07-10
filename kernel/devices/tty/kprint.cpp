@@ -1,3 +1,18 @@
+/**
+ * @file kprint.cpp
+ * @author Keeton Feavel (keetonfeavel@cedarville.edu)
+ * @brief px_kprint is a small library to print unformatted strings to
+ * the BIOS TTY. The important thing to keep in mind is that these
+ * functions expect a null-terminator at the end of the string, which
+ * C++ seems to take care of *most* of the time. These functions do
+ * NOT accept formatted strings like printf. That is available in
+ * px_kprintf().
+ * @version 0.3
+ * @date 2020-07-09
+ * 
+ * @copyright Copyright Keeton Feavel et al (c) 2020
+ * 
+ */
 #include <devices/tty/kprint.hpp>
 #define IND_X 79
 #define IND_Y 0
@@ -41,20 +56,13 @@ void px_print_debug(char* msg, px_print_level lvl) {
     px_kprint("\n");
 }
 
-void px_print_raw(char c, uint8_t x, uint8_t y, px_tty_color fg, px_tty_color bg) {
-    volatile uint16_t* where;
-    uint16_t attrib = (bg << 4) | (fg & 0x0F);
-    where = videoMemory + (y * TTY_WIDTH + x);
-    *where = c | (attrib << 8);
-}
-
 void px_shift_tty_up() {
     // start on the second row
-    volatile uint16_t* where = videoMemory + TTY_WIDTH;
-    for (size_t row = 1; row < TTY_HEIGHT; ++row) {
-        for (size_t col = 0; col < TTY_WIDTH; ++col) {
+    volatile uint16_t* where = x86_bios_vga_mem + X86_TTY_WIDTH;
+    for (size_t row = 1; row < X86_TTY_HEIGHT; ++row) {
+        for (size_t col = 0; col < X86_TTY_WIDTH; ++col) {
             // copy the char to the previous row
-            *(where - TTY_WIDTH) = *where;
+            *(where - X86_TTY_WIDTH) = *where;
             // increment the pointer
             ++where;
         }
@@ -62,107 +70,10 @@ void px_shift_tty_up() {
 }
 
 void px_kprint(const char* str) {
-    volatile uint16_t* where;
-    uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
     // For each character in the string
     for(int i = 0; str[i] != '\0'; ++i) {
-        switch(str[i]) {
-            // Backspace
-            case 0x08:
-                if (ttyCoordsX > 0) {
-                    ttyCoordsX--;
-                }
-                where = videoMemory + (ttyCoordsY * TTY_WIDTH + ttyCoordsX);
-                *where = ' ' | (attrib << 8);
-                break;
-            // Newline
-            case '\n':
-                ttyCoordsX = 0;
-                ttyCoordsY++;
-                break;
-            // Anything else
-            default:
-                where = videoMemory + (ttyCoordsY * TTY_WIDTH + ttyCoordsX);
-                *where = str[i] | (attrib << 8);
-                ttyCoordsX++;
-                break;
-        }
-        // Move to the next line
-        if(ttyCoordsX >= TTY_WIDTH) {
-            ttyCoordsX = 0;
-            ttyCoordsY++;
-        }
-        // Clear the screen
-        if(ttyCoordsY >= TTY_HEIGHT) {
-            px_shift_tty_up();
-            where = videoMemory + ((TTY_HEIGHT - 1) * TTY_WIDTH - 1);
-            for (size_t col = 0; col < TTY_WIDTH; ++col) {
-                *(++where) = ' ' | (attrib << 8);
-            }
-            ttyCoordsX = 0;
-            ttyCoordsY = TTY_HEIGHT - 1;
-        }
+        putchar(str[i]);
     }
-}
-
-void putchar(char character) {
-    px_kprint(&character);
-}
-
-void px_kprint_pos(const char* str, uint8_t positionX, uint8_t positionY, bool resetCursor) {
-    volatile uint16_t* where;
-    uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
-    for(int i = 0; str[i] != '\0'; ++i) {
-        switch(str[i]) {
-            // Backspace
-            case 0x08:
-                if (positionX > 0) {
-                    positionX--;
-                }
-                where = videoMemory + (positionY * TTY_WIDTH + positionX);
-                *where = ' ' | (attrib << 8);
-                break;
-            // Newline
-            case '\n':
-                positionX = 0;
-                positionY++;
-                break;
-            // Anything else
-            default:
-                where = videoMemory + (positionY * TTY_WIDTH + positionX);
-                *where = str[i] | (attrib << 8);
-                positionX++;
-                break;
-        }
-        // Move to the next line
-        if(positionX >= TTY_WIDTH) {
-            positionX = 0;
-            positionY++;
-        }
-        // Clear the screen
-        if(positionY >= TTY_HEIGHT) {
-            px_shift_tty_up();
-            where = videoMemory + ((TTY_HEIGHT - 1) * TTY_WIDTH - 1);
-            for (size_t col = 0; col < TTY_WIDTH; ++col) {
-                *(++where) = ' ' | (attrib << 8);
-            }
-            positionX = 0;
-            positionY = TTY_HEIGHT - 1;
-        }
-    }
-    // If we are told to reset the cursor
-    if (resetCursor) {
-        ttyCoordsX = 0;
-        ttyCoordsY = 0;
-    }
-}
-
-void px_kprint_base(int value, int base) {
-    char* digits = "0123456789abcdefghijklmnopqrstuvwxyz";
-    if ((value / base) != 0 ) {
-        px_kprint_base(value / base, base);
-    }
-    putchar(digits[ value % base ]);
 }
 
 void px_kprint_hex(uint32_t key) {
@@ -188,14 +99,63 @@ void px_tty_set_color(px_tty_color fore, px_tty_color back) {
 }
 
 void px_clear_tty() {
-    char str[] =  { ' ', '\0' };
-    for (int y = 0; y < TTY_HEIGHT; y++) {
-        for (int x = 0; x < TTY_WIDTH; x++) {
-            px_kprint_pos(str, x, y, true);
+    ttyCoordsX = 0;
+    ttyCoordsY = 0;
+    char c = ' ';
+    for (int y = 0; y < X86_TTY_HEIGHT; y++) {
+        for (int x = 0; x < X86_TTY_WIDTH; x++) {
+            putchar(c);
         }
     }
+    // Reset the cursor position
+    ttyCoordsX = 0;
+    ttyCoordsY = 0;
 }
 
 void px_set_indicator(px_tty_color color) {
-    px_print_raw(' ', IND_X, IND_Y, color, color);
+    volatile uint16_t* where;
+    uint16_t attrib = (color << 4) | (color & 0x0F);
+    where = x86_bios_vga_mem + (IND_Y * X86_TTY_WIDTH + IND_X);
+    *where = ' ' | (attrib << 8);
+}
+
+void putchar(char c) {
+    volatile uint16_t* where;
+    uint16_t attrib = (backColor << 4) | (foreColor & 0x0F);
+    switch(c) {
+        // Backspace
+        case 0x08:
+            if (ttyCoordsX > 0) {
+                ttyCoordsX--;
+            }
+            where = x86_bios_vga_mem + (ttyCoordsY * X86_TTY_WIDTH + ttyCoordsX);
+            *where = ' ' | (attrib << 8);
+            break;
+        // Newline
+        case '\n':
+            ttyCoordsX = 0;
+            ttyCoordsY++;
+            break;
+        // Anything else
+        default:
+            where = x86_bios_vga_mem + (ttyCoordsY * X86_TTY_WIDTH + ttyCoordsX);
+            *where = c | (attrib << 8);
+            ttyCoordsX++;
+            break;
+    }
+    // Move to the next line
+    if(ttyCoordsX >= X86_TTY_WIDTH) {
+        ttyCoordsX = 0;
+        ttyCoordsY++;
+    }
+    // Clear the screen
+    if(ttyCoordsY >= X86_TTY_HEIGHT) {
+        px_shift_tty_up();
+        where = x86_bios_vga_mem + ((X86_TTY_HEIGHT - 1) * X86_TTY_WIDTH - 1);
+        for (size_t col = 0; col < X86_TTY_WIDTH; ++col) {
+            *(++where) = ' ' | (attrib << 8);
+        }
+        ttyCoordsX = 0;
+        ttyCoordsY = X86_TTY_HEIGHT - 1;
+    }
 }
