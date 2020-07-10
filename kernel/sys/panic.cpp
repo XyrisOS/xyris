@@ -111,33 +111,16 @@ void panic_print_file(const char *file, uint32_t line, const char *func) {
 }
 
 void panic_print_register(registers_t *regs) {
-    px_kprint_color(" DS: ", Red);
-    px_kprint_hex(regs->ds);
-    px_kprint_color("\nEDI: ", Red);
-    px_kprint_hex(regs->edi);
-    px_kprint_color(" ESI: ", Red);
-    px_kprint_hex(regs->esi);
-    px_kprint_color(" EBP: ", Red);
-    px_kprint_hex(regs->ebp);
-    px_kprint_color(" ESP: ", Red);
-    px_kprint_hex(regs->esp);
-    px_kprint_color("\nEBX: ", Red);
-    px_kprint_hex(regs->ebx);
-    px_kprint_color(" EDX: ", Red);
-    px_kprint_hex(regs->edx);
-    px_kprint_color(" ECX: ", Red);
-    px_kprint_hex(regs->ecx);
-    px_kprint_color(" EAX: ", Red);
-    px_kprint_hex(regs->eax);
-    px_kprint_color("\nERR: ", Red);
-    px_kprint_hex(regs->err_code);
-    px_kprint_color(" EIP: ", Red);
-    px_kprint_hex(regs->eip);
-    px_kprint_color("  CS: ", Red);
-    px_kprint_hex(regs->cs);
-    px_kprint_color("\nFLG: ", Red);
-    px_kprint_hex(regs->eflags);
-    px_kprint_color("  SS: ", Red);
-    px_kprint_hex(regs->ss);
-    px_kprint("\n\n");
+    px_kprintf(
+        " DS: 0x%08X\n"
+        "EDI: 0x%08X ESI: 0x%08X EBP: 0x%08X ESP: 0x%08X\n"
+        "EAX: 0x%08X EBX: 0x%08X ECX: 0x%08X EDX: 0x%08X\n"
+        "ERR: 0x%08X EIP: 0x%08X  CS: 0x%08X\n"
+        "FLG: 0x%08X  SS: 0x%08X \n\n",
+        regs->ds,
+        regs->edi, regs->esi, regs->ebp, regs->esp,
+        regs->eax, regs->ebx, regs->ecx, regs->edx,
+        regs->err_code, regs->eip, regs->cs, regs->eflags,
+        regs->ss
+    );
 }
