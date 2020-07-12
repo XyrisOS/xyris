@@ -2,14 +2,15 @@
  * @file isr.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief 
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-15
  * 
  * @copyright Copyright Keeton Feavel et al (c) 2019
  * 
  */
 
-#include <arch/x86/isr.hpp>
+#include <arch/arch.hpp>
+
 // Private array of interrupt handlers
 isr_t interrupt_handlers[256];
 void (* isr_func_ptr[])(void) = { isr0,  isr1,  isr2,  isr3,  isr4,  isr5,  isr6,  isr7,

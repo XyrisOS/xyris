@@ -2,16 +2,16 @@
  * @file kbd.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief 
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-18
  * 
  * @copyright Copyright Keeton Feavel et al (c) 2019
  * 
  */
 
+#include <arch/arch.hpp>
 #include <devices/kbd/kbd.hpp>
 #include <devices/kbd/scode.hpp>
-#include <arch/x86/isr.hpp>
 
 uint8_t px_kbd_scode_buff[256];
 uint8_t px_kbd_scode_buff_pos = 0;

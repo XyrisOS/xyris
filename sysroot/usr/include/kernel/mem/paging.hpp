@@ -2,7 +2,7 @@
  * @file paging.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-22
  *
  * @copyright Copyright Keeton Feavel et al (c) 2019
@@ -13,8 +13,8 @@
 #define PANIX_MEM_PAGING
 
 #include <sys/panix.hpp>
+#include <arch/arch.hpp>
 #include <mem/heap.hpp>
-#include <arch/x86/isr.hpp>
 
 // Information about the Kernel from the linker
 extern uint32_t _KERNEL_START;

@@ -3,12 +3,13 @@
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief A set of panic functions that are called when the kernel
  * encounters an error from which it cannot recover.
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-15
  *
  * @copyright Copyright Keeton Feavel et al (c) 2019
  *
  */
+
 #include <sys/panix.hpp>
 #include <lib/string.hpp>
 

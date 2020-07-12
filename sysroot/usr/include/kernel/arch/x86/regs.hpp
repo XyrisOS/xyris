@@ -2,7 +2,7 @@
  * @file regs.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief 
- * @version 0.1
+ * @version 0.3
  * @date 2019-12-10
  * 
  * @copyright Copyright Keeton Feavel et al (c) 2019
@@ -12,7 +12,8 @@
 #ifndef PANIX_X86_REGISTERS_HPP
 #define PANIX_X86_REGISTERS_HPP
 
-#include <sys/types.hpp>
+#include <sys/panix.hpp>
+
 // R/W CR0 register macros
 #define read_cr0(x) asm volatile("mov %%cr0, %0": "=r"(x))
 #define write_cr0(x) asm volatile("mov %0, %%cr0":: "r"(x))

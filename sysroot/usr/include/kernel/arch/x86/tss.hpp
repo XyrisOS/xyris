@@ -2,7 +2,7 @@
  * @file tss.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief 
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-14
  * 
  * @copyright Copyright Keeton Feavel et al (c) 2019
@@ -12,7 +12,7 @@
 #ifndef PANIX_TASK_STATE_SEGMENT
 #define PANIX_TASK_STATE_SEGMENT
 
-#include <sys/types.hpp>
+#include <sys/panix.hpp>
 
 /**
  * @brief This function is defined in flush.s (assembly) and is

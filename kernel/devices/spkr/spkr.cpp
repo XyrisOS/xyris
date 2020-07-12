@@ -2,14 +2,14 @@
  * @file spkr.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-25
  *
  * @copyright Copyright Keeton Feavel et al (c) 2019
  *
  */
 
-#include <arch/x86/timer.hpp>
+#include <arch/arch.hpp>
 #include <devices/spkr/spkr.hpp>
 
 static void px_spkr_tone(uint32_t freq) {

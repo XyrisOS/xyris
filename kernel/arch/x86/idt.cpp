@@ -2,14 +2,14 @@
  * @file idt.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief 
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-15
  * 
  * @copyright Copyright Keeton Feavel et al (c) 2019
  * 
  */
 
-#include <arch/x86/idt.hpp>
+#include <arch/arch.hpp>
 
 idt_gate_t idt[IDT_ENTRIES];
 idt_register_t idt_reg;

@@ -2,7 +2,7 @@
  * @file types.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief Defines the shorthand names for their equivalent variable types.
- * @version 0.1
+ * @version 0.3
  * @date 2019-09-26
  *
  * @copyright Copyright Keeton Feavel (c) 2019
@@ -26,13 +26,16 @@ typedef unsigned long long int uint64_t;
 typedef unsigned int             size_t;
 typedef unsigned long         uintptr_t;
 typedef long                   intptr_t;
+typedef char *                  va_list;
 
-typedef struct registers {
-   uint32_t ds;                                          /* Data segment selector */
-   uint32_t edi, esi, ebp, ignored, ebx, edx, ecx, eax;  /* Pushed by pusha. */
-   uint32_t int_num, err_code;                           /* Interrupt number and error code (if applicable) */
-   uint32_t eip, cs, eflags, esp, ss;                    /* Pushed by the processor automatically */
-} registers_t;
-typedef void (*isr_t)(registers_t*);
+/**
+ * @brief Variable argument list macros necessary for functions like printf().
+ * Created by Colin Peters <colin@bird.fu.is.saga-u.ac.jp> for Mingw under
+ * public domain. Thanks for your hard work.
+ */
+#define __va_argsize(x) (((sizeof(x) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
+#define va_start(x, y) ((x) = ((va_list) __builtin_next_arg(y)))
+#define va_end(x) ((void) 0)
+#define va_arg(x, y) (((x) = (x) + __va_argsiz(y)), *((y *) (void *) ((x) - __va_argsiz(y))))
 
 #endif /* PANIX_TYPES_HPP */

@@ -2,7 +2,7 @@
  * @file isr.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief Interrupt Service Routine header.
- * @version 0.1
+ * @version 0.3
  * @date 2019-11-15
  *
  * @copyright Copyright Keeton Feavel et al (c) 2019
@@ -13,7 +13,7 @@
 #define PANIX_ISR_HPP
 
 #include <sys/panix.hpp>
-#include <arch/x86/idt.hpp>
+#include <arch/arch.hpp>
 
 /**
  * All of the following values are Interrupt Request (IRQ) identifiers

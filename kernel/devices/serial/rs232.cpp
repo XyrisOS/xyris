@@ -2,15 +2,15 @@
  * @file rs232.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief 
- * @version 0.1
+ * @version 0.3
  * @date 2020-06-29
  * 
  * @copyright Copyright Keeton Feavel et al (c) 2020
  * 
  */
 
-#include <devices/serial/rs232.hpp>
 #include <arch/arch.hpp>
+#include <devices/serial/rs232.hpp>
 
 char* lineBuffer[RS_232_BUF_SIZE];
 uint8_t rs_232_line_index;
