@@ -5,7 +5,7 @@
  * @version 0.3
  * @date 2020-06-17
  *
- * @copyright Copyright Keeton Feavel et al (c) 2020
+ * @copyright Copyright the Panix Contributors (c) 2020
  * Thanks for mrvn on the OSDev Wiki for the implementation:
  * Linked List Bucket Heap 2013 Goswin von Brederlow <goswin-v-b@web.de>
  */
