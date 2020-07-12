@@ -14,7 +14,7 @@
  */
 #include <lib/stdio.hpp>
 #include <lib/stdarg.hpp>
-#include <lib/string.hpp> /* strlen() */
+#include <lib/string.hpp>
 
 /*****************************************************************************
 Stripped-down printf()
@@ -293,7 +293,6 @@ OK, I found my mistake. The math here is _always_ unsigned */
     }
     return count;
 }
-#if 1 /* testing */
 /*****************************************************************************
 SPRINTF
 *****************************************************************************/
@@ -355,5 +354,3 @@ int px_kprintf(const char* fmt, ...)
     return ret_val;
 }
 /*****************************************************************************/
-
-#endif
