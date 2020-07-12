@@ -6,7 +6,7 @@
  * @version 0.3
  * @date 2020-06-29
  *
- * @copyright Copyright Keeton Feavel et al (c) 2020
+ * @copyright Copyright the Panix Contributors (c) 2020
  *
  */
 

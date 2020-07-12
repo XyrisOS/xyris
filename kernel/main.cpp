@@ -5,7 +5,7 @@
  * @version 0.3
  * @date 2019-11-14
  *
- * @copyright Copyright Keeton Feavel et al (c) 2019
+ * @copyright Copyright the Panix Contributors (c) 2019
  *
  */
 // System library functions
@@ -106,7 +106,7 @@ void px_kernel_print_splash() {
     px_tty_set_color(Yellow, Black);
     px_kprint("Welcome to Panix\n");
     px_kprint("Developed by graduates and undergraduates of Cedarville University.\n");
-    px_kprint("Copyright Keeton Feavel et al (c) 2019. All rights reserved.\n");
+    px_kprint("Copyright the Panix Contributors (c) 2019. All rights reserved.\n");
     px_tty_set_color(White, Black);
     px_kprint("Built on ");
     px_kprint(__DATE__);
