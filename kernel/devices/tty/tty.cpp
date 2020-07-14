@@ -16,6 +16,18 @@
 #include <devices/tty/tty.hpp>
 #include <lib/stdio.hpp>
 
+#define ESC ('\033')
+
+enum tty_state {
+    Normal,
+    Esc,
+    Bracket,
+    Value
+};
+
+tty_state ansi_state = Normal;
+uint16_t ansi_val = 0;
+    
 uint8_t tty_coords_x = 0;
 uint8_t tty_coords_y = 0;
 px_tty_color color_back = Black;
@@ -101,6 +113,41 @@ void px_set_indicator(px_tty_color color) {
 }
 
 void putchar(char c) {
+    switch (ansi_state) {
+        case Normal: // print the character out normally unless it's an ESC
+            if (c != ESC) break;
+            ansi_state = Esc;
+            return;
+        case Esc: // we got an ESC, now we need a left square bracket
+            if (c != '[') break;
+            ansi_state = Bracket;
+            return;
+        case Bracket: // we're looking for a value/command char now
+            if (c >= '0' && c <= '9') {
+                ansi_val = (uint16_t)(c - '0');
+                ansi_state = Value;
+                return;
+            }
+            // handle any other control codes here
+            break;
+        case Value:
+            if (c == ';') { // the semicolon is a value separator
+                // enqueue the value here
+                ansi_state = Bracket;
+                ansi_val = 0;
+            } else if (c == 'm') { // the color/text attributes command
+                // take action here
+                
+                ansi_state = Normal;
+            } else if (c >= '0' && c <= '9') { // just another digit of a value
+                ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
+                return;
+            }
+            // invald code, so just return to normal
+            break;
+    }
+    // we fell through some way or another so just reset to Normal no matter what
+    ansi_state = Normal;
     volatile uint16_t* where;
     uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
     switch(c) {
