@@ -25,6 +25,14 @@ enum tty_state {
     Value
 };
 
+// The names don't really line up, so this will need refactoring.
+uint16_t px_ansi_vga_table[16] = {
+    VGA_Black, VGA_Red, VGA_Green, VGA_Brown, VGA_Blue,
+    VGA_Magenta, VGA_Cyan, VGA_DarkGrey, VGA_LightGrey, VGA_LightRed,
+    VGA_LightGreen, VGA_Yellow, VGA_LightBlue, VGA_LightMagenta,
+    VGA_LightCyan, VGA_White
+};
+
 tty_state ansi_state = Normal;
 uint16_t ansi_val = 0;
 
@@ -86,7 +94,7 @@ void px_kprint_color(char* str, px_tty_vga_color color) {
     px_tty_set_color(oldFore, oldBack);
 }
 
-void px_tty_set_color(px_tty_vga_color fore, px_tty_vga_color back) {
+inline void px_tty_set_color(px_tty_vga_color fore, px_tty_vga_color back) {
     color_fore = fore;
     color_back = back;
 }

@@ -41,22 +41,22 @@ enum px_tty_vga_color {
 // Add 10 to these to convert from
 // foreground colors to background
 enum px_tty_ansi_color {
-    ANSI_Black          = 30,
-    ANSI_Red            = 31,
-    ANSI_Green          = 32,
-    ANSI_Yellow         = 33,
-    ANSI_Blue           = 34,
-    ANSI_Magenta        = 35,
-    ANSI_Cyan           = 36,
-    ANSI_White          = 37,
-    ANSI_BrightBlack    = 90,
-    ANSI_BrightRed      = 91,
-    ANSI_BrightGreen    = 92,
-    ANSI_BrightYellow   = 93,
-    ANSI_BrightBlue     = 94,
-    ANSI_BrightMagenta  = 95,
-    ANSI_BrightCyan     = 96,
-    ANSI_BrightWhite    = 97
+    ANSI_Black          = 0x1E,
+    ANSI_Red            = 0x1F,
+    ANSI_Green          = 0x20,
+    ANSI_Yellow         = 0x21,
+    ANSI_Blue           = 0x22,
+    ANSI_Magenta        = 0x23,
+    ANSI_Cyan           = 0x24,
+    ANSI_White          = 0x25,
+    ANSI_BrightBlack    = 0x5A,
+    ANSI_BrightRed      = 0x5B,
+    ANSI_BrightGreen    = 0x5C,
+    ANSI_BrightYellow   = 0x5D,
+    ANSI_BrightBlue     = 0x5E,
+    ANSI_BrightMagenta  = 0x5F,
+    ANSI_BrightCyan     = 0x60,
+    ANSI_BrightWhite    = 0x61
 };
 
 enum px_print_level {
