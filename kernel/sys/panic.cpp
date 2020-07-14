@@ -19,7 +19,7 @@ void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(registers_t *regs);
 
 void printPanicScreen(int exception) {
-    px_tty_set_color(Black, White);
+    px_tty_set_color(VGA_Black, VGA_White);
     px_clear_tty();
     px_kprintf(" ________________________\n");
     if (exception == 13) {
@@ -48,9 +48,9 @@ void panic(int exception) {
     panicCode[22] = hex[(exception >> 4) & 0xF];
     panicCode[23] = hex[exception & 0xF];
     // Print the code and associated error name
-    px_tty_set_color(Red, White);
+    px_tty_set_color(VGA_Red, VGA_White);
     px_kprintf("\nEXCEPTION CAUGHT IN KERNEL MODE!\n");
-    px_tty_set_color(Black, White);
+    px_tty_set_color(VGA_Black, VGA_White);
     px_kprintf(panicCode);
     px_kprintf(px_exception_descriptions[exception]);
     // Halt the CPU

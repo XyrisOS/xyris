@@ -9,9 +9,9 @@
  * px_kprintf().
  * @version 0.3
  * @date 2020-07-09
- * 
+ *
  * @copyright Copyright Keeton Feavel et al (c) 2020
- * 
+ *
  */
 #include <devices/tty/tty.hpp>
 #include <lib/stdio.hpp>
@@ -27,41 +27,41 @@ enum tty_state {
 
 tty_state ansi_state = Normal;
 uint16_t ansi_val = 0;
-    
+
 uint8_t tty_coords_x = 0;
 uint8_t tty_coords_y = 0;
-px_tty_color color_back = Black;
-px_tty_color color_fore = White;
+px_tty_vga_color color_back = VGA_Black;
+px_tty_vga_color color_fore = VGA_White;
 
 void px_print_debug(char* msg, px_print_level lvl) {
     // Reset the color to the default and print the opening bracket
-    px_tty_set_color(White, Black);
+    px_tty_set_color(VGA_White, VGA_Black);
     px_kprintf("[");
     // Change the color and print the tag according to the level
     switch (lvl) {
         case Info:
-            px_tty_set_color(LightGrey, Black);
+            px_tty_set_color(VGA_LightGrey, VGA_Black);
             px_kprintf(" INFO ");
             break;
         case Warning:
-            px_tty_set_color(Yellow, Black);
+            px_tty_set_color(VGA_Yellow, VGA_Black);
             px_kprintf(" WARN ");
             break;
         case Error:
-            px_tty_set_color(Red, Black);
+            px_tty_set_color(VGA_Red, VGA_Black);
             px_kprintf(" FAIL ");
             break;
         case Success:
-            px_tty_set_color(LightGreen, Black);
+            px_tty_set_color(VGA_LightGreen, VGA_Black);
             px_kprintf("  OK  ");
             break;
         default:
-            px_tty_set_color(Magenta, Black);
+            px_tty_set_color(VGA_Magenta, VGA_Black);
             px_kprintf(" ???? ");
             break;
     }
     // Reset the color to the default and print the closing bracket and message
-    px_tty_set_color(White, Black);
+    px_tty_set_color(VGA_White, VGA_Black);
     px_kprintf("] %s\n", msg);
 }
 
@@ -78,15 +78,15 @@ void px_shift_tty_up() {
     }
 }
 
-void px_kprint_color(char* str, px_tty_color color) {
-    px_tty_color oldBack = color_back;
-    px_tty_color oldFore = color_fore;
+void px_kprint_color(char* str, px_tty_vga_color color) {
+    px_tty_vga_color oldBack = color_back;
+    px_tty_vga_color oldFore = color_fore;
     px_tty_set_color(color, color_back);
     px_kprintf(str);
     px_tty_set_color(oldFore, oldBack);
 }
 
-void px_tty_set_color(px_tty_color fore, px_tty_color back) {
+void px_tty_set_color(px_tty_vga_color fore, px_tty_vga_color back) {
     color_fore = fore;
     color_back = back;
 }
@@ -105,7 +105,7 @@ void px_clear_tty() {
     tty_coords_y = 0;
 }
 
-void px_set_indicator(px_tty_color color) {
+void px_set_indicator(px_tty_vga_color color) {
     volatile uint16_t* where;
     uint16_t attrib = (color << 4) | (color & 0x0F);
     where = x86_bios_vga_mem + (X86_IND_Y * X86_TTY_WIDTH + X86_IND_X);
@@ -137,7 +137,6 @@ void putchar(char c) {
                 ansi_val = 0;
             } else if (c == 'm') { // the color/text attributes command
                 // take action here
-                
                 ansi_state = Normal;
             } else if (c >= '0' && c <= '9') { // just another digit of a value
                 ansi_val = ansi_val * 10 + (uint16_t)(c - '0');

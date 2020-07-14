@@ -19,23 +19,44 @@
 #include <sys/panix.hpp>
 #include <arch/arch.hpp>
 
-enum px_tty_color {
-    Black           = 0x0,
-    Blue            = 0x1,
-    Green           = 0x2,
-    Cyan            = 0x3,
-    Red             = 0x4,
-    Magenta         = 0x5,
-    Brown           = 0x6,
-    LightGrey       = 0x7,
-    DarkGrey        = 0x8,
-    LightBlue       = 0x9,
-    LightGreen      = 0xA,
-    LightCyan       = 0xB,
-    LightRed        = 0xC,
-    LightMagenta    = 0xD,
-    Yellow          = 0xE,
-    White           = 0xF
+enum px_tty_vga_color {
+    VGA_Black           = 0x0,
+    VGA_Blue            = 0x1,
+    VGA_Green           = 0x2,
+    VGA_Cyan            = 0x3,
+    VGA_Red             = 0x4,
+    VGA_Magenta         = 0x5,
+    VGA_Brown           = 0x6,
+    VGA_LightGrey       = 0x7,
+    VGA_DarkGrey        = 0x8,
+    VGA_LightBlue       = 0x9,
+    VGA_LightGreen      = 0xA,
+    VGA_LightCyan       = 0xB,
+    VGA_LightRed        = 0xC,
+    VGA_LightMagenta    = 0xD,
+    VGA_Yellow          = 0xE,
+    VGA_White           = 0xF
+};
+
+// Add 10 to these to convert from
+// foreground colors to background
+enum px_tty_ansi_color {
+    ANSI_Black          = 30,
+    ANSI_Red            = 31,
+    ANSI_Green          = 32,
+    ANSI_Yellow         = 33,
+    ANSI_Blue           = 34,
+    ANSI_Magenta        = 35,
+    ANSI_Cyan           = 36,
+    ANSI_White          = 37,
+    ANSI_BrightBlack    = 90,
+    ANSI_BrightRed      = 91,
+    ANSI_BrightGreen    = 92,
+    ANSI_BrightYellow   = 93,
+    ANSI_BrightBlue     = 94,
+    ANSI_BrightMagenta  = 95,
+    ANSI_BrightCyan     = 96,
+    ANSI_BrightWhite    = 97
 };
 
 enum px_print_level {
@@ -65,25 +86,25 @@ void px_print_debug(char* msg, px_print_level lvl);
  * @param str Input string to be printed
  * @param color Text color
  */
-void px_kprint_color(char* str, px_tty_color color);
+void px_kprint_color(char* str, px_tty_vga_color color);
 /**
  * @brief Set the color of the text when the next print is called.
  *
  * @param fore Foreground color
  * @param back Background color
  */
-void px_tty_set_color(px_tty_color fore, px_tty_color back);
+void px_tty_set_color(px_tty_vga_color fore, px_tty_vga_color back);
 /**
  * @brief Clears the TTY and resets the cursor position.
- * 
+ *
  */
 void px_clear_tty();
 /**
  * @brief Sets the indicator in the top right corner.
  * Used mostly for debugging interrupts.
- * 
+ *
  * @param color Indicator color
  */
-void px_set_indicator(px_tty_color color);
+void px_set_indicator(px_tty_vga_color color);
 
 #endif /* PANIX_px_kprint_HPP */
