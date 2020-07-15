@@ -12,6 +12,7 @@
  */
 #include <arch/arch.hpp>
 #include <lib/string.hpp>
+#include <lib/stdio.hpp>
 #include <devices/tty/tty.hpp>
 
 // Defined in the gdt_flush.s file.
@@ -49,7 +50,7 @@ void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags)
 
 //gdt_flush((uintptr_t)gdtp);
 void px_gdt_install() {
-	px_print_debug("Installing the GDT...", Info);
+	px_kprintf(DBG_INFO "Installing the GDT...\n");
 	gdt_ptr.limit = (sizeof(gdt_entry_t) * 5) - 1;
     gdt_ptr.base  = (uint32_t)&gdt_entries;
 
@@ -60,5 +61,5 @@ void px_gdt_install() {
     px_gdt_set_gate(4, 0, 0x000FFFFF, GDT_DATA_PL3); // User mode data segment
 
     gdt_flush((uint32_t)&gdt_ptr);
-	px_print_debug("Installed the GDT.", Success);
+	px_kprintf(DBG_OKAY "Installed the GDT.\n");
 }

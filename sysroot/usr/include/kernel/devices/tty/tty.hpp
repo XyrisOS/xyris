@@ -22,6 +22,11 @@
 #define VGA_DEFAULT_BACK VGA_Black
 #define VGA_DEFAULT_FORE VGA_White
 
+#define DBG_INFO "[ \033[37mINFO \033[0m] "
+#define DBG_WARN "[ \033[93mWARN \033[0m] "
+#define DBG_FAIL "[ \033[91mFAIL \033[0m] "
+#define DBG_OKAY "[ \033[92m OK  \033[0m] "
+
 enum px_tty_vga_color {
     VGA_Black           = 0x0,
     VGA_Blue            = 0x1,
@@ -75,14 +80,6 @@ enum px_print_level {
  * @param c Character to be printed.
  */
 void putchar(char c);
-/**
- * @brief Prints a debug message to the kernel display and
- * sets a tag and color according to the debug level.
- *
- * @param msg Message to be printed
- * @param lvl Message debug level
- */
-void px_print_debug(char* msg, px_print_level lvl);
 /**
  * @brief Clears the TTY and resets the cursor position.
  *

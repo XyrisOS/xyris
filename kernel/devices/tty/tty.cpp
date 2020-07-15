@@ -41,32 +41,6 @@ uint8_t tty_coords_y = 0;
 px_tty_vga_color color_back = VGA_Black;
 px_tty_vga_color color_fore = VGA_White;
 
-// TODO: Make these into macros Linux-style
-void px_print_debug(char* msg, px_print_level lvl) {
-    // Reset the color to the default and print the opening bracket
-    char *str;
-    // Change the color and print the tag according to the level
-    switch (lvl) {
-        case Info:
-            str = "\033[37m INFO \033[0m";
-            break;
-        case Warning:
-            str = "\033[93m WARN \033[0m";
-            break;
-        case Error:
-            str = "\033[91m FAIL \033[0m";
-            break;
-        case Success:
-            str = "\033[92m  OK  \033[0m";
-            break;
-        default:
-            str = "\033[95m ???? \033[0m";
-            break;
-    }
-    // Reset the color to the default and print the closing bracket and message
-    px_kprintf("[%s] %s\n", str, msg);
-}
-
 void px_shift_tty_up() {
     // start on the second row
     volatile uint16_t* where = x86_bios_vga_mem + X86_TTY_WIDTH;

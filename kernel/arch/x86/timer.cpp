@@ -10,6 +10,7 @@
  */
 
 #include <arch/arch.hpp>
+#include <lib/stdio.hpp>
 #include <lib/string.hpp>
 #include <devices/tty/tty.hpp>
 
@@ -25,7 +26,7 @@ uint32_t tick;
  */
 
 void px_timer_init(uint32_t freq) {
-    px_print_debug("Initializing timer", Info);
+    px_kprintf(DBG_INFO "Initializing timer\n");
     /* Install the function we just wrote */
     px_register_interrupt_handler(IRQ0, px_timer_callback);
     /* Get the PIT value: hardware clock at 1193180 Hz */
@@ -36,7 +37,7 @@ void px_timer_init(uint32_t freq) {
     px_write_byte(TIMER_COMMAND_PORT, 0x36);
     px_write_byte(TIMER_DATA_PORT, low);
     px_write_byte(TIMER_DATA_PORT, high);
-    px_print_debug("Started timer", Success);
+    px_kprintf(DBG_OKAY "Started timer\n");
 }
 
 static void px_timer_callback(registers_t *regs) {
@@ -44,9 +45,7 @@ static void px_timer_callback(registers_t *regs) {
 }
 
 void px_timer_print() {
-    char tick_ascii[256];
-    itoa(tick, tick_ascii);
-    px_print_debug(tick_ascii, Info);
+    px_kprintf(DBG_INFO "Tick: %i\n", tick);
 }
 
 void sleep(uint32_t ms) {
