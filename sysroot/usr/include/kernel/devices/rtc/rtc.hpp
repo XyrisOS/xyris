@@ -12,7 +12,7 @@
 #ifndef PANIX_RTC_HPP
 #define PANIX_RTC_HPP
 
-#include <sys/panix.hpp>
+#include <sys/types.hpp>
 
 #define RTC_CMOS_PORT       0x70
 #define RTC_DATA_PORT       0x71

@@ -11,6 +11,7 @@
 
 #include <arch/arch.hpp>
 #include <lib/string.hpp>
+#include <devices/tty/tty.hpp>
 
 static void px_timer_callback(registers_t *regs);
 uint32_t tick;

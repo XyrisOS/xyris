@@ -10,6 +10,17 @@
  */
 #include <arch/arch.hpp>
 
+const char* px_exception_descriptions[] = {
+    "Divide-By-Zero\0", "Debugging\0", "Non-Maskable\0", "Breakpoint\0",
+    "Overflow\0", "Out Bound Range\0", "Invalid Opcode\0", "Device Not Avbl\0",
+    "Double Fault\0", "Co-CPU Overrun\0", "Invalid TSS\0", "Sgmnt !Present\0",
+    "Seg Fault\0", "Protection Flt\0", "Page Fault\0", "RESERVED\0",
+    "Floating Pnt\0", "Alignment Check\0", "Machine Check\0", "SIMD Flt Pnt\0",
+    "Virtualization\0", "RESERVED\0", "RESERVED\0", "RESERVED\0",
+    "RESERVED\0", "RESERVED\0", "RESERVED\0", "RESERVED\0",
+    "RESERVED\0", "Security Excptn\0", "RESERVED\0", "Triple Fault\0", "FPU Error\0"
+};
+
 /**
  * @brief 
  * 

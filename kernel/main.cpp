@@ -9,7 +9,8 @@
  *
  */
 // System library functions
-#include <sys/panix.hpp>
+#include <sys/types.hpp>
+#include <sys/panic.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
@@ -17,6 +18,7 @@
 #include <arch/arch.hpp>
 #include <gnu/multiboot.hpp>
 // Generic devices
+#include <devices/tty/tty.hpp>
 #include <devices/smbios/smbios.hpp>
 #include <devices/kbd/kbd.hpp>
 #include <devices/rtc/rtc.hpp>

@@ -10,6 +10,8 @@
  */
 
 #include <mem/heap.hpp>
+#include <sys/panic.hpp>
+#include <lib/assert.hpp>
 #include <lib/linked_list.hpp>
 
 #define MEM_SIZE (1024*1024*2) // 256

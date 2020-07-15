@@ -14,6 +14,7 @@
  */
 
 #include <devices/smbios/smbios.hpp>
+#include <devices/tty/tty.hpp>
 
 char* px_get_smbios_addr() {
     // Start at a location above the 0x10000 location and

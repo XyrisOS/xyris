@@ -10,6 +10,7 @@
  */
 
 #include <arch/arch.hpp>
+#include <devices/tty/tty.hpp>
 #include <devices/rtc/rtc.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>

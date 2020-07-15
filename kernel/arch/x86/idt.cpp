@@ -10,6 +10,7 @@
  */
 
 #include <arch/arch.hpp>
+#include <devices/tty/tty.hpp>
 
 idt_gate_t idt[IDT_ENTRIES];
 idt_register_t idt_reg;

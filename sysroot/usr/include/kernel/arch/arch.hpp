@@ -9,7 +9,7 @@
  *
  */
 
-#include <sys/panix.hpp>
+#include <sys/types.hpp>
 
 #ifndef PANIX_ARCH_HPP
 #define PANIX_ARCH_HPP
@@ -42,6 +42,8 @@ typedef struct registers {
     uint32_t int_num, err_code;                           /* Interrupt number and error code (if applicable) */
     uint32_t eip, cs, eflags, esp, ss;                    /* Pushed by the processor automatically */
 } registers_t;
+
+extern const char* px_exception_descriptions[];
 
 /**
  * @brief x86 BIOS based VGA pointers and data.

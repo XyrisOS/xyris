@@ -10,7 +10,8 @@
  *
  */
 
-#include <sys/panix.hpp>
+#include <sys/panic.hpp>
+#include <devices/tty/tty.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 

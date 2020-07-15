@@ -12,7 +12,7 @@
 #ifndef PANIX_LIB_STRING_HPP
 #define PANIX_LIB_STRING_HPP
 
-#include <sys/panix.hpp>
+#include <sys/types.hpp>
 
 // String functions
 int strlen(const char* s);

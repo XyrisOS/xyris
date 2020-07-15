@@ -12,7 +12,7 @@
 #ifndef PANIX_X86_REGISTERS_HPP
 #define PANIX_X86_REGISTERS_HPP
 
-#include <sys/panix.hpp>
+#include <sys/types.hpp>
 
 // R/W CR0 register macros
 #define read_cr0(x) asm volatile("mov %%cr0, %0": "=r"(x))
