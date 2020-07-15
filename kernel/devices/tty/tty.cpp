@@ -28,7 +28,7 @@ enum tty_state {
 // The names don't really line up, so this will need refactoring.
 uint16_t px_ansi_vga_table[16] = {
     VGA_Black, VGA_Red, VGA_Green, VGA_Brown, VGA_Blue,
-    VGA_Magenta, VGA_Cyan, VGA_DarkGrey, VGA_LightGrey, VGA_LightRed,
+    VGA_Magenta, VGA_Cyan, VGA_LightGrey, VGA_DarkGrey, VGA_LightRed,
     VGA_LightGreen, VGA_Yellow, VGA_LightBlue, VGA_LightMagenta,
     VGA_LightCyan, VGA_White
 };
