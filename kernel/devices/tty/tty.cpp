@@ -155,7 +155,10 @@ void putchar(char c) {
                 // iterate through all values
                 while (ansi_values_index > 0) {
                     ansi_val = POP_VAL();
-                    if (ansi_val >= ANSI_Black && ansi_val <= ANSI_White) {
+                    if (ansi_val == 0) {
+                        color_fore = VGA_DEFAULT_FORE;
+                        color_back = VGA_DEFAULT_BACK;
+                    } else if (ansi_val >= ANSI_Black && ansi_val <= ANSI_White) {
                         color_fore = px_ansi_vga_table[ansi_val - ANSI_Black];
                     } else if (ansi_val >= (ANSI_Black + 10) && ansi_val <= (ANSI_White + 10)) {
                         color_back = px_ansi_vga_table[ansi_val - (ANSI_Black + 10)];

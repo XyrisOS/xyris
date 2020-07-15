@@ -19,6 +19,9 @@
 #include <sys/panix.hpp>
 #include <arch/arch.hpp>
 
+#define VGA_DEFAULT_BACK VGA_Black
+#define VGA_DEFAULT_FORE VGA_White
+
 enum px_tty_vga_color {
     VGA_Black           = 0x0,
     VGA_Blue            = 0x1,
