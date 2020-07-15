@@ -9,7 +9,10 @@
  * 
  */
 
+#include <sys/panic.hpp>
 #include <arch/arch.hpp>
+#include <lib/stdio.hpp>
+#include <devices/tty/tty.hpp>
 
 // Private array of interrupt handlers
 isr_t interrupt_handlers[256];
@@ -21,24 +24,24 @@ void (* irq_func_ptr[])(void) = { irq0, irq1, irq2, irq3,   irq4,  irq5,  irq6, 
                                   irq8, irq9, irq10, irq11, irq12, irq13, irq14, irq15 };
 
 void px_interrupts_disable() {
-    px_print_debug("Disabling interrupts", Warning);
+    px_kprintf(DBG_WARN "Disabling interrupts\n");
     asm volatile("cli");
 }
 void px_interrupts_enable() {
-    px_print_debug("Enabling interrupts", Warning);
+    px_kprintf(DBG_WARN "Enabling interrupts\n");
     asm volatile("sti");
 }
 
 /* Can't do this with a loop because we need the address
  * of the function names */
 void px_isr_install() {
-    px_print_debug("Initializing the IDT...", Info);
+    px_kprintf(DBG_INFO "Initializing the IDT...\n");
     // Set all of the gate addresses
-    px_print_debug("Setting the ISRs...", Info);
+    px_kprintf(DBG_INFO "Setting the ISRs...\n");
     for (int isr = 0; isr < 32; ++isr) {
         px_idt_set_gate(isr, (uint32_t)isr_func_ptr[isr]);
     }
-    px_print_debug("Remapping the PIC...", Info);
+    px_kprintf(DBG_INFO "Remapping the PIC...\n");
     // Remap the PIC
     px_write_byte(0x20, 0x11);
     px_write_byte(0xA0, 0x11);
@@ -51,13 +54,13 @@ void px_isr_install() {
     px_write_byte(0x21, 0x0);
     px_write_byte(0xA1, 0x0);
     // Install the IRQs
-    px_print_debug("Setting the IRQs...", Info);
+    px_kprintf(DBG_INFO "Setting the IRQs...\n");
     for (int irq = 0; irq < 16; ++irq) {
         px_idt_set_gate(32 + irq, (uint32_t)irq_func_ptr[irq]);
     }
     // Load the IDT now that we've registered all of our IDT, IRQ, and ISR addresses
     px_load_idt();
-    px_print_debug("Loaded the IDT.", Success);
+    px_kprintf(DBG_OKAY "Loaded the IDT.\n");
 }
 
 extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler) {

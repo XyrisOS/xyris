@@ -9,7 +9,8 @@
  *
  */
 // System library functions
-#include <sys/panix.hpp>
+#include <sys/types.hpp>
+#include <sys/panic.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
@@ -17,6 +18,7 @@
 #include <arch/arch.hpp>
 #include <gnu/multiboot.hpp>
 // Generic devices
+#include <devices/tty/tty.hpp>
 #include <devices/smbios/smbios.hpp>
 #include <devices/kbd/kbd.hpp>
 #include <devices/rtc/rtc.hpp>
@@ -94,14 +96,14 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Get the CPU vendor and model data to print
     char *vendor = (char *)px_cpu_get_vendor();
     char *model = (char *)px_cpu_get_model();
-    px_print_debug(vendor, Info);
-    px_print_debug(model, Info);
+    px_kprintf(DBG_INFO "%s\n", vendor);
+    px_kprintf(DBG_INFO "%s\n", model);
     // Start the serial debugger
-    px_print_debug("Starting serial debugger...", Info);
+    px_kprintf(DBG_INFO "Starting serial debugger...\n");
     px_rs_232_print(vendor);
     px_rs_232_print(model);
     // Now that we're done make a joyful noise
-    px_print_debug("Done.", Success);
+    px_kprintf(DBG_OKAY "Done.\n");
     px_kernel_boot_tone();
     while (true) {
         // Keep the kernel alive.

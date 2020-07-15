@@ -10,6 +10,7 @@
  */
 
 #include <arch/arch.hpp>
+#include <devices/tty/tty.hpp>
 #include <devices/rtc/rtc.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
@@ -24,7 +25,7 @@ uint8_t px_rtc_month;  // Current UTC month
 uint32_t px_rtc_year;  // Current UTC year
 
 void px_rtc_init() {
-    px_print_debug("Initializing RTC...", Info);
+    px_kprintf(DBG_INFO "Initializing RTC...\n");
     // Initializer
     px_write_byte(RTC_CMOS_PORT, 0x8A);
     px_write_byte(RTC_DATA_PORT, 0x20);
@@ -38,7 +39,7 @@ void px_rtc_init() {
 }
 
 void px_rtc_callback(registers_t *regs) {
-    px_print_debug("RTC updated.", Info);
+    px_kprintf(DBG_INFO "RTC updated.\n");
 }
 
 int px_rtc_get_update_in_progress() {
@@ -138,6 +139,7 @@ void px_read_rtc() {
 void px_rtc_print() {
     px_read_rtc();
     px_kprintf(
+        DBG_INFO
         "UTC: %i/%i/%i %i:%i\n",
         px_rtc_month,
         px_rtc_day,

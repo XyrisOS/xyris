@@ -12,7 +12,7 @@
 #ifndef PANIX_DEVICE_SPKR_HPP
 #define PANIX_DEVICE_SPKR_HPP
 
-#include <sys/panix.hpp>
+#include <sys/types.hpp>
 
 void px_spkr_beep(uint32_t freq, uint32_t ms);
 static void px_spkr_tone(uint32_t freq);

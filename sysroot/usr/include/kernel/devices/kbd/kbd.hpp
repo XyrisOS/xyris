@@ -12,7 +12,7 @@
 #ifndef PANIX_KEYBOARD_HPP
 #define PANIX_KEYBOARD_HPP
 
-#include <sys/panix.hpp>
+#include <sys/types.hpp>
 
 #define KBD_COMMAND_PORT 0x64
 #define KBD_DATA_PORT 0x60

@@ -14,6 +14,8 @@
  */
 
 #include <devices/smbios/smbios.hpp>
+#include <devices/tty/tty.hpp>
+#include <lib/stdio.hpp>
 
 char* px_get_smbios_addr() {
     // Start at a location above the 0x10000 location and
@@ -35,7 +37,7 @@ char* px_get_smbios_addr() {
         mem += 16;
     }
     // Perform a check and see if we found the SMBIOS.
-    ((unsigned int) mem == 0x100000) ?  px_print_debug("No SMBIOS found!", Error) : px_print_debug("SMBIOS located.", Success);
+    ((unsigned int) mem == 0x100000) ?  px_kprintf(DBG_FAIL "No SMBIOS found!") : px_kprintf(DBG_OKAY "SMBIOS located.");
     return (char *)mem;
 }
 

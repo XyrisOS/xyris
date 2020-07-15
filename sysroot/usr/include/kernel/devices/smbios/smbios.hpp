@@ -12,7 +12,7 @@
 #ifndef PANIX_SMBIOS_HPP
 #define PANIX_SMBIOS_HPP
 
-#include <sys/panix.hpp>
+#include <sys/types.hpp>
 // TODO: Need to make a function that will read the info from the SMBIO into this struct
 struct SMBIOSEntryPoint {
  	int8_t EntryPointString[4];     //This is _SM_
