@@ -24,7 +24,7 @@
 		],
 		"doxdocgen.generic.authorEmail": "keetonfeavel@cedarville.edu",
 		"doxdocgen.generic.authorName": "Keeton Feavel",
-		"clang-format.fallbackStyle": "Google",
+		"clang-format.fallbackStyle": "Webkit",
 		"C_Cpp.intelliSenseEngineFallback": "Enabled"
 	}
 }

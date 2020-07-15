@@ -12,26 +12,29 @@
 
 #include <sys/panix.hpp>
 #include <lib/string.hpp>
+#include <lib/stdio.hpp>
 
 // Function prototypes
 void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(registers_t *regs);
 
 void printPanicScreen(int exception) {
-    px_tty_set_color(Black, White);
-    px_clear_tty();
-    px_kprint(" ________________________\n");
+    //px_tty_set_color(VGA_Black, VGA_White);
+    px_clear_tty(VGA_Black, VGA_White);
+    px_kprintf(" ________________________\n");
     if (exception == 13) {
-        px_kprint("< Wait... That's Illegal >\n");
+        px_kprintf("< Wait... That's Illegal >\n");
     } else {
-        px_kprint("< OH NO! Panix panicked! >\n");
+        px_kprintf("< OH NO! Panix panicked! >\n");
     }
-    px_kprint(" ------------------------\n");
-    px_kprint("        \\   ^__^\n");
-    px_kprint("         \\  (XX)\\_______\n");
-    px_kprint("            (__)\\       )\\/\\\n");
-    px_kprint("                ||----w |\n");
-    px_kprint("                ||     ||\n");
+    px_kprintf(
+        " ------------------------\n"
+        "        \\   ^__^\n"
+        "         \\  (XX)\\_______\n"
+        "            (__)\\       )\\/\\\n"
+        "                ||----w |\n"
+        "                ||     ||\n"
+    );
 }
 
 void panic(int exception) {
@@ -45,11 +48,9 @@ void panic(int exception) {
     panicCode[22] = hex[(exception >> 4) & 0xF];
     panicCode[23] = hex[exception & 0xF];
     // Print the code and associated error name
-    px_tty_set_color(Red, White);
-    px_kprint("\nEXCEPTION CAUGHT IN KERNEL MODE!\n");
-    px_tty_set_color(Black, White);
-    px_kprint(panicCode);
-    px_kprint(px_exception_descriptions[exception]);
+    px_kprintf("\n\033[91mEXCEPTION CAUGHT IN KERNEL MODE!\n");
+    px_kprintf(panicCode);
+    px_kprintf(px_exception_descriptions[exception]);
     // Halt the CPU
     asm("hlt");
 }
@@ -60,8 +61,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
     // Print the panic cow
     printPanicScreen(0);
     // Print the message passed in on a new line
-    px_kprint("\n");
-    px_kprint(msg);
+    px_kprintf("\n%s", msg);
     panic_print_file(file, line, func);
     // Halt the CPU
     asm("hlt");
@@ -72,19 +72,11 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     px_clear_tty();
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
-    px_kprint("Exception: ");
-    char s[11];
-    itoa(regs->int_num, s);
-    px_kprint(s);
-    px_kprint(" ( ");
-    px_kprint(px_exception_descriptions[regs->int_num]);
-    px_kprint(" ) ");
+    px_kprintf("Exception: %i (%s)", regs->int_num, px_exception_descriptions[regs->int_num]);
     if (regs->err_code) {
-        px_kprint("Error code: ");
-        itoa(regs->err_code, s);
-        px_kprint(s);
+        px_kprintf("Error code: %i", regs->err_code);
     }
-    px_kprint("\n\n");
+    px_kprintf("\n\n");
     panic_print_register(regs);
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
@@ -99,62 +91,39 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     // If we have a page fault, print out page fault info
     if (regs->int_num == 14) {
         // Output an error message.
-        px_kprint("Page fault ( ");
-        (present) ? px_kprint("present ") : px_kprint("missing ");
-        (rw) ? px_kprint("reading ") : px_kprint("writing ");
-        (us) ? px_kprint("user-mode ") : px_kprint("kernel ");
-        (reserved) ? px_kprint("reserved ") : px_kprint("available");
-        px_kprint(") at 0x");
-        px_kprint_hex(faulting_address);
+        px_kprintf("Page fault ( ");
+        (present) ? px_kprintf("present ") : px_kprintf("missing ");
+        (rw) ? px_kprintf("reading ") : px_kprintf("writing ");
+        (us) ? px_kprintf("user-mode ") : px_kprintf("kernel ");
+        (reserved) ? px_kprintf("reserved ") : px_kprintf("available");
+        px_kprintf(") at 0x0x%08X", faulting_address);
     }
-    px_kprint("\n");
+    px_kprintf("\n");
     panic_print_file(file, line, func);
     // Halt the CPU
     asm("hlt");
 }
 
 void panic_print_file(const char *file, uint32_t line, const char *func) {
-    char lineStr[9];    // 8 digits + 1 terminator
-    px_kprint("File: ");
-    px_kprint(file);
-    px_kprint("\n");
-    px_kprint("Func: ");
-    px_kprint(func);
-    px_kprint("\n");
-    itoa(line, lineStr);
-    px_kprint("Line: ");
-    px_kprint(lineStr);
-    px_kprint("\n");
+    px_kprintf("File: %s\nFunc: %s\nLine: %i\n", file, func, line);
 }
 
 void panic_print_register(registers_t *regs) {
-    px_kprint_color(" DS: ", Red);
-    px_kprint_hex(regs->ds);
-    px_kprint_color("\nEDI: ", Red);
-    px_kprint_hex(regs->edi);
-    px_kprint_color(" ESI: ", Red);
-    px_kprint_hex(regs->esi);
-    px_kprint_color(" EBP: ", Red);
-    px_kprint_hex(regs->ebp);
-    px_kprint_color(" ESP: ", Red);
-    px_kprint_hex(regs->esp);
-    px_kprint_color("\nEBX: ", Red);
-    px_kprint_hex(regs->ebx);
-    px_kprint_color(" EDX: ", Red);
-    px_kprint_hex(regs->edx);
-    px_kprint_color(" ECX: ", Red);
-    px_kprint_hex(regs->ecx);
-    px_kprint_color(" EAX: ", Red);
-    px_kprint_hex(regs->eax);
-    px_kprint_color("\nERR: ", Red);
-    px_kprint_hex(regs->err_code);
-    px_kprint_color(" EIP: ", Red);
-    px_kprint_hex(regs->eip);
-    px_kprint_color("  CS: ", Red);
-    px_kprint_hex(regs->cs);
-    px_kprint_color("\nFLG: ", Red);
-    px_kprint_hex(regs->eflags);
-    px_kprint_color("  SS: ", Red);
-    px_kprint_hex(regs->ss);
-    px_kprint("\n\n");
+    // I really wanted to add color codes here to make the register labels
+    // red, but that would also mean resetting the background *and* foreground
+    // colors each time (to print the numbers in back) since I can't just call
+    // reset (because it would reset to a black background w/ white text, which
+    // is the inverse of what we want.)
+    px_kprintf(
+        " DS: 0x%08X\n"
+        "EDI: 0x%08X ESI: 0x%08X EBP: 0x%08X ESP: 0x%08X\n"
+        "EAX: 0x%08X EBX: 0x%08X ECX: 0x%08X EDX: 0x%08X\n"
+        "ERR: 0x%08X EIP: 0x%08X  CS: 0x%08X\n"
+        "FLG: 0x%08X  SS: 0x%08X\n\n",
+        regs->ds,
+        regs->edi, regs->esi, regs->ebp, regs->esp,
+        regs->eax, regs->ebx, regs->ecx, regs->edx,
+        regs->err_code, regs->eip, regs->cs, regs->eflags,
+        regs->ss
+    );
 }

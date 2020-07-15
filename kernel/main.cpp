@@ -24,6 +24,15 @@
 #include <devices/serial/rs232.hpp>
 // memcpy
 #include <lib/string.hpp>
+#include <lib/stdio.hpp>
+
+#define __YEAR_C__ 7
+#define __YEAR__  (\
+                    ((__DATE__)[__YEAR_C__ + 0] - '0') * 1000 + \
+                    ((__DATE__)[__YEAR_C__ + 1] - '0') * 100  + \
+                    ((__DATE__)[__YEAR_C__ + 2] - '0') * 10   + \
+                    ((__DATE__)[__YEAR_C__ + 3] - '0') * 1      \
+                  )
 
 void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
@@ -66,8 +75,6 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_kernel_print_splash();
     // Panix requires a multiboot header, so panic if not provided
     px_kernel_check_multiboot(mb_struct);
-    // Passed multiboot check, so continue printing boot info
-    px_tty_set_color(Blue, Black);
     // Install the GDT
     px_interrupts_disable();
     px_gdt_install();
@@ -83,14 +90,16 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Enable interrupts now that we're out of a critical area
     px_interrupts_enable();
     // Print some info to show we did things right
-    //px_rtc_print();
-    px_print_debug((char *)px_cpu_get_vendor(), Info);
-    px_print_debug((char *)px_cpu_get_model(), Info);
+    px_rtc_print();
+    // Get the CPU vendor and model data to print
+    char *vendor = (char *)px_cpu_get_vendor();
+    char *model = (char *)px_cpu_get_model();
+    px_print_debug(vendor, Info);
+    px_print_debug(model, Info);
     // Start the serial debugger
     px_print_debug("Starting serial debugger...", Info);
-    px_rs_232_print("Panix v3 Serial Out Debugger:");
-    px_rs_232_print((char *)px_cpu_get_vendor());
-    px_rs_232_print((char *)px_cpu_get_model());
+    px_rs_232_print(vendor);
+    px_rs_232_print(model);
     // Now that we're done make a joyful noise
     px_print_debug("Done.", Success);
     px_kernel_boot_tone();
@@ -103,18 +112,10 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
 
 void px_kernel_print_splash() {
     px_clear_tty();
-    px_tty_set_color(Yellow, Black);
-    px_kprint("Welcome to Panix\n");
-    px_kprint("Developed by graduates and undergraduates of Cedarville University.\n");
-    px_kprint("Copyright the Panix Contributors (c) 2019. All rights reserved.\n");
-    px_tty_set_color(White, Black);
-    px_kprint("Built on ");
-    px_kprint(__DATE__);
-    px_kprint(" at ");
-    px_kprint(__TIME__);
-    px_tty_set_color(LightCyan, Black);
-    px_kprint(".\n\n");
-    px_tty_set_color(White, Black);
+    px_kprintf("\033[93mWelcome to Panix\n"
+                "Developed by graduates and undergraduates of Cedarville University.\n"
+                "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n\033[0m", __YEAR__);
+    px_kprintf("Built on %s at %s.\n\n", __DATE__, __TIME__);
 }
 
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
@@ -128,13 +129,12 @@ void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
     // Print out our memory size information if provided
     if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
-        uint32_t mem_total = mb_struct->mem_lower + mb_struct->mem_upper;
-        px_kprint("Memory Lower: ");
-        px_kprint_hex(mb_struct->mem_lower);
-        px_kprint("\nMemory Upper: ");
-        px_kprint_hex(mb_struct->mem_upper);
-        px_kprint_color("\nTotal Memory: ", Magenta);
-        px_kprint_hex(mem_total);
+        px_kprintf(
+            "Memory Lower: \033[95m0x%08X\n\033[0mMemory Upper: \033[95m0x%08X\n\033[0mTotal Memory: \033[95m0x%08X\033[0m\n",
+            mb_struct->mem_lower,
+            mb_struct->mem_upper,
+            (mb_struct->mem_lower + mb_struct->mem_upper)
+        );
     }
     // Print out our memory map if provided
     if (mb_struct->flags & MULTIBOOT_INFO_MEM_MAP) {
@@ -145,21 +145,17 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
             // If the length of the current map entry is not empty
             if (curr->len > 0) {
                 // Print out the memory map information
-                px_kprint("\n[");
-                px_kprint_hex(curr->addr);
-                px_kprint("-");
-                px_kprint_hex((curr->addr + curr->len));
-                px_kprint("] ");
+                px_kprintf("\n[0x%08X-0x%08X] ", curr->addr, (curr->addr + curr->len));
                 // Print out if the entry is available or reserved
-                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprint("Available") : px_kprint("Reserved");
+                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprintf("Available") : px_kprintf("Reserved");
             } else {
-                px_kprint_color("Missing!", Red);
+                px_kprintf("\033[91mMissing!\033[0m");
             }
             // Increment the curr pointer to the next entry
             mem_info_ptr += curr->size + sizeof(curr->size);
         }
     }
-    px_kprint("\n");
+    px_kprintf("\n\n");
 }
 
 void px_kernel_boot_tone() {

@@ -74,4 +74,13 @@ void px_rs_232_init(uint16_t com_id) {
     px_write_byte(rs_232_port_base + RS_232_LINE_CONTROL_REG, 0x00);
     // re-enable interrupts
     px_write_byte(rs_232_port_base + RS_232_INTERRUPT_ENABLE_REG, 0x01);
+    // Print out header info to the serial
+    px_rs_232_print(
+        "\n    ____              _              _____\n"
+        "   / __ \\____ _____  (_)  __   _   _|__  /\n"
+        "  / /_/ / __ `/ __ \\/ / |/_/  | | / //_ < \n"
+        " / ____/ /_/ / / / / />  <    | |/ /__/ / \n"
+        "/_/    \\__,_/_/ /_/_/_/|_|    |___/____/  \n\n"
+        "Panix Serial Output Debugger"
+    );
 }
