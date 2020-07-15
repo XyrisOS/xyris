@@ -41,36 +41,30 @@ uint8_t tty_coords_y = 0;
 px_tty_vga_color color_back = VGA_Black;
 px_tty_vga_color color_fore = VGA_White;
 
+// TODO: Make these into macros Linux-style
 void px_print_debug(char* msg, px_print_level lvl) {
     // Reset the color to the default and print the opening bracket
-    px_tty_set_color(VGA_White, VGA_Black);
-    px_kprintf("[");
+    char *str;
     // Change the color and print the tag according to the level
     switch (lvl) {
         case Info:
-            px_tty_set_color(VGA_LightGrey, VGA_Black);
-            px_kprintf(" INFO ");
+            str = "\033[37m INFO \033[0m";
             break;
         case Warning:
-            px_tty_set_color(VGA_Yellow, VGA_Black);
-            px_kprintf(" WARN ");
+            str = "\033[93m WARN \033[0m";
             break;
         case Error:
-            px_tty_set_color(VGA_Red, VGA_Black);
-            px_kprintf(" FAIL ");
+            str = "\033[91m FAIL \033[0m";
             break;
         case Success:
-            px_tty_set_color(VGA_LightGreen, VGA_Black);
-            px_kprintf("  OK  ");
+            str = "\033[92m  OK  \033[0m";
             break;
         default:
-            px_tty_set_color(VGA_Magenta, VGA_Black);
-            px_kprintf(" ???? ");
+            str = "\033[95m ???? \033[0m";
             break;
     }
     // Reset the color to the default and print the closing bracket and message
-    px_tty_set_color(VGA_White, VGA_Black);
-    px_kprintf("] %s\n", msg);
+    px_kprintf("[%s] %s\n", str, msg);
 }
 
 void px_shift_tty_up() {
@@ -86,22 +80,12 @@ void px_shift_tty_up() {
     }
 }
 
-void px_kprint_color(char* str, px_tty_vga_color color) {
-    px_tty_vga_color oldBack = color_back;
-    px_tty_vga_color oldFore = color_fore;
-    px_tty_set_color(color, color_back);
-    px_kprintf(str);
-    px_tty_set_color(oldFore, oldBack);
-}
-
-inline void px_tty_set_color(px_tty_vga_color fore, px_tty_vga_color back) {
+void px_clear_tty(px_tty_vga_color fore, px_tty_vga_color back) {
     color_fore = fore;
     color_back = back;
-}
-
-void px_clear_tty() {
     tty_coords_x = 0;
     tty_coords_y = 0;
+    // TODO: Do something more efficient than putchar().
     char c = ' ';
     for (int y = 0; y < X86_TTY_HEIGHT; y++) {
         for (int x = 0; x < X86_TTY_WIDTH; x++) {
@@ -159,13 +143,13 @@ void putchar(char c) {
                         color_fore = VGA_DEFAULT_FORE;
                         color_back = VGA_DEFAULT_BACK;
                     } else if (ansi_val >= ANSI_Black && ansi_val <= ANSI_White) {
-                        color_fore = px_ansi_vga_table[ansi_val - ANSI_Black];
+                        color_fore = (px_tty_vga_color)px_ansi_vga_table[ansi_val - ANSI_Black];
                     } else if (ansi_val >= (ANSI_Black + 10) && ansi_val <= (ANSI_White + 10)) {
-                        color_back = px_ansi_vga_table[ansi_val - (ANSI_Black + 10)];
+                        color_back = (px_tty_vga_color)px_ansi_vga_table[ansi_val - (ANSI_Black + 10)];
                     } else if (ansi_val >= ANSI_BrightBlack && ansi_val <= ANSI_BrightWhite) {
-                        color_fore = px_ansi_vga_table[ansi_val - ANSI_BrightBlack + 8];
+                        color_fore = (px_tty_vga_color)px_ansi_vga_table[ansi_val - ANSI_BrightBlack + 8];
                     } else if (ansi_val >= (ANSI_BrightBlack + 10) && ansi_val <= (ANSI_BrightWhite + 10)) {
-                        color_back = px_ansi_vga_table[ansi_val - (ANSI_BrightBlack + 10) + 8];
+                        color_back = (px_tty_vga_color)px_ansi_vga_table[ansi_val - (ANSI_BrightBlack + 10) + 8];
                     } // else it was an unknown code
                 }
                 ansi_state = Normal;

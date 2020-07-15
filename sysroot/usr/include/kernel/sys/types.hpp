@@ -15,14 +15,6 @@
 #define NULL nullptr
 #define typeof __typeof__
 
-#define __YEAR_C__ 7
-#define __YEAR__  (\
-                    ((__DATE__)[__YEAR_C__ + 0] - '0') * 1000 + \
-                    ((__DATE__)[__YEAR_C__ + 1] - '0') * 100  + \
-                    ((__DATE__)[__YEAR_C__ + 2] - '0') * 10   + \
-                    ((__DATE__)[__YEAR_C__ + 3] - '0') * 1      \
-                  )
-
 typedef char                     int8_t;
 typedef unsigned char           uint8_t;
 typedef short                   int16_t;

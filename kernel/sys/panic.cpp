@@ -19,8 +19,8 @@ void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(registers_t *regs);
 
 void printPanicScreen(int exception) {
-    px_tty_set_color(VGA_Black, VGA_White);
-    px_clear_tty();
+    //px_tty_set_color(VGA_Black, VGA_White);
+    px_clear_tty(VGA_Black, VGA_White);
     px_kprintf(" ________________________\n");
     if (exception == 13) {
         px_kprintf("< Wait... That's Illegal >\n");
@@ -48,9 +48,7 @@ void panic(int exception) {
     panicCode[22] = hex[(exception >> 4) & 0xF];
     panicCode[23] = hex[exception & 0xF];
     // Print the code and associated error name
-    px_tty_set_color(VGA_Red, VGA_White);
-    px_kprintf("\nEXCEPTION CAUGHT IN KERNEL MODE!\n");
-    px_tty_set_color(VGA_Black, VGA_White);
+    px_kprintf("\n\033[91mEXCEPTION CAUGHT IN KERNEL MODE!\n");
     px_kprintf(panicCode);
     px_kprintf(px_exception_descriptions[exception]);
     // Halt the CPU
@@ -111,12 +109,17 @@ void panic_print_file(const char *file, uint32_t line, const char *func) {
 }
 
 void panic_print_register(registers_t *regs) {
+    // I really wanted to add color codes here to make the register labels
+    // red, but that would also mean resetting the background *and* foreground
+    // colors each time (to print the numbers in back) since I can't just call
+    // reset (because it would reset to a black background w/ white text, which
+    // is the inverse of what we want.)
     px_kprintf(
         " DS: 0x%08X\n"
         "EDI: 0x%08X ESI: 0x%08X EBP: 0x%08X ESP: 0x%08X\n"
         "EAX: 0x%08X EBX: 0x%08X ECX: 0x%08X EDX: 0x%08X\n"
         "ERR: 0x%08X EIP: 0x%08X  CS: 0x%08X\n"
-        "FLG: 0x%08X  SS: 0x%08X \n\n",
+        "FLG: 0x%08X  SS: 0x%08X\n\n",
         regs->ds,
         regs->edi, regs->esi, regs->ebp, regs->esp,
         regs->eax, regs->ebx, regs->ecx, regs->edx,

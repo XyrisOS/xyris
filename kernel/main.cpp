@@ -26,6 +26,14 @@
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 
+#define __YEAR_C__ 7
+#define __YEAR__  (\
+                    ((__DATE__)[__YEAR_C__ + 0] - '0') * 1000 + \
+                    ((__DATE__)[__YEAR_C__ + 1] - '0') * 100  + \
+                    ((__DATE__)[__YEAR_C__ + 2] - '0') * 10   + \
+                    ((__DATE__)[__YEAR_C__ + 3] - '0') * 1      \
+                  )
+
 void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
@@ -67,8 +75,6 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_kernel_print_splash();
     // Panix requires a multiboot header, so panic if not provided
     px_kernel_check_multiboot(mb_struct);
-    // Passed multiboot check, so continue printing boot info
-    px_tty_set_color(VGA_Blue, VGA_Black);
     // Install the GDT
     px_interrupts_disable();
     px_gdt_install();
@@ -106,11 +112,9 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
 
 void px_kernel_print_splash() {
     px_clear_tty();
-    px_tty_set_color(VGA_Yellow, VGA_Black);
-    px_kprintf("Welcome to Panix\n"
+    px_kprintf("\033[93mWelcome to Panix\n"
                 "Developed by graduates and undergraduates of Cedarville University.\n"
-                "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n", __YEAR__);
-    px_tty_set_color(VGA_White, VGA_Black);
+                "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n\033[0m", __YEAR__);
     px_kprintf("Built on %s at %s.\n\n", __DATE__, __TIME__);
 }
 
@@ -126,7 +130,7 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
     // Print out our memory size information if provided
     if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
         px_kprintf(
-            "Memory Lower: 0x%08X\nMemory Upper: 0x%08X\nTotal Memory: 0x%08X\n",
+            "Memory Lower: \033[95m0x%08X\n\033[0mMemory Upper: \033[95m0x%08X\n\033[0mTotal Memory: \033[95m0x%08X\033[0m\n",
             mb_struct->mem_lower,
             mb_struct->mem_upper,
             (mb_struct->mem_lower + mb_struct->mem_upper)
@@ -145,7 +149,7 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
                 // Print out if the entry is available or reserved
                 curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprintf("Available") : px_kprintf("Reserved");
             } else {
-                px_kprint_color("Missing!", VGA_Red);
+                px_kprintf("\033[91mMissing!\033[0m");
             }
             // Increment the curr pointer to the next entry
             mem_info_ptr += curr->size + sizeof(curr->size);
