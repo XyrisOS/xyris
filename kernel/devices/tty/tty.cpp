@@ -120,6 +120,11 @@ void px_set_indicator(px_tty_vga_color color) {
     *where = ' ' | (attrib << 8);
 }
 
+static uint16_t ansi_values[8] = { 0 };
+static size_t ansi_values_index = 0;
+#define PUSH_VAL(VAL) ansi_values[ansi_values_index++] = (VAL)
+#define POP_VAL() ansi_values[--ansi_values_index]
+
 void putchar(char c) {
     switch (ansi_state) {
         case Normal: // print the character out normally unless it's an ESC
@@ -141,17 +146,32 @@ void putchar(char c) {
         case Value:
             if (c == ';') { // the semicolon is a value separator
                 // enqueue the value here
+                PUSH_VAL(ansi_val);
                 ansi_state = Bracket;
                 ansi_val = 0;
             } else if (c == 'm') { // the color/text attributes command
+                PUSH_VAL(ansi_val);
                 // take action here
+                // iterate through all values
+                while (ansi_values_index > 0) {
+                    ansi_val = POP_VAL();
+                    if (ansi_val >= ANSI_Black && ansi_val <= ANSI_White) {
+                        color_fore = px_ansi_vga_table[ansi_val - ANSI_Black];
+                    } else if (ansi_val >= (ANSI_Black + 10) && ansi_val <= (ANSI_White + 10)) {
+                        color_back = px_ansi_vga_table[ansi_val - (ANSI_Black + 10)];
+                    } else if (ansi_val >= ANSI_BrightBlack && ansi_val <= ANSI_BrightWhite) {
+                        color_fore = px_ansi_vga_table[ansi_val - ANSI_BrightBlack + 8];
+                    } else if (ansi_val >= (ANSI_BrightBlack + 10) && ansi_val <= (ANSI_BrightWhite + 10)) {
+                        color_back = px_ansi_vga_table[ansi_val - (ANSI_BrightBlack + 10) + 8];
+                    } // else it was an unknown code
+                }
                 ansi_state = Normal;
+                ansi_val = 0;
             } else if (c >= '0' && c <= '9') { // just another digit of a value
                 ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
-                return;
-            }
-            // invald code, so just return to normal
-            break;
+            } else break; // invald code, so just return to normal
+            // we hit one of the cases so return
+            return;
     }
     // we fell through some way or another so just reset to Normal no matter what
     ansi_state = Normal;
