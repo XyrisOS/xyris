@@ -13,8 +13,8 @@
  * @copyright Copyright Keeton Feavel (c) 2019
  *
  */
-#ifndef PANIX_px_kprint_HPP
-#define PANIX_px_kprint_HPP
+#ifndef PANIX_PX_KPRINT_HPP
+#define PANIX_PX_KPRINT_HPP
 
 #include <sys/panix.hpp>
 #include <arch/arch.hpp>
