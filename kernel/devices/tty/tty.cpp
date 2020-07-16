@@ -15,6 +15,7 @@
  */
 #include <devices/tty/tty.hpp>
 #include <lib/stdio.hpp>
+#include <lib/stddef.hpp>
 
 #define ESC ('\033')
 

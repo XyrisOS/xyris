@@ -12,7 +12,6 @@
 #ifndef PANIX_TYPES_HPP
 #define PANIX_TYPES_HPP
 
-#define NULL nullptr
 #define typeof __typeof__
 
 typedef char                     int8_t;
@@ -23,9 +22,7 @@ typedef int                     int32_t;
 typedef unsigned int           uint32_t;
 typedef long long int           int64_t;
 typedef unsigned long long int uint64_t;
-typedef unsigned int             size_t;
 typedef unsigned long         uintptr_t;
 typedef long                   intptr_t;
-typedef char *                  va_list;
 
 #endif /* PANIX_TYPES_HPP */

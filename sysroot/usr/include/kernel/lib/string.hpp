@@ -13,6 +13,7 @@
 #define PANIX_LIB_STRING_HPP
 
 #include <sys/types.hpp>
+#include <lib/stddef.hpp>
 
 /**
  * @brief Returns the length of a string.
@@ -36,14 +37,6 @@ void strcpy(const char* source, char* destination);
  * @return char* Resulting concatenated string 
  */
 char* strcat(const char *s1, const char *s2);
-/**
- * @brief Converts every character to its uppercase equivalent.
- * 
- * @param string Input string
- * @return char* Resulting capitalized string
- */
-// TODO: Set this to abide by the ASNI C standard function
-char* to_upper(char* string);
 /**
  * @brief Reverses the inputted string.
  * 

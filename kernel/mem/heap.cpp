@@ -11,6 +11,7 @@
 
 #include <mem/heap.hpp>
 #include <sys/panic.hpp>
+#include <lib/stddef.hpp>
 #include <lib/assert.hpp>
 #include <lib/linked_list.hpp>
 

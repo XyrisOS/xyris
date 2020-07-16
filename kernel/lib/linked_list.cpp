@@ -12,7 +12,7 @@
  */
 
 #include <lib/linked_list.hpp>
-
+#include <lib/stddef.hpp>
 
 // initialize a one element DList
 void dlist_init(DList *dlist) {

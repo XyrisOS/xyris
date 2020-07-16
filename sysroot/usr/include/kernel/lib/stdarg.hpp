@@ -19,6 +19,7 @@
  * public domain. Thanks for your hard work. Similar code can be found in any
  * C or C++ library implementation in the stdarg.h header.
  */
+typedef char* va_list;
 #define __va_argsiz(x) (((sizeof(x) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
 #define va_start(x, y) ((x) = ((va_list) __builtin_next_arg(y)))
 #define va_end(x) ((void) 0)
