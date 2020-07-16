@@ -27,27 +27,43 @@
 #define DBG_FAIL "[ \033[91mFAIL \033[0m] "
 #define DBG_OKAY "[ \033[92m OK  \033[0m] "
 
+/**
+ * @brief Binaries values which change the BIOS
+ * VGA colors when written to memory. These value
+ * are not regularly used now that putchar() has
+ * support for ANSI color codes. A translation
+ * table is used to convert between ANSI and VGA
+ * in tty.cpp.
+ * 
+ */
 enum px_tty_vga_color {
-    VGA_Black           = 0x0,
-    VGA_Blue            = 0x1,
-    VGA_Green           = 0x2,
-    VGA_Cyan            = 0x3,
-    VGA_Red             = 0x4,
-    VGA_Magenta         = 0x5,
-    VGA_Brown           = 0x6,
-    VGA_LightGrey       = 0x7,
-    VGA_DarkGrey        = 0x8,
-    VGA_LightBlue       = 0x9,
-    VGA_LightGreen      = 0xA,
-    VGA_LightCyan       = 0xB,
-    VGA_LightRed        = 0xC,
-    VGA_LightMagenta    = 0xD,
-    VGA_Yellow          = 0xE,
-    VGA_White           = 0xF
+    VGA_Black           = 0,
+    VGA_Blue            = 1,
+    VGA_Green           = 2,
+    VGA_Cyan            = 3,
+    VGA_Red             = 4,
+    VGA_Magenta         = 5,
+    VGA_Brown           = 6,
+    VGA_LightGrey       = 7,
+    VGA_DarkGrey        = 8,
+    VGA_LightBlue       = 9,
+    VGA_LightGreen      = 10,
+    VGA_LightCyan       = 11,
+    VGA_LightRed        = 12,
+    VGA_LightMagenta    = 13,
+    VGA_Yellow          = 14,
+    VGA_White           = 15
 };
 
-// Add 10 to these to convert from
-// foreground colors to background
+/**
+ * @brief ANSI color codes for use in functions
+ * like px_kprintf(). However, the real printing
+ * is done in the putchar() function. To change
+ * the color from the foreground to the background,
+ * add 10 to the desired color value.
+ * (i.e. ANSI_Red == 31 (fore)--> 41 (back))
+ * 
+ */
 enum px_tty_ansi_color {
     ANSI_Black          = 30,
     ANSI_Red            = 31,
@@ -65,13 +81,6 @@ enum px_tty_ansi_color {
     ANSI_BrightMagenta  = 95,
     ANSI_BrightCyan     = 96,
     ANSI_BrightWhite    = 97
-};
-
-enum px_print_level {
-    Info            = 0,
-    Warning         = 1,
-    Error           = 2,
-    Success         = 3
 };
 
 /**

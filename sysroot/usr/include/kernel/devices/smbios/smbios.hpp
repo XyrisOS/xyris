@@ -13,7 +13,7 @@
 #define PANIX_SMBIOS_HPP
 
 #include <sys/types.hpp>
-// TODO: Need to make a function that will read the info from the SMBIO into this struct
+// TODO: Need to make a function that will read the info from the SMBIOS into this struct
 struct SMBIOSEntryPoint {
  	int8_t EntryPointString[4];     //This is _SM_
  	uint8_t Checksum;               //This value summed with all the values of the table, should be 0 (overflow)
