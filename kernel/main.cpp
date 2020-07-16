@@ -86,7 +86,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
-    px_rs_232_init(RS_232_COM1);// RS232 Serial
+    px_rs232_init(RS_232_COM1);// RS232 Serial
     // Now that we've initialized our core kernel necessities
     // we can initialize paging.
     // Enable interrupts now that we're out of a critical area
@@ -100,8 +100,8 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_kprintf(DBG_INFO "%s\n", model);
     // Start the serial debugger
     px_kprintf(DBG_INFO "Starting serial debugger...\n");
-    px_rs_232_print(vendor);
-    px_rs_232_print(model);
+    px_rs232_print(vendor);
+    px_rs232_print(model);
     // Now that we're done make a joyful noise
     px_kprintf(DBG_OKAY "Done.\n");
     px_kernel_boot_tone();

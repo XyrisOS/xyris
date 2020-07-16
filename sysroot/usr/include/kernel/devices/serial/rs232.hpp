@@ -37,11 +37,11 @@
  * @brief Activates the RS232 serial driver
  *
  */
-void px_rs_232_init(uint16_t com_id);
+void px_rs232_init(uint16_t com_id);
 
 /**
  * @brief Prints a given character string to the
  * serial output.
  * @param str Input string to be printed.
  */
-void px_rs_232_print(char* str);
+void px_rs232_print(char* str);
