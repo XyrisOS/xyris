@@ -14,8 +14,12 @@
 
 #include <sys/types.hpp>
 
+/**
+ * @brief Plays a given frequency for the provided duration.
+ * 
+ * @param freq Tone frequency
+ * @param ms Length in milliseconds
+ */
 void px_spkr_beep(uint32_t freq, uint32_t ms);
-static void px_spkr_tone(uint32_t freq);
-static void px_spkr_stop();
 
 #endif /* PANIX_DEVICE_SPKR_HPP */

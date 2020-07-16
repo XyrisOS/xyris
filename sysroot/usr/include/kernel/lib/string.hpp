@@ -15,74 +15,78 @@
 #include <sys/types.hpp>
 
 /**
- * @brief 
+ * @brief Returns the length of a string.
  * 
- * @param s 
- * @return int 
+ * @param s Input string
+ * @return int Length of string
  */
 int strlen(const char* s);
 /**
- * @brief 
+ * @brief Copys a string from the source to the destination.
  * 
- * @param source 
- * @param destination 
+ * @param source String to be copied
+ * @param destination Location where string will be copied
  */
 void strcpy(const char* source, char* destination);
 /**
- * @brief 
+ * @brief Concatanates string one onto string two.
  * 
- * @param s1 
- * @param s2 
- * @return char* 
+ * @param s1 String one
+ * @param s2 String two
+ * @return char* Resulting concatenated string 
  */
 char* strcat(const char *s1, const char *s2);
 /**
- * @brief 
+ * @brief Converts every character to its uppercase equivalent.
  * 
- * @param string 
- * @return char* 
+ * @param string Input string
+ * @return char* Resulting capitalized string
  */
+// TODO: Set this to abide by the ASNI C standard function
 char* to_upper(char* string);
 /**
- * @brief 
+ * @brief Reverses the inputted string.
  * 
- * @param s 
+ * @param s String to be reversed
  */
 void reverse(char* s);
 /**
- * @brief 
+ * @brief Converts an integer into its ASCII representation.
  * 
- * @param n 
- * @param str 
+ * @param n Number to be converted to ASCII
+ * @param str Buffer to hold result
  */
+// TODO: Set this to abide by the ASNI C standard function
 void itoa(int n, char str[]);
 /**
- * @brief 
+ * @brief Sets the number of bytes in memory at ptr to the value.
  * 
- * @param bufptr 
- * @param value 
- * @param size 
- * @return void* 
+ * @param ptr Pointer to location in memory
+ * @param value Value to be written in memory
+ * @param num Number of bytes
+ * @return void* Pointer to location in memory
  */
-void* memset(void* bufptr, int value, size_t size);
+void* memset(void* bufptr, int value, size_t num);
 /**
- * @brief 
+ * @brief Compares a given number of bytes in memory at pointer A to pointer B.
  * 
- * @param aptr 
- * @param bptr 
- * @param size 
- * @return int 
+ * @param ptr1 Source pointer
+ * @param ptr2 Destination pointer
+ * @param size Number of bytes
+ * @return int Returns 0 if identical. If negative, pointer A is less than
+ * than pointer B and vice versa for positive.
  */
-int memcmp(const void* aptr, const void* bptr, size_t size);
+// TODO: Fix the return type to be ANSI compliant
+int memcmp(const void* ptr1, const void* ptr2, size_t size);
 /**
- * @brief 
+ * @brief Moves a given number of bytes from the source to the destination.
  * 
- * @param dstptr 
- * @param srcptr 
- * @param size 
- * @return void* 
+ * @param destination Destination pointer
+ * @param source Source pointer
+ * @param size Number of bytes
+ * @return void* Pointer to the destination
  */
-void* memmove(void* dstptr, const void* srcptr, size_t size);
+void* memmove(void* destination, const void* source, size_t size);
 /**
  * @brief 
  * 

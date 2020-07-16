@@ -26,7 +26,17 @@ extern uint8_t px_rtc_day;    // Current UTC day (not reliable)
 extern uint8_t px_rtc_month;  // Current UTC month
 extern uint32_t px_rtc_year;  // Current UTC year
 
+/**
+ * @brief Initializes the Real Time Clock driver
+ * for the x86_64 architecture.
+ * 
+ */
 void px_rtc_init();
+/**
+ * @brief Prints the current time as specified by
+ * the platforms Real Time Clock.
+ * 
+ */
 void px_rtc_print();
 
 #endif /* PANIX_RTC_CPP */

@@ -11,7 +11,15 @@
 
 #ifndef PANIX_ASSERT_HPP
 #define PANIX_ASSERT_HPP
-
+/**
+ * @brief Creates an assertion which must be held to be true.
+ * If the assertion passes, nothing happens and the kernel
+ * continue to execute. However, in the even that the assert
+ * fails and the value received is not the expected value,
+ * the kernel will Panic with the message "Assert failed at"
+ * followed by the file, line number, and function.
+ * 
+ */
 #define assert(x) (!(x) ? (PANIC("Assert failed at ")) : (void)0)
 
 #endif /* PANIX_ASSERT_HPP */

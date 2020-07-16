@@ -13,34 +13,38 @@
 /**
  * @brief Sends formatted output to a string using an argument list.
  * 
- * @param buf 
- * @param fmt 
- * @param args 
- * @return int 
+ * @param buf Pointer to a buffer where the result is stored
+ * @param fmt C string that contains a format string
+ * @param args A value identifying a variable arguments list
+ * @return int The total number of character written.
+ * The number of characters not written if negative.
  */
 int px_kvsprintf(char* buf, const char* fmt, va_list args);
 /**
  * @brief Sends formatted output to a string.
  * 
- * @param buf 
- * @param fmt 
- * @param ... 
- * @return int 
+ * @param buf Pointer to a buffer where the result is stored
+ * @param fmt C string that contains a format string
+ * @param ... Sequence of additional arguments
+ * @return int The total number of character written.
+ * The number of characters not written if negative.
  */
 int px_ksprintf(char* buf, const char* fmt, ...);
 /**
  * @brief Sends formatted output to stdout using an argument list.
  * 
- * @param fmt 
- * @param args 
- * @return int 
+ * @param fmt C string that contains a format string
+ * @param args A value identifying a variable arguments list
+ * @return int The total number of character written.
+ * The number of characters not written if negative.
  */
 int px_kvprintf(const char* fmt, va_list args);
 /**
  * @brief Sends formatted output to stdout.
  * 
- * @param fmt 
- * @param ... 
- * @return int 
+ * @param fmt C string that contains a format string
+ * @param ... Sequence of additional arguments
+ * @return int The total number of character written.
+ * The number of characters not written if negative.
  */
 int px_kprintf(const char* fmt, ...);
