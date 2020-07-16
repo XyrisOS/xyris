@@ -13,7 +13,7 @@
 #ifndef PANIX_MEM_HEAP
 #define PANIX_MEM_HEAP
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 #include <lib/linked_list.hpp>
 
 

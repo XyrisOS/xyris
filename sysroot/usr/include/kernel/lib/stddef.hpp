@@ -12,6 +12,7 @@
 #ifndef PANIX_STDDEF_HPP
 #define PANIX_STDDEF_HPP
 
+#define typeof __typeof__
 #define NULL nullptr
 typedef unsigned int    size_t;
 

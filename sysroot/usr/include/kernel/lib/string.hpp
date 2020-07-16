@@ -12,7 +12,7 @@
 #ifndef PANIX_LIB_STRING_HPP
 #define PANIX_LIB_STRING_HPP
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 #include <lib/stddef.hpp>
 
 /**

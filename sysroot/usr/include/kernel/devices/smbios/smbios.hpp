@@ -12,7 +12,7 @@
 #ifndef PANIX_SMBIOS_HPP
 #define PANIX_SMBIOS_HPP
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 #include <lib/stddef.hpp>
 
 // TODO: Need to make a function that will read the info from the SMBIOS into this struct

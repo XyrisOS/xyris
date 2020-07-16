@@ -12,7 +12,7 @@
 #ifndef PANIX_MEM_PAGING
 #define PANIX_MEM_PAGING
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 #include <arch/arch.hpp>
 #include <mem/heap.hpp>
 

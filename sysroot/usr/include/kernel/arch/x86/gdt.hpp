@@ -12,7 +12,7 @@
 #ifndef PANIX_GLOBAL_DESCRIPTOR_TABLE_HPP
 #define PANIX_GLOBAL_DESCRIPTOR_TABLE_HPP
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 
 /**
  * @brief Thanks to the OSDev Wiki for this solution. We had previously

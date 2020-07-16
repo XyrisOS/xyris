@@ -12,7 +12,7 @@
 #ifndef PANIX_DEVICE_SPKR_HPP
 #define PANIX_DEVICE_SPKR_HPP
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 
 /**
  * @brief Plays a given frequency for the provided duration.

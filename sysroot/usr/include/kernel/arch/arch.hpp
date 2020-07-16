@@ -9,7 +9,7 @@
  *
  */
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 
 #ifndef PANIX_ARCH_HPP
 #define PANIX_ARCH_HPP

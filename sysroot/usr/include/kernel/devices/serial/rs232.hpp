@@ -10,7 +10,7 @@
  *
  */
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 
 #define RS_232_COM1 0x3F8
 #define RS_232_COM2 0x2F8

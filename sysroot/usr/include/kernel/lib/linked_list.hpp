@@ -13,7 +13,7 @@
 #ifndef PANIX_LIB_LINKED_LIST
 #define PANIX_LIB_LINKED_LIST
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 
 typedef struct DList {
     DList *next;

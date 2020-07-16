@@ -12,7 +12,7 @@
 #ifndef PANIX_CTYPE_HPP
 #define PANIX_CTYPE_HPP
 
-#include <sys/types.hpp>
+#include <lib/stdint.hpp>
 
 /**
  * @brief Determines whether or not a character
