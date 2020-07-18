@@ -94,7 +94,6 @@ static void px_paging_init_dir() {
     // recursively map the last page table to the page directory
     px_map_kernel_page_table(PAGE_ENTRIES - 1, (px_page_table_t*)&page_dir_phys[0]);
     for (uint32_t i = PAGE_ENTRIES * (PAGE_ENTRIES - 1); i < PAGE_ENTRIES * PAGE_ENTRIES; i++) {
-        bitmap_set_bit(mapped_mem, i);
         bitmap_set_bit(mapped_pages, i);
     }
     // store the physical address of the page directory for quick access
