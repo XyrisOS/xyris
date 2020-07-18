@@ -12,7 +12,7 @@
 #ifndef PANIX_PANIC_HPP
 #define PANIX_PANIC_HPP
 
-#include <lib/stdint.hpp>    // Data type definitions
+#include <stdint.h>    // Data type definitions
 #include <arch/arch.hpp>    // Architecture specific features
 
 // Macros for panic and assert

@@ -12,8 +12,8 @@
 #ifndef PANIX_SMBIOS_HPP
 #define PANIX_SMBIOS_HPP
 
-#include <lib/stdint.hpp>
-#include <lib/stddef.hpp>
+#include <stdint.h>
+#include <stddef.h>
 
 // TODO: Need to make a function that will read the info from the SMBIOS into this struct
 struct SMBIOSEntryPoint {

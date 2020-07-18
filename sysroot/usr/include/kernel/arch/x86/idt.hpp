@@ -12,7 +12,7 @@
 #ifndef PANIX_IDT_HPP
 #define PANIX_IDT_HPP
 
-#include <lib/stdint.hpp>
+#include <stdint.h>
 
 /* Segment selectors */
 #define KERNEL_CS 0x08

@@ -12,7 +12,7 @@
 #ifndef PANIX_I386_TIMER_HPP
 #define PANIX_I386_TIMER_HPP
 
-#include <lib/stdint.hpp>
+#include <stdint.h>
 
 #define TIMER_COMMAND_PORT 0x43
 #define TIMER_DATA_PORT 0x40

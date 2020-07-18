@@ -16,7 +16,7 @@
 #ifndef PANIX_PX_KPRINT_HPP
 #define PANIX_PX_KPRINT_HPP
 
-#include <lib/stdint.hpp>
+#include <stdint.h>
 #include <arch/arch.hpp>
 
 #define VGA_DEFAULT_BACK VGA_Black

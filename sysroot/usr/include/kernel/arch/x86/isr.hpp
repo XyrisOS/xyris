@@ -12,7 +12,7 @@
 #ifndef PANIX_ISR_HPP
 #define PANIX_ISR_HPP
 
-#include <lib/stdint.hpp>
+#include <stdint.h>
 #include <arch/arch.hpp>
 
 /**

@@ -9,7 +9,7 @@
  *
  */
 // System library functions
-#include <lib/stdint.hpp>
+#include <stdint.h>
 #include <sys/panic.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>

@@ -12,8 +12,8 @@
 #ifndef PANIX_LIB_STRING_HPP
 #define PANIX_LIB_STRING_HPP
 
-#include <lib/stdint.hpp>
-#include <lib/stddef.hpp>
+#include <stdint.h>
+#include <stddef.h>
 
 /**
  * @brief Returns the length of a string.

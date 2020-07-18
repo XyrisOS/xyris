@@ -12,7 +12,7 @@
 
 #include <mem/paging.hpp>
 #include <sys/panic.hpp>
-#include <lib/stddef.hpp>
+#include <stddef.h>
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 

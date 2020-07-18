@@ -9,8 +9,8 @@
  * 
  */
 
-#include <lib/stdint.hpp>
-#include <lib/stdarg.hpp>
+#include <stdint.h>
+#include <stdarg.h>
 /**
  * @brief Sends formatted output to a string using an argument list.
  * 
