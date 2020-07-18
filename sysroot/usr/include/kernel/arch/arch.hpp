@@ -9,7 +9,7 @@
  *
  */
 
-#include <sys/types.hpp>
+#include <stdint.h>
 
 #ifndef PANIX_ARCH_HPP
 #define PANIX_ARCH_HPP
@@ -26,6 +26,7 @@ typedef void (*isr_t)(registers_t *);
 /* The primary target for Panix is Intel i686 but GCC
    seems to count i386 as in the same group. Threw them
    both in just to be safe. */
+#include <cpuid.h>
 #include <arch/x86/gdt.hpp>
 #include <arch/x86/idt.hpp>
 #include <arch/x86/isr.hpp>

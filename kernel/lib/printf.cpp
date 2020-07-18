@@ -13,7 +13,7 @@
  * 
  */
 #include <lib/stdio.hpp>
-#include <lib/stdarg.hpp>
+#include <stdarg.h>
 #include <lib/string.hpp>
 #include <devices/tty/tty.hpp>
 
@@ -200,9 +200,9 @@ int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
                 /* h=short=16 bits (signed or unsigned) */
                 else if (flags & PR_16) {
                     if (flags & PR_SG)
-                        num = va_arg(args, short);
+                        num = va_arg(args, int);
                     else
-                        num = va_arg(args, unsigned short);
+                        num = va_arg(args, int);
                 }
                 /* no h nor l: sizeof(int) bits (signed or unsigned) */
                 else {
@@ -238,8 +238,7 @@ OK, I found my mistake. The math here is _always_ unsigned */
                 /* disallow pad-left-with-zeroes for %c */
                 flags &= ~PR_LZ;
                 where--;
-                *where = (unsigned char)va_arg(args,
-                    unsigned char);
+                *where = (unsigned char)va_arg(args, int);
                 actual_wd = 1;
                 goto EMIT2;
             case 's':

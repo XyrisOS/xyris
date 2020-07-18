@@ -91,7 +91,7 @@
 
 #ifndef ASM_FILE
 
-#include <sys/types.hpp>
+#include <stdint.h>
 
 typedef struct multiboot_header
 {

@@ -17,7 +17,7 @@
 #ifndef PANIX_PORT_HPP
 #define PANIX_PORT_HPP
 
-#include <sys/types.hpp>
+#include <stdint.h>
 
 /**
  * @brief Reads a byte (8 bits) off the CPU bus at a given port address
