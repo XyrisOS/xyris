@@ -10,9 +10,11 @@
  *
  */
 
-#include <mem/paging.hpp>
 #include <sys/panic.hpp>
+#include <mem/paging.hpp>
 #include <lib/bitmap.hpp>
+#include <lib/stdio.hpp>
+#include <devices/serial/rs232.hpp>
 #include <stddef.h>
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
@@ -100,6 +102,7 @@ static void px_paging_init_dir() {
 }
 
 static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
+    char dbg[64];
     // Set the page directory entry (pde) and page table entry (pte)
     uint32_t pde = vaddr.page_dir_index;
     uint32_t pte = vaddr.page_table_index;
@@ -116,15 +119,19 @@ static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
         .present = 1,           // The page is present
         .read_write = 1,        // The page has r/w permissions
         .usermode = 0,          // These are kernel pages
-        .frame = paddr >> 12    // The last 12 bits are the frame
+        .frame = paddr >> 12    // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
     bitmap_set_bit(mapped_mem, paddr >> 12);
     bitmap_set_bit(mapped_pages, vaddr.val >> 12);
+    // Print a debug message to serial
+    px_ksprintf(dbg, "mapped 0x%08x to 0x%08x\n", paddr, vaddr.val);
+    px_rs232_print(dbg);
 }
 
 static void px_paging_map_early_mem() {
     px_virtual_address_t a;
+    px_rs232_print("==== MAP EARLY MEM ====\n");
     for (a = VADDR(0); a.val < 0x100000; a.val += PAGE_SIZE) {
         // identity map the early memory
         px_map_kernel_page(a, a.val);
@@ -133,6 +140,7 @@ static void px_paging_map_early_mem() {
 
 static void px_paging_map_hh_kernel() {
     px_virtual_address_t addr;
+    px_rs232_print("==== MAP HH KERNEL ====\n");
     for (addr = VADDR(KERNEL_START); addr.val < KERNEL_END; addr.val += PAGE_SIZE) {
         // map the higher-half kernel in
         px_map_kernel_page(addr, KADDR_TO_PHYS(addr.val));

@@ -115,6 +115,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_rs232_print("\n");
 
     px_kprintf(DBG_WARN "mapping in test pages");
+    px_rs232_print("==== MAP TEST PAGES ====\n");
     
     char test_str[] ="this is a test. please do not panic.";
     char *pages[32];
