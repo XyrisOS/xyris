@@ -18,8 +18,8 @@ uint16_t rs_232_port_base;
 
 static int px_rs232_received();
 static int px_rs232_is_transmit_empty();
-static char px_rs232_read_serial();
-static void px_rs232_write_serial(char c);
+static char px_rs232_read_char();
+static void px_rs232_write_char(char c);
 static void px_rs232_callback(registers_t *regs);
 void px_rs232_init(uint16_t port_num);
 
@@ -31,26 +31,25 @@ static int px_rs232_is_transmit_empty() {
     return px_read_byte(rs_232_port_base + RS_232_LINE_STATUS_REG) & 0x20;
 }
 
-static char px_rs232_read_serial() {
+static char px_rs232_read_char() {
     while (px_rs232_received() == 0);
     return px_read_byte(rs_232_port_base + RS_232_DATA_REG);
 }
 
-static void px_rs232_write_serial(char c) {
+static void px_rs232_write_char(char c) {
     while (px_rs232_is_transmit_empty() == 0);
     px_write_byte(rs_232_port_base + RS_232_DATA_REG, c);
 }
 
 void px_rs232_print(char* str) {
     for (int i = 0; str[i] != 0; i++) {
-        px_rs232_write_serial(str[i]);
+        px_rs232_write_char(str[i]);
     }
-    px_rs232_write_serial('\n');
+    px_rs232_write_char('\n');
 }
 
 static void px_rs232_callback(registers_t *regs) {
-    //if (lineIndex == BUF_SIZE)
-    char str[2] = { px_rs232_read_serial(), '\0' };
+    char str[2] = { px_rs232_read_char(), '\0' };
     if (str[0] == '\r') {
         px_rs232_print("\n");
     }
