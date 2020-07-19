@@ -12,6 +12,7 @@
 
 #include <sys/panic.hpp>
 #include <devices/tty/tty.hpp>
+#include <devices/serial/rs232.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 
@@ -22,20 +23,27 @@ void panic_print_register(registers_t *regs);
 void printPanicScreen(int exception) {
     //px_tty_set_color(VGA_Black, VGA_White);
     px_clear_tty(VGA_Black, VGA_White);
-    px_kprintf(" ________________________\n");
+    char* tag;
+    px_kprintf("");
     if (exception == 13) {
-        px_kprintf("< Wait... That's Illegal >\n");
+        tag = "< Wait... That's Illegal >\n";
     } else {
-        px_kprintf("< OH NO! Panix panicked! >\n");
+        tag = "< OH NO! Panix panicked! >\n";
     }
-    px_kprintf(
+    char cow[256];
+    px_ksprintf(cow,
+        " ________________________\n"
+        "%s"
         " ------------------------\n"
         "        \\   ^__^\n"
         "         \\  (XX)\\_______\n"
         "            (__)\\       )\\/\\\n"
         "                ||----w |\n"
-        "                ||     ||\n"
+        "                ||     ||\n",
+        tag
     );
+    px_kprintf("%s", cow);
+    px_rs232_print(cow);
 }
 
 void panic(int exception) {
