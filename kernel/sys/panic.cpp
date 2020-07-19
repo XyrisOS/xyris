@@ -130,22 +130,22 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     // If we have a page fault, print out page fault info
     if (regs->int_num == 14) {
         // Output an error message.
-        char* real;
-        char* rw;
-        char* loc;
-        char* avail;
-        (present) ? real = "present " : real = "missing ";
-        (rw) ? rw = "reading " : loc = "writing ";
-        (us) ? loc = "user-mode " : loc = "kernel ";
-        (reserved) ? avail = "reserved" : avail = "available";
+        const char* real;
+        const char* rws;
+        const char* uss;
+        const char* avail;
+        real = (present ? "present " : "missing ");
+        rws = (rw ? "reading " : "writing ");
+        uss = (us ? "user-mode " : "kernel ");
+        avail = (reserved ? "reserved" : "available");
         // Now that we assigned all of our string, put together the message
         char msg[128];
         px_ksprintf(
             msg,
             "Page fault (%s%s%s%s) at 0x0x%08X\n",
             real,
-            rw,
-            loc,
+            rws,
+            uss,
             avail,
             faulting_address
         );
