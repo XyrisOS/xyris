@@ -108,8 +108,8 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Now that we're done make a joyful noise
     px_kprintf(DBG_OKAY "Done.\n");
     px_kernel_boot_tone();
+    // Keep the kernel alive.
     while (true) {
-        // Keep the kernel alive.
         asm("hlt");
     }
     PANIC("Kernel terminated unexpectedly!");

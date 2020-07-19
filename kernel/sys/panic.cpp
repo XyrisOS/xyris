@@ -24,14 +24,14 @@ void printPanicScreen(int exception) {
     //px_tty_set_color(VGA_Black, VGA_White);
     px_clear_tty(VGA_Black, VGA_White);
     char* tag;
-    px_kprintf("");
     if (exception == 13) {
         tag = "< Wait... That's Illegal >\n";
     } else {
         tag = "< OH NO! Panix panicked! >\n";
     }
     char cow[256];
-    px_ksprintf(cow,
+    px_ksprintf(
+        cow,
         " ________________________\n"
         "%s"
         " ------------------------\n"
@@ -47,42 +47,15 @@ void printPanicScreen(int exception) {
     px_rs232_print(cow);
 }
 
-void panic(int exception) {
-    // Clear the screen
-    px_clear_tty();
-    // Print the panic cow
-    printPanicScreen(exception);
-    // Get the exception code
-    char* panicCode = (char*) "UNHANDLED EXCEPTION 0x00 - ";
-    char* hex = (char*) "0123456789ABCDEF";
-    panicCode[22] = hex[(exception >> 4) & 0xF];
-    panicCode[23] = hex[exception & 0xF];
-    // Print the code and associated error name
-    char msg[128];
-    px_ksprintf(
-        msg,
-        "\nEXCEPTION CAUGHT IN KERNEL MODE!\n%s\n%s\n",
-        panicCode,
-        px_exception_descriptions[exception]
-    );
-    // Print to VGA and serial
-    px_kprintf("%s", msg);
-    px_rs232_print(msg);
-    // Halt the CPU
-    asm("hlt");
-}
-
 void panic(char* msg, const char *file, uint32_t line, const char *func) {
-    // Clear the screen
-    px_clear_tty();
     // Print the panic cow
     printPanicScreen(0);
     // Print the message passed in on a new line
     char buf[128];
     px_ksprintf(buf, "\n%s\n", msg);
     // Print to VGA and serial
-    px_kprintf("%s", msg);
-    px_rs232_print(msg);
+    px_kprintf("%s", buf);
+    px_rs232_print(buf);
     // Print out file info to describe where crash occured
     panic_print_file(file, line, func);
     // Halt the CPU
@@ -90,8 +63,6 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
 }
 
 void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
-    // Clear the screen
-    px_clear_tty();
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
     char msg[64];
@@ -188,6 +159,7 @@ void panic_print_register(registers_t *regs) {
         regs->err_code, regs->eip, regs->cs, regs->eflags,
         regs->ss
     );
+    // Print to VGA and serial
     px_kprintf("%s", msg);
     px_rs232_print(msg);
 }

@@ -20,13 +20,6 @@
 
 // List of all exceptions and their associated english descriptions
 extern const char* px_exception_descriptions[];
-
-/**
- * @brief Halts kernel execution and prints info about an exception.
- * 
- * @param exception Exception number
- */
-void panic(int exception);
 /**
  * @brief Halts kernel execution and prints provided info.
  * 
