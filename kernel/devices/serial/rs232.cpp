@@ -45,7 +45,6 @@ void px_rs232_print(char* str) {
     for (int i = 0; str[i] != 0; i++) {
         px_rs232_write_char(str[i]);
     }
-    px_rs232_write_char('\n');
 }
 
 static void px_rs232_callback(registers_t *regs) {
@@ -80,6 +79,6 @@ void px_rs232_init(uint16_t com_id) {
         "  / /_/ / __ `/ __ \\/ / |/_/  | | / //_ < \n"
         " / ____/ /_/ / / / / />  <    | |/ /__/ / \n"
         "/_/    \\__,_/_/ /_/_/_/|_|    |___/____/  \n\n\033[0m"
-        "Panix Serial Output Debugger"
+        "Panix Serial Output Debugger\n\n"
     );
 }
