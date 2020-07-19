@@ -100,8 +100,11 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_kprintf(DBG_INFO "%s\n", model);
     // Start the serial debugger
     px_kprintf(DBG_INFO "Starting serial debugger...\n");
+    // Print out the CPU vendor info
     px_rs232_print(vendor);
+    px_rs232_print("\n");
     px_rs232_print(model);
+    px_rs232_print("\n");
     // Now that we're done make a joyful noise
     px_kprintf(DBG_OKAY "Done.\n");
     px_kernel_boot_tone();
