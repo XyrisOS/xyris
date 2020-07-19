@@ -79,7 +79,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
     printPanicScreen(0);
     // Print the message passed in on a new line
     char buf[128];
-    px_ksprintf(buf, "\n%s", msg);
+    px_ksprintf(buf, "\n%s\n", msg);
     // Print to VGA and serial
     px_kprintf("%s", msg);
     px_rs232_print(msg);
