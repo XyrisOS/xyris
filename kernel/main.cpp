@@ -139,7 +139,7 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
         px_kprintf(
             "Memory Lower: \033[95m0x%08X\n\033[0m"
             "Memory Upper: \033[95m0x%08X\n\033[0m"
-            "Total Memory: \033[95m0x%08X\033[0m\n",
+            "Total Memory: \033[95m0x%08X\n\033[0m",
             mb_struct->mem_lower,
             mb_struct->mem_upper,
             (mb_struct->mem_lower + mb_struct->mem_upper)

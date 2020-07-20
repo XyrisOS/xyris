@@ -38,7 +38,7 @@ void printPanicScreen(int exception) {
         "        \\   ^__^\n"
         "         \\  (XX)\\_______\n"
         "            (__)\\       )\\/\\\n"
-        "                ||----w |\n"
+        "             U  ||----w |\n"
         "                ||     ||\n",
         tag
     );
@@ -59,6 +59,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
     // Print out file info to describe where crash occured
     panic_print_file(file, line, func);
     // Halt the CPU
+    asm("cli");
     asm("hlt");
 }
 
@@ -122,6 +123,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     }
     panic_print_file(file, line, func);
     // Halt the CPU
+    asm("cli");
     asm("hlt");
 }
 
