@@ -89,8 +89,10 @@ static bool test_bitmap_find_first_range()
 {
     NEW_BITMAP(bitmap, TEST_BITMAP_BITS);
 
-    bitmap[0] = 0b1100111111;
-    if (!assert_eq(bitmap_find_first_range_clear(bitmap, TEST_BITMAP_BITS, 3), 10)) return false;
+    bitmap[0] = 0xffffffff;
+    bitmap[1] = 0xffffffff;
+    bitmap[2] = 0x7fffffff;
+    if (!assert_eq(bitmap_find_first_range_clear(bitmap, TEST_BITMAP_BITS, 1), 95)) return false;
 
     return true;
 }
@@ -115,10 +117,10 @@ int main()
         printf("running %s...", tests[idx].name);
         if (tests[idx].func()) {
             passed++;
-            printf("passed\n");
+            printf("\033[32mpassed\033[0m\n");
         } else {
             failed++;
-            printf("failed\n");
+            printf("\033[31mfailed\033[0m\n");
         }
     }
 
