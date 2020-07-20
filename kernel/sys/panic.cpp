@@ -129,6 +129,7 @@ void panic_print_file(const char *file, uint32_t line, const char *func) {
     char msg[128];
     px_ksprintf(
         msg,
+        "Crash location may be inaccurate.\n"
         "File: %s\nFunc: %s\nLine: %i\n",
         file,
         func,
