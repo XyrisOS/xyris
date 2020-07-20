@@ -48,6 +48,7 @@ void printPanicScreen(int exception) {
 }
 
 void panic(char* msg, const char *file, uint32_t line, const char *func) {
+    asm("cli");
     // Print the panic cow
     printPanicScreen(0);
     // Print the message passed in on a new line
@@ -59,11 +60,11 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
     // Print out file info to describe where crash occured
     panic_print_file(file, line, func);
     // Halt the CPU
-    asm("cli");
     asm("hlt");
 }
 
 void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
+    asm("cli");
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
     char msg[64];
@@ -123,7 +124,6 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     }
     panic_print_file(file, line, func);
     // Halt the CPU
-    asm("cli");
     asm("hlt");
 }
 
