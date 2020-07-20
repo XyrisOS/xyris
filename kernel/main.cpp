@@ -117,9 +117,11 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
 
 void px_kernel_print_splash() {
     px_clear_tty();
-    px_kprintf("\033[93mWelcome to Panix\n"
-                "Developed by graduates and undergraduates of Cedarville University.\n"
-                "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n\033[0m", __YEAR__);
+    px_kprintf(
+        "\033[93mWelcome to Panix\n"
+        "Developed by graduates and undergraduates of Cedarville University.\n"
+        "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n\033[0m", __YEAR__
+    );
     px_kprintf("Built on %s at %s.\n\n", __DATE__, __TIME__);
 }
 
@@ -135,7 +137,9 @@ void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
     // Print out our memory size information if provided
     if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
         px_kprintf(
-            "Memory Lower: \033[95m0x%08X\n\033[0mMemory Upper: \033[95m0x%08X\n\033[0mTotal Memory: \033[95m0x%08X\033[0m\n",
+            "Memory Lower: \033[95m0x%08X\n\033[0m"
+            "Memory Upper: \033[95m0x%08X\n\033[0m"
+            "Total Memory: \033[95m0x%08X\033[0m\n",
             mb_struct->mem_lower,
             mb_struct->mem_upper,
             (mb_struct->mem_lower + mb_struct->mem_upper)
