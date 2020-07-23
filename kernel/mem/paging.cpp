@@ -199,6 +199,7 @@ void* px_get_new_page(uint32_t size) {
     for (uint32_t i = free_idx; i < free_idx + page_count; i++) {
         uint32_t phys_page_idx = find_next_free_phys_page();
         if (phys_page_idx == SIZE_T_MAX_VALUE) return NULL;
+        // This line crashes on the 8th iteration of the stress test loop in main.
         px_map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
     }
     return (void *)(free_idx * PAGE_SIZE);
