@@ -133,6 +133,13 @@ void px_paging_init(uint32_t num_pages);
  * @return void* Page memory address
  */
 void* px_get_new_page(uint32_t size);
+
+/**
+ * @brief Frees pages starting at a given page address.
+ * 
+ * @param page Starting location of page(s) to be freed
+ * @param size Number of bytes to be freed
+ */
 void  px_free_page(void *page, uint32_t size);
 
 #endif /* PANIX_MEM_PAGING */
