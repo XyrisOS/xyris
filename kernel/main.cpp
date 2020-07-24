@@ -28,14 +28,6 @@
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 
-#define __YEAR_C__ 7
-#define __YEAR__  (\
-                    ((__DATE__)[__YEAR_C__ + 0] - '0') * 1000 + \
-                    ((__DATE__)[__YEAR_C__ + 1] - '0') * 100  + \
-                    ((__DATE__)[__YEAR_C__ + 2] - '0') * 10   + \
-                    ((__DATE__)[__YEAR_C__ + 3] - '0') * 1      \
-                  )
-
 void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
@@ -120,7 +112,13 @@ void px_kernel_print_splash() {
     px_kprintf(
         "\033[93mWelcome to Panix\n"
         "Developed by graduates and undergraduates of Cedarville University.\n"
-        "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n\033[0m", __YEAR__
+        "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n\033[0m",
+        (\
+            ((__DATE__)[7] - '0') * 1000 + \
+            ((__DATE__)[8] - '0') * 100  + \
+            ((__DATE__)[9] - '0') * 10   + \
+            ((__DATE__)[10] - '0') * 1      \
+        )
     );
     px_kprintf("Built on %s at %s.\n\n", __DATE__, __TIME__);
 }
