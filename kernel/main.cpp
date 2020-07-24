@@ -30,9 +30,9 @@
 
 // Used as a magic number for stack smashing protection
 #if UINT32_MAX == UINTPTR_MAX
-#define STACK_CHK_GUARD 0xe2dee396
+#define STACK_CHK_GUARD 0xDEADC0DE
 #else
-#define STACK_CHK_GUARD 0x595e9fbd94fda766
+#define STACK_CHK_GUARD 0xBADBADBADBADBAD1
 #endif
 
 void px_kernel_print_splash();
