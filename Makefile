@@ -34,13 +34,13 @@ GCC_FLAGS = 				\
 	-nodefaultlibs			\
 	-lgcc				\
 	-ffreestanding			\
+	-fstack-protector-all	\
 	-fpermissive			\
 	-fno-use-cxa-atexit		\
 	-fno-builtin			\
 	-fno-rtti			\
 	-fno-exceptions			\
 	-fno-leading-underscore	        \
-	-fno-stack-protector	        \
 	-Wno-write-strings		\
 	-std=c++17
 AS_FLAGS   = --32
