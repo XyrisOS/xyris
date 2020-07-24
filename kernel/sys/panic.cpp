@@ -22,7 +22,7 @@ void panic_print_register(registers_t *regs);
 
 void printPanicScreen(int exception) {
     //px_tty_set_color(VGA_Black, VGA_White);
-    px_clear_tty(VGA_Black, VGA_White);
+    px_tty_clear(VGA_Black, VGA_White);
     char* tag;
     if (exception == 13) {
         tag = "< Wait... That's Illegal >\n";
@@ -151,11 +151,11 @@ void panic_print_register(registers_t *regs) {
     char msg[256];
     px_ksprintf(
         msg,
-        " DS: 0x%08X\n"
-        "EDI: 0x%08X ESI: 0x%08X EBP: 0x%08X ESP: 0x%08X\n"
-        "EAX: 0x%08X EBX: 0x%08X ECX: 0x%08X EDX: 0x%08X\n"
-        "ERR: 0x%08X EIP: 0x%08X  CS: 0x%08X\n"
-        "FLG: 0x%08X  SS: 0x%08X\n\n",
+        "\033[31m DS:\033[0m 0x%08X\n"
+        "\033[31mEDI:\033[0m 0x%08X \033[31mESI:\033[0m 0x%08X \033[31mEBP:\033[0m 0x%08X \033[31mESP:\033[0m 0x%08X\n"
+        "\033[31mEAX:\033[0m 0x%08X \033[31mEBX:\033[0m 0x%08X \033[31mECX:\033[0m 0x%08X \033[31mEDX:\033[0m 0x%08X\n"
+        "\033[31mERR:\033[0m 0x%08X \033[31mEIP:\033[0m 0x%08X \033[31m CS:\033[0m 0x%08X\n"
+        "\033[31mFLG:\033[0m 0x%08X \033[31m SS:\033[0m 0x%08X\n\n",
         regs->ds,
         regs->edi, regs->esi, regs->ebp, regs->esp,
         regs->eax, regs->ebx, regs->ecx, regs->edx,

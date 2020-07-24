@@ -116,7 +116,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
 }
 
 void px_kernel_print_splash() {
-    px_clear_tty();
+    px_tty_clear();
     px_kprintf(
         "\033[93mWelcome to Panix\n"
         "Developed by graduates and undergraduates of Cedarville University.\n"

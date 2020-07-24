@@ -84,16 +84,18 @@ enum px_tty_ansi_color {
 };
 
 /**
- * @brief Prints a single character to the kernel display.
- *
- * @param c Character to be printed.
- */
-void putchar(char c);
-/**
  * @brief Clears the TTY and resets the cursor position.
  *
  */
-void px_clear_tty(px_tty_vga_color fore = VGA_DEFAULT_FORE, px_tty_vga_color back = VGA_DEFAULT_BACK);
+void px_tty_clear(px_tty_vga_color fore = VGA_DEFAULT_FORE, px_tty_vga_color back = VGA_DEFAULT_BACK);
+
+/**
+ * @brief Resets the default TTY background and foreground
+ * colors without clearing the screen.
+ * 
+ */
+void px_tty_reset_defaults();
+
 /**
  * @brief Sets the indicator in the top right corner.
  * Used mostly for debugging interrupts.
@@ -101,5 +103,12 @@ void px_clear_tty(px_tty_vga_color fore = VGA_DEFAULT_FORE, px_tty_vga_color bac
  * @param color Indicator color
  */
 void px_set_indicator(px_tty_vga_color color);
+
+/**
+ * @brief Prints a single character to the kernel display.
+ *
+ * @param c Character to be printed.
+ */
+void putchar(char c);
 
 #endif /* PANIX_px_kprint_HPP */
