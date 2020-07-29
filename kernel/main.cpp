@@ -78,7 +78,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_kbd_init();              // Keyboard
     px_rtc_init();              // Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
-    px_rs232_init(RS_232_COM1);// RS232 Serial
+    px_rs232_init(RS_232_COM1); // RS232 Serial
     // Now that we've initialized our core kernel necessities
     // we can initialize paging.
     // Enable interrupts now that we're out of a critical area
@@ -101,7 +101,26 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_kprintf(DBG_OKAY "Done.\n");
     px_kernel_boot_tone();
     // Keep the kernel alive.
+    px_kprintf("\n");
+    int i = 0;
     while (true) {
+        // Display a spinner to know that we're still running.
+        switch (i) {
+            case 0:
+                px_kprintf("\b|");
+                break;
+            case 1:
+                px_kprintf("\b/");
+                break;
+            case 2:
+                px_kprintf("\b-");
+                break;
+            case 3:
+                px_kprintf("\b\\");
+                i = -1;
+                break;
+        }
+        i++;
         asm("hlt");
     }
     PANIC("Kernel terminated unexpectedly!");
@@ -117,7 +136,7 @@ void px_kernel_print_splash() {
             ((__DATE__)[7] - '0') * 1000 + \
             ((__DATE__)[8] - '0') * 100  + \
             ((__DATE__)[9] - '0') * 10   + \
-            ((__DATE__)[10] - '0') * 1      \
+            ((__DATE__)[10] - '0') * 1     \
         )
     );
     px_kprintf("Built on %s at %s.\n\n", __DATE__, __TIME__);
