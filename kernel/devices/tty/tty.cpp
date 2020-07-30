@@ -41,6 +41,9 @@ uint8_t tty_coords_x = 0;
 uint8_t tty_coords_y = 0;
 px_tty_vga_color color_back = VGA_Black;
 px_tty_vga_color color_fore = VGA_White;
+// Colors set by tty_clear()
+px_tty_vga_color reset_back = VGA_Black;
+px_tty_vga_color reset_fore = VGA_White;
 
 void px_shift_tty_up() {
     // start on the second row
@@ -55,21 +58,30 @@ void px_shift_tty_up() {
     }
 }
 
-void px_clear_tty(px_tty_vga_color fore, px_tty_vga_color back) {
+void px_tty_clear(px_tty_vga_color fore, px_tty_vga_color back) {
     color_fore = fore;
     color_back = back;
-    tty_coords_x = 0;
-    tty_coords_y = 0;
-    // TODO: Do something more efficient than putchar().
-    char c = ' ';
+    reset_fore = fore;
+    reset_back = back;
+    volatile uint16_t* where;
+    uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
+    // For each character in each line of the TTY, set to ' '.
     for (int y = 0; y < X86_TTY_HEIGHT; y++) {
         for (int x = 0; x < X86_TTY_WIDTH; x++) {
-            putchar(c);
+            // This is a direct write to the BIOS TTY memory.
+            // It is much more efficient than calling putchar().
+            where = x86_bios_vga_mem + (y * X86_TTY_WIDTH + x);
+            *where = ' ' | (attrib << 8);
         }
     }
     // Reset the cursor position
     tty_coords_x = 0;
     tty_coords_y = 0;
+}
+
+void px_tty_reset_defaults() {
+    color_back = VGA_DEFAULT_BACK;
+    color_fore = VGA_DEFAULT_FORE;
 }
 
 void px_set_indicator(px_tty_vga_color color) {
@@ -115,8 +127,9 @@ void putchar(char c) {
                 while (ansi_values_index > 0) {
                     ansi_val = POP_VAL();
                     if (ansi_val == 0) {
-                        color_fore = VGA_DEFAULT_FORE;
-                        color_back = VGA_DEFAULT_BACK;
+                        // Reset code will just reset to whatever was specified in tty_clear().
+                        color_fore = reset_fore;
+                        color_back = reset_back;
                     } else if (ansi_val >= ANSI_Black && ansi_val <= ANSI_White) {
                         color_fore = (px_tty_vga_color)px_ansi_vga_table[ansi_val - ANSI_Black];
                     } else if (ansi_val >= (ANSI_Black + 10) && ansi_val <= (ANSI_White + 10)) {
