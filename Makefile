@@ -12,7 +12,7 @@ ATT_SRC  = $(shell find kernel/ -name "*.s")
 HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
 SYSROOT  = sysroot
 
-EMU_ARCH = i386
+EMU_ARCH = x86_64
 
 # Compilers/Assemblers/Linkers
 AS 	= $(shell command -v i686-elf-as 	     || command -v as)

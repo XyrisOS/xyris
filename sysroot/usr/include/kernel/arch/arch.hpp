@@ -32,6 +32,7 @@ typedef void (*isr_t)(registers_t *);
 #include <arch/x86/isr.hpp>
 #include <arch/x86/timer.hpp>
 #include <arch/x86/ports.hpp>
+#include <arch/x86/multiboot.hpp>
 
 /**
  * @brief A structure definining values for every since x86 register.

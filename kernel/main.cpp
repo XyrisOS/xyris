@@ -14,9 +14,8 @@
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
-// Intel i386 architecture
+// Architecture specific code
 #include <arch/arch.hpp>
-#include <gnu/multiboot.hpp>
 // Generic devices
 #include <devices/tty/tty.hpp>
 #include <devices/smbios/smbios.hpp>
