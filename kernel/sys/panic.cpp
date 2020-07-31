@@ -92,8 +92,14 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     panic_print_register(regs);
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
+    #if defined(__i386__) | defined(__i686__)
     uint32_t faulting_address;
     asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
+    #endif
+    #if defined(__amd64__) | defined(__x86_64__)
+    uint64_t faulting_address;
+    asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
+    #endif
     // The error code gives us details of what happened.
     int present = !(regs->err_code & 0x1);   // Page not present
     int rw = regs->err_code & 0x2;           // Write operation?
@@ -149,6 +155,8 @@ void panic_print_register(registers_t *regs) {
     // reset (because it would reset to a black background w/ white text, which
     // is the inverse of what we want.)
     char msg[256];
+
+    #if defined(__i386__) | defined(__i686__)
     px_ksprintf(
         msg,
         "\033[31m DS:\033[0m 0x%08X\n"
@@ -162,6 +170,23 @@ void panic_print_register(registers_t *regs) {
         regs->err_code, regs->eip, regs->cs, regs->eflags,
         regs->ss
     );
+    #endif
+    #if defined(__amd64__) | defined(__x86_64__)
+    // TODO: Update the panic registers to match amd64.
+    px_ksprintf(
+        msg,
+        "\033[31m DS:\033[0m 0x%08X\n"
+        "\033[31mRDI:\033[0m 0x%08X \033[31mRSI:\033[0m 0x%08X \033[31mRBP:\033[0m 0x%08X \033[31mRSP:\033[0m 0x%08X\n"
+        "\033[31mRAX:\033[0m 0x%08X \033[31mRBX:\033[0m 0x%08X \033[31mRCX:\033[0m 0x%08X \033[31mRDX:\033[0m 0x%08X\n"
+        "\033[31mERR:\033[0m 0x%08X \033[31mRIP:\033[0m 0x%08X \033[31m CS:\033[0m 0x%08X\n"
+        "\033[31mFLG:\033[0m 0x%08X \033[31m SS:\033[0m 0x%08X\n\n",
+        regs->ds,
+        regs->rdi, regs->rsi, regs->rbp, regs->rsp,
+        regs->rax, regs->rbx, regs->rcx, regs->rdx,
+        regs->err_code, regs->rip, regs->cs, regs->rflags,
+        regs->ss
+    );
+    #endif
     // Print to VGA and serial
     px_kprintf("%s", msg);
     px_rs232_print(msg);

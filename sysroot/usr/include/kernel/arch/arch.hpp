@@ -69,6 +69,7 @@ typedef struct registers {
     uint64_t r8, r9, r10, r11, r12, r13, r14, r15;      /* General purpose registers */
     uint64_t rip, cs, ds, ss, es, fs, gs;               /* Pointer and segment registers */
     uint64_t rflags, cr0, cr2, cr3, cr4, cr8;           /* Flags and control registers */
+    uint64_t int_num, err_code;                         /* Interrupt number and error code (if applicable) */
 } registers_t;
 
 #endif /* x86_64 */
