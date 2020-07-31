@@ -6,12 +6,13 @@
 # Necessary packages (not including cross compiler)
 # brew / apt install qemu-system-i386 grub-pc:i386 xorriso
 
+.DEFAULT_GOAL := dist/panix32.kernel
+
 # Sources and headers
 CPP_SRC  = $(shell find kernel/ -name "*.cpp")
 ATT_SRC  = $(shell find kernel/ -name "*.s")
 HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
 SYSROOT  = sysroot
-
 EMU_ARCH = x86_64
 
 # Compilers/Assemblers/Linkers
@@ -27,29 +28,28 @@ VBOX	= $(shell command -v VBoxManage		     || echo "Please install Virtualbox")
 # Compiler/Linker flags
 # The -lgcc flag is included because it includes helpful functions used
 # by GCC that would be ineffective to duplicate.
-GCC_FLAGS = 				\
-	-m32				\
-	-g				\
-	-nostartfiles			\
-	-nodefaultlibs			\
-	-lgcc				\
-	-ffreestanding			\
-	-fstack-protector-all	\
-	-fpermissive			\
-	-fno-use-cxa-atexit		\
-	-fno-builtin			\
-	-fno-rtti			\
-	-fno-exceptions			\
-	-fno-leading-underscore	        \
-	-Wno-write-strings		\
+GCC_FLAGS_32 = 							\
+	-m32								\
+	-g									\
+	-nostartfiles						\
+	-nodefaultlibs						\
+	-lgcc								\
+	-ffreestanding						\
+	-fstack-protector-all				\
+	-fpermissive						\
+	-fno-use-cxa-atexit					\
+	-fno-builtin						\
+	-fno-rtti							\
+	-fno-exceptions						\
+	-fno-leading-underscore	        	\
+	-Wno-write-strings					\
 	-std=c++17
-AS_FLAGS   = --32
-LD_FLAGS   = -melf_i386
-KRNL_FLAGS = 					\
-	-D__is_kernel 				\
+AS_FLAGS_32 = --32
+LD_FLAGS_32 = -melf_i386
+KRNL_FLAGS = 							\
 	-I ${SYSROOT}/usr/include/kernel/	
-QEMU_FLAGS =                            \
-        -m 256M                         \
+QEMU_FLAGS =							\
+        -m 4G                           \
         -rtc clock=host                 \
         -vga std                        \
         -serial stdio
@@ -68,24 +68,24 @@ OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 # Compile sources to objects
 obj/%.o: kernel/%.cpp $(HEADERS)
 	$(MAKE) obj_directories
-	$(GCC) $(GCC_FLAGS) $(KRNL_FLAGS) -c -o $@ $<
+	$(GCC) $(GCC_FLAGS_32) $(KRNL_FLAGS) -c -o $@ $<
 
 obj/%.o: kernel/%.s
 	$(MAKE) obj_directories
-	$(AS) $(AS_FLAGS) -o $@ $<
+	$(AS) $(AS_FLAGS_32) -o $@ $<
 
 # Link objects into BIN
-dist/panix.kernel: $(LINKER) $(OBJ)
+dist/panix32.kernel: $(LINKER) $(OBJ)
 	@ mkdir -p dist
-	$(LD) $(LD_FLAGS) -T $< -o $@ $(OBJ)
-	$(OBCP) --only-keep-debug dist/panix.kernel dist/panix.sym
+	$(LD) $(LD_FLAGS_32) -T $< -o $@ $(OBJ)
+	$(OBCP) --only-keep-debug dist/panix32.kernel dist/panix.sym
 
 # Create bootable ISO
-dist/panix.iso: dist/panix.kernel
+dist/panix32.iso: dist/panix32.kernel
 	@ mkdir -p iso/boot/grub
 	@ cp $< iso/boot/
-	@ cp boot/grub.cfg iso/boot/grub/
-	@ $(MKGRUB) -o dist/panix.iso iso
+	@ cp boot/grub32.cfg iso/boot/grub/grub.cfg
+	@ $(MKGRUB) -o dist/panix32.iso iso
 	@ rm -rf iso
 
 # Create object file directories
@@ -95,12 +95,12 @@ obj_directories:
 
 # Run bootable ISO
 .PHONY: run
-run: dist/panix.iso
+run: dist/panix32.iso
 	$(QEMU) 			\
 	-drive format=raw,file=$< 	\
 	$(QEMU_FLAGS)
 
-$(VBOX_VM_FILE): dist/panix.iso
+$(VBOX_VM_FILE): dist/panix32.iso
 	$(shell test -f $(VBOX_VM_FILE))
 	@ echo The shell said $(.SHELLSTATUS)
 ifeq ($(.SHELLSTATUS),"1")
@@ -111,7 +111,7 @@ ifeq ($(.SHELLSTATUS),"1")
 	--audiocontroller sb16 --uart1 0x3f8 4        \
 	--uartmode1 file $(shell pwd)/com1.txt 
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix.iso 
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix32.iso 
 else
 	@ echo "VBox machine already exists"
 endif
@@ -122,7 +122,7 @@ virtualbox: $(VBOX_VM_FILE)
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: debug
-debug: dist/panix.iso
+debug: dist/panix32.iso
 	# Start QEMU with debugger
 	($(QEMU) 			\
 	-S -s 				\
@@ -131,29 +131,21 @@ debug: dist/panix.iso
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(EMU_ARCH) -b add,above
 	# After this start the visual studio debugger
-	# gdb dist/panix.kernel
+	# gdb dist/panix32.kernel
 
 # Install BIN file to local system
-install: dist/panix.kernel
-	sudo cp $< /boot/panix.kernel
+install: dist/panix32.kernel
+	sudo cp $< /boot/panix32.kernel
 
-dist: dist/panix.kernel
+vdi32: dist/panix32.kernel
 	@ echo Building VDI image of Panix...
-	@ qemu-img convert -f raw -O vdi dist/panix.kernel dist/panix.vdi
+	@ qemu-img convert -f raw -O vdi dist/panix32.kernel dist/panix.vdi
 	@ echo Done building VDI image of Panix!
 
+vmdk32: dist/panix32.kernel
 	@ echo "\nBuilding VMDK image of Panix..."
-	@ qemu-img convert -f raw -O vmdk dist/panix.kernel dist/panix.vmdk
+	@ qemu-img convert -f raw -O vmdk dist/panix32.kernel dist/panix.vmdk
 	@ echo Done building VMDK image of Panix!
-
-.PHONY: verify
-verify: dist/panix.kernel
-	$(shell grub-file --is-x86-multiboot $<)
-ifeq ($(.SHELLSTATUS), 1)
-	@ echo Kernel does not have valid multiboot!
-else
-	@ echo Kernel multiboot is valid!
-endif
 
 docs:
 	@ echo Generating docs according to the Doxyfile...
@@ -166,7 +158,10 @@ clean:
 	@ rm -rf obj
 	@ echo Cleaning bin files...
 	@ rm -rf dist/*.kernel
-	@ rm -rf iso
+	@ rm -rf dist/*.sym
+	@ rm -rf dist/*.vdi
+	@ rm -rf dist/*.vmdk
+	@ rm -rf dist/*.iso
 	@ echo "Done cleaning!"
 
 .PHONY: clean-vm
