@@ -11,8 +11,8 @@
  */
 
 #include <sys/panic.hpp>
-#include <devices/tty/tty.hpp>
-#include <devices/serial/rs232.hpp>
+#include <dev/tty/tty.hpp>
+#include <dev/serial/rs232.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 

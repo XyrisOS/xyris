@@ -10,8 +10,8 @@
  */
 
 #include <arch/arch.hpp>
-#include <devices/kbd/kbd.hpp>
-#include <devices/kbd/scode.hpp>
+#include <dev/kbd/kbd.hpp>
+#include <dev/kbd/scode.hpp>
 
 uint8_t px_kbd_scode_buff[256];
 uint8_t px_kbd_scode_buff_pos = 0;

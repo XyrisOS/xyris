@@ -13,7 +13,7 @@
  * @copyright Copyright Keeton Feavel et al (c) 2020
  *
  */
-#include <devices/tty/tty.hpp>
+#include <dev/tty/tty.hpp>
 #include <lib/stdio.hpp>
 #include <stddef.h>
 
