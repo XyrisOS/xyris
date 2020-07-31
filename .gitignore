@@ -37,6 +37,10 @@
 *.raw
 *.elf
 .DS_Store
+
 # Ignore build directories
 obj/
 dist/
+
+# Serial Output
+com1.txt
