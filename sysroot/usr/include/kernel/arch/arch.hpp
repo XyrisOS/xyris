@@ -27,12 +27,12 @@ typedef void (*isr_t)(registers_t *);
    seems to count i386 as in the same group. Threw them
    both in just to be safe. */
 #include <cpuid.h>
-#include <arch/x86/gdt.hpp>
-#include <arch/x86/idt.hpp>
-#include <arch/x86/isr.hpp>
-#include <arch/x86/timer.hpp>
-#include <arch/x86/ports.hpp>
-#include <arch/x86/multiboot.hpp>
+#include <arch/i386/gdt.hpp>
+#include <arch/i386/idt.hpp>
+#include <arch/i386/isr.hpp>
+#include <arch/i386/timer.hpp>
+#include <arch/i386/ports.hpp>
+#include <arch/i386/multiboot.hpp>
 
 /**
  * @brief A structure definining values for every since x86 register.

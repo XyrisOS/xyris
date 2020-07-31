@@ -68,7 +68,7 @@ GCC_FLAGS_32 = 							\
 AS_FLAGS_32 = --32
 # i686 Linker flags
 LD_FLAGS_32 = -m elf_i386
-LD_SCRIPT_32 = kernel/arch/x86/linker.ld
+LD_SCRIPT_32 = kernel/arch/i386/linker.ld
 # Kernel define flags
 KRNL_FLAGS_32 = 						\
 	-I ${SYSROOT}/usr/include/kernel/
@@ -104,7 +104,7 @@ GCC_FLAGS_64 = 							\
 AS_FLAGS_64 = --64
 # i686 Linker flags
 LD_FLAGS_64 = -m elf_x86_64
-LD_SCRIPT_64 = kernel/arch/x86/linker.ld
+LD_SCRIPT_64 = kernel/arch/i386/linker.ld
 # Kernel define flags
 KRNL_FLAGS_64 = 						\
 	-I ${SYSROOT}/usr/include/kernel/

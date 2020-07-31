@@ -79,7 +79,7 @@ extern "C" void __stack_chk_fail(void)
 
 /**
  * @brief This is the Panix kernel entry point. This function is called directly from the
- * assembly written in boot.S located in arch/x86/boot.S.
+ * assembly written in boot.S located in arch/i386/boot.S.
  */
 extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic) {
     // Print the splash screen to show we've booted into the kernel properly.
