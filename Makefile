@@ -3,8 +3,6 @@
 #
 # TODO: Create seperate makefiles as needed and integrate into one makefile
 #
-# Necessary packages (not including cross compiler)
-# brew / apt install qemu-system-i386 grub-pc:i386 xorriso
 
 .DEFAULT_GOAL := dist/panix32.kernel
 
@@ -16,16 +14,20 @@ SYSROOT  = sysroot
 EMU_ARCH = x86_64
 
 # Compilers/Assemblers/Linkers
-AS 	= $(shell command -v i686-elf-as 	     || command -v as)
+AS 		= $(shell command -v i686-elf-as 	     || command -v as)
 GCC  	= $(shell command -v i686-elf-gcc	     || command -v gcc)
 GDB  	= $(shell command -v i686-elf-gdb	     || command -v gdb)
 LD   	= $(shell command -v i686-elf-ld 	     || command -v ld)
-OBCP 	= $(shell command -v i686-elf-objcopy        || command -v objcopy)
-QEMU 	= $(shell command -v qemu-system-$(EMU_ARCH) || echo "Please install qemu")
+OBCP 	= $(shell command -v i686-elf-objcopy    || command -v objcopy)
 MKGRUB 	= $(shell command -v grub-mkrescue	     || echo "You're likely on macOS. Please refer to Installing_GRUB_2_on_OS_X on the OSDev Wiki")
 VBOX	= $(shell command -v VBoxManage		     || echo "Please install Virtualbox")
+QEMU 	= $(shell command -v qemu-system-$(EMU_ARCH) || echo "Please install qemu")
 
-# Compiler/Linker flags
+# **********************************
+# * 32-Bit i686 Architecture Flags *
+# **********************************
+
+# i686 Compiler flags
 # The -lgcc flag is included because it includes helpful functions used
 # by GCC that would be ineffective to duplicate.
 GCC_FLAGS_32 = 							\
@@ -44,23 +46,26 @@ GCC_FLAGS_32 = 							\
 	-fno-leading-underscore	        	\
 	-Wno-write-strings					\
 	-std=c++17
+# i686 Assembler flags
 AS_FLAGS_32 = --32
+# i686 Linker flags
 LD_FLAGS_32 = -melf_i386
+LINKER_SCRIPT = kernel/arch/x86/linker.ld
+# Kernel define flags
 KRNL_FLAGS = 							\
-	-I ${SYSROOT}/usr/include/kernel/	
+	-I ${SYSROOT}/usr/include/kernel/
+# QEMU flags
 QEMU_FLAGS =							\
         -m 4G                           \
         -rtc clock=host                 \
         -vga std                        \
         -serial stdio
+# Virtualbox flags
 VM_NAME=panix-box
 VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
 
-# Linker file
-LINKER = kernel/arch/x86/linker.ld
-
 # All objects
-OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) 	\
+OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC))	\
 	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC))
 # Object directories, mirroring source
 OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
@@ -75,7 +80,7 @@ obj/%.o: kernel/%.s
 	$(AS) $(AS_FLAGS_32) -o $@ $<
 
 # Link objects into BIN
-dist/panix32.kernel: $(LINKER) $(OBJ)
+dist/panix32.kernel: $(LINKER_SCRIPT) $(OBJ)
 	@ mkdir -p dist
 	$(LD) $(LD_FLAGS_32) -T $< -o $@ $(OBJ)
 	$(OBCP) --only-keep-debug dist/panix32.kernel dist/panix.sym
@@ -87,51 +92,6 @@ dist/panix32.iso: dist/panix32.kernel
 	@ cp boot/grub32.cfg iso/boot/grub/grub.cfg
 	@ $(MKGRUB) -o dist/panix32.iso iso
 	@ rm -rf iso
-
-# Create object file directories
-.PHONY: obj_directories
-obj_directories:
-	mkdir -p $(OBJ_DIRS)
-
-# Run bootable ISO
-.PHONY: run
-run: dist/panix32.iso
-	$(QEMU) 			\
-	-drive format=raw,file=$< 	\
-	$(QEMU_FLAGS)
-
-$(VBOX_VM_FILE): dist/panix32.iso
-	$(shell test -f $(VBOX_VM_FILE))
-	@ echo The shell said $(.SHELLSTATUS)
-ifeq ($(.SHELLSTATUS),"1")
-	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/dist
-	$(VBOX) modifyvm $(VM_NAME)                \
-	--memory 256 --ioapic on --cpus 2 --vram 16   \
-	--graphicscontroller vboxvga --boot1 disk     \
-	--audiocontroller sb16 --uart1 0x3f8 4        \
-	--uartmode1 file $(shell pwd)/com1.txt 
-	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix32.iso 
-else
-	@ echo "VBox machine already exists"
-endif
-
-.PHONY: virtualbox
-virtualbox: $(VBOX_VM_FILE)
-	$(VBOX) startvm --putenv --debug $(VM_NAME)
-
-# Open the connection to qemu and load our kernel-object file with symbols
-.PHONY: debug
-debug: dist/panix32.iso
-	# Start QEMU with debugger
-	($(QEMU) 			\
-	-S -s 				\
-	-drive format=raw,file=$< 	\
-	$(QEMU_FLAGS) &)
-	sleep 1
-	wmctrl -xr qemu.Qemu-system-$(EMU_ARCH) -b add,above
-	# After this start the visual studio debugger
-	# gdb dist/panix32.kernel
 
 # Install BIN file to local system
 install: dist/panix32.kernel
@@ -147,6 +107,48 @@ vmdk32: dist/panix32.kernel
 	@ qemu-img convert -f raw -O vmdk dist/panix32.kernel dist/panix.vmdk
 	@ echo Done building VMDK image of Panix!
 
+# Create object file directories
+.PHONY: obj_directories
+obj_directories:
+	mkdir -p $(OBJ_DIRS)
+
+# Run Panix in QEMU
+.PHONY: run
+run: dist/panix32.kernel
+	$(QEMU)						\
+	-kernel dist/panix32.kernel \
+	$(QEMU_FLAGS)
+
+# Create Virtualbox VM
+.PHONY: $(VBOX_VM_FILE)
+vbox-create: dist/panix32.iso
+	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/dist
+	$(VBOX) modifyvm $(VM_NAME)					\
+	--memory 256 --ioapic on --cpus 2 --vram 16	\
+	--graphicscontroller vboxvga --boot1 disk	\
+	--audiocontroller sb16 --uart1 0x3f8 4		\
+	--uartmode1 file $(shell pwd)/com1.txt 
+	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix32.iso 
+
+.PHONY: virtualbox
+vbox: vbox-create
+	$(VBOX) startvm --putenv --debug $(VM_NAME)
+
+# Open the connection to qemu and load our kernel-object file with symbols
+.PHONY: debug
+debug: dist/panix32.iso
+	# Start QEMU with debugger
+	($(QEMU) 			\
+	-S -s 				\
+	-drive format=raw,file=$< 	\
+	$(QEMU_FLAGS) &)
+	sleep 1
+	wmctrl -xr qemu.Qemu-system-$(EMU_ARCH) -b add,above
+	# After this start the visual studio debugger
+	# gdb dist/panix32.kernel
+
+.PHONY: docs
 docs:
 	@ echo Generating docs according to the Doxyfile...
 	@ doxygen ./Doxyfile
