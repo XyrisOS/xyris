@@ -28,6 +28,13 @@
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 
+// Used as a magic number for stack smashing protection
+#if UINT32_MAX == UINTPTR_MAX
+#define STACK_CHK_GUARD 0xDEADC0DE
+#else
+#define STACK_CHK_GUARD 0xBADBADBADBADBAD1
+#endif
+
 void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
@@ -58,6 +65,19 @@ extern "C" void px_call_constructors() {
         // Get the object and call the constructor manually.
         (*i)();
     }
+}
+
+/**
+ * @brief This function is the global handler for all
+ * stack protection. GCC will automatically write the
+ * canary code and use this function as the handler
+ * for when a smashed stack is detected.
+ * 
+ */
+uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
+extern "C" void __stack_chk_fail(void)
+{
+	PANIC("Smashed stack detected.");
 }
 
 /**
