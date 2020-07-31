@@ -6,28 +6,47 @@
 
 .DEFAULT_GOAL := dist/panix32.kernel
 
-# Sources and headers
-CPP_SRC  = $(shell find kernel/ -name "*.cpp")
-ATT_SRC  = $(shell find kernel/ -name "*.s")
-HEADERS  = $(shell find sysroot/usr/include/ -name "*.hpp")
-SYSROOT  = sysroot
-EMU_ARCH = x86_64
+# *****************************
+# * Various Source Code Flags *
+# *****************************
 
-# Compilers/Assemblers/Linkers
-AS 		= $(shell command -v i686-elf-as 	     || command -v as)
-GCC  	= $(shell command -v i686-elf-gcc	     || command -v gcc)
-GDB  	= $(shell command -v i686-elf-gdb	     || command -v gdb)
-LD   	= $(shell command -v i686-elf-ld 	     || command -v ld)
-OBCP 	= $(shell command -v i686-elf-objcopy    || command -v objcopy)
-MKGRUB 	= $(shell command -v grub-mkrescue	     || echo "You're likely on macOS. Please refer to Installing_GRUB_2_on_OS_X on the OSDev Wiki")
-VBOX	= $(shell command -v VBoxManage		     || echo "Please install Virtualbox")
-QEMU 	= $(shell command -v qemu-system-$(EMU_ARCH) || echo "Please install qemu")
+SYSROOT	= sysroot
+INCLUDE = $(SYSROOT)/usr/include
+CPP_SRC = $(shell find kernel/ -name "*.cpp")
+ATT_SRC = $(shell find kernel/ -name "*.s")
+HEADERS = $(shell find $(INCLUDE) -name "*.hpp" -name "*.h")
+# Grub mkrescue is included here since
+# I'm not sure where else it would go
+MKGRUB 	= $(shell command -v grub-mkrescue)
+
+# *********************************
+# * Various Virtual Machine Flags *
+# *********************************
+
+# VM executable locations
+VBOX = $(shell command -v VBoxManage)
+QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
+# QEMU flags
+QEMU_FLAGS =		\
+    -m 4G			\
+    -rtc clock=host	\
+    -vga std		\
+    -serial stdio
+QEMU_ARCH = x86_64
+# Virtualbox flags
+VM_NAME	= panix-box
+VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
 
 # **********************************
 # * 32-Bit i686 Architecture Flags *
 # **********************************
 
-# i686 Compiler flags
+# Compilers/Assemblers/Linkers
+AS_32 	= $(shell command -v i686-elf-as)
+GCC_32  = $(shell command -v i686-elf-gcc)
+GDB_32  = $(shell command -v i686-elf-gdb)
+LD_32   = $(shell command -v i686-elf-ld)
+OBCP_32 = $(shell command -v i686-elf-objcopy)
 # The -lgcc flag is included because it includes helpful functions used
 # by GCC that would be ineffective to duplicate.
 GCC_FLAGS_32 = 							\
@@ -45,24 +64,25 @@ GCC_FLAGS_32 = 							\
 	-fno-exceptions						\
 	-fno-leading-underscore	        	\
 	-Wno-write-strings					\
-	-std=c++17
+	-std=c++2a
 # i686 Assembler flags
 AS_FLAGS_32 = --32
 # i686 Linker flags
 LD_FLAGS_32 = -melf_i386
-LINKER_SCRIPT = kernel/arch/x86/linker.ld
+LD_SCRIPT_32 = kernel/arch/x86/linker.ld
 # Kernel define flags
-KRNL_FLAGS = 							\
+KRNL_FLAGS_32 = 						\
 	-I ${SYSROOT}/usr/include/kernel/
-# QEMU flags
-QEMU_FLAGS =							\
-        -m 4G                           \
-        -rtc clock=host                 \
-        -vga std                        \
-        -serial stdio
-# Virtualbox flags
-VM_NAME=panix-box
-VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
+
+# ************************************
+# * 64-Bit x86_64 Architecture Flags *
+# ************************************
+
+
+
+# ***********************************
+# * Source Code Compilation Targets *
+# ***********************************
 
 # All objects
 OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC))	\
@@ -70,32 +90,37 @@ OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC))	\
 # Object directories, mirroring source
 OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 
+# Create object file directories
+.PHONY: mkdir_obj_dirs
+mkdir_obj_dirs:
+	mkdir -p $(OBJ_DIRS)
+
 # Compile sources to objects
 obj/%.o: kernel/%.cpp $(HEADERS)
-	$(MAKE) obj_directories
-	$(GCC) $(GCC_FLAGS_32) $(KRNL_FLAGS) -c -o $@ $<
+	$(MAKE) mkdir_obj_dirs
+	$(GCC_32) $(GCC_FLAGS_32) $(KRNL_FLAGS_32) -c -o $@ $<
 
 obj/%.o: kernel/%.s
-	$(MAKE) obj_directories
-	$(AS) $(AS_FLAGS_32) -o $@ $<
+	$(MAKE) mkdir_obj_dirs
+	$(AS_32) $(AS_FLAGS_32) -o $@ $<
 
 # Link objects into BIN
-dist/panix32.kernel: $(LINKER_SCRIPT) $(OBJ)
+dist/panix32.kernel: $(LD_SCRIPT_32) $(OBJ)
 	@ mkdir -p dist
-	$(LD) $(LD_FLAGS_32) -T $< -o $@ $(OBJ)
-	$(OBCP) --only-keep-debug dist/panix32.kernel dist/panix.sym
+	$(LD_32) $(LD_FLAGS_32) -T $< -o $@ $(OBJ)
+	$(OBCP_32) --only-keep-debug dist/panix32.kernel dist/panix.sym
+
+# ********************************
+# * Kernel Distribution Creation *
+# ********************************
 
 # Create bootable ISO
-dist/panix32.iso: dist/panix32.kernel
+iso32: dist/panix32.kernel
 	@ mkdir -p iso/boot/grub
 	@ cp $< iso/boot/
 	@ cp boot/grub32.cfg iso/boot/grub/grub.cfg
 	@ $(MKGRUB) -o dist/panix32.iso iso
 	@ rm -rf iso
-
-# Install BIN file to local system
-install: dist/panix32.kernel
-	sudo cp $< /boot/panix32.kernel
 
 vdi32: dist/panix32.kernel
 	@ echo Building VDI image of Panix...
@@ -107,10 +132,9 @@ vmdk32: dist/panix32.kernel
 	@ qemu-img convert -f raw -O vmdk dist/panix32.kernel dist/panix.vmdk
 	@ echo Done building VMDK image of Panix!
 
-# Create object file directories
-.PHONY: obj_directories
-obj_directories:
-	mkdir -p $(OBJ_DIRS)
+# ***************************
+# * Virtual Machine Testing *
+# ***************************
 
 # Run Panix in QEMU
 .PHONY: run
@@ -144,14 +168,22 @@ debug: dist/panix32.iso
 	-drive format=raw,file=$< 	\
 	$(QEMU_FLAGS) &)
 	sleep 1
-	wmctrl -xr qemu.Qemu-system-$(EMU_ARCH) -b add,above
+	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
 	# After this start the visual studio debugger
 	# gdb dist/panix32.kernel
+
+# ************************************
+# * Doxygen Documentation Generation *
+# ************************************
 
 .PHONY: docs
 docs:
 	@ echo Generating docs according to the Doxyfile...
 	@ doxygen ./Doxyfile
+
+# ********************
+# * Cleaning Targets *
+# ********************
 
 # Clear out objects and BIN
 .PHONY: clean
