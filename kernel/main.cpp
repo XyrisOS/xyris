@@ -11,6 +11,8 @@
 // System library functions
 #include <stdint.h>
 #include <sys/panic.hpp>
+#include <lib/string.hpp>
+#include <lib/stdio.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
@@ -22,9 +24,6 @@
 #include <dev/rtc/rtc.hpp>
 #include <dev/spkr/spkr.hpp>
 #include <dev/serial/rs232.hpp>
-// memcpy
-#include <lib/string.hpp>
-#include <lib/stdio.hpp>
 
 // Used as a magic number for stack smashing protection
 #if UINT32_MAX == UINTPTR_MAX
@@ -37,7 +36,7 @@ void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_boot_tone();
-extern uint32_t placement_address;
+
 /**
  * @brief The global constuctor is a necessary step when using
  * global objects which need to be constructed before the main
