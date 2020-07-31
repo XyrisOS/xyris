@@ -18,7 +18,6 @@
 #include <arch/arch.hpp>
 // Generic devices
 #include <dev/tty/tty.hpp>
-#include <dev/smbios/smbios.hpp>
 #include <dev/kbd/kbd.hpp>
 #include <dev/rtc/rtc.hpp>
 #include <dev/spkr/spkr.hpp>
