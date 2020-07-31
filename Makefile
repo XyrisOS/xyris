@@ -4,7 +4,7 @@
 # TODO: Create seperate makefiles as needed and integrate into one makefile
 #
 
-.DEFAULT_GOAL := dist/panix32.kernel
+.DEFAULT_GOAL := i686
 
 # *****************************
 # * Various Source Code Flags *
@@ -44,7 +44,6 @@ VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
 # Compilers/Assemblers/Linkers
 AS_32 	= $(shell command -v i686-elf-as)
 GCC_32  = $(shell command -v i686-elf-gcc)
-GDB_32  = $(shell command -v i686-elf-gdb)
 LD_32   = $(shell command -v i686-elf-ld)
 OBCP_32 = $(shell command -v i686-elf-objcopy)
 # The -lgcc flag is included because it includes helpful functions used
@@ -68,7 +67,7 @@ GCC_FLAGS_32 = 							\
 # i686 Assembler flags
 AS_FLAGS_32 = --32
 # i686 Linker flags
-LD_FLAGS_32 = -melf_i386
+LD_FLAGS_32 = -m elf_i386
 LD_SCRIPT_32 = kernel/arch/x86/linker.ld
 # Kernel define flags
 KRNL_FLAGS_32 = 						\
@@ -78,7 +77,37 @@ KRNL_FLAGS_32 = 						\
 # * 64-Bit x86_64 Architecture Flags *
 # ************************************
 
-
+# Compilers/Assemblers/Linkers
+AS_64 	= $(shell command -v x86_64-elf-as)
+GCC_64  = $(shell command -v x86_64-elf-gcc)
+LD_64   = $(shell command -v x86_64-elf-ld)
+OBCP_64 = $(shell command -v x86_64-elf-objcopy)
+# The -lgcc flag is included because it includes helpful functions used
+# by GCC that would be ineffective to duplicate.
+GCC_FLAGS_64 = 							\
+	-m64								\
+	-g									\
+	-nostartfiles						\
+	-nodefaultlibs						\
+	-lgcc								\
+	-ffreestanding						\
+	-fstack-protector-all				\
+	-fpermissive						\
+	-fno-use-cxa-atexit					\
+	-fno-builtin						\
+	-fno-rtti							\
+	-fno-exceptions						\
+	-fno-leading-underscore	        	\
+	-Wno-write-strings					\
+	-std=c++2a
+# i686 Assembler flags
+AS_FLAGS_64 = --64
+# i686 Linker flags
+LD_FLAGS_64 = -m elf_x86_64
+LD_SCRIPT_64 = kernel/arch/x86/linker.ld
+# Kernel define flags
+KRNL_FLAGS_64 = 						\
+	-I ${SYSROOT}/usr/include/kernel/
 
 # ***********************************
 # * Source Code Compilation Targets *
@@ -95,31 +124,56 @@ OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 mkdir_obj_dirs:
 	mkdir -p $(OBJ_DIRS)
 
-# Compile sources to objects
+# C++ source -> object
 obj/%.o: kernel/%.cpp $(HEADERS)
 	$(MAKE) mkdir_obj_dirs
-	$(GCC_32) $(GCC_FLAGS_32) $(KRNL_FLAGS_32) -c -o $@ $<
+	$(GCC) $(GCC_FLAGS) $(KRNL_FLAGS) -c -o $@ $<
 
+# Assembly source -> object
 obj/%.o: kernel/%.s
 	$(MAKE) mkdir_obj_dirs
-	$(AS_32) $(AS_FLAGS_32) -o $@ $<
+	$(AS) $(AS_FLAGS) -o $@ $<
 
-# Link objects into BIN
-dist/panix32.kernel: $(LD_SCRIPT_32) $(OBJ)
+# Kernel object
+dist/panix.kernel: $(OBJ)
 	@ mkdir -p dist
-	$(LD_32) $(LD_FLAGS_32) -T $< -o $@ $(OBJ)
-	$(OBCP_32) --only-keep-debug dist/panix32.kernel dist/panix.sym
+	$(LD) $(LD_FLAGS) -T $(LD_SCRIPT) -o $@ $(OBJ)
+	$(OBCP) --only-keep-debug dist/panix.kernel dist/panix.sym
+
+# *****************************
+# * Architecture Make Targets *
+# *****************************
+
+# i686 Architecture
+i686: GCC = $(GCC_32)
+i686: GCC_FLAGS = $(GCC_FLAGS_32)
+i686: AS = $(AS_32)
+i686: AS_FLAGS = $(AS_FLAGS_32)
+i686: LD = $(LD_32)
+i686: LD_FLAGS = $(LD_FLAGS_32)
+i686: LD_SCRIPT = $(LD_SCRIPT_32)
+i686: OBCP = $(OBCP_32)
+i686: KRNL_FLAGS = $(KRNL_FLAGS_32)
+i686: dist/panix.kernel
+
+# amd64 Architecture
+amd64: GCC = $(GCC_64)
+amd64: GCC_FLAGS = $(GCC_FLAGS_64)
+amd64: AS = $(AS_64)
+amd64: AS_FLAGS = $(AS_FLAGS_64)
+amd64: KRNL_FLAGS = $(KRNL_FLAGS_64)
+amd64: dist/panix.kernel
 
 # ********************************
 # * Kernel Distribution Creation *
 # ********************************
 
 # Create bootable ISO
-iso32: dist/panix32.kernel
+iso: dist/panix32.kernel
 	@ mkdir -p iso/boot/grub
 	@ cp $< iso/boot/
-	@ cp boot/grub32.cfg iso/boot/grub/grub.cfg
-	@ $(MKGRUB) -o dist/panix32.iso iso
+	@ cp boot/grub.cfg iso/boot/grub/grub.cfg
+	@ $(MKGRUB) -o dist/panix.iso iso
 	@ rm -rf iso
 
 vdi32: dist/panix32.kernel
@@ -138,14 +192,14 @@ vmdk32: dist/panix32.kernel
 
 # Run Panix in QEMU
 .PHONY: run
-run: dist/panix32.kernel
+run: dist/panix.kernel
 	$(QEMU)						\
-	-kernel dist/panix32.kernel \
+	-kernel dist/panix.kernel \
 	$(QEMU_FLAGS)
 
 # Create Virtualbox VM
 .PHONY: $(VBOX_VM_FILE)
-vbox-create: dist/panix32.iso
+vbox-create: dist/panix.iso
 	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/dist
 	$(VBOX) modifyvm $(VM_NAME)					\
 	--memory 256 --ioapic on --cpus 2 --vram 16	\
@@ -161,7 +215,7 @@ vbox: vbox-create
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: debug
-debug: dist/panix32.iso
+debug: dist/panix.iso
 	# Start QEMU with debugger
 	($(QEMU) 			\
 	-S -s 				\
@@ -170,7 +224,7 @@ debug: dist/panix32.iso
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
 	# After this start the visual studio debugger
-	# gdb dist/panix32.kernel
+	# gdb dist/panix.kernel
 
 # ************************************
 # * Doxygen Documentation Generation *
