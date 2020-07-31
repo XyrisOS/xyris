@@ -17,12 +17,12 @@
 // Architecture specific code
 #include <arch/arch.hpp>
 // Generic devices
-#include <devices/tty/tty.hpp>
-#include <devices/smbios/smbios.hpp>
-#include <devices/kbd/kbd.hpp>
-#include <devices/rtc/rtc.hpp>
-#include <devices/spkr/spkr.hpp>
-#include <devices/serial/rs232.hpp>
+#include <dev/tty/tty.hpp>
+#include <dev/smbios/smbios.hpp>
+#include <dev/kbd/kbd.hpp>
+#include <dev/rtc/rtc.hpp>
+#include <dev/spkr/spkr.hpp>
+#include <dev/serial/rs232.hpp>
 // memcpy
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>

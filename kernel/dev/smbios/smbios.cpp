@@ -13,8 +13,8 @@
  * 
  */
 
-#include <devices/smbios/smbios.hpp>
-#include <devices/tty/tty.hpp>
+#include <dev/smbios/smbios.hpp>
+#include <dev/tty/tty.hpp>
 #include <lib/stdio.hpp>
 
 char* px_get_smbios_addr() {
