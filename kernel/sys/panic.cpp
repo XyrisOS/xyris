@@ -96,6 +96,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     uint32_t faulting_address;
     asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
     #endif
+    // Do the same thing but with a 64 bit integer
     #if defined(__amd64__) | defined(__x86_64__)
     uint64_t faulting_address;
     asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
