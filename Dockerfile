@@ -1,6 +1,7 @@
 FROM debian:stable-slim
 RUN apt-get update
 RUN apt-get install -y \
+	--no-install-recommends \
 	build-essential \
 	bison \
 	flex \
@@ -8,7 +9,9 @@ RUN apt-get install -y \
 	libmpc-dev \
 	libmpfr-dev \
 	texinfo \
-	wget
+	wget \
+	&& apt-get clean \
+	&& rm -rf /var/lib/apt/lists/*
 RUN export PREFIX="$HOME/opt/cross" && \
 	export TARGET=i686-elf && \
 	export PATH="$PREFIX/bin:$PATH" && \
@@ -39,5 +42,3 @@ RUN export PREFIX="$HOME/opt/cross" && \
 	rm -rf build-gcc && \
 	rm -rf build-binutils && \
 	export PATH="$HOME/opt/cross/bin:$PATH"
-RUN apt-get clean && \
-	apt autoclean
