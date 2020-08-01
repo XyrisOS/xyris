@@ -1,6 +1,6 @@
 FROM debian:stable-slim
-RUN apt update
-RUN apt install -y \
+RUN apt-get update
+RUN apt-get install -y \
 	build-essential \
 	bison \
 	flex \
@@ -39,5 +39,5 @@ RUN export PREFIX="$HOME/opt/cross" && \
 	rm -rf build-gcc && \
 	rm -rf build-binutils && \
 	export PATH="$HOME/opt/cross/bin:$PATH"
-RUN apt clean && \
+RUN apt-get clean && \
 	apt autoclean
