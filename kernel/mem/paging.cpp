@@ -140,14 +140,24 @@ static inline void px_set_page_dir(uint32_t page_dir) {
 }
 
 static inline void px_paging_enable() {
+    #if defined(__i386__) | defined(__i686__)
     uint32_t cr0;
+    #endif
+    #if defined(__amd64__) | defined(__x86_64__)
+    uint64_t cr0;
+    #endif
     asm volatile("mov %%cr0, %0": "=b"(cr0));
     cr0 |= 0x80000000;
     asm volatile("mov %0, %%cr0":: "b"(cr0));
 }
 
 static inline void px_paging_disable() {
+    #if defined(__i386__) | defined(__i686__)
     uint32_t cr0;
+    #endif
+    #if defined(__amd64__) | defined(__x86_64__)
+    uint64_t cr0;
+    #endif
     asm volatile("mov %%cr0, %0": "=b"(cr0));
     cr0 &= ~(0x80000000U);
     asm volatile("mov %0, %%cr0":: "b"(cr0));
