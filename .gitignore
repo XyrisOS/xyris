@@ -40,3 +40,4 @@
 # Ignore build directories
 obj/
 dist/
+com1.txt
