@@ -4,6 +4,7 @@ RUN apt-get update && \
 	--no-install-recommends \
 	build-essential \
 	bison \
+	ca-certificates \
 	flex \
 	libgmp3-dev \
 	libmpc-dev \
@@ -12,16 +13,16 @@ RUN apt-get update && \
 	wget \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
-RUN export PREFIX="$HOME/opt/cross" && \
-	export TARGET=i686-elf && \
-	export PATH="$PREFIX/bin:$PATH" && \
+ENV PREFIX="/opt/cross"
+RUN export TARGET=i686-elf && \
 	export MAKEFLAGS="-j $(grep -c ^processor /proc/cpuinfo)" && \
+	mkdir -p "$PREFIX" && \
 	mkdir src && \
 	cd src && \
 	wget https://ftp.gnu.org/gnu/binutils/binutils-2.35.tar.gz && \
 	wget https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.gz && \
-	tar -zxvf binutils-2.35.tar.gz && \
-	tar -zxvf gcc-9.3.0.tar.gz && \
+	tar -xf binutils-2.35.tar.gz && \
+	tar -xf gcc-9.3.0.tar.gz && \
 	rm binutils-2.35.tar.gz && \
 	rm gcc-9.3.0.tar.gz && \
 	mkdir build-binutils && \
@@ -40,5 +41,5 @@ RUN export PREFIX="$HOME/opt/cross" && \
 	make install-target-libgcc && \
 	cd .. && \
 	rm -rf build-gcc && \
-	rm -rf build-binutils && \
-	export PATH="$HOME/opt/cross/bin:$PATH"
+	rm -rf build-binutils
+ENV PATH "$PREFIX/bin:$PATH"
