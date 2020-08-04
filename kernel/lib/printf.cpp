@@ -15,7 +15,7 @@
 #include <lib/stdio.hpp>
 #include <stdarg.h>
 #include <lib/string.hpp>
-#include <devices/tty/tty.hpp>
+#include <dev/tty/tty.hpp>
 
 /*****************************************************************************
 Stripped-down printf()

@@ -10,7 +10,7 @@
  */
 
 #include <arch/arch.hpp>
-#include <devices/spkr/spkr.hpp>
+#include <dev/spkr/spkr.hpp>
 
 static void px_spkr_tone(uint32_t freq) {
     uint32_t div;

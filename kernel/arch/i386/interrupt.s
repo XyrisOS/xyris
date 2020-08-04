@@ -29,6 +29,7 @@ isr_common_stub:
     popal
     addl $8, %esp       # Cleans up the pushed error code and pushed ISR number
     iret                # pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
+    # TODO: These irets need to be iretq's when in long mode
 
 # Common IRQ code. Identical to ISR code except for the 'call' 
 # and the 'pop ebx'
@@ -53,6 +54,7 @@ irq_common_stub:
     popal
     addl $8, %esp
     iret
+    # TODO: These irets need to be iretq's when in long mode
 
 # We don't get information about which interrupt was called
 # when the handler is run, so we will need to have a different handler

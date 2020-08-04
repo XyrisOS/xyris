@@ -12,7 +12,7 @@
 #include <sys/panic.hpp>
 #include <arch/arch.hpp>
 #include <lib/stdio.hpp>
-#include <devices/tty/tty.hpp>
+#include <dev/tty/tty.hpp>
 
 // Private array of interrupt handlers
 isr_t interrupt_handlers[256];

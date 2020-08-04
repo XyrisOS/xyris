@@ -11,7 +11,7 @@
 
 #include <arch/arch.hpp>
 #include <lib/stdio.hpp>
-#include <devices/tty/tty.hpp>
+#include <dev/tty/tty.hpp>
 
 idt_gate_t idt[IDT_ENTRIES];
 idt_register_t idt_reg;
@@ -32,6 +32,6 @@ void px_load_idt() {
     idt_reg.base = (uint32_t) &idt;
     idt_reg.limit = IDT_ENTRIES * sizeof(idt_gate_t) - 1;
     /* Don't make the mistake of loading &idt -- always load &idt_reg */
-    asm volatile("lidtl (%0)" : : "r" (&idt_reg));
+    asm volatile("lidt (%0)" : : "r" (&idt_reg) : "memory");
     px_kprintf(DBG_OKAY "Loaded the IDT.\n");
 }

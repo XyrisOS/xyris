@@ -13,6 +13,7 @@
 #define PANIX_MEM_PAGING
 
 #include <stdint.h>
+#include <stddef.h>
 #include <arch/arch.hpp>
 #include <mem/heap.hpp>
 
@@ -131,7 +132,7 @@ void px_paging_init();
  * @param size Page size in bytes
  * @return void* Page memory address
  */
-void* px_get_new_page(uint32_t size);
+void* px_get_new_page(size_t size);
 
 #endif /* PANIX_MEM_PAGING */
 

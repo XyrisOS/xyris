@@ -11,22 +11,19 @@
 // System library functions
 #include <stdint.h>
 #include <sys/panic.hpp>
+#include <lib/string.hpp>
+#include <lib/stdio.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
-// Intel i386 architecture
+// Architecture specific code
 #include <arch/arch.hpp>
-#include <gnu/multiboot.hpp>
 // Generic devices
-#include <devices/tty/tty.hpp>
-#include <devices/smbios/smbios.hpp>
-#include <devices/kbd/kbd.hpp>
-#include <devices/rtc/rtc.hpp>
-#include <devices/spkr/spkr.hpp>
-#include <devices/serial/rs232.hpp>
-// memcpy
-#include <lib/string.hpp>
-#include <lib/stdio.hpp>
+#include <dev/tty/tty.hpp>
+#include <dev/kbd/kbd.hpp>
+#include <dev/rtc/rtc.hpp>
+#include <dev/spkr/spkr.hpp>
+#include <dev/serial/rs232.hpp>
 
 // Used as a magic number for stack smashing protection
 #if UINT32_MAX == UINTPTR_MAX
@@ -39,7 +36,7 @@ void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_boot_tone();
-extern uint32_t placement_address;
+
 /**
  * @brief The global constuctor is a necessary step when using
  * global objects which need to be constructed before the main
@@ -82,7 +79,7 @@ extern "C" void __stack_chk_fail(void)
 
 /**
  * @brief This is the Panix kernel entry point. This function is called directly from the
- * assembly written in boot.S located in arch/x86/boot.S.
+ * assembly written in boot.S located in arch/i386/boot.S.
  */
 extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic) {
     // Print the splash screen to show we've booted into the kernel properly.

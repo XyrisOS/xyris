@@ -55,6 +55,7 @@ jump_usermode:
     pushl 0x8(%ebp)
 
     iret
+    # TODO: This iret need to be an iretq when in long mode
     popl %ebp
     ret
     

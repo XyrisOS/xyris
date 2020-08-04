@@ -10,7 +10,7 @@
  */
 
 #include <arch/arch.hpp>
-#include <devices/serial/rs232.hpp>
+#include <dev/serial/rs232.hpp>
 
 char* lineBuffer[RS_232_BUF_SIZE];
 uint8_t rs_232_line_index;
