@@ -169,21 +169,24 @@ amd64: dist/panix.kernel
 # ********************************
 
 # Create bootable ISO
-iso: dist/panix32.kernel
+.PHONY: iso
+iso: i686
 	@ mkdir -p iso/boot/grub
-	@ cp $< iso/boot/
+	@ cp dist/panix.kernel iso/boot/
 	@ cp boot/grub.cfg iso/boot/grub/grub.cfg
 	@ $(MKGRUB) -o dist/panix.iso iso
 	@ rm -rf iso
 
-vdi32: dist/panix32.kernel
+.PHONY: vdi32
+vdi32: i686
 	@ echo Building VDI image of Panix...
-	@ qemu-img convert -f raw -O vdi dist/panix32.kernel dist/panix.vdi
+	@ qemu-img convert -f raw -O vdi dist/panix.kernel dist/panix.vdi
 	@ echo Done building VDI image of Panix!
 
-vmdk32: dist/panix32.kernel
+.PHONY: vmdk32
+vmdk32: i686
 	@ echo "\nBuilding VMDK image of Panix..."
-	@ qemu-img convert -f raw -O vmdk dist/panix32.kernel dist/panix.vmdk
+	@ qemu-img convert -f raw -O vmdk dist/panix.kernel dist/panix.vmdk
 	@ echo Done building VMDK image of Panix!
 
 # ***************************
@@ -209,7 +212,7 @@ vbox-create: dist/panix.iso
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
 	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix32.iso 
 
-.PHONY: vbox
+.PHONY: vbox-create
 vbox: vbox-create
 	$(VBOX) startvm --putenv --debug $(VM_NAME)
 
