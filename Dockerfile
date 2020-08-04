@@ -19,8 +19,8 @@ RUN export TARGET=i686-elf && \
 	mkdir -p "$PREFIX" && \
 	mkdir src && \
 	cd src && \
-	wget https://ftp.gnu.org/gnu/binutils/binutils-2.35.tar.gz && \
-	wget https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.gz && \
+	wget -nv https://ftp.gnu.org/gnu/binutils/binutils-2.35.tar.gz && \
+	wget -nv https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.gz && \
 	tar -xf binutils-2.35.tar.gz && \
 	tar -xf gcc-9.3.0.tar.gz && \
 	rm binutils-2.35.tar.gz && \
