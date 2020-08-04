@@ -92,15 +92,8 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     panic_print_register(regs);
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
-    #if defined(__i386__) | defined(__i686__)
-    uint32_t faulting_address;
+    size_t faulting_address;
     asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
-    #endif
-    // Do the same thing but with a 64 bit integer
-    #if defined(__amd64__) | defined(__x86_64__)
-    uint64_t faulting_address;
-    asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
-    #endif
     // The error code gives us details of what happened.
     int present = !(regs->err_code & 0x1);   // Page not present
     int rw = regs->err_code & 0x2;           // Write operation?
