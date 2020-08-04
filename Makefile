@@ -48,21 +48,21 @@ LD_32   = $(shell command -v i686-elf-ld)
 OBCP_32 = $(shell command -v i686-elf-objcopy)
 # The -lgcc flag is included because it includes helpful functions used
 # by GCC that would be ineffective to duplicate.
-GCC_FLAGS_32 = 							\
-	-m32								\
-	-g									\
-	-nostartfiles						\
-	-nodefaultlibs						\
-	-lgcc								\
-	-ffreestanding						\
-	-fstack-protector-all				\
-	-fpermissive						\
-	-fno-use-cxa-atexit					\
-	-fno-builtin						\
-	-fno-rtti							\
-	-fno-exceptions						\
-	-fno-leading-underscore	        	\
-	-Wno-write-strings					\
+GCC_FLAGS_32 =              \
+	-m32                    \
+	-g                      \
+	-nostartfiles           \
+	-nodefaultlibs          \
+	-lgcc                   \
+	-ffreestanding          \
+	-fstack-protector-all   \
+	-fpermissive            \
+	-fno-use-cxa-atexit     \
+	-fno-builtin            \
+	-fno-rtti               \
+	-fno-exceptions         \
+	-fno-leading-underscore \
+	-Wno-write-strings      \
 	-std=c++2a
 # i686 Assembler flags
 AS_FLAGS_32 = --32
@@ -70,7 +70,7 @@ AS_FLAGS_32 = --32
 LD_FLAGS_32 = -m elf_i386
 LD_SCRIPT_32 = kernel/arch/i386/linker.ld
 # Kernel define flags
-KRNL_FLAGS_32 = 						\
+KRNL_FLAGS_32 = \
 	-I ${SYSROOT}/usr/include/kernel/
 
 # ************************************
@@ -84,21 +84,21 @@ LD_64   = $(shell command -v x86_64-elf-ld)
 OBCP_64 = $(shell command -v x86_64-elf-objcopy)
 # The -lgcc flag is included because it includes helpful functions used
 # by GCC that would be ineffective to duplicate.
-GCC_FLAGS_64 = 							\
-	-m64								\
-	-g									\
-	-nostartfiles						\
-	-nodefaultlibs						\
-	-lgcc								\
-	-ffreestanding						\
-	-fstack-protector-all				\
-	-fpermissive						\
-	-fno-use-cxa-atexit					\
-	-fno-builtin						\
-	-fno-rtti							\
-	-fno-exceptions						\
-	-fno-leading-underscore	        	\
-	-Wno-write-strings					\
+GCC_FLAGS_64 =              \
+	-m64                    \
+	-g                      \
+	-nostartfiles           \
+	-nodefaultlibs          \
+	-lgcc                   \
+	-ffreestanding          \
+	-fstack-protector-all   \
+	-fpermissive            \
+	-fno-use-cxa-atexit     \
+	-fno-builtin            \
+	-fno-rtti               \
+	-fno-exceptions         \
+	-fno-leading-underscore \
+	-Wno-write-strings      \
 	-std=c++2a
 # i686 Assembler flags
 AS_FLAGS_64 = --64
@@ -106,7 +106,7 @@ AS_FLAGS_64 = --64
 LD_FLAGS_64 = -m elf_x86_64
 LD_SCRIPT_64 = kernel/arch/i386/linker.ld
 # Kernel define flags
-KRNL_FLAGS_64 = 						\
+KRNL_FLAGS_64 = \
 	-I ${SYSROOT}/usr/include/kernel/
 
 # ***********************************
@@ -193,23 +193,23 @@ vmdk32: dist/panix32.kernel
 # Run Panix in QEMU
 .PHONY: run
 run: dist/panix.kernel
-	$(QEMU)						\
-	-kernel dist/panix.kernel \
+	$(QEMU)                     \
+	-kernel dist/panix.kernel   \
 	$(QEMU_FLAGS)
 
 # Create Virtualbox VM
-.PHONY: $(VBOX_VM_FILE)
+.PHONY: vbox-create
 vbox-create: dist/panix.iso
 	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/dist
-	$(VBOX) modifyvm $(VM_NAME)					\
-	--memory 256 --ioapic on --cpus 2 --vram 16	\
-	--graphicscontroller vboxvga --boot1 disk	\
-	--audiocontroller sb16 --uart1 0x3f8 4		\
+	$(VBOX) modifyvm $(VM_NAME)                 \
+	--memory 256 --ioapic on --cpus 2 --vram 16 \
+	--graphicscontroller vboxvga --boot1 disk   \
+	--audiocontroller sb16 --uart1 0x3f8 4      \
 	--uartmode1 file $(shell pwd)/com1.txt 
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
 	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix32.iso 
 
-.PHONY: virtualbox
+.PHONY: vbox
 vbox: vbox-create
 	$(VBOX) startvm --putenv --debug $(VM_NAME)
 
@@ -217,9 +217,9 @@ vbox: vbox-create
 .PHONY: debug
 debug: dist/panix.iso
 	# Start QEMU with debugger
-	($(QEMU) 			\
-	-S -s 				\
-	-drive format=raw,file=$< 	\
+	($(QEMU)                    \
+	-S -s                       \
+	-drive format=raw,file=$<   \
 	$(QEMU_FLAGS) &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
