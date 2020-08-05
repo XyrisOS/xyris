@@ -21,7 +21,6 @@ void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(registers_t *regs);
 
 void printPanicScreen(int exception) {
-    //px_tty_set_color(VGA_Black, VGA_White);
     px_tty_clear(VGA_Black, VGA_White);
     char* tag;
     if (exception == 13) {
