@@ -218,11 +218,11 @@ vbox: vbox-create
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: debug
-debug: dist/panix.iso
+debug: dist/panix.kernel
 	# Start QEMU with debugger
-	($(QEMU)                    \
-	-S -s                       \
-	-drive format=raw,file=$<   \
+	($(QEMU)            \
+	-S -s               \
+	-kernel $<          \
 	$(QEMU_FLAGS) &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
