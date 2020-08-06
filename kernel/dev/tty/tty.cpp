@@ -164,10 +164,25 @@ int putchar(char c) {
             else if (c == 's') { // Save cursor position attribute
                 ansi_cursor_x = tty_coords_x;
                 ansi_cursor_y = tty_coords_y;
+                // Return to normal
+                ansi_state = Normal;
+                ansi_val = 0;
             } 
             else if (c == 'u') { // Restore cursor position attribute
                 tty_coords_x = ansi_cursor_x;
                 tty_coords_y = ansi_cursor_y;
+                // Return to normal
+                ansi_state = Normal;
+                ansi_val = 0;
+            }
+            else if (c == 'J') { // Clear screen attribute
+                // The proper code is ESC[2J
+                if (ansi_val == 2) {
+                    px_tty_clear();
+                }
+                // Return to normal
+                ansi_state = Normal;
+                ansi_val = 0;
             } else if (c >= '0' && c <= '9') { // just another digit of a value
                 ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
             } else break; // invald code, so just return to normal

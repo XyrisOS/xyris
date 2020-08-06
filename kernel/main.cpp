@@ -127,19 +127,15 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
         switch (i) {
             case 0:
                 px_kprintf("\033[s\033[%i;%iH\b|\033[u", X86_IND_Y, X86_IND_X);
-                //px_kprintf("\b|");
                 break;
             case 1:
                 px_kprintf("\033[s\033[%i;%iH\b/\033[u", X86_IND_Y, X86_IND_X);
-                //px_kprintf("\b/");
                 break;
             case 2:
                 px_kprintf("\033[s\033[%i;%iH\b-\033[u", X86_IND_Y, X86_IND_X);
-                //px_kprintf("\b-");
                 break;
             case 3:
                 px_kprintf("\033[s\033[%i;%iH\b\\\033[u", X86_IND_Y, X86_IND_X);
-                //px_kprintf("\b\\");
                 i = -1;
                 break;
         }
