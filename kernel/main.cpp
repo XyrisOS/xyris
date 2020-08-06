@@ -118,22 +118,25 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_kprintf(DBG_OKAY "Done.\n");
     px_kernel_boot_tone();
     // Keep the kernel alive.
-    px_kprintf("\n");
     int i = 0;
     while (true) {
         // Display a spinner to know that we're still running.
         switch (i) {
             case 0:
-                px_kprintf("\b|");
+                px_kprintf("\033[%i;%iH\b|", X86_IND_Y, X86_IND_X);
+                //px_kprintf("\b|");
                 break;
             case 1:
-                px_kprintf("\b/");
+                px_kprintf("\033[%i;%iH\b/", X86_IND_Y, X86_IND_X);
+                //px_kprintf("\b/");
                 break;
             case 2:
-                px_kprintf("\b-");
+                px_kprintf("\033[%i;%iH\b-", X86_IND_Y, X86_IND_X);
+                //px_kprintf("\b-");
                 break;
             case 3:
-                px_kprintf("\b\\");
+                px_kprintf("\033[%i;%iH\b\\", X86_IND_Y, X86_IND_X);
+                //px_kprintf("\b\\");
                 i = -1;
                 break;
         }

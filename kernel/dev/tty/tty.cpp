@@ -96,21 +96,21 @@ static size_t ansi_values_index = 0;
 #define PUSH_VAL(VAL) ansi_values[ansi_values_index++] = (VAL)
 #define POP_VAL() ansi_values[--ansi_values_index]
 
-void putchar(char c) {
+int putchar(char c) {
     switch (ansi_state) {
         case Normal: // print the character out normally unless it's an ESC
             if (c != ESC) break;
             ansi_state = Esc;
-            return;
+            return c;
         case Esc: // we got an ESC, now we need a left square bracket
             if (c != '[') break;
             ansi_state = Bracket;
-            return;
+            return c;
         case Bracket: // we're looking for a value/command char now
             if (c >= '0' && c <= '9') {
                 ansi_val = (uint16_t)(c - '0');
                 ansi_state = Value;
-                return;
+                return c;
             }
             // handle any other control codes here
             break;
@@ -142,11 +142,27 @@ void putchar(char c) {
                 }
                 ansi_state = Normal;
                 ansi_val = 0;
+            } else if (c == 'H' || c == 'f') { // The cursor position attribute
+                PUSH_VAL(ansi_val);
+                // take action here
+                // iterate through all values
+                // the proper order is 'line (y);column (x)'
+                while (ansi_values_index > 0) {
+                    ansi_val = POP_VAL();
+                    // If we only have one item in the stack now (i.e. line is done)
+                    if (ansi_values_index == 1) {
+                        tty_coords_x = ansi_val;
+                    } else {
+                        tty_coords_y = ansi_val;
+                    }
+                }
+                ansi_state = Normal;
+                ansi_val = 0;
             } else if (c >= '0' && c <= '9') { // just another digit of a value
                 ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
             } else break; // invald code, so just return to normal
             // we hit one of the cases so return
-            return;
+            return c;
     }
     // we fell through some way or another so just reset to Normal no matter what
     ansi_state = Normal;
@@ -188,4 +204,21 @@ void putchar(char c) {
         tty_coords_x = 0;
         tty_coords_y = X86_TTY_HEIGHT - 1;
     }
+    return c;
+}
+
+int puts(const char *str) {
+    int i = 0;
+    // Loops until a null character
+    while(str[i]) {
+        if(putchar(str[i]) == EOF) { 
+            return EOF;
+        }
+        i++;
+    }
+    if(putchar('\n') == EOF) {
+       return EOF;
+    }
+    // Follow POSIX spec
+    return 1;
 }

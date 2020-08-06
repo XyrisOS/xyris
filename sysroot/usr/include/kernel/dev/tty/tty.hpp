@@ -54,7 +54,6 @@ enum px_tty_vga_color {
     VGA_Yellow          = 14,
     VGA_White           = 15
 };
-
 /**
  * @brief ANSI color codes for use in functions
  * like px_kprintf(). However, the real printing
@@ -82,20 +81,17 @@ enum px_tty_ansi_color {
     ANSI_BrightCyan     = 96,
     ANSI_BrightWhite    = 97
 };
-
 /**
  * @brief Clears the TTY and resets the cursor position.
  *
  */
 void px_tty_clear(px_tty_vga_color fore = VGA_DEFAULT_FORE, px_tty_vga_color back = VGA_DEFAULT_BACK);
-
 /**
  * @brief Resets the default TTY background and foreground
  * colors without clearing the screen.
  * 
  */
 void px_tty_reset_defaults();
-
 /**
  * @brief Sets the indicator in the top right corner.
  * Used mostly for debugging interrupts.
@@ -103,12 +99,17 @@ void px_tty_reset_defaults();
  * @param color Indicator color
  */
 void px_set_indicator(px_tty_vga_color color);
-
 /**
  * @brief Prints a single character to the kernel display.
  *
  * @param c Character to be printed.
  */
-void putchar(char c);
+int putchar(char c);
+/**
+ * @brief Prints a given string to the kernel display.
+ * 
+ * @param str String to be printed.
+ */
+int puts(const char *str);
 
 #endif /* PANIX_px_kprint_HPP */
