@@ -114,7 +114,16 @@ int putchar(char c) {
                 ansi_state = Value;
                 return c;
             }
-            // handle any other control codes here
+            else if (c == 's') { // Save cursor position attribute
+                ansi_cursor_x = tty_coords_x;
+                ansi_cursor_y = tty_coords_y;
+                return c;
+            } 
+            else if (c == 'u') { // Restore cursor position attribute
+                tty_coords_x = ansi_cursor_x;
+                tty_coords_y = ansi_cursor_y;
+                return c;
+            }
             break;
         case Value:
             if (c == ';') { // the semicolon is a value separator
@@ -158,20 +167,6 @@ int putchar(char c) {
                         tty_coords_y = ansi_val;
                     }
                 }
-                ansi_state = Normal;
-                ansi_val = 0;
-            }
-            else if (c == 's') { // Save cursor position attribute
-                ansi_cursor_x = tty_coords_x;
-                ansi_cursor_y = tty_coords_y;
-                // Return to normal
-                ansi_state = Normal;
-                ansi_val = 0;
-            } 
-            else if (c == 'u') { // Restore cursor position attribute
-                tty_coords_x = ansi_cursor_x;
-                tty_coords_y = ansi_cursor_y;
-                // Return to normal
                 ansi_state = Normal;
                 ansi_val = 0;
             }
