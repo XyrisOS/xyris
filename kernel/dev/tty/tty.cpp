@@ -39,6 +39,8 @@ uint16_t ansi_val = 0;
 
 uint8_t tty_coords_x = 0;
 uint8_t tty_coords_y = 0;
+uint8_t ansi_cursor_x = 0;
+uint8_t ansi_cursor_y = 0;
 px_tty_vga_color color_back = VGA_Black;
 px_tty_vga_color color_fore = VGA_White;
 // Colors set by tty_clear()
@@ -120,7 +122,7 @@ int putchar(char c) {
                 PUSH_VAL(ansi_val);
                 ansi_state = Bracket;
                 ansi_val = 0;
-            } else if (c == 'm') { // the color/text attributes command
+            } else if (c == 'm') { // Set color/text attributes command
                 PUSH_VAL(ansi_val);
                 // take action here
                 // iterate through all values
@@ -142,7 +144,7 @@ int putchar(char c) {
                 }
                 ansi_state = Normal;
                 ansi_val = 0;
-            } else if (c == 'H' || c == 'f') { // The cursor position attribute
+            } else if (c == 'H' || c == 'f') { // Set cursor position attribute
                 PUSH_VAL(ansi_val);
                 // take action here
                 // iterate through all values
@@ -158,6 +160,14 @@ int putchar(char c) {
                 }
                 ansi_state = Normal;
                 ansi_val = 0;
+            }
+            else if (c == 's') { // Save cursor position attribute
+                ansi_cursor_x = tty_coords_x;
+                ansi_cursor_y = tty_coords_y;
+            } 
+            else if (c == 'u') { // Restore cursor position attribute
+                tty_coords_x = ansi_cursor_x;
+                tty_coords_y = ansi_cursor_y;
             } else if (c >= '0' && c <= '9') { // just another digit of a value
                 ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
             } else break; // invald code, so just return to normal

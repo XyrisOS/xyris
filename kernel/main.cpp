@@ -121,21 +121,24 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     int i = 0;
     while (true) {
         // Display a spinner to know that we're still running.
+        // Each line will save the cursor position, change it
+        // to the top right corner (-1) and then restore the
+        // cursor position (to the saved location).
         switch (i) {
             case 0:
-                px_kprintf("\033[%i;%iH\b|", X86_IND_Y, X86_IND_X);
+                px_kprintf("\033[s\033[%i;%iH\b|\033[u", X86_IND_Y, X86_IND_X);
                 //px_kprintf("\b|");
                 break;
             case 1:
-                px_kprintf("\033[%i;%iH\b/", X86_IND_Y, X86_IND_X);
+                px_kprintf("\033[s\033[%i;%iH\b/\033[u", X86_IND_Y, X86_IND_X);
                 //px_kprintf("\b/");
                 break;
             case 2:
-                px_kprintf("\033[%i;%iH\b-", X86_IND_Y, X86_IND_X);
+                px_kprintf("\033[s\033[%i;%iH\b-\033[u", X86_IND_Y, X86_IND_X);
                 //px_kprintf("\b-");
                 break;
             case 3:
-                px_kprintf("\033[%i;%iH\b\\", X86_IND_Y, X86_IND_X);
+                px_kprintf("\033[s\033[%i;%iH\b\\\033[u", X86_IND_Y, X86_IND_X);
                 //px_kprintf("\b\\");
                 i = -1;
                 break;
