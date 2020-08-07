@@ -23,9 +23,6 @@ MKGRUB 	= $(shell command -v grub-mkrescue)
 # * Various Virtual Machine Flags *
 # *********************************
 
-# VM executable locations
-VBOX = $(shell command -v VBoxManage)
-QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 # QEMU flags
 QEMU_FLAGS =		\
     -m 4G			\
@@ -36,6 +33,9 @@ QEMU_ARCH = x86_64
 # Virtualbox flags
 VM_NAME	= panix-box
 VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
+# VM executable locations
+VBOX = $(shell command -v VBoxManage)
+QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # **********************************
 # * 32-Bit i686 Architecture Flags *

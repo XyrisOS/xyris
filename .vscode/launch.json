@@ -11,7 +11,7 @@
             "program": "${workspaceRoot}/dist/panix.kernel",
             "cwd": "${workspaceRoot}",
             "args": [],
-            "targetArchitecture": "x86",
+            "targetArchitecture": "x64",
             "MIMode": "gdb",
             "customLaunchSetupCommands": [
                 {
@@ -20,17 +20,10 @@
                 }
             ],
             "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "text": "file ${workspaceRoot}/dist/panix.kernel",
-                    "description": "Load binary."
-                }
+                { "text": "set arch i386:x86-64:intel"},
+                { "text": "-enable-pretty-printing" },
+                { "text": "file ${workspaceRoot}/dist/panix.kernel" }
             ],
-            //"preLaunchTask": "Debug QEMU"
         }
     ]
 }
