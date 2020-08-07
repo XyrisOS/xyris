@@ -170,7 +170,7 @@ amd64: dist/panix.kernel
 
 # Create bootable ISO
 .PHONY: iso
-iso: i686
+iso32: i686
 	@ mkdir -p iso/boot/grub
 	@ cp dist/panix.kernel iso/boot/
 	@ cp boot/grub.cfg iso/boot/grub/grub.cfg
