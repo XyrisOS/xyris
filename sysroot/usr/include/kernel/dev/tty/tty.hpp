@@ -81,6 +81,20 @@ enum px_tty_ansi_color {
     ANSI_BrightCyan     = 96,
     ANSI_BrightWhite    = 97
 };
+// Coorinate trackers
+extern uint8_t tty_coords_x;
+extern uint8_t tty_coords_y;
+// VGA colors (defaults are white on black)
+extern px_tty_vga_color color_back;
+extern px_tty_vga_color color_fore;
+// Default colors set by tty_clear()
+extern px_tty_vga_color reset_back;
+extern px_tty_vga_color reset_fore;
+/**
+ * @brief Shifts the entire TTY screen up by one line.
+ * 
+ */
+void px_shift_tty_up();
 /**
  * @brief Clears the TTY and resets the cursor position.
  *
@@ -99,17 +113,5 @@ void px_tty_reset_defaults();
  * @param color Indicator color
  */
 void px_set_indicator(px_tty_vga_color color);
-/**
- * @brief Prints a single character to the kernel display.
- *
- * @param c Character to be printed.
- */
-int putchar(char c);
-/**
- * @brief Prints a given string to the kernel display.
- * 
- * @param str String to be printed.
- */
-int puts(const char *str);
 
 #endif /* PANIX_px_kprint_HPP */
