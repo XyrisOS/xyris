@@ -97,8 +97,13 @@ static uint16_t ansi_values[8] = { 0 };
 static size_t ansi_values_index = 0;
 #define PUSH_VAL(VAL) ansi_values[ansi_values_index++] = (VAL)
 #define POP_VAL() ansi_values[--ansi_values_index]
+#define CLEAR_VALS() ansi_values_index = 0
 
 int putchar(char c) {
+    // Moved to avoid cross initialization when calling goto error
+    volatile uint16_t* where;
+    uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
+    // Check the ANSI state
     switch (ansi_state) {
         case Normal: // print the character out normally unless it's an ESC
             if (c != ESC) break;
@@ -155,29 +160,18 @@ int putchar(char c) {
                 ansi_val = 0;
             } else if (c == 'H' || c == 'f') { // Set cursor position attribute
                 PUSH_VAL(ansi_val);
-                // take action here
-                // iterate through all values
                 // the proper order is 'line (y);column (x)'
-                while (ansi_values_index > 0) {
-                    ansi_val = POP_VAL();
-                    // If we only have one item in the stack now (i.e. line is done)
-                    if (ansi_values_index == 1) {
-                        tty_coords_x = ansi_val;
-                    } else {
-                        tty_coords_y = ansi_val;
-                    }
+                if (ansi_values_index > 2) {
+                    goto error;
                 }
-                ansi_state = Normal;
-                ansi_val = 0;
+                tty_coords_x = POP_VAL();
+                tty_coords_y = POP_VAL();
             }
             else if (c == 'J') { // Clear screen attribute
                 // The proper code is ESC[2J
                 if (ansi_val == 2) {
                     px_tty_clear();
                 }
-                // Return to normal
-                ansi_state = Normal;
-                ansi_val = 0;
             } else if (c >= '0' && c <= '9') { // just another digit of a value
                 ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
             } else break; // invald code, so just return to normal
@@ -186,8 +180,6 @@ int putchar(char c) {
     }
     // we fell through some way or another so just reset to Normal no matter what
     ansi_state = Normal;
-    volatile uint16_t* where;
-    uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
     switch(c) {
         // Backspace
         case 0x08:
@@ -225,6 +217,13 @@ int putchar(char c) {
         tty_coords_y = X86_TTY_HEIGHT - 1;
     }
     return c;
+error:
+    // Reset stack index
+    CLEAR_VALS();
+    // Return to normal
+    ansi_state = Normal;
+    ansi_val = 0;
+    return EOF;
 }
 
 int puts(const char *str) {
