@@ -195,7 +195,7 @@ vmdk32: i686
 
 # Run Panix in QEMU
 .PHONY: run
-run: dist/panix.kernel
+run: i686
 	$(QEMU)                     \
 	-kernel dist/panix.kernel   \
 	$(QEMU_FLAGS)
