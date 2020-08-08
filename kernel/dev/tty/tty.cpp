@@ -169,9 +169,10 @@ int putchar(char c) {
             }
             else if (c == 'J') { // Clear screen attribute
                 // The proper code is ESC[2J
-                if (ansi_val == 2) {
-                    px_tty_clear();
+                if (ansi_val != 2) {
+                    goto error;
                 }
+                px_tty_clear();
             } else if (c >= '0' && c <= '9') { // just another digit of a value
                 ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
             } else break; // invald code, so just return to normal
