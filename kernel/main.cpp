@@ -121,9 +121,6 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     int i = 0;
     while (true) {
         // Display a spinner to know that we're still running.
-        // Each line will save the cursor position, change it
-        // to the top right corner (-1) and then restore the
-        // cursor position (to the saved location).
         switch (i) {
             case 0:
                 px_kprintf("\b|");
