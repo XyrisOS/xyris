@@ -108,26 +108,26 @@ int putchar(char c) {
         case Normal: // print the character out normally unless it's an ESC
             if (c != ESC) break;
             ansi_state = Esc;
-            return c;
+            goto end;
         case Esc: // we got an ESC, now we need a left square bracket
             if (c != '[') break;
             ansi_state = Bracket;
-            return c;
+            goto end;
         case Bracket: // we're looking for a value/command char now
             if (c >= '0' && c <= '9') {
                 ansi_val = (uint16_t)(c - '0');
                 ansi_state = Value;
-                return c;
+                goto end;
             }
             else if (c == 's') { // Save cursor position attribute
                 ansi_cursor_x = tty_coords_x;
                 ansi_cursor_y = tty_coords_y;
-                return c;
+                goto end;
             } 
             else if (c == 'u') { // Restore cursor position attribute
                 tty_coords_x = ansi_cursor_x;
                 tty_coords_y = ansi_cursor_y;
-                return c;
+                goto end;
             }
             break;
         case Value:
@@ -177,7 +177,7 @@ int putchar(char c) {
                 ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
             } else break; // invald code, so just return to normal
             // we hit one of the cases so return
-            return c;
+            goto end;
     }
     // we fell through some way or another so just reset to Normal no matter what
     ansi_state = Normal;
@@ -217,7 +217,7 @@ int putchar(char c) {
         tty_coords_x = 0;
         tty_coords_y = X86_TTY_HEIGHT - 1;
     }
-    return c;
+    goto end;
 error:
     // Reset stack index
     CLEAR_VALS();
@@ -225,6 +225,8 @@ error:
     ansi_state = Normal;
     ansi_val = 0;
     return EOF;
+end:
+    return (int)c;
 }
 
 int puts(const char *str) {
