@@ -11,6 +11,11 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+
+#ifndef EOF
+#define EOF (-1)
+#endif
+
 /**
  * @brief Sends formatted output to a string using an argument list.
  * 

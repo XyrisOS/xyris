@@ -39,6 +39,8 @@ uint16_t ansi_val = 0;
 
 uint8_t tty_coords_x = 0;
 uint8_t tty_coords_y = 0;
+uint8_t ansi_cursor_x = 0;
+uint8_t ansi_cursor_y = 0;
 px_tty_vga_color color_back = VGA_Black;
 px_tty_vga_color color_fore = VGA_White;
 // Colors set by tty_clear()
@@ -95,24 +97,38 @@ static uint16_t ansi_values[8] = { 0 };
 static size_t ansi_values_index = 0;
 #define PUSH_VAL(VAL) ansi_values[ansi_values_index++] = (VAL)
 #define POP_VAL() ansi_values[--ansi_values_index]
+#define CLEAR_VALS() ansi_values_index = 0
 
-void putchar(char c) {
+int putchar(char c) {
+    // Moved to avoid cross initialization when calling goto error
+    volatile uint16_t* where;
+    uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
+    // Check the ANSI state
     switch (ansi_state) {
         case Normal: // print the character out normally unless it's an ESC
             if (c != ESC) break;
             ansi_state = Esc;
-            return;
+            goto end;
         case Esc: // we got an ESC, now we need a left square bracket
             if (c != '[') break;
             ansi_state = Bracket;
-            return;
+            goto end;
         case Bracket: // we're looking for a value/command char now
             if (c >= '0' && c <= '9') {
                 ansi_val = (uint16_t)(c - '0');
                 ansi_state = Value;
-                return;
+                goto end;
             }
-            // handle any other control codes here
+            else if (c == 's') { // Save cursor position attribute
+                ansi_cursor_x = tty_coords_x;
+                ansi_cursor_y = tty_coords_y;
+                goto end;
+            } 
+            else if (c == 'u') { // Restore cursor position attribute
+                tty_coords_x = ansi_cursor_x;
+                tty_coords_y = ansi_cursor_y;
+                goto end;
+            }
             break;
         case Value:
             if (c == ';') { // the semicolon is a value separator
@@ -120,7 +136,7 @@ void putchar(char c) {
                 PUSH_VAL(ansi_val);
                 ansi_state = Bracket;
                 ansi_val = 0;
-            } else if (c == 'm') { // the color/text attributes command
+            } else if (c == 'm') { // Set color/text attributes command
                 PUSH_VAL(ansi_val);
                 // take action here
                 // iterate through all values
@@ -142,16 +158,29 @@ void putchar(char c) {
                 }
                 ansi_state = Normal;
                 ansi_val = 0;
+            } else if (c == 'H' || c == 'f') { // Set cursor position attribute
+                PUSH_VAL(ansi_val);
+                // the proper order is 'line (y);column (x)'
+                if (ansi_values_index > 2) {
+                    goto error;
+                }
+                tty_coords_x = POP_VAL();
+                tty_coords_y = POP_VAL();
+            }
+            else if (c == 'J') { // Clear screen attribute
+                // The proper code is ESC[2J
+                if (ansi_val != 2) {
+                    goto error;
+                }
+                px_tty_clear();
             } else if (c >= '0' && c <= '9') { // just another digit of a value
                 ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
             } else break; // invald code, so just return to normal
             // we hit one of the cases so return
-            return;
+            goto end;
     }
     // we fell through some way or another so just reset to Normal no matter what
     ansi_state = Normal;
-    volatile uint16_t* where;
-    uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
     switch(c) {
         // Backspace
         case 0x08:
@@ -188,4 +217,30 @@ void putchar(char c) {
         tty_coords_x = 0;
         tty_coords_y = X86_TTY_HEIGHT - 1;
     }
+    goto end;
+error:
+    // Reset stack index
+    CLEAR_VALS();
+    // Return to normal
+    ansi_state = Normal;
+    ansi_val = 0;
+    return EOF;
+end:
+    return (int)c;
+}
+
+int puts(const char *str) {
+    int i = 0;
+    // Loops until a null character
+    while(str[i]) {
+        if(putchar(str[i]) == EOF) { 
+            return EOF;
+        }
+        i++;
+    }
+    if(putchar('\n') == EOF) {
+       return EOF;
+    }
+    // Follow POSIX spec
+    return 1;
 }
