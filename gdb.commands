@@ -1,5 +1,5 @@
 target remote localhost:1234
-file dist/panix.kernel
+file dist/kernel
 break px_kernel_main
 set disassembly-flavor intel
 layout asm

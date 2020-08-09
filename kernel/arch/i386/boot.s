@@ -122,7 +122,7 @@ _start:
 	stosb
 
 	# adjust the stack in to the virtual area
-	# setup and adjust the stack 
+	# setup and adjust the stack
 	movl  $(stack + STACK_SIZE), %esp
 
 	pushl multiboot_magic               # Multiboot magic number
@@ -132,7 +132,7 @@ _start:
     call px_kernel_main
     # By this point we should be into the wild world of C++
     # So, this should never be called unless the kernel returns
-    _start.catchfire: 
+    _start.catchfire:
 	hlt
 	jmp _start.catchfire
 
@@ -140,23 +140,23 @@ _start:
 .align 4096
 page_directory:       # should also be page aligned (hopefully)
 	.space 1024*4      # reserve 1024 DWORDs for our page table pointers
-lowmem_pt: 
-	.space 1024*4      # lowmem identity mappings 
-kernel_pt: 
-	.space 1024*4      # our kernel page table mappings 
+lowmem_pt:
+	.space 1024*4      # lowmem identity mappings
+kernel_pt:
+	.space 1024*4      # our kernel page table mappings
 pages_pt:
         .space 1024*4      # a page table that maps pages that contain page tables
 
 .section .early_data, "aw", @nobits
-multiboot_magic: 
+multiboot_magic:
 	.long 0
-multiboot_info: 
+multiboot_info:
 	.long 0
 
 .section .bss, "aw", @nobits
 .align 4
-stack: 
+stack:
 	.space STACK_SIZE
 
-/* vim: ft=gas : 
+/* vim: ft=gas :
 */

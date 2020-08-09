@@ -135,10 +135,10 @@ obj/%.o: kernel/%.s
 	$(AS) $(AS_FLAGS) -o $@ $<
 
 # Kernel object
-dist/panix.kernel: $(OBJ)
+dist/kernel: $(OBJ)
 	@ mkdir -p dist
 	$(LD) $(LD_FLAGS) -T $(LD_SCRIPT) -o $@ $(OBJ)
-	$(OBCP) --only-keep-debug dist/panix.kernel dist/panix.sym
+	$(OBCP) --only-keep-debug dist/kernel dist/panix.sym
 
 # *****************************
 # * Architecture Make Targets *
@@ -154,7 +154,7 @@ i686: LD_FLAGS = $(LD_FLAGS_32)
 i686: LD_SCRIPT = $(LD_SCRIPT_32)
 i686: OBCP = $(OBCP_32)
 i686: KRNL_FLAGS = $(KRNL_FLAGS_32)
-i686: dist/panix.kernel
+i686: dist/kernel
 
 # amd64 Architecture
 amd64: GCC = $(GCC_64)
@@ -162,7 +162,7 @@ amd64: GCC_FLAGS = $(GCC_FLAGS_64)
 amd64: AS = $(AS_64)
 amd64: AS_FLAGS = $(AS_FLAGS_64)
 amd64: KRNL_FLAGS = $(KRNL_FLAGS_64)
-amd64: dist/panix.kernel
+amd64: dist/kernel
 
 # ********************************
 # * Kernel Distribution Creation *
@@ -172,7 +172,7 @@ amd64: dist/panix.kernel
 .PHONY: iso
 iso32: i686
 	@ mkdir -p iso/boot/grub
-	@ cp dist/panix.kernel iso/boot/
+	@ cp dist/kernel iso/boot/
 	@ cp boot/grub.cfg iso/boot/grub/grub.cfg
 	@ $(MKGRUB) -o dist/panix.iso iso
 	@ rm -rf iso
@@ -180,13 +180,13 @@ iso32: i686
 .PHONY: vdi32
 vdi32: i686
 	@ echo Building VDI image of Panix...
-	@ qemu-img convert -f raw -O vdi dist/panix.kernel dist/panix.vdi
+	@ qemu-img convert -f raw -O vdi dist/kernel dist/panix.vdi
 	@ echo Done building VDI image of Panix!
 
 .PHONY: vmdk32
 vmdk32: i686
 	@ echo "\nBuilding VMDK image of Panix..."
-	@ qemu-img convert -f raw -O vmdk dist/panix.kernel dist/panix.vmdk
+	@ qemu-img convert -f raw -O vmdk dist/kernel dist/panix.vmdk
 	@ echo Done building VMDK image of Panix!
 
 # ***************************
@@ -197,7 +197,7 @@ vmdk32: i686
 .PHONY: run
 run: i686
 	$(QEMU)                     \
-	-kernel dist/panix.kernel   \
+	-kernel dist/kernel   \
 	$(QEMU_FLAGS)
 
 # Create Virtualbox VM
@@ -208,9 +208,9 @@ vbox-create: dist/panix.iso
 	--memory 256 --ioapic on --cpus 2 --vram 16 \
 	--graphicscontroller vboxvga --boot1 disk   \
 	--audiocontroller sb16 --uart1 0x3f8 4      \
-	--uartmode1 file $(shell pwd)/com1.txt 
+	--uartmode1 file $(shell pwd)/com1.txt
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix32.iso 
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix32.iso
 
 .PHONY: vbox-create
 vbox: vbox-create
@@ -218,7 +218,7 @@ vbox: vbox-create
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: debug
-debug: dist/panix.kernel
+debug: dist/kernel
 	# Start QEMU with debugger
 	($(QEMU)            \
 	-S -s               \
@@ -227,7 +227,7 @@ debug: dist/panix.kernel
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
 	# After this start the visual studio debugger
-	# gdb dist/panix.kernel
+	# gdb dist/kernel
 
 # ************************************
 # * Doxygen Documentation Generation *
@@ -248,11 +248,7 @@ clean:
 	@ echo Cleaning obj directory...
 	@ rm -rf obj
 	@ echo Cleaning bin files...
-	@ rm -rf dist/*.kernel
-	@ rm -rf dist/*.sym
-	@ rm -rf dist/*.vdi
-	@ rm -rf dist/*.vmdk
-	@ rm -rf dist/*.iso
+	@ rm -rf dist/*
 	@ echo "Done cleaning!"
 
 .PHONY: clean-vm
