@@ -11,6 +11,7 @@
  */
 
 #include <sys/panic.hpp>
+#include <sys/trace.hpp>
 #include <dev/tty/tty.hpp>
 #include <dev/serial/rs232.hpp>
 #include <lib/string.hpp>
@@ -58,6 +59,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
     px_rs232_print(buf);
     // Print out file info to describe where crash occured
     panic_print_file(file, line, func);
+    px_stack_trace(10);
     // Halt the CPU
     asm("hlt");
 }
@@ -122,6 +124,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         px_rs232_print(msg);
     }
     panic_print_file(file, line, func);
+    px_stack_trace(10);
     // Halt the CPU
     asm("hlt");
 }

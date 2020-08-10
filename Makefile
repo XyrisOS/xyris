@@ -13,9 +13,9 @@ GIT_VERSION   := "$(shell git describe --abbrev=4 --dirty --always --tags)"
 
 SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
-CPP_SRC = $(shell find kernel/ -name "*.cpp")
-ATT_SRC = $(shell find kernel/ -name "*.s")
-HEADERS = $(shell find $(INCLUDE) -name "*.hpp" -name "*.h")
+CPP_SRC = $(shell find kernel -name "*.cpp")
+ATT_SRC = $(shell find kernel -name "*.s")
+HEADERS = $(shell find $(INCLUDE) -name "*.hpp")
 # Grub mkrescue is included here since
 # I'm not sure where else it would go
 MKGRUB 	= $(shell command -v grub-mkrescue)
@@ -72,6 +72,7 @@ GCC_FLAGS_32 =              \
 	-fno-rtti               \
 	-fno-exceptions         \
 	-fno-leading-underscore \
+	-fno-omit-frame-pointer \
 	-Wno-write-strings      \
 	-std=c++2a
 # i686 Assembler flags
