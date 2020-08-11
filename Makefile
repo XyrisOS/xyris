@@ -99,7 +99,7 @@ GCC_FLAGS_64 =              \
 	-fno-exceptions         \
 	-fno-leading-underscore \
 	-Wno-write-strings      \
-	-std=c++2a
+	-std=c++20
 # i686 Assembler flags
 AS_FLAGS_64 = --64
 # i686 Linker flags
