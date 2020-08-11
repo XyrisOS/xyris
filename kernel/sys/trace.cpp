@@ -11,13 +11,14 @@
 
 #include <sys/trace.hpp>
 #include <lib/stdio.hpp>
+#include <arch/arch.hpp>
 
-void px_stack_trace(unsigned int max) {
+void px_stack_trace(size_t max) {
     // Define our stack
     struct stackframe *stk;
-    asm volatile("movl %%ebp,%0" : "=r"(stk) ::);
+    asm volatile("movl %%ebp, %0" : "=r"(stk) ::);
     px_kprintf("\nStack trace:\n");
-    for(unsigned int frame = 0; stk && frame < max; ++frame) {
+    for (size_t frame = 0; stk != NULL && frame < max; ++frame) {
         // Unwind to previous stack frame
         px_kprintf("0x%08X\n", stk->eip);
         stk = stk->ebp;

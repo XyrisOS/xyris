@@ -12,9 +12,8 @@
 #ifndef PANIX_SYS_TRACE_HPP
 #define PANIX_SYS_TRACE_HPP
 
-#include <stdint.h>
-#include <arch/arch.hpp>
+#include <stddef.h>
 
-void px_stack_trace(unsigned int max);
+void px_stack_trace(size_t max);
 
 #endif /* PANIX_SYS_TRACE_HPP */

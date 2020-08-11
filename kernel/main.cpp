@@ -158,7 +158,6 @@ void px_kernel_print_splash() {
 }
 
 void px_kernel_boot_tone() {
-    int i = 0 / 0;
     // Beep beep!
     px_spkr_beep(1000, 50);
     sleep(100);

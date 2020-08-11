@@ -59,7 +59,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
     px_rs232_print(buf);
     // Print out file info to describe where crash occured
     panic_print_file(file, line, func);
-    px_stack_trace(10);
+    px_stack_trace(16);
     // Halt the CPU
     asm("hlt");
 }
@@ -124,7 +124,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         px_rs232_print(msg);
     }
     panic_print_file(file, line, func);
-    px_stack_trace(10);
+    px_stack_trace(16);
     // Halt the CPU
     asm("hlt");
 }
