@@ -19,7 +19,7 @@ void px_stack_trace(size_t max) {
     struct stackframe *stk;
     asm volatile("movl %%ebp, %0" : "=r"(stk) ::);
     px_kprintf("\033[0;%iH \033[31mStack trace:\033[0m\n", (X86_TTY_WIDTH - 16));
-    px_rs232_print("\nStack trace:\n");
+    px_rs232_print("\n\033[31mStack trace:\033[0m\n");
     char buf[32];
     for (size_t frame = 0; stk != NULL && frame < max; ++frame) {
         // Unwind to previous stack frame
