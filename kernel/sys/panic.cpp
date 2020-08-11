@@ -150,7 +150,7 @@ void panic_print_register(registers_t *regs) {
     // colors each time (to print the numbers in back) since I can't just call
     // reset (because it would reset to a black background w/ white text, which
     // is the inverse of what we want.)
-    char msg[256];
+    char msg[512];
 
     #if defined(__i386__) | defined(__i686__)
     px_ksprintf(
