@@ -5,6 +5,7 @@
 #
 
 .DEFAULT_GOAL := i686
+GIT_VERSION   := "$(shell git describe --abbrev=4 --dirty --always --tags)"
 
 # *****************************
 # * Various Source Code Flags *
@@ -71,7 +72,8 @@ LD_FLAGS_32 = -m elf_i386
 LD_SCRIPT_32 = kernel/arch/i386/linker.ld
 # Kernel define flags
 KRNL_FLAGS_32 = \
-	-I ${SYSROOT}/usr/include/kernel/
+	-I ${SYSROOT}/usr/include/kernel/ \
+	-D VERSION=\"$(GIT_VERSION)\"
 
 # ************************************
 # * 64-Bit x86_64 Architecture Flags *
@@ -107,7 +109,8 @@ LD_FLAGS_64 = -m elf_x86_64
 LD_SCRIPT_64 = kernel/arch/i386/linker.ld
 # Kernel define flags
 KRNL_FLAGS_64 = \
-	-I ${SYSROOT}/usr/include/kernel/
+	-I ${SYSROOT}/usr/include/kernel/ \
+	-D VERSION=\"$(GIT_VERSION)\"
 
 # ***********************************
 # * Source Code Compilation Targets *
