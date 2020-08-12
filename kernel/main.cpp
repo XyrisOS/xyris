@@ -31,14 +31,12 @@
 #else
 #define STACK_CHK_GUARD 0xBADBADBADBADBAD1
 #endif
-
+// Define the Git commit version if not declared by compiler
 #ifndef VERSION
 #define VERSION "unknown"
 #endif
 
 void px_kernel_print_splash();
-void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
-void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_boot_tone();
 
 /**
@@ -88,18 +86,15 @@ extern "C" void __stack_chk_fail(void)
 extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic) {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
-    // Panix requires a multiboot header, so panic if not provided
-    px_kernel_check_multiboot(mb_struct);
     // Install the GDT
     px_interrupts_disable();
-    px_gdt_install();
-    px_isr_install();           // Interrupt Service Requests
-    // px_heap_init((uint32_t)&_EARLY_KMALLOC_START, (uint32_t)&_EARLY_KMALLOC_END);             // Early kernel memory allocation
+    px_gdt_install();           // Initialize the Global Descriptor Table
+    px_isr_install();           // Initialize Interrupt Service Requests
     px_paging_init();           // Initialize paging service
-    px_kbd_init();              // Keyboard
-    px_rtc_init();              // Real Time Clock
+    px_kbd_init();              // Initialize PS/2 Keyboard
+    px_rtc_init();              // Initialize Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
-    px_rs232_init(RS_232_COM1); // RS232 Serial
+    px_rs232_init(RS_232_COM1); // Initialize RS232 Serial output
     // Now that we've initialized our core kernel necessities
     // we can initialize paging.
     // Enable interrupts now that we're out of a critical area
@@ -160,48 +155,6 @@ void px_kernel_print_splash() {
         )
     );
     px_kprintf("Commit %s built on %s at %s.\n\n", VERSION, __DATE__, __TIME__);
-}
-
-void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
-    if (mb_struct == nullptr) {
-        PANIC("Multiboot info missing. Please use a Multiboot compliant bootloader (like GRUB).");
-    }
-    // Print multiboot information
-    px_kernel_print_multiboot(mb_struct);
-}
-
-void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
-    // Print out our memory size information if provided
-    if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
-        px_kprintf(
-            "Memory Lower: \033[95m0x%08X\n\033[0m"
-            "Memory Upper: \033[95m0x%08X\n\033[0m"
-            "Total Memory: \033[95m0x%08X\n\033[0m",
-            mb_struct->mem_lower,
-            mb_struct->mem_upper,
-            (mb_struct->mem_lower + mb_struct->mem_upper)
-        );
-    }
-    // Print out our memory map if provided
-    if (mb_struct->flags & MULTIBOOT_INFO_MEM_MAP) {
-        uint32_t *mem_info_ptr = (uint32_t *)mb_struct->mmap_addr;
-        // While there are still entries in the memory map
-        while (mem_info_ptr < (uint32_t *)(mb_struct->mmap_addr + mb_struct->mmap_length)) {
-            multiboot_memory_map_t *curr = (multiboot_memory_map_t *)mem_info_ptr;
-            // If the length of the current map entry is not empty
-            if (curr->len > 0) {
-                // Print out the memory map information
-                px_kprintf("\n[0x%08X-0x%08X] ", curr->addr, (curr->addr + curr->len));
-                // Print out if the entry is available or reserved
-                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprintf("Available") : px_kprintf("Reserved");
-            } else {
-                px_kprintf("\033[91mMissing!\033[0m");
-            }
-            // Increment the curr pointer to the next entry
-            mem_info_ptr += curr->size + sizeof(curr->size);
-        }
-    }
-    px_kprintf("\n\n");
 }
 
 void px_kernel_boot_tone() {

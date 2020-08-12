@@ -9,6 +9,7 @@
  * 
  */
 #include <arch/arch.hpp>
+#include <lib/stdio.hpp>
 
 const char* px_exception_descriptions[] = {
     "Divide-By-Zero", "Debugging", "Non-Maskable", "Breakpoint",
@@ -60,4 +61,57 @@ const char* const px_cpu_get_model() {
     px_arch_cpuid(0x80000003, (int *)(model+16));
     px_arch_cpuid(0x80000004, (int *)(model+32));
 	return model;
+}
+
+/**
+ * @brief Checks if a Multiboot header has been passed into the kernel
+ * by the bootloader. Should be called before calling any other
+ * multiboot related functions.
+ * 
+ * @param mb_struct Multiboot header structure
+ */
+void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
+    if (mb_struct == nullptr) {
+        px_kprintf("Multiboot info missing!\n");
+    }
+}
+
+/**
+ * @brief Prints out the memory map provided by the Multiboot header
+ * passed into the kernel by a Multiboot compliant bootloader
+ * 
+ * @param mb_struct Multiboot header structure
+ */
+void px_kernel_print_multiboot_memmap(const multiboot_info_t* mb_struct) {
+    // Print out our memory size information if provided
+    if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
+        px_kprintf(
+            "Memory Lower: \033[95m0x%08X\n\033[0m"
+            "Memory Upper: \033[95m0x%08X\n\033[0m"
+            "Total Memory: \033[95m0x%08X\n\033[0m",
+            mb_struct->mem_lower,
+            mb_struct->mem_upper,
+            (mb_struct->mem_lower + mb_struct->mem_upper)
+        );
+    }
+    // Print out our memory map if provided
+    if (mb_struct->flags & MULTIBOOT_INFO_MEM_MAP) {
+        uint32_t *mem_info_ptr = (uint32_t *)mb_struct->mmap_addr;
+        // While there are still entries in the memory map
+        while (mem_info_ptr < (uint32_t *)(mb_struct->mmap_addr + mb_struct->mmap_length)) {
+            multiboot_memory_map_t *curr = (multiboot_memory_map_t *)mem_info_ptr;
+            // If the length of the current map entry is not empty
+            if (curr->len > 0) {
+                // Print out the memory map information
+                px_kprintf("\n[0x%08X-0x%08X] ", curr->addr, (curr->addr + curr->len));
+                // Print out if the entry is available or reserved
+                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprintf("Available") : px_kprintf("Reserved");
+            } else {
+                px_kprintf("\033[91mMissing!\033[0m");
+            }
+            // Increment the curr pointer to the next entry
+            mem_info_ptr += curr->size + sizeof(curr->size);
+        }
+    }
+    px_kprintf("\n\n");
 }

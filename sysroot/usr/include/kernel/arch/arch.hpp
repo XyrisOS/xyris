@@ -43,6 +43,13 @@ extern const char* px_exception_descriptions[];
 #define X86_IND_Y       0
 inline uint16_t* x86_bios_vga_mem = (uint16_t*) 0x000B8000;
 
+/**
+ * @brief Multiboot functions. Only available on i386 and amd64
+ * architectures.
+ */
+void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
+void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
+
 #endif /* End shared i386 & amd64 */
 
 /* i386+ Specific Code */
