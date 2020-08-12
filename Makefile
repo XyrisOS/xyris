@@ -5,6 +5,7 @@
 #
 
 .DEFAULT_GOAL := i686
+GIT_VERSION   := "$(shell git describe --abbrev=4 --dirty --always --tags)"
 
 # *****************************
 # * Various Source Code Flags *
@@ -36,6 +37,15 @@ VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
 # VM executable locations
 VBOX = $(shell command -v VBoxManage)
 QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
+
+# ********************************
+# * Common Kernel Compiler Flags *
+# ********************************
+
+# Kernel define flags
+KRNL_FLAGS = \
+	-I ${SYSROOT}/usr/include/kernel/ \
+	-D VERSION=\"$(GIT_VERSION)\"
 
 # **********************************
 # * 32-Bit i686 Architecture Flags *
@@ -69,9 +79,6 @@ AS_FLAGS_32 = --32
 # i686 Linker flags
 LD_FLAGS_32 = -m elf_i386
 LD_SCRIPT_32 = kernel/arch/i386/linker.ld
-# Kernel define flags
-KRNL_FLAGS_32 = \
-	-I ${SYSROOT}/usr/include/kernel/
 
 # ************************************
 # * 64-Bit x86_64 Architecture Flags *
@@ -105,9 +112,6 @@ AS_FLAGS_64 = --64
 # i686 Linker flags
 LD_FLAGS_64 = -m elf_x86_64
 LD_SCRIPT_64 = kernel/arch/i386/linker.ld
-# Kernel define flags
-KRNL_FLAGS_64 = \
-	-I ${SYSROOT}/usr/include/kernel/
 
 # ***********************************
 # * Source Code Compilation Targets *
@@ -153,7 +157,6 @@ i686: LD = $(LD_32)
 i686: LD_FLAGS = $(LD_FLAGS_32)
 i686: LD_SCRIPT = $(LD_SCRIPT_32)
 i686: OBCP = $(OBCP_32)
-i686: KRNL_FLAGS = $(KRNL_FLAGS_32)
 i686: dist/kernel
 
 # amd64 Architecture
@@ -161,7 +164,6 @@ amd64: GCC = $(GCC_64)
 amd64: GCC_FLAGS = $(GCC_FLAGS_64)
 amd64: AS = $(AS_64)
 amd64: AS_FLAGS = $(AS_FLAGS_64)
-amd64: KRNL_FLAGS = $(KRNL_FLAGS_64)
 amd64: dist/kernel
 
 # ********************************

@@ -32,6 +32,10 @@
 #define STACK_CHK_GUARD 0xBADBADBADBADBAD1
 #endif
 
+#ifndef VERSION
+#define VERSION "unknown"
+#endif
+
 void px_kernel_print_splash();
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
@@ -155,7 +159,7 @@ void px_kernel_print_splash() {
             ((__DATE__)[10] - '0') * 1     \
         )
     );
-    px_kprintf("Built on %s at %s.\n\n", __DATE__, __TIME__);
+    px_kprintf("Commit %s built on %s at %s.\n\n", VERSION, __DATE__, __TIME__);
 }
 
 void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
