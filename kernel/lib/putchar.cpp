@@ -159,9 +159,6 @@ int putchar(char c) {
         tty_coords_y = X86_TTY_HEIGHT - 1;
     }
     goto end;
-normal:
-    ansi_state = Normal;
-    ansi_val = 0;
 error:
     // Reset stack index
     CLEAR_VALS();
@@ -169,6 +166,9 @@ error:
     ansi_state = Normal;
     ansi_val = 0;
     return EOF;
+normal:
+    ansi_state = Normal;
+    ansi_val = 0;
 end:
     return (int)c;
 }
