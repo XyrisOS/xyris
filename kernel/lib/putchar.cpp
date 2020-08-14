@@ -97,8 +97,7 @@ int putchar(char c) {
                         color_back = (px_tty_vga_color)px_ansi_vga_table[ansi_val - (ANSI_BrightBlack + 10) + 8];
                     } // else it was an unknown code
                 }
-                ansi_state = Normal;
-                ansi_val = 0;
+                goto normal;
             } else if (c == 'H' || c == 'f') { // Set cursor position attribute
                 PUSH_VAL(ansi_val);
                 // the proper order is 'line (y);column (x)'
@@ -107,6 +106,7 @@ int putchar(char c) {
                 }
                 tty_coords_x = POP_VAL();
                 tty_coords_y = POP_VAL();
+                goto normal;
             }
             else if (c == 'J') { // Clear screen attribute
                 // The proper code is ESC[2J
@@ -166,6 +166,9 @@ error:
     ansi_state = Normal;
     ansi_val = 0;
     return EOF;
+normal:
+    ansi_state = Normal;
+    ansi_val = 0;
 end:
     return (int)c;
 }
