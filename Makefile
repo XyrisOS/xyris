@@ -15,7 +15,7 @@ SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
 CPP_SRC = $(shell find kernel -name "*.cpp")
 ATT_SRC = $(shell find kernel -name "*.s")
-HEADERS = $(shell find $(INCLUDE) -name "*.hpp")
+HEADERS = $(shell find $(INCLUDE) -name "*.hpp" -name "*.h")
 # Grub mkrescue is included here since
 # I'm not sure where else it would go
 MKGRUB 	= $(shell command -v grub-mkrescue)
