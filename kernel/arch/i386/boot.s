@@ -127,7 +127,8 @@ _start:
 
 	pushl multiboot_magic               # Multiboot magic number
 	pushl multiboot_info                # Multiboot info structure
-
+    # Set NULL stack frame for trace
+    xor %ebp, %ebp
 	# Enter the high-level kernel.
     call px_kernel_main
     # By this point we should be into the wild world of C++

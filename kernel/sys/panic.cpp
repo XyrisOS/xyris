@@ -11,6 +11,7 @@
  */
 
 #include <sys/panic.hpp>
+#include <sys/trace.hpp>
 #include <dev/tty/tty.hpp>
 #include <dev/serial/rs232.hpp>
 #include <lib/string.hpp>
@@ -58,6 +59,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
     px_rs232_print(buf);
     // Print out file info to describe where crash occured
     panic_print_file(file, line, func);
+    px_stack_trace(16);
     // Halt the CPU
     asm("hlt");
 }
@@ -122,6 +124,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         px_rs232_print(msg);
     }
     panic_print_file(file, line, func);
+    px_stack_trace(16);
     // Halt the CPU
     asm("hlt");
 }
@@ -147,7 +150,7 @@ void panic_print_register(registers_t *regs) {
     // colors each time (to print the numbers in back) since I can't just call
     // reset (because it would reset to a black background w/ white text, which
     // is the inverse of what we want.)
-    char msg[256];
+    char msg[512];
 
     #if defined(__i386__) | defined(__i686__)
     px_ksprintf(
