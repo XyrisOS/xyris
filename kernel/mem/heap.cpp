@@ -11,12 +11,13 @@
  * can be found at the link below.
  * 
  * https://wiki.osdev.org/User:Mrvn/LinkedListBucketHeapImplementation
- *
+ * 
  */
 
 #include <stddef.h>
 #include <lib/stdio.hpp>
 #include <lib/assert.hpp>
+#include <lib/string.hpp>
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
 #include <sys/panic.hpp>
@@ -34,17 +35,17 @@ px_heap_chunk_t* last = NULL;
 
 void* slot[NUM_SLOTS] = { NULL };
 
-static void px_memory_chunk_init(px_heap_chunk_t *chunk) {
+static void px_memory_chunk_init(px_heap_chunk_t* chunk) {
 	px_kprintf("%s(%p)\n", __FUNCTION__, chunk);
     dlist_init(&chunk->all);
     chunk->used = 0;
     dlist_init(&chunk->free);
 }
 
-static size_t px_memory_chunk_size(const px_heap_chunk_t *chunk) {
+static size_t px_memory_chunk_size(const px_heap_chunk_t* chunk) {
 	px_kprintf("%s(%p)\n", __FUNCTION__, chunk);
-    char *end = (char*)(chunk->all.next);
-    char *start = (char*)(&chunk->all);
+    char* end = (char*)(chunk->all.next);
+    char* start = (char*)(&chunk->all);
     return (end - start) - HEADER_SIZE;
 }
 
@@ -57,32 +58,80 @@ static int px_memory_chunk_slot(size_t size) {
     return n;
 }
 
-void px_memory_init(void *mem, size_t size) {
-    char *mem_start = (char *)(((uintptr_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
-    char *mem_end = (char *)(((uintptr_t)mem + size) & (~(ALIGN - 1)));
+static void px_remove_free(px_heap_chunk_t* chunk) {
+    size_t len = px_memory_chunk_size(chunk);
+    int n = px_memory_chunk_slot(len);
+
+    px_kprintf("%s(%p) : removing chunk %#lx [%d]\n", __FUNCTION__, chunk, len, n);
+
+    DLIST_REMOVE_FROM(&free_chunk[n], chunk, free);
+    mem_free -= len - HEADER_SIZE;
+}
+
+static void px_push_free(px_heap_chunk_t* chunk) {
+    size_t len = px_memory_chunk_size(chunk);
+    int n = px_memory_chunk_slot(len);
+
+    px_kprintf("%s(%p) : adding chunk %#lx [%d]\n", __FUNCTION__, chunk, len, n);
+
+    DLIST_PUSH(&free_chunk[n], chunk, free);
+    mem_free += len - HEADER_SIZE;
+}
+
+void check(void) {
+	int	i;
+    px_heap_chunk_t* t = last;
+
+	DLIST_ITERATOR_BEGIN(first, all, it) {
+		assert(CONTAINER(px_heap_chunk_t, all, it->all.prev) == t);
+		t = it;
+    } DLIST_ITERATOR_END(it);
+
+    for(i = 0; i < NUM_SIZES; ++i) {
+		if (free_chunk[i]) {
+			t = CONTAINER(px_heap_chunk_t, free, free_chunk[i]->free.prev);
+			DLIST_ITERATOR_BEGIN(free_chunk[i], free, it) {
+			assert(CONTAINER(px_heap_chunk_t, free, it->free.prev) == t);
+			t = it;
+			} DLIST_ITERATOR_END(it);
+		}
+    }
+}
+
+void px_heap_init(size_t size) {
+    // Request a new page with the given size. Get the page address.
+    void* mem = px_get_new_page(size);
+
+    // Use the page we got as the memory for the heap
+    char* mem_start = (char*)(((uintptr_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
+    char* mem_end = (char*)(((uintptr_t)mem + size) & (~(ALIGN - 1)));
     first = (px_heap_chunk_t*)mem_start;
-    px_heap_chunk_t *second = first + 1;
+    px_heap_chunk_t* second = first + 1;
     last = ((px_heap_chunk_t*)mem_end) - 1;
+
+    // Initialize the heap chunks
     px_memory_chunk_init(first);
     px_memory_chunk_init(second);
     px_memory_chunk_init(last);
     dlist_insert_after(&first->all, &second->all);
     dlist_insert_after(&second->all, &last->all);
+
     // make first/last as used so they never get merged
     first->used = 1;
     last->used = 1;
-
+    // Get the sizes and number of chunks
     size_t len = px_memory_chunk_size(second);
     int n = px_memory_chunk_slot(len);
 
     px_kprintf("%s(%p, %#lx) : adding chunk %#lx [%d]\n", __FUNCTION__, mem, size, len, n);
 
+    // Push them onto the linked list and update tracking variables
     DLIST_PUSH(&free_chunk[n], second, free);
     mem_free = len - HEADER_SIZE;
     mem_meta = sizeof(px_heap_chunk_t) * 2 + HEADER_SIZE;
 }
 
-void *malloc(size_t size) {
+void* malloc(size_t size) {
     px_kprintf("%s(%#lx)\n", __FUNCTION__, size);
 
     size = (size + ALIGN - 1) & (~(ALIGN - 1));
@@ -102,7 +151,7 @@ void *malloc(size_t size) {
 		if (n >= NUM_SIZES) return NULL;
     }
 
-	px_heap_chunk_t *chunk = DLIST_POP(&free_chunk[n], free);
+	px_heap_chunk_t* chunk = DLIST_POP(&free_chunk[n], free);
     size_t size2 = px_memory_chunk_size(chunk);
 
 	px_kprintf("@ %p [%#lx]\n", chunk, size2);
@@ -110,7 +159,7 @@ void *malloc(size_t size) {
     size_t len = 0;
 
 	if (size + sizeof(px_heap_chunk_t) <= size2) {
-		px_heap_chunk_t *chunk2 = (px_heap_chunk_t*)(((char*)chunk) + HEADER_SIZE + size);
+		px_heap_chunk_t* chunk2 = (px_heap_chunk_t*)(((char*)chunk) + HEADER_SIZE + size);
 		px_memory_chunk_init(chunk2);
 		dlist_insert_after(&chunk->all, &chunk2->all);
 		len = px_memory_chunk_size(chunk2);
@@ -124,7 +173,7 @@ void *malloc(size_t size) {
     }
 
 	chunk->used = 1;
-    //memset(chunk->data, 0xAA, size);
+    memset(chunk->data, 0xAA, size);
 	px_kprintf("AAAA\n");
 
     mem_free -= size2;
@@ -133,30 +182,10 @@ void *malloc(size_t size) {
     return chunk->data;
 }
 
-static void px_remove_free(px_heap_chunk_t *chunk) {
-    size_t len = px_memory_chunk_size(chunk);
-    int n = px_memory_chunk_slot(len);
-
-    px_kprintf("%s(%p) : removing chunk %#lx [%d]\n", __FUNCTION__, chunk, len, n);
-
-    DLIST_REMOVE_FROM(&free_chunk[n], chunk, free);
-    mem_free -= len - HEADER_SIZE;
-}
-
-static void px_push_free(px_heap_chunk_t *chunk) {
-    size_t len = px_memory_chunk_size(chunk);
-    int n = px_memory_chunk_slot(len);
-
-    px_kprintf("%s(%p) : adding chunk %#lx [%d]\n", __FUNCTION__, chunk, len, n);
-
-    DLIST_PUSH(&free_chunk[n], chunk, free);
-    mem_free += len - HEADER_SIZE;
-}
-
-void free(void *mem) {
-    px_heap_chunk_t *chunk = (px_heap_chunk_t*)((char*)mem - HEADER_SIZE);
-    px_heap_chunk_t *next = CONTAINER(px_heap_chunk_t, all, chunk->all.next);
-    px_heap_chunk_t *prev = CONTAINER(px_heap_chunk_t, all, chunk->all.prev);
+void free(void* mem) {
+    px_heap_chunk_t* chunk = (px_heap_chunk_t*)((char*)mem - HEADER_SIZE);
+    px_heap_chunk_t* next = CONTAINER(px_heap_chunk_t, all, chunk->all.next);
+    px_heap_chunk_t* prev = CONTAINER(px_heap_chunk_t, all, chunk->all.prev);
 
 	px_kprintf("%s(%p): @%p %#lx [%d]\n", 
         __FUNCTION__,
@@ -172,7 +201,7 @@ void free(void *mem) {
 		// merge in next
 		px_remove_free(next);
 		dlist_remove(&next->all);
-		//memset(next, 0xDD, sizeof(px_heap_chunk_t));
+		memset(next, 0xDD, sizeof(px_heap_chunk_t));
 		mem_meta -= HEADER_SIZE;
 		mem_free += HEADER_SIZE;
     }
@@ -180,7 +209,7 @@ void free(void *mem) {
 		// merge to prev
 		px_remove_free(prev);
 		dlist_remove(&chunk->all);
-		//memset(chunk, 0xDD, sizeof(px_heap_chunk_t));
+		memset(chunk, 0xDD, sizeof(px_heap_chunk_t));
 		px_push_free(prev);
 		mem_meta -= HEADER_SIZE;
 		mem_free += HEADER_SIZE;
@@ -189,25 +218,5 @@ void free(void *mem) {
 		chunk->used = 0;
 		dlist_init(&chunk->free);
 		px_push_free(chunk);
-    }
-}
-
-void check(void) {
-	int	i;
-    px_heap_chunk_t *t = last;
-
-	DLIST_ITERATOR_BEGIN(first, all, it) {
-		assert(CONTAINER(px_heap_chunk_t, all, it->all.prev) == t);
-		t = it;
-    } DLIST_ITERATOR_END(it);
-
-    for(i = 0; i < NUM_SIZES; ++i) {
-		if (free_chunk[i]) {
-			t = CONTAINER(px_heap_chunk_t, free, free_chunk[i]->free.prev);
-			DLIST_ITERATOR_BEGIN(free_chunk[i], free, it) {
-			assert(CONTAINER(px_heap_chunk_t, free, it->free.prev) == t);
-			t = it;
-			} DLIST_ITERATOR_END(it);
-		}
     }
 }
