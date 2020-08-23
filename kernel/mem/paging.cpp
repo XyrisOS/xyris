@@ -166,6 +166,9 @@ static inline void px_set_page_dir(size_t page_dir) {
 static inline void px_paging_enable() {
     size_t cr0;
     asm volatile("mov %%cr0, %0": "=b"(cr0));
+    // 0x80000000 = 0b10000000000000000000000000000000
+    // The most significant bit signifies whether to
+    // enable or disable paging within control register 0.
     cr0 |= 0x80000000;
     asm volatile("mov %0, %%cr0":: "b"(cr0));
 }
@@ -173,6 +176,11 @@ static inline void px_paging_enable() {
 static inline void px_paging_disable() {
     size_t cr0;
     asm volatile("mov %%cr0, %0": "=b"(cr0));
+    // 0x80000000 = 0b10000000000000000000000000000000
+    // The most significant bit signifies whether to
+    // enable or disable paging within control register 0.
+    // In this case we set the opposite (~) so the result
+    // is 0b01111111111111111111111111111111
     cr0 &= ~(0x80000000U);
     asm volatile("mov %0, %%cr0":: "b"(cr0));
 }
