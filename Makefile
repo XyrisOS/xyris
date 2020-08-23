@@ -4,8 +4,8 @@
 # TODO: Create seperate makefiles as needed and integrate into one makefile
 #
 
-.DEFAULT_GOAL := i686
-GIT_VERSION   := "$(shell git describe --abbrev=4 --dirty --always --tags)"
+.DEFAULT_GOAL := dist/kernel
+GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 
 # *****************************
 # * Various Source Code Flags *
@@ -13,24 +13,21 @@ GIT_VERSION   := "$(shell git describe --abbrev=4 --dirty --always --tags)"
 
 SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
-CPP_SRC = $(shell find kernel -name "*.cpp")
 ATT_SRC = $(shell find kernel -name "*.s")
+CPP_SRC = $(shell find kernel -name "*.cpp")
 HEADERS = $(shell find $(INCLUDE) -name "*.hpp" -name "*.h")
-# Grub mkrescue is included here since
-# I'm not sure where else it would go
-MKGRUB 	= $(shell command -v grub-mkrescue)
 
 # *********************************
 # * Various Virtual Machine Flags *
 # *********************************
 
 # QEMU flags
-QEMU_FLAGS =		\
-    -m 4G			\
-    -rtc clock=host	\
-    -vga std		\
+QEMU_FLAGS =        \
+    -m 4G           \
+    -rtc clock=host \
+    -vga std        \
     -serial stdio
-QEMU_ARCH = x86_64
+QEMU_ARCH = i386
 # Virtualbox flags
 VM_NAME	= panix-box
 VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
@@ -38,27 +35,21 @@ VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
 VBOX = $(shell command -v VBoxManage)
 QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
-# ********************************
-# * Common Kernel Compiler Flags *
-# ********************************
-
-# Kernel define flags
-KRNL_FLAGS = \
-	-I ${SYSROOT}/usr/include/kernel/ \
-	-D VERSION=\"$(GIT_VERSION)\"
-
 # **********************************
 # * 32-Bit i686 Architecture Flags *
 # **********************************
 
 # Compilers/Assemblers/Linkers
-AS_32 	= $(shell command -v i686-elf-as)
-GCC_32  = $(shell command -v i686-elf-gcc)
-LD_32   = $(shell command -v i686-elf-ld)
-OBCP_32 = $(shell command -v i686-elf-objcopy)
-# The -lgcc flag is included because it includes helpful functions used
-# by GCC that would be ineffective to duplicate.
-GCC_FLAGS_32 =              \
+AS      = $(shell command -v i686-elf-as)
+CXX     = $(shell command -v i686-elf-gcc)
+LD      = $(shell command -v i686-elf-ld)
+OBJCP   = $(shell command -v i686-elf-objcopy)
+MKGRUB 	= $(shell command -v grub-mkrescue)
+# C / C++ flags (include directory)
+C_FLAGS =                   \
+	-I ${SYSROOT}/usr/include/kernel/
+# C++ only flags (-lgcc flag is used b/c it has helpful functions)
+CXX_FLAGS =                 \
 	-m32                    \
 	-g                      \
 	-nostartfiles           \
@@ -75,51 +66,21 @@ GCC_FLAGS_32 =              \
 	-fno-omit-frame-pointer \
 	-Wno-write-strings      \
 	-std=c++2a
-# i686 Assembler flags
-AS_FLAGS_32 = --32
-# i686 Linker flags
-LD_FLAGS_32 = -m elf_i386
-LD_SCRIPT_32 = kernel/arch/i386/linker.ld
-
-# ************************************
-# * 64-Bit x86_64 Architecture Flags *
-# ************************************
-
-# Compilers/Assemblers/Linkers
-AS_64 	= $(shell command -v x86_64-elf-as)
-GCC_64  = $(shell command -v x86_64-elf-gcc)
-LD_64   = $(shell command -v x86_64-elf-ld)
-OBCP_64 = $(shell command -v x86_64-elf-objcopy)
-# The -lgcc flag is included because it includes helpful functions used
-# by GCC that would be ineffective to duplicate.
-GCC_FLAGS_64 =              \
-	-m64                    \
-	-g                      \
-	-nostartfiles           \
-	-nodefaultlibs          \
-	-lgcc                   \
-	-ffreestanding          \
-	-fstack-protector-all   \
-	-fpermissive            \
-	-fno-use-cxa-atexit     \
-	-fno-builtin            \
-	-fno-rtti               \
-	-fno-exceptions         \
-	-fno-leading-underscore \
-	-Wno-write-strings      \
-	-std=c++20
-# i686 Assembler flags
-AS_FLAGS_64 = --64
-# i686 Linker flags
-LD_FLAGS_64 = -m elf_x86_64
-LD_SCRIPT_64 = kernel/arch/i386/linker.ld
+# C / C++ pre-processor flags
+CPP_FLAGS =                 \
+	-D VERSION=\"$(GIT_VERSION)\"
+# Assembler flags
+AS_FLAGS = --32
+# Linker flags
+LD_FLAGS = -m elf_i386 \
+           -T kernel/arch/i386/linker.ld
 
 # ***********************************
 # * Source Code Compilation Targets *
 # ***********************************
 
 # All objects
-OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC))	\
+OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) \
 	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC))
 # Object directories, mirroring source
 OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
@@ -132,7 +93,7 @@ mkdir_obj_dirs:
 # C++ source -> object
 obj/%.o: kernel/%.cpp $(HEADERS)
 	$(MAKE) mkdir_obj_dirs
-	$(GCC) $(GCC_FLAGS) $(KRNL_FLAGS) -c -o $@ $<
+	$(CXX) $(CPP_FLAGS) $(C_FLAGS) $(CXX_FLAGS) -c -o $@ $<
 
 # Assembly source -> object
 obj/%.o: kernel/%.s
@@ -142,30 +103,8 @@ obj/%.o: kernel/%.s
 # Kernel object
 dist/kernel: $(OBJ)
 	@ mkdir -p dist
-	$(LD) $(LD_FLAGS) -T $(LD_SCRIPT) -o $@ $(OBJ)
-	$(OBCP) --only-keep-debug dist/kernel dist/panix.sym
-
-# *****************************
-# * Architecture Make Targets *
-# *****************************
-
-# i686 Architecture
-i686: GCC = $(GCC_32)
-i686: GCC_FLAGS = $(GCC_FLAGS_32)
-i686: AS = $(AS_32)
-i686: AS_FLAGS = $(AS_FLAGS_32)
-i686: LD = $(LD_32)
-i686: LD_FLAGS = $(LD_FLAGS_32)
-i686: LD_SCRIPT = $(LD_SCRIPT_32)
-i686: OBCP = $(OBCP_32)
-i686: dist/kernel
-
-# amd64 Architecture
-amd64: GCC = $(GCC_64)
-amd64: GCC_FLAGS = $(GCC_FLAGS_64)
-amd64: AS = $(AS_64)
-amd64: AS_FLAGS = $(AS_FLAGS_64)
-amd64: dist/kernel
+	$(LD) $(LD_FLAGS) -o $@ $(OBJ)
+	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
 
 # ********************************
 # * Kernel Distribution Creation *
@@ -173,21 +112,21 @@ amd64: dist/kernel
 
 # Create bootable ISO
 .PHONY: iso
-iso32: i686
+iso: dist/kernel
 	@ mkdir -p iso/boot/grub
 	@ cp dist/kernel iso/boot/
 	@ cp boot/grub.cfg iso/boot/grub/grub.cfg
 	@ $(MKGRUB) -o dist/panix.iso iso
 	@ rm -rf iso
 
-.PHONY: vdi32
-vdi32: i686
+.PHONY: vdi
+vdi: dist/kernel
 	@ echo Building VDI image of Panix...
 	@ qemu-img convert -f raw -O vdi dist/kernel dist/panix.vdi
 	@ echo Done building VDI image of Panix!
 
-.PHONY: vmdk32
-vmdk32: i686
+.PHONY: vmdk
+vmdk: dist/kernel
 	@ echo "\nBuilding VMDK image of Panix..."
 	@ qemu-img convert -f raw -O vmdk dist/kernel dist/panix.vmdk
 	@ echo Done building VMDK image of Panix!
@@ -198,9 +137,9 @@ vmdk32: i686
 
 # Run Panix in QEMU
 .PHONY: run
-run: i686
-	$(QEMU)                     \
-	-kernel dist/kernel   \
+run: dist/kernel
+	$(QEMU)             \
+	-kernel dist/kernel \
 	$(QEMU_FLAGS)
 
 # Create Virtualbox VM
@@ -213,7 +152,7 @@ vbox-create: dist/panix.iso
 	--audiocontroller sb16 --uart1 0x3f8 4      \
 	--uartmode1 file $(shell pwd)/com1.txt
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix32.iso
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix.iso
 
 .PHONY: vbox-create
 vbox: vbox-create
