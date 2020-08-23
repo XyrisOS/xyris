@@ -11,36 +11,34 @@
 // System library functions
 #include <stdint.h>
 #include <sys/panic.hpp>
+#include <lib/string.hpp>
+#include <lib/stdio.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
-// Intel i386 architecture
+// Architecture specific code
 #include <arch/arch.hpp>
-#include <gnu/multiboot.hpp>
 // Generic devices
-#include <devices/tty/tty.hpp>
-#include <devices/smbios/smbios.hpp>
-#include <devices/kbd/kbd.hpp>
-#include <devices/rtc/rtc.hpp>
-#include <devices/spkr/spkr.hpp>
-#include <devices/serial/rs232.hpp>
-// memcpy
-#include <lib/string.hpp>
-#include <lib/stdio.hpp>
+#include <dev/tty/tty.hpp>
+#include <dev/kbd/kbd.hpp>
+#include <dev/rtc/rtc.hpp>
+#include <dev/spkr/spkr.hpp>
+#include <dev/serial/rs232.hpp>
 
-#define __YEAR_C__ 7
-#define __YEAR__  (\
-                    ((__DATE__)[__YEAR_C__ + 0] - '0') * 1000 + \
-                    ((__DATE__)[__YEAR_C__ + 1] - '0') * 100  + \
-                    ((__DATE__)[__YEAR_C__ + 2] - '0') * 10   + \
-                    ((__DATE__)[__YEAR_C__ + 3] - '0') * 1      \
-                  )
+// Used as a magic number for stack smashing protection
+#if UINT32_MAX == UINTPTR_MAX
+#define STACK_CHK_GUARD 0xDEADC0DE
+#else
+#define STACK_CHK_GUARD 0xBADBADBADBADBAD1
+#endif
+// Define the Git commit version if not declared by compiler
+#ifndef VERSION
+#define VERSION "unknown"
+#endif
 
 void px_kernel_print_splash();
-void px_kernel_check_multiboot(const multiboot_info_t* mb_struct);
-void px_kernel_print_multiboot(const multiboot_info_t* mb_struct);
 void px_kernel_boot_tone();
-extern uint32_t placement_address;
+
 /**
  * @brief The global constuctor is a necessary step when using
  * global objects which need to be constructed before the main
@@ -69,24 +67,34 @@ extern "C" void px_call_constructors() {
 }
 
 /**
+ * @brief This function is the global handler for all
+ * stack protection. GCC will automatically write the
+ * canary code and use this function as the handler
+ * for when a smashed stack is detected.
+ * 
+ */
+uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
+extern "C" void __stack_chk_fail(void)
+{
+	PANIC("Smashed stack detected.");
+}
+
+/**
  * @brief This is the Panix kernel entry point. This function is called directly from the
- * assembly written in boot.S located in arch/x86/boot.S.
+ * assembly written in boot.S located in arch/i386/boot.S.
  */
 extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic) {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
-    // Panix requires a multiboot header, so panic if not provided
-    px_kernel_check_multiboot(mb_struct);
     // Install the GDT
     px_interrupts_disable();
-    px_gdt_install();
-    px_isr_install();           // Interrupt Service Requests
-    // px_heap_init((uint32_t)&_EARLY_KMALLOC_START, (uint32_t)&_EARLY_KMALLOC_END);             // Early kernel memory allocation
-    px_paging_init();           // Initialize paging service
-    px_kbd_init();              // Keyboard
-    px_rtc_init();              // Real Time Clock
+    px_gdt_install();           // Initialize the Global Descriptor Table
+    px_isr_install();           // Initialize Interrupt Service Requests
+    px_rs232_init(RS_232_COM1); // RS232 Serial
+    px_paging_init(0);          // Initialize paging service
+    px_kbd_init();              // Initialize PS/2 Keyboard
+    px_rtc_init();              // Initialize Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
-    px_rs232_init(RS_232_COM1);// RS232 Serial
     // Now that we've initialized our core kernel necessities
     // we can initialize paging.
     // Enable interrupts now that we're out of a critical area
@@ -100,64 +108,57 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_kprintf(DBG_INFO "%s\n", model);
     // Start the serial debugger
     px_kprintf(DBG_INFO "Starting serial debugger...\n");
+    // Print out the CPU vendor info
     px_rs232_print(vendor);
+    px_rs232_print("\n");
     px_rs232_print(model);
-    // Now that we're done make a joyful noise
+    px_rs232_print("\n");
+ 
     px_kprintf(DBG_OKAY "Done.\n");
+    
+    // Now that we're done make a joyful noise
     px_kernel_boot_tone();
+    
+    // Keep the kernel alive.
+    px_kprintf("\n");
+    int i = 0;
     while (true) {
-        // Keep the kernel alive.
+        // Display a spinner to know that we're still running.
+        switch (i) {
+            case 0:
+                px_kprintf("\b|");
+                break;
+            case 1:
+                px_kprintf("\b/");
+                break;
+            case 2:
+                px_kprintf("\b-");
+                break;
+            case 3:
+                px_kprintf("\b\\");
+                i = -1;
+                break;
+        }
+        i++;
         asm("hlt");
     }
     PANIC("Kernel terminated unexpectedly!");
 }
 
 void px_kernel_print_splash() {
-    px_clear_tty();
-    px_kprintf("\033[93mWelcome to Panix\n"
-                "Developed by graduates and undergraduates of Cedarville University.\n"
-                "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n\033[0m", __YEAR__);
-    px_kprintf("Built on %s at %s.\n\n", __DATE__, __TIME__);
-}
-
-void px_kernel_check_multiboot(const multiboot_info_t* mb_struct) {
-    if (mb_struct == nullptr) {
-        PANIC("Multiboot info missing. Please use a Multiboot compliant bootloader (like GRUB).");
-    }
-    // Print multiboot information
-    px_kernel_print_multiboot(mb_struct);
-}
-
-void px_kernel_print_multiboot(const multiboot_info_t* mb_struct) {
-    // Print out our memory size information if provided
-    if (mb_struct->flags & MULTIBOOT_INFO_MEMORY) {
-        px_kprintf(
-            "Memory Lower: \033[95m0x%08X\n\033[0mMemory Upper: \033[95m0x%08X\n\033[0mTotal Memory: \033[95m0x%08X\033[0m\n",
-            mb_struct->mem_lower,
-            mb_struct->mem_upper,
-            (mb_struct->mem_lower + mb_struct->mem_upper)
-        );
-    }
-    // Print out our memory map if provided
-    if (mb_struct->flags & MULTIBOOT_INFO_MEM_MAP) {
-        uint32_t *mem_info_ptr = (uint32_t *)mb_struct->mmap_addr;
-        // While there are still entries in the memory map
-        while (mem_info_ptr < (uint32_t *)(mb_struct->mmap_addr + mb_struct->mmap_length)) {
-            multiboot_memory_map_t *curr = (multiboot_memory_map_t *)mem_info_ptr;
-            // If the length of the current map entry is not empty
-            if (curr->len > 0) {
-                // Print out the memory map information
-                px_kprintf("\n[0x%08X-0x%08X] ", curr->addr, (curr->addr + curr->len));
-                // Print out if the entry is available or reserved
-                curr->type == MULTIBOOT_MEMORY_AVAILABLE ? px_kprintf("Available") : px_kprintf("Reserved");
-            } else {
-                px_kprintf("\033[91mMissing!\033[0m");
-            }
-            // Increment the curr pointer to the next entry
-            mem_info_ptr += curr->size + sizeof(curr->size);
-        }
-    }
-    px_kprintf("\n\n");
+    px_tty_clear();
+    px_kprintf(
+        "\033[93mWelcome to Panix\n"
+        "Developed by graduates and undergraduates of Cedarville University.\n"
+        "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n\033[0m",
+        (\
+            ((__DATE__)[7] - '0') * 1000 + \
+            ((__DATE__)[8] - '0') * 100  + \
+            ((__DATE__)[9] - '0') * 10   + \
+            ((__DATE__)[10] - '0') * 1     \
+        )
+    );
+    px_kprintf("Commit %s built on %s at %s.\n\n", VERSION, __DATE__, __TIME__);
 }
 
 void px_kernel_boot_tone() {

@@ -11,6 +11,11 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+
+#ifndef EOF
+#define EOF (-1)
+#endif
+
 /**
  * @brief Sends formatted output to a string using an argument list.
  * 
@@ -49,3 +54,15 @@ int px_kvprintf(const char* fmt, va_list args);
  * The number of characters not written if negative.
  */
 int px_kprintf(const char* fmt, ...);
+/**
+ * @brief Prints a single character to the kernel display.
+ *
+ * @param c Character to be printed.
+ */
+int putchar(char c);
+/**
+ * @brief Prints a given string to the kernel display.
+ * 
+ * @param str String to be printed.
+ */
+int puts(const char *str);

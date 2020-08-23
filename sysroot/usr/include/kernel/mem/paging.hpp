@@ -13,18 +13,21 @@
 #define PANIX_MEM_PAGING
 
 #include <stdint.h>
+#include <stddef.h>
 #include <arch/arch.hpp>
 #include <mem/heap.hpp>
 
 // Information about the Kernel from the linker
 extern uint32_t _KERNEL_START;
 extern uint32_t _KERNEL_END;
+extern "C" void px_invalidate_page(void *page_addr);
+
 // Thanks to Grant Hernandez for uOS and the absolutely amazing code
 // that he wrote. It helped us fix a lot of bugs and has provided a
 // lot of quality of life defines such as the ones below that we would
 // not have thought to use otherwise.
-#define KERNEL_START        (uint32_t)&_KERNEL_START
-#define KERNEL_END          (uint32_t)&_KERNEL_END
+#define KERNEL_START        ((uint32_t)&_KERNEL_START)
+#define KERNEL_END          ((uint32_t)&_KERNEL_END)
 #define KERNEL_BASE         0xC0000000
 #define ADDRESS_SPACE_SIZE  0x100000000
 #define PAGE_SIZE           0x1000
@@ -39,8 +42,6 @@ extern uint32_t _KERNEL_END;
 #define PAGES_PER_KB(kb)    (PAGE_ALIGN_UP((kb) * 1024) / PAGE_SIZE)
 #define PAGES_PER_MB(mb)    (PAGE_ALIGN_UP((mb) * 1024 * 1024) / PAGE_SIZE)
 #define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
-#define INDEX_FROM_BIT(a)   ((a) / (8*4))
-#define OFFSET_FROM_BIT(a)  ((a) % (8*4))
 #define VADDR(ADDR)         ((px_virtual_address_t){ .val = (ADDR) })
 
 /**
@@ -123,7 +124,7 @@ typedef struct px_page_directory
  * @brief Sets up the environment, page directories etc and enables paging.
  *
  */
-void px_paging_init();
+void px_paging_init(uint32_t num_pages);
 
 /**
  * @brief Returns a new page in memory for use.
@@ -132,6 +133,14 @@ void px_paging_init();
  * @return void* Page memory address
  */
 void* px_get_new_page(uint32_t size);
+
+/**
+ * @brief Frees pages starting at a given page address.
+ * 
+ * @param page Starting location of page(s) to be freed
+ * @param size Number of bytes to be freed
+ */
+void  px_free_page(void *page, uint32_t size);
 
 #endif /* PANIX_MEM_PAGING */
 

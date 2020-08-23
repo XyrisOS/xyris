@@ -11,11 +11,13 @@
  * You can do whatever you want with it. Modified by
  * Keeton Feavel.
  * 
+ * http://www.osdev.labedz.org/src/lib/stdio/printf.c
+ * 
  */
 #include <lib/stdio.hpp>
 #include <stdarg.h>
 #include <lib/string.hpp>
-#include <devices/tty/tty.hpp>
+#include <dev/tty/tty.hpp>
 
 /*****************************************************************************
 Stripped-down printf()
