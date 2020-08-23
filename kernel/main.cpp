@@ -121,7 +121,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     
     // Keep the kernel alive.
     px_kprintf("\n");
-    i = 0;
+    int i = 0;
     while (true) {
         // Display a spinner to know that we're still running.
         switch (i) {
