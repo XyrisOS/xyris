@@ -19,5 +19,20 @@
 #include <stdint.h>
 #include <lib/linked_list.hpp>
 
+typedef struct px_heap_chunk {
+    DList all;
+    int used;
+    union {
+	    char data[0];
+	    DList free;
+    };
+} px_heap_chunk_t;
+
+enum {
+    NUM_SIZES = 32,
+    ALIGN = 4,
+    MIN_SIZE = sizeof(DList),
+    HEADER_SIZE = __builtin_offsetof(px_heap_chunk_t, data)
+};
 
 #endif /* PANIX_MEM_HEAP */
