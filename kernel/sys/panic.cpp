@@ -48,7 +48,7 @@ void printPanicScreen(int exception) {
 }
 
 void panic(char* msg, const char *file, uint32_t line, const char *func) {
-    asm("cli");
+    asm volatile ("cli");
     // Print the panic cow
     printPanicScreen(0);
     // Print the message passed in on a new line
@@ -65,7 +65,7 @@ void panic(char* msg, const char *file, uint32_t line, const char *func) {
 }
 
 void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
-    asm("cli");
+    asm volatile ("cli");
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
     char msg[64];

@@ -10,23 +10,22 @@
  *
  */
 
-#include <mem/paging.hpp>
 #include <sys/panic.hpp>
+#include <mem/paging.hpp>
+#include <lib/bitmap.hpp>
+#include <lib/stdio.hpp>
+#include <dev/serial/rs232.hpp>
 #include <stddef.h>
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 
-#define SET_BIT_IN_MAP(bmp, addr) (bmp)[INDEX_FROM_BIT(((addr) & PAGE_ALIGN) / PAGE_SIZE)] \
-    |= 1UL << OFFSET_FROM_BIT((addr) / PAGE_SIZE)
+static uint32_t machine_page_count;
 
-#define UNSET_BIT_IN_MAP(bpm, addr) (bmp)[INDEX_FROM_BIT(((addr) & PAGE_ALIGN) / PAGE_SIZE)] \
-    &= ~(1UL << OFFSET_FROM_BIT((addr) / PAGE_SIZE))
-
-#define BITMAP_SIZE (ADDRESS_SPACE_SIZE / PAGE_SIZE / (sizeof(uint32_t) * 8))
+#define MEM_BITMAP_SIZE BITMAP_SIZE(ADDRESS_SPACE_SIZE / PAGE_SIZE)
 
 /* one bit for every page */
-static uint32_t mapped_mem[BITMAP_SIZE] = { 0 };
-static uint32_t mapped_pages[BITMAP_SIZE] = { 0 };
+static bitmap_t mapped_mem[MEM_BITMAP_SIZE] = { 0 };
+static bitmap_t mapped_pages[MEM_BITMAP_SIZE] = { 0 };
 
 static uint32_t                  page_dir_addr;
 static px_page_table_t *         page_dir_virt[PAGE_ENTRIES];
@@ -36,21 +35,20 @@ static px_page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((sec
 static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables")));
 
 // Function prototypes
-void px_paging_init();
 static void px_mem_page_fault(registers_t* regs);
-static inline void px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *table);
 static void px_paging_init_dir();
 static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr);
 static void px_paging_map_early_mem();
 static void px_paging_map_hh_kernel();
+static uint32_t find_next_free_virt_addr(int seq);
+static uint32_t find_next_free_phys_page();
+static inline void px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *table);
 static inline void px_set_page_dir(uint32_t page_directory);
 static inline void px_paging_enable();
 static inline void px_paging_disable();
-static int find_free(int seq);
-static int get_next_free_phys_page();
-void* px_get_new_page(uint32_t size);
 
-void px_paging_init() {
+void px_paging_init(uint32_t page_count) {
+    machine_page_count = page_count;
     // we can set breakpoints or make a futile attempt to recover.
     px_register_interrupt_handler(14, px_mem_page_fault);
     // init our structures
@@ -88,39 +86,64 @@ static void px_paging_init_dir() {
     // For every page in kernel memory
     for (int i = 0; i < PAGE_ENTRIES - 1; i++) {
         px_map_kernel_page_table(i, &page_tables[i]);
+        // clear out the page tables
+        for (int j = 0; j < PAGE_ENTRIES; j++) {
+            page_tables[i].pages[j] = (px_page_table_entry_t){ 0 };
+        }
     }
-    // recursivly map the last page table to the page directory
+    // recursively map the last page table to the page directory
     px_map_kernel_page_table(PAGE_ENTRIES - 1, (px_page_table_t*)&page_dir_phys[0]);
+    for (uint32_t i = PAGE_ENTRIES * (PAGE_ENTRIES - 1); i < PAGE_ENTRIES * PAGE_ENTRIES; i++) {
+        bitmap_set_bit(mapped_pages, i);
+    }
     // store the physical address of the page directory for quick access
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
 }
 
 static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
+    char dbg[300];
     // Set the page directory entry (pde) and page table entry (pte)
     uint32_t pde = vaddr.page_dir_index;
     uint32_t pte = vaddr.page_table_index;
+    px_page_table_entry *entry = &(page_tables[pde].pages[pte]);
+    // Print a debug message to serial
+    px_ksprintf(dbg, "map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr, vaddr.val, pde, pte);
+    px_rs232_print(dbg);
     // If the page's virtual address is not aligned
-    if (vaddr.page_offset) {
-        PANIC("Attempted to map a non-page-aligned virtual address.");
+    if (vaddr.page_offset != 0) {
+        PANIC("Attempted to map a non-page-aligned virtual address.\n");
     }
     // If the page is already mapped into memory
-    if (page_tables[pde].pages[pte].present) {
-        PANIC("Attempted to map already mapped page.");
+    if (entry->present) {
+        size_t bit_idx = INDEX_FROM_BIT(vaddr.val >> 12);
+        px_ksprintf(
+            dbg,
+            "pte { present = %d, read_write = %d, usermode = %d, "
+            "write_through = %d,\n      cache_disable = %d, accessed = %d, "
+            "dirty = %d,\n      page_att_table = %d, global = %d, frame = 0x%08x\n}\n"
+            "mem_map[i-1] = 0x%08x\nmem_map[i]   = 0x%08x\nmem_map[i+1] = 0x%08x\n",
+            entry->present, entry->read_write, entry->usermode, entry->write_through,
+            entry->cache_disable, entry->accessed, entry->dirty, entry->page_att_table,
+            entry->global, entry->frame, mapped_pages[bit_idx - 1],
+            mapped_pages[bit_idx], mapped_pages[bit_idx + 1]);
+        px_rs232_print(dbg);
+        PANIC("Attempted to map already mapped page.\n");
     }
     // Set the page information
     page_tables[pde].pages[pte] = {
         .present = 1,           // The page is present
         .read_write = 1,        // The page has r/w permissions
         .usermode = 0,          // These are kernel pages
-        .frame = paddr >> 12    // The last 12 bits are the frame
+        .frame = paddr >> 12    // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
-    SET_BIT_IN_MAP(mapped_mem, paddr);
-    SET_BIT_IN_MAP(mapped_pages, vaddr.val);
+    bitmap_set_bit(mapped_mem, paddr >> 12);
+    bitmap_set_bit(mapped_pages, vaddr.val >> 12);
 }
 
 static void px_paging_map_early_mem() {
     px_virtual_address_t a;
+    px_rs232_print("==== MAP EARLY MEM ====\n");
     for (a = VADDR(0); a.val < 0x100000; a.val += PAGE_SIZE) {
         // identity map the early memory
         px_map_kernel_page(a, a.val);
@@ -129,6 +152,7 @@ static void px_paging_map_early_mem() {
 
 static void px_paging_map_hh_kernel() {
     px_virtual_address_t addr;
+    px_rs232_print("==== MAP HH KERNEL ====\n");
     for (addr = VADDR(KERNEL_START); addr.val < KERNEL_END; addr.val += PAGE_SIZE) {
         // map the higher-half kernel in
         px_map_kernel_page(addr, KADDR_TO_PHYS(addr.val));
@@ -157,35 +181,46 @@ static inline void px_paging_disable() {
  * note: this can't find more than 32 sequential pages
  * @param seq the number of sequential pages to get
  */
-static int find_free(int seq) {
-    uint32_t check;
-    uint32_t mask = (1 << seq) - 1;
-    for (int i = 0; i < (ADDRESS_SPACE_SIZE / PAGE_SIZE); i++) {
-        check = mapped_mem[i / 32] >> (i % 32);
-        check |= mapped_mem[(i / 32) + 1] << (32 - (i % 32));
-        if (!(check & mask)) return i;
-    }
-    return -1;
+static uint32_t find_next_free_virt_addr(int seq) {
+    return bitmap_find_first_range_clear(mapped_pages, ADDRESS_SPACE_SIZE / PAGE_SIZE, seq);
 }
 
-static int get_next_free_phys_page() {
-    for (int i = 0; i < (ADDRESS_SPACE_SIZE / PAGE_SIZE); i++) {
-        if (!((mapped_pages[INDEX_FROM_BIT(i)] >> OFFSET_FROM_BIT(i)) & 1)) return i;
-    }
-    return -1;
+static uint32_t find_next_free_phys_page() {
+    return bitmap_find_first_bit_clear(mapped_mem, ADDRESS_SPACE_SIZE / PAGE_SIZE);
 }
 
 /**
  * map in a new page. if you request less than one page, you will get exactly one page
  */
 void* px_get_new_page(uint32_t size) {
-    int page_count = (size / PAGE_SIZE) + 1;
-    int free_idx = find_free(page_count);
-    if (free_idx == -1) return NULL;
-    for (int i = free_idx; i < free_idx + page_count; i++) {
-        int phys_page_idx = get_next_free_phys_page();
-        if (phys_page_idx == -1) return NULL;
+    uint32_t page_count = (size / PAGE_SIZE) + 1;
+    uint32_t free_idx = find_next_free_virt_addr(page_count);
+    if (free_idx == SIZE_T_MAX_VALUE) return NULL;
+    for (uint32_t i = free_idx; i < free_idx + page_count; i++) {
+        uint32_t phys_page_idx = find_next_free_phys_page();
+        if (phys_page_idx == SIZE_T_MAX_VALUE) return NULL;
+        // This line crashes on the 8th iteration of the stress test loop in main.
         px_map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
     }
     return (void *)(free_idx * PAGE_SIZE);
 }
+
+void px_free_page(void *page, uint32_t size) {
+    uint32_t page_count = (size / PAGE_SIZE) + 1;
+    uint32_t page_index = (uint32_t)page >> 12;
+    for (uint32_t i = page_index; i < page_index + page_count; i++) {
+        bitmap_clear_bit(mapped_pages, i);
+        // how much more UN-readable can we make this?? (pls, i need to know...)
+        //*(uint32_t*)((uint32_t)page_tables + i * 4) = 0;
+        // this is the same as the line above
+        px_page_table_entry_t *pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
+        // the frame field is actually the page frame's index
+        // basically it's frame 0, 1...(2^21-1)
+        bitmap_clear_bit(mapped_mem, pte->frame);
+        // zero it out to unmap it
+        *pte = { 0 };
+        // clear that tlb
+        px_invalidate_page(page);
+    }
+}
+

@@ -223,9 +223,9 @@ vbox: vbox-create
 .PHONY: debug
 debug: dist/kernel
 	# Start QEMU with debugger
-	($(QEMU)            \
-	-S -s               \
-	-kernel $<          \
+	($(QEMU)         \
+	-S -s            \
+	-kernel $<       \
 	$(QEMU_FLAGS) &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
