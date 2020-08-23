@@ -44,12 +44,12 @@ AS      = $(shell command -v i686-elf-as)
 CXX     = $(shell command -v i686-elf-gcc)
 LD      = $(shell command -v i686-elf-ld)
 OBJCP   = $(shell command -v i686-elf-objcopy)
-MKGRUB 	= $(shell command -v grub-mkrescue)
+MKGRUB  = $(shell command -v grub-mkrescue)
 # C / C++ flags (include directory)
-C_FLAGS =                   \
+CFLAGS =                   \
 	-I ${SYSROOT}/usr/include/kernel/
 # C++ only flags (-lgcc flag is used b/c it has helpful functions)
-CXX_FLAGS =                 \
+CXXFLAGS =                  \
 	-m32                    \
 	-g                      \
 	-nostartfiles           \
@@ -93,7 +93,7 @@ mkdir_obj_dirs:
 # C++ source -> object
 obj/%.o: kernel/%.cpp $(HEADERS)
 	$(MAKE) mkdir_obj_dirs
-	$(CXX) $(CPP_FLAGS) $(C_FLAGS) $(CXX_FLAGS) -c -o $@ $<
+	$(CXX) $(CPP_FLAGS) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 # Assembly source -> object
 obj/%.o: kernel/%.s
