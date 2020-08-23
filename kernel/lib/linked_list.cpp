@@ -12,18 +12,18 @@
  */
 
 #include <lib/linked_list.hpp>
-#include <stddef.h>
+#include <lib/stdio.hpp>
 
 // initialize a one element DList
 void dlist_init(DList *dlist) {
-	//printf("%s(%p)\n", __FUNCTION__, dlist);
+	//px_kprintf("%s(%p)\n", __FUNCTION__, dlist);
     dlist->next = dlist;
     dlist->prev = dlist;
 }
 
 // insert d2 after d1
 void dlist_insert_after(DList *d1, DList *d2) {
-	//printf("%s(%p, %p)\n", __FUNCTION__, d1, d2);
+	//px_kprintf("%s(%p, %p)\n", __FUNCTION__, d1, d2);
     DList *n1 = d1->next;
     DList *e2 = d2->prev;
 
@@ -35,7 +35,7 @@ void dlist_insert_after(DList *d1, DList *d2) {
 
 // insert d2 before d1
 void dlist_insert_before(DList *d1, DList *d2) {
-	//printf("%s(%p, %p)\n", __FUNCTION__, d1, d2);
+	//px_kprintf("%s(%p, %p)\n", __FUNCTION__, d1, d2);
     DList *e1 = d1->prev;
     DList *e2 = d2->prev;
 
@@ -47,7 +47,7 @@ void dlist_insert_before(DList *d1, DList *d2) {
 
 // remove d from the list
 void dlist_remove(DList *d) {
-	//printf("%s(%p)\n", __FUNCTION__, d);
+	//px_kprintf("%s(%p)\n", __FUNCTION__, d);
     d->prev->next = d->next;
     d->next->prev = d->prev;
     d->next = d;
@@ -56,7 +56,7 @@ void dlist_remove(DList *d) {
 
 // push d2 to the front of the d1p list
 void dlist_push(DList **d1p, DList *d2) {
-	//printf("%s(%p, %p)\n", __FUNCTION__, d1p, d2);
+	//px_kprintf("%s(%p, %p)\n", __FUNCTION__, d1p, d2);
     if (*d1p != NULL) {
 	    dlist_insert_before(*d1p, d2);
     }
@@ -65,7 +65,7 @@ void dlist_push(DList **d1p, DList *d2) {
 
 // pop the front of the dp list
 DList* dlist_pop(DList **dp) {
-	//printf("%s(%p)\n", __FUNCTION__, dp);
+	//px_kprintf("%s(%p)\n", __FUNCTION__, dp);
     DList *d1 = *dp;
     DList *d2 = d1->next;
     dlist_remove(d1);
@@ -79,7 +79,7 @@ DList* dlist_pop(DList **dp) {
 
 // remove d2 from the list, advancing d1p if needed
 void dlist_remove_from(DList **d1p, DList *d2) {
-	//printf("%s(%p, %p)\n", __FUNCTION__, d1p, d2);
+	//px_kprintf("%s(%p, %p)\n", __FUNCTION__, d1p, d2);
     if (*d1p == d2) {
 	    dlist_pop(d1p);
     } else {
