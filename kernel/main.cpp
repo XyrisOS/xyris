@@ -113,26 +113,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_rs232_print("\n");
     px_rs232_print(model);
     px_rs232_print("\n");
-
-    px_kprintf(DBG_WARN "Mapping in test pages\n");
-    px_rs232_print("==== MAP TEST PAGES ====\n");
-    
-    char test_str[] ="this is a test. please do not panic.";
-    char *pages[32];
-    int32_t i;
-    for (i = 0; i < 1024; i++) {
-        pages[i] = (char *)px_get_new_page(0);
-        if (pages[i] == NULL) {
-            px_kprintf(DBG_FAIL "Failed to map in new page at %p\n", pages[i]);
-            break;
-        }
-        memcpy(pages[i], test_str, sizeof(test_str));
-    }
  
-    for (i -= 1; i >= 0; i--) {
-        px_free_page(pages[i], 1);
-    }
-
     px_kprintf(DBG_OKAY "Done.\n");
     
     // Now that we're done make a joyful noise
