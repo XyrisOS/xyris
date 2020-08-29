@@ -214,6 +214,7 @@ void px_free_page(void *page, uint32_t size) {
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t page_index = (uint32_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
+        // TODO: need locking here (maybe make a paging lock)
         bitmap_clear_bit(mapped_pages, i);
         // how much more UN-readable can we make this?? (pls, i need to know...)
         //*(uint32_t*)((uint32_t)page_tables + i * 4) = 0;
@@ -233,4 +234,9 @@ bool px_page_is_present(size_t addr) {
     // Convert the address into an index and
     // check whether the page is in the bitmap
     return bitmap_get_bit(mapped_pages, (addr >> 12));
+}
+
+// TODO: maybe enforce access control here in the future
+uint32_t px_get_phys_page_dir() {
+    return page_dir_addr;
 }

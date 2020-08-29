@@ -151,5 +151,11 @@ void  px_free_page(void *page, uint32_t size);
  */
 bool px_page_is_present(size_t addr);
 
-#endif /* PANIX_MEM_PAGING */
+/**
+ * @brief Gets the physical address of the current page directory.
+ * 
+ * @returns the physical address of the current page directory.
+ */
+uint32_t px_get_phys_page_dir();
 
+#endif /* PANIX_MEM_PAGING */
