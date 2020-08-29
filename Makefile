@@ -14,6 +14,7 @@ GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
 ATT_SRC = $(shell find kernel -name "*.s")
+NASM_SRC = $(shell find kernel -name "*.S")
 CPP_SRC = $(shell find kernel -name "*.cpp")
 HEADERS = $(shell find $(INCLUDE) -name "*.hpp" -name "*.h")
 
@@ -41,6 +42,7 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Compilers/Assemblers/Linkers
 AS      = $(shell command -v i686-elf-as)
+NASM    = $(shell command -v nasm)
 CXX     = $(shell command -v i686-elf-gcc)
 LD      = $(shell command -v i686-elf-ld)
 OBJCP   = $(shell command -v i686-elf-objcopy)
@@ -81,7 +83,8 @@ LD_FLAGS = -m elf_i386 \
 
 # All objects
 OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) \
-	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC))
+	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC)) \
+	  $(patsubst kernel/%.S, obj/%.o, $(NASM_SRC))
 # Object directories, mirroring source
 OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 
@@ -99,6 +102,10 @@ obj/%.o: kernel/%.cpp $(HEADERS)
 obj/%.o: kernel/%.s
 	$(MAKE) mkdir_obj_dirs
 	$(AS) $(AS_FLAGS) -o $@ $<
+
+obj/%.o: kernel/%.S
+	$(MAKE) mkdir_obj_dirs
+	$(NASM) -felf -o $@ $<
 
 # Kernel object
 dist/kernel: $(OBJ)
