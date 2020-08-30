@@ -24,6 +24,21 @@ px_task_t *px_tasks_ready_head = NULL;
 px_task_t *px_tasks_ready_tail = NULL;
 
 static uint64_t _last_time = 0;
+static size_t _scheduler_lock = 0;
+
+static void _aquire_scheduler_lock()
+{
+    asm volatile("cli");
+    _scheduler_lock++;
+}
+
+static void _release_scheduler_lock()
+{
+    _scheduler_lock--;
+    if (_scheduler_lock == 0) {
+        asm volatile("sti");
+    }
+}
 
 void px_tasks_init()
 {
@@ -52,6 +67,9 @@ static void _px_tasks_task_starting()
 {
     // this is called whenever a new task is about to start
     // it is run in the context of the new task
+
+    // the task before this caused the scheduler to lock
+    _release_scheduler_lock();
 }
 
 // emulate a stack push
@@ -140,14 +158,19 @@ void px_tasks_update_time()
 
 void px_tasks_schedule()
 {
+    // we must lock on all scheduling operations
+    _aquire_scheduler_lock();
     // get the next task
     px_task_t *task = _px_tasks_dequeue_ready();
     // don't need to do anything if there's nothing ready to run
-    if (task == NULL) return;
+    if (task == NULL) goto done;
     // do time accounting
     px_tasks_update_time();
     // switch to the task
     px_tasks_switch_to(task);
+done:
+    // this will run when we switch back to the calling task
+    _release_scheduler_lock();
 }
 
 uint64_t px_tasks_get_self_time()
