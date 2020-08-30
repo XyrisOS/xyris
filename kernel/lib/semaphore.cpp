@@ -138,6 +138,6 @@ uint32_t px_sem_getval(px_sem_t *sem, uint32_t *val) {
         return -1;
     }
     uint32_t count = -1;
-    __atomic_load (&sem->count, &count, __ATOMIC_RELEASE);
+    __atomic_load(&sem->count, &count, __ATOMIC_ACQUIRE);
     return count;
 }

@@ -55,6 +55,7 @@ int px_mutex_lock(px_mutex_t *mutex) {
         errno = EINVAL;
         return -1;
     }
+    // Check if the mutex is unlocked
     while (__atomic_test_and_set(&mutex->locked, __ATOMIC_RELEASE))
     {
         // Busy wait while trying to get the lock
@@ -70,10 +71,7 @@ int px_mutex_trylock(px_mutex_t *mutex) {
         errno = EINVAL;
         return -1;
     }
-    // Used to store the current value of the semaphore for atomic comparison later.
-    bool locked = mutex->locked;
-    // Compare the semaphore's current value to the value recorded earlier.
-    // If the semaphore counter is already 0 then just skip the compare and exhange.
+    // If we cannot immediately acquire the lock then just return an error
     if (__atomic_test_and_set(&mutex->locked, __ATOMIC_RELEASE))
     {
         errno = EINVAL;
