@@ -83,7 +83,7 @@ int px_sem_post(px_sem_t *sem);
  * @return int Returns 0 on success and -1 on failure.
  * When an error occurs errno is set.
  */
-int px_sem_getval(px_sem_t *sem, uint32_t *val);
+uint32_t px_sem_getval(px_sem_t *sem, uint32_t *val);
 /**
  * @brief Destroys a semaphore by removing it from memory.
  * 
