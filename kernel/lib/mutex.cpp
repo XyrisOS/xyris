@@ -74,14 +74,11 @@ int px_mutex_trylock(px_mutex_t *mutex) {
     bool locked = mutex->locked;
     // Compare the semaphore's current value to the value recorded earlier.
     // If the semaphore counter is already 0 then just skip the compare and exhange.
-    do
+    if (__atomic_test_and_set(&mutex->locked, __ATOMIC_RELEASE))
     {
-        while (locked == true)
-        {
-            locked = mutex->locked;
-        }
-    // Fail using atomic relaxed because it may allow us to get to the "waiting" state faster.
-    } while(!__atomic_compare_exchange_n(&mutex->locked, &locked, false, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED));
+        errno = EINVAL;
+        return -1;
+    }
     // Success, return 0
     return 0;
 }
