@@ -6,9 +6,13 @@ struc task
     .time_used: resq 1
 endstruc
 
+%define TASK_RUNNING 0
+%define TASK_READY   1
+
 bits    32
 section .text
-extern  px_current_task:data
+extern  px_current_task:data, px_tasks_ready_tail:data
+extern  _px_tasks_enqueue_ready:function
 global  px_tasks_switch_to:function
 px_tasks_switch_to:
     ;Save previous task's state
@@ -24,7 +28,13 @@ px_tasks_switch_to:
  
     mov edi,[px_current_task]        ;edi = address of the previous task's "thread control block"
     mov [edi+task.stack],esp      ;Save ESP for previous task's kernel stack in the thread's TCB
- 
+    cmp dword [edi+task.state],TASK_RUNNING
+    jne .state_updated
+    mov dword [edi+task.state],TASK_READY ;Set the task's state to ready (from running)
+    push edi ; push the task to be enqueued
+    call _px_tasks_enqueue_ready ; call the enqueue function
+    add esp,4 ; fix up the stack
+ .state_updated:
     ;Load next task's state
     mov esi,[esp+(4+1)*4]         ;esi = address of the next task's "thread control block" (parameter passed on stack)
     mov [px_current_task],esi        ;Current task's TCB is the next task TCB
@@ -33,6 +43,7 @@ px_tasks_switch_to:
 
     ; at this point we are operating under the new task's stack
 
+    mov dword [esi+task.state],TASK_RUNNING ;this task is now running
     mov eax,[esi+task.page_dir]   ;eax = address of page directory for next task
     ;mov ebx,[esi+TCB.ESP0]       ;ebx = address for the top of the next task's kernel stack
     ;mov [TSS.ESP0],ebx           ;Adjust the ESP0 field in the TSS (used by CPU for for CPL=3 -> CPL=0 privilege level changes)

@@ -20,6 +20,9 @@
 #undef _X86INTRIN_H_INCLUDED
 
 px_task_t *px_current_task = NULL;
+px_task_t *px_tasks_ready_head = NULL;
+px_task_t *px_tasks_ready_tail = NULL;
+
 static uint64_t _last_time = 0;
 
 void px_tasks_init()
@@ -33,8 +36,8 @@ void px_tasks_init()
         .stack_top = 0,
         // this will be the same for kernel tasks
         .page_dir = px_get_phys_page_dir(),
-        // this is a circularly-linked list with only this task 
-        .next_task = this_task,
+        // this is a linked list with only this task 
+        .next_task = NULL,
         // this task is currently running
         .state = TASK_RUNNING,
         // just say that this task hasn't spent any time running yet
@@ -61,11 +64,38 @@ static inline void _px_stack_push_word(void **stack_pointer, size_t value)
     **(size_t**)stack_pointer = value;
 }
 
-static void _px_tasks_insert_after_current(px_task_t *task)
+extern "C" void _px_tasks_enqueue_ready(px_task_t *task)
 {
-    px_task_t *temp = px_current_task->next_task;
-    px_current_task->next_task = task;
-    task->next_task = temp;
+    if (px_tasks_ready_head == NULL) {
+        px_tasks_ready_head = task;
+    }
+    if (px_tasks_ready_tail != NULL) {
+        // the current last task's next pointer will be this task
+        px_tasks_ready_tail->next_task = task;
+    }
+    // and now this task becomes the last task
+    px_tasks_ready_tail = task;
+}
+
+static px_task_t *_px_tasks_dequeue_ready()
+{
+    px_task_t *task;
+    if (px_tasks_ready_head == NULL) {
+        // can't dequeue if there's not anything there
+        return NULL;
+    }
+    // the head of the list is the next item
+    task = px_tasks_ready_head;
+    // the new head is the next task
+    px_tasks_ready_head = task->next_task;
+    if (px_tasks_ready_head == NULL) {
+        // if there are no more items in the list, then
+        // the last item in the list will also be null
+        px_tasks_ready_tail = NULL;
+    }
+    // it doesn't make sense to have a next_task when it's not in a list
+    task->next_task = NULL;
+    return task;
 }
 
 px_task_t *px_tasks_new(void (*entry)(void))
@@ -93,10 +123,10 @@ px_task_t *px_tasks_new(void (*entry)(void))
         .stack_top = (uintptr_t)stack_pointer,
         .page_dir = px_get_phys_page_dir(),
         .next_task = NULL,
-        .state = TASK_PAUSED,
+        .state = TASK_READY,
         .time_used = 0
     };
-    _px_tasks_insert_after_current(new_task);
+    _px_tasks_enqueue_ready(new_task);
     return new_task;
 }
 
@@ -110,8 +140,14 @@ void px_tasks_update_time()
 
 void px_tasks_schedule()
 {
+    // get the next task
+    px_task_t *task = _px_tasks_dequeue_ready();
+    // don't need to do anything if there's nothing ready to run
+    if (task == NULL) return;
+    // do time accounting
     px_tasks_update_time();
-    px_tasks_switch_to(px_current_task->next_task);
+    // switch to the task
+    px_tasks_switch_to(task);
 }
 
 uint64_t px_tasks_get_self_time()

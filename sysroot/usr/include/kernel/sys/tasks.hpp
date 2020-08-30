@@ -18,6 +18,7 @@
 
 enum px_task_state {
     TASK_RUNNING,
+    TASK_READY,
     TASK_BLOCKED,
     TASK_STOPPED,
     TASK_PAUSED
