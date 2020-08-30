@@ -12,8 +12,15 @@
 #include <mem/heap.hpp>
 #include <sys/panic.hpp>
 #include <stdint.h>    // Data type definitions
+// this is a literal hack to specifically circumvent validation checks
+// it seems to work fine for the specific intrinsic we need
+// we should probably investigate this further at some point...
+#define _X86INTRIN_H_INCLUDED
+#include <ia32intrin.h> // needed for __rdtsc
+#undef _X86INTRIN_H_INCLUDED
 
 px_task_t *px_current_task = NULL;
+static uint64_t _last_time = 0;
 
 void px_tasks_init()
 {
@@ -29,15 +36,17 @@ void px_tasks_init()
         // this is a circularly-linked list with only this task 
         .next_task = this_task,
         // this task is currently running
-        .state = TASK_RUNNING
+        .state = TASK_RUNNING,
+        // just say that this task hasn't spent any time running yet
+        .time_used = 0
     };
+    _last_time = __rdtsc();
     // this is the current task
     px_current_task = this_task;
 }
 
 static void _px_tasks_task_starting()
 {
-    asm("nop");
     // this is called whenever a new task is about to start
     // it is run in the context of the new task
 }
@@ -84,13 +93,29 @@ px_task_t *px_tasks_new(void (*entry)(void))
         .stack_top = (uintptr_t)stack_pointer,
         .page_dir = px_get_phys_page_dir(),
         .next_task = NULL,
-        .state = TASK_PAUSED
+        .state = TASK_PAUSED,
+        .time_used = 0
     };
     _px_tasks_insert_after_current(new_task);
     return new_task;
 }
 
+void px_tasks_update_time()
+{
+    uint64_t current_time = __rdtsc();
+    uint64_t delta = current_time - _last_time;
+    px_current_task->time_used += delta;
+    _last_time = current_time;
+}
+
 void px_tasks_schedule()
 {
+    px_tasks_update_time();
     px_tasks_switch_to(px_current_task->next_task);
+}
+
+uint64_t px_tasks_get_self_time()
+{
+    px_tasks_update_time();
+    return px_current_task->time_used;
 }

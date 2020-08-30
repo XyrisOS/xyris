@@ -3,6 +3,7 @@ struc task
     .page_dir:  resd 1
     .next_task: resd 1
     .state:     resd 1
+    .time_used: resq 1
 endstruc
 
 bits    32

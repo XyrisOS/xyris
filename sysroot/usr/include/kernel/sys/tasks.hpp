@@ -31,6 +31,7 @@ struct px_task
     uintptr_t page_dir;
     px_task_t *next_task;
     px_task_state state;
+    uint64_t time_used;
 };
 
 extern px_task_t *px_current_task;
@@ -39,5 +40,6 @@ void px_tasks_init();
 extern "C" void px_tasks_switch_to(px_task_t *task);
 px_task_t *px_tasks_new(void (*entry)(void));
 void px_tasks_schedule();
+uint64_t px_tasks_get_self_time();
 
 #endif /* PANIX_TASKS_HPP */
