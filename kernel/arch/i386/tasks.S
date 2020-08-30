@@ -7,8 +7,8 @@ endstruc
 
 bits    32
 section .text
-extern  px_current_task
-global  px_tasks_switch_to
+extern  px_current_task:data
+global  px_tasks_switch_to:function
 px_tasks_switch_to:
     ;Save previous task's state
     ;Notes:

@@ -36,12 +36,7 @@ struct px_task
 extern px_task_t *px_current_task;
 
 void px_tasks_init();
-#ifdef CPLUSPLUS
-extern "C" {
-error
-#endif
-void px_tasks_switch_to(px_task_t *task);
-#ifdef CPLUSPLUS
-}
-#endif
+extern "C" void px_tasks_switch_to(px_task_t *task);
+px_task_t *px_tasks_new(void (*entry)(void));
+
 #endif /* PANIX_TASKS_HPP */

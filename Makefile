@@ -110,7 +110,7 @@ obj/%.o: kernel/%.s
 
 obj/%.o: kernel/%.S
 	$(MAKE) mkdir_obj_dirs
-	$(NASM) -felf -o $@ $<
+	$(NASM) -f elf32 -o $@ $<
 
 # Kernel object
 dist/kernel: $(OBJ)
