@@ -42,5 +42,7 @@ extern "C" void px_tasks_switch_to(px_task_t *task);
 px_task_t *px_tasks_new(void (*entry)(void));
 void px_tasks_schedule();
 uint64_t px_tasks_get_self_time();
+void px_tasks_block_current(px_task_state reason);
+void px_tasks_unblock(px_task_t *task);
 
 #endif /* PANIX_TASKS_HPP */

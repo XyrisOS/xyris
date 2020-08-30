@@ -63,13 +63,21 @@ void px_tasks_init()
     px_current_task = this_task;
 }
 
-static void _px_tasks_task_starting()
+static void _task_starting()
 {
     // this is called whenever a new task is about to start
     // it is run in the context of the new task
 
     // the task before this caused the scheduler to lock
     _release_scheduler_lock();
+}
+
+static void _task_stopping()
+{
+    // this is called whenever a task is about to stop (i.e. it returned)
+    // it is run in the context of the stopping task
+    px_tasks_block_current(TASK_STOPPED);
+    PANIC("Attempted to schedule a stopped task\n");
 }
 
 // emulate a stack push
@@ -127,11 +135,15 @@ px_task_t *px_tasks_new(void (*entry)(void))
     if (stack == NULL) PANIC("Unable to allocate memory for new task stack.\n");
     // remember, the stack grows up
     void *stack_pointer = stack + PAGE_SIZE;
-    // last entry is the final function to call (the start of the task)
+    // a null stack frame to make the panic screen happy
+    _px_stack_push_word(&stack_pointer, 0);
+    // the last thing to happen is the task stopping function
+    _px_stack_push_word(&stack_pointer, (size_t)_task_stopping);
+    // next entry is the main function to call (the start of the task)
     _px_stack_push_word(&stack_pointer, (size_t)entry);
     // when this task is started, the CPU will pop off this value which will become the new EIP
     // we push this function to allow some setup code to be run from within the context of the new task
-    _px_stack_push_word(&stack_pointer, (size_t)_px_tasks_task_starting);
+    _px_stack_push_word(&stack_pointer, (size_t)_task_starting);
     // our task switching code is going to pop four values off of the stack before returning
     _px_stack_push_word(&stack_pointer, 0);
     _px_stack_push_word(&stack_pointer, 0);
@@ -156,19 +168,24 @@ void px_tasks_update_time()
     _last_time = current_time;
 }
 
-void px_tasks_schedule()
+static void _schedule()
 {
-    // we must lock on all scheduling operations
-    _aquire_scheduler_lock();
     // get the next task
     px_task_t *task = _px_tasks_dequeue_ready();
     // don't need to do anything if there's nothing ready to run
-    if (task == NULL) goto done;
+    if (task == NULL) return;
     // do time accounting
     px_tasks_update_time();
     // switch to the task
     px_tasks_switch_to(task);
-done:
+}
+
+void px_tasks_schedule()
+{
+    // we must lock on all scheduling operations
+    _aquire_scheduler_lock();
+    // run the scheduler
+    _schedule();
     // this will run when we switch back to the calling task
     _release_scheduler_lock();
 }
@@ -177,4 +194,23 @@ uint64_t px_tasks_get_self_time()
 {
     px_tasks_update_time();
     return px_current_task->time_used;
+}
+
+void px_tasks_block_current(px_task_state reason)
+{
+    _aquire_scheduler_lock();
+    px_current_task->state = reason;
+    _schedule();
+    _release_scheduler_lock();
+}
+
+void px_tasks_unblock(px_task_t *task)
+{
+    _aquire_scheduler_lock();
+    if (px_tasks_ready_head == NULL) {
+        px_tasks_switch_to(task);
+    } else {
+        _px_tasks_enqueue_ready(task);
+    }
+    _release_scheduler_lock();
 }
