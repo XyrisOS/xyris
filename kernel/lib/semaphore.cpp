@@ -90,7 +90,7 @@ int sem_trywait(px_sem_t *sem) {
             return -1;
         }
     // We need to fail on an Atomic Acquire Release because it will fail less often (i.e. fewer loop iterations)
-    } while(!__atomic_compare_exchange_n(&sem->count, &curVal, curVal - 1, false, __ATOMIC_RELEASE, __ATOMIC_ACQ_REL));
+    } while(!__atomic_compare_exchange_n(&sem->count, &curVal, curVal - 1, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE));
     // To get here the semaphore must not have been locked.
     return 0;
 }
@@ -114,7 +114,7 @@ int sem_timedwait(px_sem_t *sem, const uint32_t *usec) {
             curVal = sem->count;
         }
     // Fail using atomic relaxed because it may allow us to get to the "waiting" state faster.
-    } while(!__atomic_compare_exchange_n(&sem->count, &curVal, curVal - 1, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED));
+    } while(!__atomic_compare_exchange_n(&sem->count, &curVal, curVal - 1, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE));
     // Return success
     return 0;
 }

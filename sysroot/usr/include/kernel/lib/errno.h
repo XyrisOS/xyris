@@ -14,7 +14,7 @@
 
 // This is currently not thread safe.
 // But we also don't have threads, so problem solved.
-int errno;
+extern int errno;
 
 /**
  * @brief POSIX Error number definitions. These definitions
