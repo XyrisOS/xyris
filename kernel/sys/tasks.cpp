@@ -26,8 +26,8 @@ void px_tasks_init()
         .stack_top = 0,
         // this will be the same for kernel tasks
         .page_dir = px_get_phys_page_dir(),
-        // there are no other tasks yet
-        .next_task = NULL,
+        // this is a circularly-linked list with only this task 
+        .next_task = this_task,
         // this task is currently running
         .state = TASK_RUNNING
     };
@@ -50,6 +50,13 @@ static inline void _px_stack_push_word(void **stack_pointer, size_t value)
     *(uintptr_t*)stack_pointer -= sizeof(size_t);
     // place the new value at that new address
     **(size_t**)stack_pointer = value;
+}
+
+static void _px_tasks_insert_after_current(px_task_t *task)
+{
+    px_task_t *temp = px_current_task->next_task;
+    px_current_task->next_task = task;
+    task->next_task = temp;
 }
 
 px_task_t *px_tasks_new(void (*entry)(void))
@@ -79,5 +86,11 @@ px_task_t *px_tasks_new(void (*entry)(void))
         .next_task = NULL,
         .state = TASK_PAUSED
     };
+    _px_tasks_insert_after_current(new_task);
     return new_task;
+}
+
+void px_tasks_schedule()
+{
+    px_tasks_switch_to(px_current_task->next_task);
 }

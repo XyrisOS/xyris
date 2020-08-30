@@ -38,5 +38,6 @@ extern px_task_t *px_current_task;
 void px_tasks_init();
 extern "C" void px_tasks_switch_to(px_task_t *task);
 px_task_t *px_tasks_new(void (*entry)(void));
+void px_tasks_schedule();
 
 #endif /* PANIX_TASKS_HPP */
