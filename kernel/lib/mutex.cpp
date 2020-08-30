@@ -31,7 +31,7 @@ int px_mutex_init(px_mutex_t *mutex) {
         return -1;
     }
     // Initialize the value to false
-    __atomic_store_n(&mutex->locked, false, __ATOMIC_RELEASE);
+    mutex->locked = false;
     // Success, return 0
     return 0;
 }
@@ -55,12 +55,12 @@ int px_mutex_lock(px_mutex_t *mutex) {
         errno = EINVAL;
         return -1;
     }
-    if (__atomic_test_and_set(&mutex->locked, __ATOMIC_RELEASE))
+    while (__atomic_test_and_set(&mutex->locked, __ATOMIC_RELEASE))
     {
-        return 0;
+        // Busy wait while trying to get the lock
     }
-    // If we did not get the lock then return -1.
-    return -1;
+    // Success, return 0
+    return 0;
 }
 
 int px_mutex_trylock(px_mutex_t *mutex) {

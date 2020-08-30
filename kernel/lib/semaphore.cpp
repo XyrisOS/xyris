@@ -30,8 +30,8 @@ int px_sem_init(px_sem_t *sem, bool shared, uint32_t value) {
         errno = EINVAL;
         return -1;
     }
-    __atomic_store_n(&sem->count, value, __ATOMIC_RELEASE);
-    __atomic_store_n(&sem->shared, shared, __ATOMIC_RELEASE);
+    sem->count = value;
+    sem->shared = shared;
     return 0;
 }
 
