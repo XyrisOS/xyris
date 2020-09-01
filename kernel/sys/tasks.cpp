@@ -19,12 +19,15 @@
 #include <ia32intrin.h> // needed for __rdtsc
 #undef _X86INTRIN_H_INCLUDED
 
+#include <arch/arch.hpp>
+
 px_task_t *px_current_task = NULL;
 px_task_t *px_tasks_ready_head = NULL;
 px_task_t *px_tasks_ready_tail = NULL;
 
 static uint64_t _last_time = 0;
 static size_t _scheduler_lock = 0;
+static uint64_t _instr_per_ns;
 
 static void _aquire_scheduler_lock()
 {
@@ -40,12 +43,28 @@ static void _release_scheduler_lock()
     }
 }
 
+static void _discover_cpu_speed()
+{
+    uint32_t curr_tick = px_timer_tick;
+    uint64_t curr_rtsc = __rdtsc();
+    while (px_timer_tick != curr_tick + 1) { }
+    curr_rtsc = __rdtsc() - curr_rtsc;
+    _instr_per_ns = curr_rtsc / 1000000;
+}
+
+static inline uint64_t _get_cpu_time_ns()
+{
+    return (__rdtsc()) / _instr_per_ns;
+}
+
 void px_tasks_init()
 {
     // allocate memory for our task structure
     px_task_t *this_task = (px_task_t*)malloc(sizeof(px_task_t));
     // panic if the alloc fails (we have no fallback)
     if (this_task == NULL) PANIC("Unable to allocate memory for new task struct.\n");
+    // discover the CPU speed for accurate scheduling
+    _discover_cpu_speed();
     *this_task = {
         // this will be filled in when we switch to another task for the first time
         .stack_top = 0,
@@ -58,7 +77,7 @@ void px_tasks_init()
         // just say that this task hasn't spent any time running yet
         .time_used = 0
     };
-    _last_time = __rdtsc();
+    _last_time = _get_cpu_time_ns();
     // this is the current task
     px_current_task = this_task;
 }
@@ -77,6 +96,7 @@ static void _task_stopping()
     // this is called whenever a task is about to stop (i.e. it returned)
     // it is run in the context of the stopping task
     px_tasks_block_current(TASK_STOPPED);
+    // prevent undefined behavior from returning to a random address
     PANIC("Attempted to schedule a stopped task\n");
 }
 
@@ -162,7 +182,7 @@ px_task_t *px_tasks_new(void (*entry)(void))
 
 void px_tasks_update_time()
 {
-    uint64_t current_time = __rdtsc();
+    uint64_t current_time = _get_cpu_time_ns();
     uint64_t delta = current_time - _last_time;
     px_current_task->time_used += delta;
     _last_time = current_time;
