@@ -79,8 +79,8 @@ CPP_FLAGS =                 \
 # Assembler flags
 AS_FLAGS = --32
 # Linker flags
-LD_FLAGS = -m elf_i386 \
-           -T kernel/arch/i386/linker.ld
+LD_FLAGS = -T kernel/arch/i386/linker.ld
+
 
 # ***********************************
 # * Source Code Compilation Targets *
@@ -115,7 +115,7 @@ obj/%.o: kernel/%.S
 # Kernel object
 dist/kernel: $(OBJ)
 	@ mkdir -p dist
-	$(LD) $(LD_FLAGS) -o $@ $(OBJ)
+	$(CXX) $(LD_FLAGS) -o $@ $(OBJ) $(CXXFLAGS)
 	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
 
 # Debug build
