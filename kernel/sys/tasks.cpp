@@ -51,12 +51,16 @@ static void _discover_cpu_speed()
     while (px_timer_tick != curr_tick + 1) { }
     curr_rtsc = __rdtsc() - curr_rtsc;
     _instr_per_ns = curr_rtsc / 1000000;
+    // will be inaccurate, but it's the best we can do in these circumstances
+    if (_instr_per_ns == 0) _instr_per_ns = 1;
 }
 
 static inline uint64_t _get_cpu_time_ns()
 {
     return (__rdtsc()) / _instr_per_ns;
 }
+
+static void _on_timer();
 
 void px_tasks_init()
 {
@@ -81,6 +85,7 @@ void px_tasks_init()
     _last_time = _get_cpu_time_ns();
     // this is the current task
     px_current_task = this_task;
+    px_timer_register_callback(_on_timer);
 }
 
 static void _task_starting()
@@ -276,4 +281,49 @@ void px_tasks_unblock(px_task_t *task)
         _px_tasks_enqueue_ready(task);
     }
     _release_scheduler_lock();
+}
+
+void _wakeup(px_task_t *task)
+{
+    task->state = TASK_READY;
+    task->wakeup_time = (0ULL - 1);
+    _px_tasks_enqueue_ready(task);
+}
+
+static void _on_timer()
+{
+    _aquire_scheduler_lock();
+    px_task_t *pre = NULL;
+    px_task_t *task = px_tasks_sleeping.head;
+    bool need_schedule = false;
+    uint64_t time = _get_cpu_time_ns();
+    while (task != NULL) {
+        if (time >= task->wakeup_time) {
+            _remove_task(&px_tasks_sleeping, task, pre);
+            _wakeup(task);
+            need_schedule = true;
+        }
+        pre = task;
+        task = task->next_task;
+    }
+    if (need_schedule) {
+        _schedule();
+    }
+    _release_scheduler_lock();
+}
+
+void px_tasks_nano_sleep_until(uint64_t time)
+{
+    // TODO: maybe validate that this time is in the future?
+    _aquire_scheduler_lock();
+    px_current_task->state = TASK_SLEEPING;
+    px_current_task->wakeup_time = time;
+    _enqueue_sleeping(px_current_task);
+    _schedule();
+    _release_scheduler_lock();
+}
+
+void px_tasks_nano_sleep(uint64_t time)
+{
+    px_tasks_nano_sleep_until(_get_cpu_time_ns() + time);
 }
