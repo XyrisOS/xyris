@@ -17,6 +17,12 @@
 static void px_timer_callback(registers_t *regs);
 volatile uint32_t px_timer_tick;
 
+typedef void (*voidfunc_t)();
+
+#define MAX_CALLBACKS 8
+static size_t _callback_count = 0;
+static voidfunc_t _callbacks[MAX_CALLBACKS];
+
 /**
  * Sleep Timer Non-Busy Waiting Idea:
  * Create a struct that contains the end time and the callback
@@ -42,6 +48,9 @@ void px_timer_init(uint32_t freq) {
 
 static void px_timer_callback(registers_t *regs) {
     px_timer_tick++;
+    for (size_t i = 0; i < _callback_count; i++) {
+        _callbacks[i]();
+    }
 }
 
 void px_timer_print() {
@@ -55,4 +64,11 @@ void sleep(uint32_t ms) {
     while (px_timer_tick != final);
     // Return now that we've waited long enough
     return;
+}
+
+void px_timer_register_callback(void (*func)()) {
+    if (_callback_count < MAX_CALLBACKS - 1) {
+        _callbacks[_callback_count] = func;
+        _callback_count++;
+    }
 }

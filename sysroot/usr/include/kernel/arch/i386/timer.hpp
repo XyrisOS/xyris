@@ -37,4 +37,6 @@ void px_timer_print();
  */
 void sleep(uint32_t ms);
 
+void px_timer_register_callback(void (*func)());
+
 #endif /* PANIX_I386_TIMER_HPP */
