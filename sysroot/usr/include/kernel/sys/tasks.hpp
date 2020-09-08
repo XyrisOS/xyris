@@ -35,6 +35,13 @@ struct px_task
     uint64_t time_used;
 };
 
+typedef struct px_tasklist
+{
+    px_task_t *head;
+    px_task_t *tail;
+} px_tasklist_t;
+
+
 extern px_task_t *px_current_task;
 
 void px_tasks_init();

@@ -22,8 +22,9 @@
 #include <arch/arch.hpp>
 
 px_task_t *px_current_task = NULL;
-px_task_t *px_tasks_ready_head = NULL;
-px_task_t *px_tasks_ready_tail = NULL;
+
+px_tasklist_t px_tasks_ready = { 0 };
+px_tasklist_t px_tasks_sleeping = { 0 };
 
 static uint64_t _last_time = 0;
 static size_t _scheduler_lock = 0;
@@ -110,38 +111,80 @@ static inline void _px_stack_push_word(void **stack_pointer, size_t value)
     **(size_t**)stack_pointer = value;
 }
 
-extern "C" void _px_tasks_enqueue_ready(px_task_t *task)
+static void _enqueue_task(px_tasklist_t *list, px_task *task)
 {
-    if (px_tasks_ready_head == NULL) {
-        px_tasks_ready_head = task;
+    if (list->head == NULL) {
+        list->head = task;
     }
-    if (px_tasks_ready_tail != NULL) {
+    if (list->tail != NULL) {
         // the current last task's next pointer will be this task
-        px_tasks_ready_tail->next_task = task;
+        list->tail->next_task = task;
     }
     // and now this task becomes the last task
-    px_tasks_ready_tail = task;
+    list->tail = task;
 }
 
-static px_task_t *_px_tasks_dequeue_ready()
+static px_task_t *_dequeue_task(px_tasklist_t *list)
 {
     px_task_t *task;
-    if (px_tasks_ready_head == NULL) {
+    if (list->head == NULL) {
         // can't dequeue if there's not anything there
         return NULL;
     }
     // the head of the list is the next item
-    task = px_tasks_ready_head;
+    task = list->head;
     // the new head is the next task
-    px_tasks_ready_head = task->next_task;
-    if (px_tasks_ready_head == NULL) {
+    list->head = task->next_task;
+    if (list->head == NULL) {
         // if there are no more items in the list, then
         // the last item in the list will also be null
-        px_tasks_ready_tail = NULL;
+        list->tail = NULL;
     }
     // it doesn't make sense to have a next_task when it's not in a list
     task->next_task = NULL;
     return task;
+}
+
+static void _remove_task(px_tasklist_t *list, px_task_t *task, px_task_t *previous)
+{
+    // if this is true, something's not right...
+    if (previous != NULL && previous->next_task != task) {
+        PANIC("Bogus arguments to _remove_task.\n");
+    }
+    // update the head if necessary
+    if (list->head == task) {
+        list->head = task->next_task;
+    }
+    // update the tail if necessary
+    if (list->tail == task) {
+        list->tail = previous;
+    }
+    // update the previous task if necessary
+    if (previous != NULL) {
+        previous->next_task = task->next_task;
+    }
+    // it's not in any list anymore, so clear its next pointer
+    task->next_task = NULL;
+}
+
+extern "C" void _px_tasks_enqueue_ready(px_task_t *task)
+{
+    _enqueue_task(&px_tasks_ready, task);
+}
+
+static px_task_t *_px_tasks_dequeue_ready()
+{
+    return _dequeue_task(&px_tasks_ready);
+}
+
+static void _enqueue_sleeping(px_task_t *task)
+{
+    _enqueue_task(&px_tasks_sleeping, task);
+}
+
+static px_task_t *_dequeue_sleeping()
+{
+    return _dequeue_task(&px_tasks_sleeping);
 }
 
 px_task_t *px_tasks_new(void (*entry)(void))
@@ -227,7 +270,7 @@ void px_tasks_block_current(px_task_state reason)
 void px_tasks_unblock(px_task_t *task)
 {
     _aquire_scheduler_lock();
-    if (px_tasks_ready_head == NULL) {
+    if (px_tasks_ready.head == NULL) {
         px_tasks_switch_to(task);
     } else {
         _px_tasks_enqueue_ready(task);
