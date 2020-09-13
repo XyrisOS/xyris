@@ -47,6 +47,7 @@ int px_ring_buffer_destroy(px_ring_buff_t* buff) {
         buff = NULL;
     } else {
         status = -1;
+        errno = EINVAL;
     }
     return status;
 }
@@ -61,7 +62,7 @@ int px_ring_buffer_enqueue(px_ring_buff_t* buff, uint8_t byte) {
         } else {
             // Write the data at the write index
             buff->data[buff->head] = byte;
-            buff->head = ((buff->head + 1) % (buff->size - 1));
+            buff->head = ((buff->head + 1) % buff->size);
             ++buff->length;
         }
     } else {
@@ -82,7 +83,7 @@ int px_ring_buffer_dequeue(px_ring_buff_t* buff, uint8_t* data) {
         } else {
             // Read out the data and decrement the position
             *data = buff->data[buff->tail];
-            buff->tail = ((buff->tail + 1) % (buff->size - 1));
+            buff->tail = ((buff->tail + 1) % buff->size);
             --buff->length;
         }
     } else {
