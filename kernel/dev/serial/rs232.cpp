@@ -11,8 +11,9 @@
 
 #include <arch/arch.hpp>
 #include <dev/serial/rs232.hpp>
+#include <mem/heap.hpp>
 
-char* lineBuffer[RS_232_BUF_SIZE];
+static px_ring_buff_t* read_buffer = NULL;
 uint8_t rs_232_line_index;
 uint16_t rs_232_port_base;
 
@@ -48,11 +49,18 @@ void px_rs232_print(char* str) {
 }
 
 static void px_rs232_callback(registers_t *regs) {
-    char str[2] = { px_rs232_read_char(), '\0' };
-    if (str[0] == '\r') {
-        px_rs232_print("\n");
+    // Grab the input character
+    char in = px_rs232_read_char();
+    // Change carriage returns to newlines
+    if (in == '\r') {
+        in = '\n';
     }
+    // Create a string and print it so that the
+    // user can see what they're typing.
+    char str[2] = {in, '\0'};
     px_rs232_print(str);
+    // Add the character to the circular buffer
+    px_ring_buffer_enqueue(read_buffer, (uint8_t)in);
 }
 
 void px_rs232_init(uint16_t com_id) {
@@ -81,4 +89,15 @@ void px_rs232_init(uint16_t com_id) {
         "/_/    \\__,_/_/ /_/_/_/|_|    |___/____/  \n\n\033[0m"
         "Panix Serial Output Debugger\n\n"
     );
+}
+
+px_ring_buff_t* px_rs232_init_buffer(int size) {
+    // Allocate space for the input buffer
+    read_buffer = (px_ring_buff_t*)malloc(sizeof(px_ring_buff_t));
+    // Initialize the ring buffer
+    if (px_ring_buffer_init(read_buffer, size) == 0) {
+        return read_buffer;
+    } else {
+        return NULL;
+    }
 }

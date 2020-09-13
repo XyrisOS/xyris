@@ -11,6 +11,7 @@
  */
 
 #include <stdint.h>
+#include <lib/ring_buffer.hpp>
 
 #define RS_232_COM1 0x3F8
 #define RS_232_COM2 0x2F8
@@ -45,3 +46,13 @@ void px_rs232_init(uint16_t com_id);
  * @param str Input string to be printed.
  */
 void px_rs232_print(char* str);
+
+/**
+ * @brief Initializes the serial input buffer and
+ * returns a pointer to said buffer if successful.
+ * 
+ * @param size Buffer capacity (in bytes)
+ * @return px_ring_buff_t* Pointer to buffer. NULL
+ * if memory could not be allocated.
+ */
+px_ring_buff_t* px_rs232_init_buffer(int size);
