@@ -1,7 +1,7 @@
 /**
  * @file ring_buffer.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief A circular buffer is a buffer method where the same
+ * @brief A ring buffer is a buffer method where the same
  * memory used to contain data is reused. Inserting and removing
  * data is done in a queue-like fashion.
  * @version 0.3
@@ -40,13 +40,12 @@ int px_ring_buffer_init(px_ring_buff_t* buff, int size);
  * @param buff Reference circular buffer
  * @return int Returns 0 on success and -1 on error.
  */
-int px_ring_buffer_destroy(px_ring_buff_t* buff);
+void px_ring_buffer_destroy(px_ring_buff_t* buff);
 /**
  * @brief Writes a byte into the circular buffer.
  * 
  * @param buff Reference circular buffer
  * @param byte Byte to write to the buffer
- * @return int Returns 0 on success and -1 on error.
  */
 int px_ring_buffer_enqueue(px_ring_buff_t* buff, uint8_t byte);
 /**
