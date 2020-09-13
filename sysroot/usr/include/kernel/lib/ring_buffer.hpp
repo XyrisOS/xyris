@@ -40,7 +40,7 @@ int px_ring_buffer_init(px_ring_buff_t* buff, int size);
  * @param buff Reference circular buffer
  * @return int Returns 0 on success and -1 on error.
  */
-void px_ring_buffer_destroy(px_ring_buff_t* buff);
+int px_ring_buffer_destroy(px_ring_buff_t* buff);
 /**
  * @brief Writes a byte into the circular buffer.
  * 

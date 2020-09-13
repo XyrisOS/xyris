@@ -39,11 +39,16 @@ int px_ring_buffer_init(px_ring_buff_t* buff, int size) {
     return status;
 }
 
-void px_ring_buffer_destroy(px_ring_buff_t* buff)
-{
-    // Free our data buffer and set the struct to null
-    free(buff->data);
-    buff = NULL;
+int px_ring_buffer_destroy(px_ring_buff_t* buff) {
+    int status = 0;
+    if (buff != NULL) {
+        // Free our data buffer and set the struct to null
+        free(buff->data);
+        buff = NULL;
+    } else {
+        status = -1;
+    }
+    return status;
 }
 
 int px_ring_buffer_enqueue(px_ring_buff_t* buff, uint8_t byte) {
@@ -56,7 +61,7 @@ int px_ring_buffer_enqueue(px_ring_buff_t* buff, uint8_t byte) {
         } else {
             // Write the data at the write index
             buff->data[buff->head] = byte;
-            buff->head = ((buff->head + 1) & (buff->size - 1));
+            buff->head = ((buff->head + 1) % (buff->size - 1));
             ++buff->length;
         }
     } else {
@@ -77,7 +82,7 @@ int px_ring_buffer_dequeue(px_ring_buff_t* buff, uint8_t* data) {
         } else {
             // Read out the data and decrement the position
             *data = buff->data[buff->tail];
-            buff->tail = ((buff->tail + 1) & (buff->size - 1));
+            buff->tail = ((buff->tail + 1) % (buff->size - 1));
             --buff->length;
         }
     } else {
