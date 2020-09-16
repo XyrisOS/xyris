@@ -50,9 +50,43 @@ void px_rs232_print(char* str);
 /**
  * @brief Initializes the serial input buffer and
  * returns a pointer to said buffer if successful.
- * 
+ *
  * @param size Buffer capacity (in bytes)
  * @return px_ring_buff_t* Pointer to buffer. NULL
  * if memory could not be allocated.
  */
 px_ring_buff_t* px_rs232_init_buffer(int size);
+
+/**
+ * @brief Returns the pointer to the RS232 input
+ * buffer.
+ *
+ * @return px_ring_buff_t* Ring buffer pointer
+ */
+px_ring_buff_t* px_rs232_get_buffer();
+
+/**
+ * @brief Returns the most recently received byte
+ * from the serial input.
+ * @return char Character representation of latest
+ * buffer byte.
+ */
+char px_rs232_get_char();
+
+/**
+ * @brief Returns all of the characters within the
+ * input buffer up until a newline or a null terminator.
+ *
+ * @return char* String read in from serial input. Needs
+ * to be freed later.
+ */
+char* px_rs232_get_str();
+
+/**
+ * @brief Closes the serial input buffer and frees all of
+ * the data contained within.
+ *
+ * @return int Returns 0 on success and -1 on error. Errno
+ * is set appropriately.
+ */
+int px_rs232_close();

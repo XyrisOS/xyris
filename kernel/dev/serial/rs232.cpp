@@ -1,12 +1,12 @@
 /**
  * @file rs232.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.3
  * @date 2020-06-29
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2020
- * 
+ *
  */
 
 #include <arch/arch.hpp>
@@ -100,4 +100,45 @@ px_ring_buff_t* px_rs232_init_buffer(int size) {
     } else {
         return NULL;
     }
+}
+
+px_ring_buff_t* px_rs232_get_buffer() {
+    // Can return NULL. This is documented.
+    return read_buffer;
+}
+
+char px_rs232_get_char() {
+    // Grab the last byte and convert to a char
+    uint8_t data;
+    px_ring_buffer_dequeue(read_buffer, &data);
+    return (char)data;
+}
+
+char* px_rs232_get_str() {
+    int idx = 0;
+    char* str = (char*)malloc(sizeof(char) * 1024);
+    // Keep reading until the buffer is empty or
+    // a newline is read.
+    while (!px_ring_buffer_is_empty(read_buffer)) {
+        uint8_t byte;
+        px_ring_buffer_dequeue(read_buffer, &byte);
+        str[idx] = (char)byte;
+        ++idx;
+        // Break if it's a newline
+        if ((char)byte == '\n') {
+            break;
+        }
+    }
+    // Add the null terminator
+    str[idx] = '\0';
+    // Return the string
+    return str;
+}
+
+int px_rs232_close() {
+    int ret = -1;
+    if (read_buffer != NULL) {
+        ret = px_ring_buffer_destroy(read_buffer);
+    }
+    return ret;
 }

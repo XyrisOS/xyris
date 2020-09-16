@@ -71,7 +71,7 @@ extern "C" void px_call_constructors() {
  * stack protection. GCC will automatically write the
  * canary code and use this function as the handler
  * for when a smashed stack is detected.
- * 
+ *
  */
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
 extern "C" void __stack_chk_fail(void)
@@ -98,6 +98,8 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
     // Enable interrupts now that we're out of a critical area
     px_interrupts_enable();
+    // Enable serial input
+    px_rs232_init_buffer(1024);
     // Print some info to show we did things right
     px_rtc_print();
     // Get the CPU vendor and model data to print
@@ -112,12 +114,12 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_rs232_print("\n");
     px_rs232_print(model);
     px_rs232_print("\n");
- 
+    // Done
     px_kprintf(DBG_OKAY "Done.\n");
-    
+
     // Now that we're done make a joyful noise
     px_kernel_boot_tone();
-    
+
     // Keep the kernel alive.
     px_kprintf("\n");
     int i = 0;
