@@ -114,9 +114,8 @@ char px_rs232_get_char() {
     return (char)data;
 }
 
-char* px_rs232_get_str() {
+int px_rs232_get_str(char* str, int max) {
     int idx = 0;
-    char* str = (char*)malloc(sizeof(char) * 1024);
     // Keep reading until the buffer is empty or
     // a newline is read.
     while (!px_ring_buffer_is_empty(read_buffer)) {
@@ -124,21 +123,26 @@ char* px_rs232_get_str() {
         px_ring_buffer_dequeue(read_buffer, &byte);
         str[idx] = (char)byte;
         ++idx;
-        // Break if it's a newline
-        if ((char)byte == '\n') {
+        // Break if it's a newline or null
+        if ((char)byte == '\n'
+        || byte == 0
+        || idx == (max - 1))
+        {
+            // Add the null terminator
+            str[idx] = '\0';
+            ++idx;
             break;
         }
     }
-    // Add the null terminator
-    str[idx] = '\0';
     // Return the string
-    return str;
+    return idx;
 }
 
 int px_rs232_close() {
     int ret = -1;
     if (read_buffer != NULL) {
         ret = px_ring_buffer_destroy(read_buffer);
+        read_buffer = NULL;
     }
     return ret;
 }

@@ -76,11 +76,12 @@ char px_rs232_get_char();
 /**
  * @brief Returns all of the characters within the
  * input buffer up until a newline or a null terminator.
- *
- * @return char* String read in from serial input. Needs
- * to be freed later.
+ * 
+ * @param str Character buffer to hold the serial input
+ * @param max Max number of characters to read in
+ * @return char* Returns the number of characters read.
  */
-char* px_rs232_get_str();
+int px_rs232_get_str(char* str, int max);
 
 /**
  * @brief Closes the serial input buffer and frees all of
