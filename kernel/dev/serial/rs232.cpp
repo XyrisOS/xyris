@@ -109,8 +109,11 @@ px_ring_buff_t* px_rs232_get_buffer() {
 
 char px_rs232_get_char() {
     // Grab the last byte and convert to a char
-    uint8_t data;
-    px_ring_buffer_dequeue(read_buffer, &data);
+    uint8_t data = 0;
+    if (read_buffer != NULL)
+    {
+        px_ring_buffer_dequeue(read_buffer, &data);
+    }
     return (char)data;
 }
 
