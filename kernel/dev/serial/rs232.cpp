@@ -1,18 +1,22 @@
 /**
  * @file rs232.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.3
  * @date 2020-06-29
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2020
- * 
+ *
+ * TODO: Make this module robust enough for fast transmission of binary data
+ * currently it adequately supports slow, character transmission.
+ *
  */
 
 #include <arch/arch.hpp>
 #include <dev/serial/rs232.hpp>
+#include <mem/heap.hpp>
 
-char* lineBuffer[RS_232_BUF_SIZE];
+static px_ring_buff_t* read_buffer = NULL;
 uint8_t rs_232_line_index;
 uint16_t rs_232_port_base;
 
@@ -48,11 +52,18 @@ void px_rs232_print(char* str) {
 }
 
 static void px_rs232_callback(registers_t *regs) {
-    char str[2] = { px_rs232_read_char(), '\0' };
-    if (str[0] == '\r') {
-        px_rs232_print("\n");
+    // Grab the input character
+    char in = px_rs232_read_char();
+    // Change carriage returns to newlines
+    if (in == '\r') {
+        in = '\n';
     }
+    // Create a string and print it so that the
+    // user can see what they're typing.
+    char str[2] = {in, '\0'};
     px_rs232_print(str);
+    // Add the character to the circular buffer
+    px_ring_buffer_enqueue(read_buffer, (uint8_t)in);
 }
 
 void px_rs232_init(uint16_t com_id) {
@@ -81,4 +92,63 @@ void px_rs232_init(uint16_t com_id) {
         "/_/    \\__,_/_/ /_/_/_/|_|    |___/____/  \n\n\033[0m"
         "Panix Serial Output Debugger\n\n"
     );
+}
+
+px_ring_buff_t* px_rs232_init_buffer(int size) {
+    // Allocate space for the input buffer
+    read_buffer = (px_ring_buff_t*)malloc(sizeof(px_ring_buff_t));
+    // Initialize the ring buffer
+    if (px_ring_buffer_init(read_buffer, size) == 0) {
+        return read_buffer;
+    } else {
+        return NULL;
+    }
+}
+
+px_ring_buff_t* px_rs232_get_buffer() {
+    // Can return NULL. This is documented.
+    return read_buffer;
+}
+
+char px_rs232_get_char() {
+    // Grab the last byte and convert to a char
+    uint8_t data = 0;
+    if (read_buffer != NULL)
+    {
+        px_ring_buffer_dequeue(read_buffer, &data);
+    }
+    return (char)data;
+}
+
+int px_rs232_get_str(char* str, int max) {
+    int idx = 0;
+    // Keep reading until the buffer is empty or
+    // a newline is read.
+    while (!px_ring_buffer_is_empty(read_buffer)) {
+        uint8_t byte;
+        px_ring_buffer_dequeue(read_buffer, &byte);
+        str[idx] = (char)byte;
+        ++idx;
+        // Break if it's a newline or null
+        if ((char)byte == '\n'
+        || byte == 0
+        || idx == (max - 1))
+        {
+            // Add the null terminator
+            str[idx] = '\0';
+            ++idx;
+            break;
+        }
+    }
+    // Return the string
+    return idx;
+}
+
+int px_rs232_close() {
+    int ret = -1;
+    if (read_buffer != NULL) {
+        ret = px_ring_buffer_destroy(read_buffer);
+        read_buffer = NULL;
+    }
+    return ret;
 }

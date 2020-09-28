@@ -75,8 +75,9 @@ extern "C" void px_irq_handler(registers_t *regs) {
     px_set_indicator(VGA_Red);
     /* After every interrupt we need to send an EOI to the PICs
      * or they will not send another interrupt again */
-    if (regs->int_num >= 40)
+    if (regs->int_num >= 40) {
         px_write_byte(0xA0, 0x20);                      /* slave  */
+    }
     px_write_byte(0x20, 0x20);                          /* master */
 
     /* Handle the interrupt in a more modular way */
