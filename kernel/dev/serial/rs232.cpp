@@ -7,6 +7,9 @@
  *
  * @copyright Copyright the Panix Contributors (c) 2020
  *
+ * TODO: Make this module robust enough for fast transmission of binary data
+ * currently it adequately supports slow, character transmission.
+ *
  */
 
 #include <arch/arch.hpp>
