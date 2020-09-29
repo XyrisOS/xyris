@@ -11,6 +11,8 @@
 #include <sys/tasks.hpp>
 #include <mem/heap.hpp>
 #include <sys/panic.hpp>
+#include <lib/stdio.hpp>
+
 #include <stdint.h>    // Data type definitions
 // this is a literal hack to specifically circumvent validation checks
 // it seems to work fine for the specific intrinsic we need
@@ -26,6 +28,8 @@ px_task_t *px_current_task = NULL;
 px_tasklist_t px_tasks_ready = { 0 };
 px_tasklist_t px_tasks_sleeping = { 0 };
 
+static uint64_t _idle_time = 0;
+static uint64_t _idle_start = 0;
 static uint64_t _last_time = 0;
 static size_t _scheduler_lock = 0;
 static uint64_t _instr_per_ns;
@@ -232,18 +236,55 @@ void px_tasks_update_time()
 {
     uint64_t current_time = _get_cpu_time_ns();
     uint64_t delta = current_time - _last_time;
-    px_current_task->time_used += delta;
+    if (px_current_task == NULL) {
+        _idle_time += delta;
+    } else {
+        px_current_task->time_used += delta;
+    }
     _last_time = current_time;
 }
 
 static void _schedule()
 {
+    if (px_current_task == NULL) {
+        // we are currently idling and will schedule at a later time
+        return;
+    }
     // get the next task
     px_task_t *task = _px_tasks_dequeue_ready();
     // don't need to do anything if there's nothing ready to run
-    if (task == NULL) return;
-    // do time accounting
-    px_tasks_update_time();
+    if (task == NULL) {
+        if (px_current_task->state == TASK_RUNNING) {
+            // still running the same task
+            return;
+        }
+        // count the time that this task ran for
+        px_tasks_update_time();
+        /*** idle ***/
+        // borrow this task to return to once we're not idle anymore
+        px_task_t *borrowed = px_current_task;
+        // set the current task to null to indicate an idle state
+        px_current_task = NULL;
+        //_idle_start = _get_cpu_time_ns();
+        do {
+            // enable interrupts to process timer and other events
+            asm ("sti");
+            // immediately halt the CPU
+            asm ("hlt");
+            // disable interrupts to restore our lock
+            asm ("cli");
+            // check if there's a task ready to be run
+        } while(task = _px_tasks_dequeue_ready(), task == NULL);
+        // count the time we spent idling
+        px_tasks_update_time();
+        // reset the current task
+        px_current_task = borrowed;
+        //_idle_start = _idle_start - _get_cpu_time_ns();
+        //px_kprintf("Slept for %lld nanoseconds.\n", _idle_start);
+    } else {
+        // just do time accounting once
+        px_tasks_update_time();
+    }
     // switch to the task
     px_tasks_switch_to(task);
 }
