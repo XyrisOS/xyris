@@ -100,7 +100,6 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     int rw = regs->err_code & 0x2;           // Write operation?
     int us = regs->err_code & 0x4;           // Processor was in user-mode?
     int reserved = regs->err_code & 0x8;     // Overwritten CPU-reserved bits of page entry?
-    int id = regs->err_code & 0x10;          // Caused by an instruction fetch?
     // If we have a page fault, print out page fault info
     if (regs->int_num == 14) {
         // Output an error message.

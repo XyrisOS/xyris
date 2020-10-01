@@ -67,7 +67,9 @@ CXXFLAGS =                  \
 	-fno-leading-underscore \
 	-fno-omit-frame-pointer \
 	-Wno-write-strings      \
-	-std=c++2a
+	-Wall                   \
+	-Werror                 \
+	-std=c++17
 # C / C++ pre-processor flags
 CPP_FLAGS =                 \
 	-D VERSION=\"$(GIT_VERSION)\"
