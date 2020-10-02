@@ -100,6 +100,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     int rw = regs->err_code & 0x2;           // Write operation?
     int us = regs->err_code & 0x4;           // Processor was in user-mode?
     int reserved = regs->err_code & 0x8;     // Overwritten CPU-reserved bits of page entry?
+    int id = regs->err_code & 0x10;          // Caused by an instruction fetch?
     // If we have a page fault, print out page fault info
     if (regs->int_num == 14) {
         // Output an error message.
@@ -111,12 +112,13 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         char msg[128];
         px_ksprintf(
             msg,
-            "Page fault (%s%s%s%s) at 0x0x%08X\n",
+            "Page fault (%s%s%s%s) at 0x0x%08X (id -> %i)\n",
             real,
             rws,
             uss,
             avail,
-            faulting_address
+            faulting_address,
+            id
         );
         // Print to VGA and serial
         px_kprintf("%s", msg);
