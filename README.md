@@ -1,4 +1,4 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/panix-os-dev-team/panix/badge)](https://www.codefactor.io/repository/github/panix-os-dev-team/panix)
+[![CodeFactor](https://www.codefactor.io/repository/github/panix-os/panix/badge)](https://www.codefactor.io/repository/github/panix-os/panix)
 
 ![Logo](https://github.com/panix-os-dev-team/Documentation/blob/0ac31a6148eea4804a31684b13805542698c1239/logo.png?raw=true)
 ### Panix
