@@ -1,6 +1,6 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/panix-os/panix/badge)](https://www.codefactor.io/repository/github/panix-os/panix)
 
-![Logo](https://github.com/panix-os-dev-team/Documentation/blob/0ac31a6148eea4804a31684b13805542698c1239/logo.png?raw=true)
+![Logo](https://github.com/panix-os/panix-os.github.io/blob/master/img/logo.png?raw=true)
 ### Panix
 Panix is a small, hobbyist kernel started by [Keeton Feavel](https://github.com/Kfeavel) and further developed with the help of [Micah Switzer](https://github.com/micahswitzer).
 Having now undergone three rewrites from the ground up, Panix has come a long way since its first start in 2018.
