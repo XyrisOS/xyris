@@ -112,12 +112,13 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         char msg[128];
         px_ksprintf(
             msg,
-            "Page fault (%s%s%s%s) at 0x0x%08X\n",
+            "Page fault (%s%s%s%s) at 0x0x%08X (id -> %i)\n",
             real,
             rws,
             uss,
             avail,
-            faulting_address
+            faulting_address,
+            id
         );
         // Print to VGA and serial
         px_kprintf("%s", msg);
