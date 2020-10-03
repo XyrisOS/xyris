@@ -42,10 +42,10 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Compilers/Assemblers/Linkers
 AS      = $(shell command -v i686-elf-as)
-NASM    = $(shell command -v nasm)
+NASM    = $(shell command -v llc)
 CXX     = $(shell command -v clang++)
-LD      = $(shell command -v i686-elf-ld)
-OBJCP   = $(shell command -v i686-elf-objcopy)
+LD      = $(shell command -v ld.lld)
+OBJCP   = $(shell command -v llvm-objcopy)
 MKGRUB  = $(shell command -v grub-mkrescue)
 # C / C++ flags (include directory)
 CFLAGS =                   \
