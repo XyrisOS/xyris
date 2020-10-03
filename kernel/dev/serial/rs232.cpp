@@ -45,7 +45,7 @@ static void px_rs232_write_char(char c) {
     px_write_byte(rs_232_port_base + RS_232_DATA_REG, c);
 }
 
-void px_rs232_print(char* str) {
+void px_rs232_print(const char* str) {
     for (int i = 0; str[i] != 0; i++) {
         px_rs232_write_char(str[i]);
     }

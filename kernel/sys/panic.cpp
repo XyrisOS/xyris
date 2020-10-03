@@ -23,7 +23,7 @@ void panic_print_register(registers_t *regs);
 
 void printPanicScreen(int exception) {
     px_tty_clear(VGA_Black, VGA_White);
-    char* tag;
+    const char* tag;
     if (exception == 13) {
         tag = "< Wait... That's Illegal >\n";
     } else {
@@ -47,7 +47,7 @@ void printPanicScreen(int exception) {
     px_rs232_print(cow);
 }
 
-void panic(char* msg, const char *file, uint32_t line, const char *func) {
+void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     asm volatile ("cli");
     // Print the panic cow
     printPanicScreen(0);

@@ -42,33 +42,37 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Compilers/Assemblers/Linkers
 AS      = $(shell command -v i686-elf-as)
-NASM    = $(shell command -v nasm)
-CXX     = $(shell command -v i686-elf-gcc)
-LD      = $(shell command -v i686-elf-ld)
-OBJCP   = $(shell command -v i686-elf-objcopy)
+NASM    = $(shell command -v llc)
+CXX     = $(shell command -v clang++)
+LD      = $(shell command -v ld.lld)
+OBJCP   = $(shell command -v llvm-objcopy)
 MKGRUB  = $(shell command -v grub-mkrescue)
 # C / C++ flags (include directory)
 CFLAGS =                   \
 	-I ${SYSROOT}/usr/include/kernel/
 # C++ only flags (-lgcc flag is used b/c it has helpful functions)
+# Flags explained:
+#
+# -Wno-unused-function
+# We need to ignore unused functions because we may use
+# them at a later time. For example, paging disable.
+#
 CXXFLAGS =                  \
-	-m32                    \
 	-g                      \
-	-nostartfiles           \
-	-nodefaultlibs          \
-	-lgcc                   \
+	-m32                    \
+	-target i386-none-elf   \
 	-ffreestanding          \
 	-fstack-protector-all   \
 	-fpermissive            \
+	-nodefaultlibs          \
 	-fno-use-cxa-atexit     \
 	-fno-builtin            \
 	-fno-rtti               \
 	-fno-exceptions         \
-	-fno-leading-underscore \
 	-fno-omit-frame-pointer \
-	-Wno-write-strings      \
 	-Wall                   \
 	-Werror                 \
+	-Wno-unused-function    \
 	-std=c++17
 # C / C++ pre-processor flags
 CPP_FLAGS =                 \
