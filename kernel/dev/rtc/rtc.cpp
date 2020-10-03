@@ -17,12 +17,13 @@
 
 void px_rtc_callback(registers_t *regs);
 // Current values from RTC
-uint8_t px_rtc_second; // Current UTC second
-uint8_t px_rtc_minute; // Current UTC minute
-uint8_t px_rtc_hour;   // Current UTC hour
-uint8_t px_rtc_day;    // Current UTC day (not reliable)
-uint8_t px_rtc_month;  // Current UTC month
-uint32_t px_rtc_year;  // Current UTC year
+uint8_t px_rtc_second;      // Current UTC second
+uint8_t px_rtc_minute;      // Current UTC minute
+uint8_t px_rtc_hour;        // Current UTC hour
+uint8_t px_rtc_day;         // Current UTC day (not reliable)
+uint8_t px_rtc_month;       // Current UTC month
+uint32_t px_rtc_year;       // Current UTC year
+uint32_t px_rtc_century;    // Current UTC century
 
 void px_rtc_init() {
     px_kprintf(DBG_INFO "Initializing RTC...\n");
@@ -62,9 +63,10 @@ uint8_t px_rtc_get_register(int reg) {
 void px_read_rtc() {
     // Previous values from RTC
     // Used as a cache to check if we should update
-    uint8_t px_rtc_century, last_second, last_minute, 
-            last_hour, last_day, last_month,
-            last_year, last_century, registerB;
+    uint8_t last_second = 0, last_minute = 0,
+            last_hour = 0, last_day = 0,
+            last_month = 0, last_year = 0,
+            last_century = 0, registerB = 0;
     // Make sure an update isn't in progress
     while (px_rtc_get_update_in_progress());
 

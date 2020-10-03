@@ -45,7 +45,7 @@ void px_rs232_init(uint16_t com_id);
  * serial output.
  * @param str Input string to be printed.
  */
-void px_rs232_print(char* str);
+void px_rs232_print(const char* str);
 
 /**
  * @brief Initializes the serial input buffer and
