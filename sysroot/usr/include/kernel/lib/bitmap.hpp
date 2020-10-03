@@ -36,6 +36,10 @@ static inline void bitmap_set_bit(bitmap_t *bitmap, size_t index) {
     SET_BIT_IN_MAP(bitmap, index);
 }
 
+static inline bool bitmap_get_bit(bitmap_t *bitmap, size_t index) {
+    return ((bitmap)[INDEX_FROM_BIT((index))] >> OFFSET_FROM_BIT((index))) & 1;
+}
+
 static inline void bitmap_clear_bit(bitmap_t *bitmap, size_t index) {
     UNSET_BIT_IN_MAP(bitmap, index);
 }

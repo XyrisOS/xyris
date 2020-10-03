@@ -12,6 +12,7 @@
 #include <sys/trace.hpp>
 #include <lib/stdio.hpp>
 #include <arch/arch.hpp>
+#include <mem/paging.hpp>
 #include <dev/serial/rs232.hpp>
 
 void px_stack_trace(size_t max) {
@@ -26,6 +27,11 @@ void px_stack_trace(size_t max) {
         px_ksprintf(buf, "0x%08X\n", stk->eip);
         px_kprintf("\033[%i;%iH  %s", (frame + 1), (X86_TTY_WIDTH - 16), buf);
         px_rs232_print(buf);
+        // Check whether the address is in memory or not
+        if (!px_page_is_present((size_t)stk->ebp))
+        {
+            break;
+        }
         stk = stk->ebp;
     }
 }
