@@ -142,5 +142,14 @@ void* px_get_new_page(uint32_t size);
  */
 void  px_free_page(void *page, uint32_t size);
 
+/**
+ * @brief Checks whether an address is mapped into memory.
+ * 
+ * @param addr Address to be checked.
+ * @return true The address is mapped in and valid.
+ * @return false The address is not mapped into memory.
+ */
+bool px_page_is_present(size_t addr);
+
 #endif /* PANIX_MEM_PAGING */
 
