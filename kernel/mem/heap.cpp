@@ -35,19 +35,25 @@ px_heap_chunk_t* first = NULL;
 px_heap_chunk_t* last = NULL;
 
 void* slot[NUM_SLOTS] = { NULL };
+#if defined(DEBUG)
 char dbg_buf[64] = {0};
+#endif
 
 static void px_memory_chunk_init(px_heap_chunk_t* chunk) {
-	px_ksprintf(dbg_buf, "%s(0x%p)\n", __FUNCTION__, chunk);
+#if defined(DEBUG)
+    px_ksprintf(dbg_buf, "%s(0x%p)\n", __FUNCTION__, chunk);
     px_rs232_print(dbg_buf);
+#endif    
     dlist_init(&chunk->all);
     chunk->used = 0;
     dlist_init(&chunk->free);
 }
 
 static size_t px_memory_chunk_size(const px_heap_chunk_t* chunk) {
-	px_ksprintf(dbg_buf, "%s(0x%p)\n", __FUNCTION__, chunk);
+#if defined(DEBUG)
+    px_ksprintf(dbg_buf, "%s(0x%p)\n", __FUNCTION__, chunk);
     px_rs232_print(dbg_buf);
+#endif    
     char* end = (char*)(chunk->all.next);
     char* start = (char*)(&chunk->all);
     return (end - start) - HEADER_SIZE;
@@ -65,10 +71,10 @@ static int px_memory_chunk_slot(size_t size) {
 static void px_remove_free(px_heap_chunk_t* chunk) {
     size_t len = px_memory_chunk_size(chunk);
     int n = px_memory_chunk_slot(len);
-
+#if defined(DEBUG)
     px_ksprintf(dbg_buf, "%s(0x%p) : removing chunk 0x%lx [%d]\n", __FUNCTION__, chunk, len, n);
     px_rs232_print(dbg_buf);
-
+#endif
     DLIST_REMOVE_FROM(&free_chunk[n], chunk, free);
     mem_free -= len - HEADER_SIZE;
 }
@@ -76,10 +82,10 @@ static void px_remove_free(px_heap_chunk_t* chunk) {
 static void px_push_free(px_heap_chunk_t* chunk) {
     size_t len = px_memory_chunk_size(chunk);
     int n = px_memory_chunk_slot(len);
-
+#if defined(DEBUG)
     px_ksprintf(dbg_buf, "%s(0x%p) : adding chunk 0x%lx [%d]\n", __FUNCTION__, chunk, len, n);
     px_rs232_print(dbg_buf);
-
+#endif
     DLIST_PUSH(&free_chunk[n], chunk, free);
     mem_free += len - HEADER_SIZE;
 }
@@ -128,10 +134,10 @@ void px_heap_init(size_t size) {
     // Get the sizes and number of chunks
     size_t len = px_memory_chunk_size(second);
     int n = px_memory_chunk_slot(len);
-
+#if defined(DEBUG)
     px_ksprintf(dbg_buf, "%s(0x%p, 0x%lx) : adding chunk 0x%lx [%d]\n", __FUNCTION__, mem, size, len, n);
     px_rs232_print(dbg_buf);
-
+#endif
     // Push them onto the linked list and update tracking variables
     DLIST_PUSH(&free_chunk[n], second, free);
     mem_free = len - HEADER_SIZE;
@@ -139,9 +145,10 @@ void px_heap_init(size_t size) {
 }
 
 void* malloc(size_t size) {
+#if defined(DEBUG)
     px_ksprintf(dbg_buf, "%s(0x%lx)\n", __FUNCTION__, size);
     px_rs232_print(dbg_buf);
-
+#endif
     size = (size + ALIGN - 1) & (~(ALIGN - 1));
 
 	if (size < MIN_SIZE) {
@@ -161,10 +168,10 @@ void* malloc(size_t size) {
 
 	px_heap_chunk_t* chunk = DLIST_POP(&free_chunk[n], free);
     size_t size2 = px_memory_chunk_size(chunk);
-
+#if defined(DEBUG)
 	px_ksprintf(dbg_buf, "@ 0x%p [0x%lx]\n", chunk, size2);
     px_rs232_print(dbg_buf);
-
+#endif
     size_t len = 0;
 
 	if (size + sizeof(px_heap_chunk_t) <= size2) {
@@ -173,10 +180,10 @@ void* malloc(size_t size) {
 		dlist_insert_after(&chunk->all, &chunk2->all);
 		len = px_memory_chunk_size(chunk2);
 		int n = px_memory_chunk_slot(len);
-
+#if defined(DEBUG)
 		px_ksprintf(dbg_buf, "  adding chunk @ 0x%p 0x%lx [%d]\n", chunk2, len, n);
         px_rs232_print(dbg_buf);
-
+#endif
 		DLIST_PUSH(&free_chunk[n], chunk2, free);
 		mem_meta += HEADER_SIZE;
 		mem_free += len - HEADER_SIZE;
@@ -184,13 +191,16 @@ void* malloc(size_t size) {
 
 	chunk->used = 1;
     memset(chunk->data, 0xAA, size);
+#if defined(DEBUG)    
 	px_ksprintf(dbg_buf, "AAAA\n");
     px_rs232_print(dbg_buf);
-
+#endif
     mem_free -= size2;
     mem_used += size2 - len - HEADER_SIZE;
+#if defined(DEBUG)
     px_ksprintf(dbg_buf, "  = %p [%p]\n", chunk->data, chunk);
     px_rs232_print(dbg_buf);
+#endif
     return chunk->data;
 }
 
@@ -198,7 +208,7 @@ void free(void* mem) {
     px_heap_chunk_t* chunk = (px_heap_chunk_t*)((char*)mem - HEADER_SIZE);
     px_heap_chunk_t* next = CONTAINER(px_heap_chunk_t, all, chunk->all.next);
     px_heap_chunk_t* prev = CONTAINER(px_heap_chunk_t, all, chunk->all.prev);
-
+#if defined(DEBUG)
 	px_ksprintf(dbg_buf, "%s(0x%p): 0x@%p 0x%lx [%d]\n", 
         __FUNCTION__,
         mem,
@@ -207,7 +217,7 @@ void free(void* mem) {
         px_memory_chunk_slot(px_memory_chunk_size(chunk))
     );
     px_rs232_print(dbg_buf);
-
+#endif
     mem_used -= px_memory_chunk_size(chunk);
 
     if (next->used == 0) {
