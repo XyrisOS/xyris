@@ -21,7 +21,7 @@
 
 /*****************************************************************************
 Stripped-down printf()
-Chris Giese <geezer@execpc.com>	http://www.execpc.com/~geezer
+Chris Giese <geezer@execpc.com>    http://www.execpc.com/~geezer
 Release date: Dec 12, 2003
 This code is public domain (no copyright).
 You can do whatever you want with it.
@@ -41,31 +41,31 @@ Revised May 12, 2000
 - actually did some TESTING, maybe fixed some other bugs
 
 %[flag][width][.prec][mod][conv]
-flag:	
-    -	left justify, pad right w/ blanks	    DONE
-	0	pad left w/ 0 for numerics		        DONE
-	+	always print sign, + or -		        no
-	' '	(blank)					                no
-	#	(???)					                no
+flag:    
+    -    left justify, pad right w/ blanks      DONE
+    0    pad left w/ 0 for numerics             DONE
+    +    always print sign, + or -              no
+    ' '    (blank)                              no
+    #    (???)                                  no
 
-width:		(field width)				        DONE
+width:        (field width)                     DONE
 
-prec:		(precision)				            no
+prec:        (precision)                        no
 
-conv:	d,i	decimal int				            DONE
-	u	decimal unsigned			            DONE
-	o	octal					                DONE
-	x,X	hex					                    DONE
-	f,e,g,E,G float					            no
-	c	char					                DONE
-	s	string					                DONE
-	p	ptr					                    DONE
+conv:    d,i    decimal int                     DONE
+    u    decimal unsigned                       DONE
+    o    octal                                  DONE
+    x,X    hex                                  DONE
+    f,e,g,E,G float                             no
+    c    char                                   DONE
+    s    string                                 DONE
+    p    ptr                                    DONE
 
-mod:	N	near ptr				            DONE
-	F	far ptr					                no
-	h	short (16-bit) int			            DONE
-	l	long (32-bit) int			            DONE
-	L	long long (64-bit) int			        no
+mod:    N    near ptr                           DONE
+    F    far ptr                                no
+    h    short (16-bit) int                     DONE
+    l    long (32-bit) int                      DONE
+    L    long long (64-bit) int                 no
 *****************************************************************************/
 
 /* Assume: width of stack == width of int. Don't use sizeof(char *) or
@@ -93,9 +93,9 @@ Using & for division here, so STACK_WIDTH must be a power of 2. */
 
 typedef int (*fnptr_t)(unsigned c, void** helper);
 /*****************************************************************************
-name:	do_printf
-action:	minimal subfunction for ?printf, calls function
-	'fn' with arg 'ptr' for each character to be output
+name:    do_printf
+action:    minimal subfunction for ?printf, calls function
+    'fn' with arg 'ptr' for each character to be output
 returns:total number of characters output
 *****************************************************************************/
 int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)

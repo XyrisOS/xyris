@@ -53,8 +53,8 @@ static size_t px_memory_chunk_size(const px_heap_chunk_t* chunk) {
 static int px_memory_chunk_slot(size_t size) {
     int n = -1;
     while(size > 0) {
-	    ++n;
-	    size /= 2;
+        ++n;
+        size /= 2;
     }
     return n;
 }
@@ -76,22 +76,22 @@ static void px_push_free(px_heap_chunk_t* chunk) {
 }
 
 void check(void) {
-	int	i;
+    int i;
     px_heap_chunk_t* t = last;
 
-	DLIST_ITERATOR_BEGIN(first, all, it) {
-		assert(CONTAINER(px_heap_chunk_t, all, it->all.prev) == t);
-		t = it;
+    DLIST_ITERATOR_BEGIN(first, all, it) {
+        assert(CONTAINER(px_heap_chunk_t, all, it->all.prev) == t);
+        t = it;
     } DLIST_ITERATOR_END(it);
 
-    for(i = 0; i < NUM_SIZES; ++i) {
-		if (free_chunk[i]) {
-			t = CONTAINER(px_heap_chunk_t, free, free_chunk[i]->free.prev);
-			DLIST_ITERATOR_BEGIN(free_chunk[i], free, it) {
-			assert(CONTAINER(px_heap_chunk_t, free, it->free.prev) == t);
-			t = it;
-			} DLIST_ITERATOR_END(it);
-		}
+    for (i = 0; i < NUM_SIZES; ++i) {
+        if (free_chunk[i]) {
+            t = CONTAINER(px_heap_chunk_t, free, free_chunk[i]->free.prev);
+            DLIST_ITERATOR_BEGIN(free_chunk[i], free, it) {
+            assert(CONTAINER(px_heap_chunk_t, free, it->free.prev) == t);
+            t = it;
+            } DLIST_ITERATOR_END(it);
+        }
     }
 }
 
@@ -130,41 +130,41 @@ void* malloc(size_t size) {
     px_debugf("%s(0x%lx)\n", __FUNCTION__, size);
     size = (size + ALIGN - 1) & (~(ALIGN - 1));
 
-	if (size < MIN_SIZE) {
+    if (size < MIN_SIZE) {
         size = MIN_SIZE;
     }
 
-	int n = px_memory_chunk_slot(size - 1) + 1;
+    int n = px_memory_chunk_slot(size - 1) + 1;
 
-	if (n >= NUM_SIZES) {
+    if (n >= NUM_SIZES) {
         return NULL;
     }
 
-	while(!free_chunk[n]) {
-		++n;
-		if (n >= NUM_SIZES) return NULL;
+    while(!free_chunk[n]) {
+        ++n;
+        if (n >= NUM_SIZES) return NULL;
     }
 
-	px_heap_chunk_t* chunk = DLIST_POP(&free_chunk[n], free);
+    px_heap_chunk_t* chunk = DLIST_POP(&free_chunk[n], free);
     size_t size2 = px_memory_chunk_size(chunk);
-	px_debugf("@ 0x%p [0x%lx]\n", chunk, size2);
+    px_debugf("@ 0x%p [0x%lx]\n", chunk, size2);
     size_t len = 0;
 
-	if (size + sizeof(px_heap_chunk_t) <= size2) {
-		px_heap_chunk_t* chunk2 = (px_heap_chunk_t*)(((char*)chunk) + HEADER_SIZE + size);
-		px_memory_chunk_init(chunk2);
-		dlist_insert_after(&chunk->all, &chunk2->all);
-		len = px_memory_chunk_size(chunk2);
-		int n = px_memory_chunk_slot(len);
-		px_debugf("  adding chunk @ 0x%p 0x%lx [%d]\n", chunk2, len, n);
-		DLIST_PUSH(&free_chunk[n], chunk2, free);
-		mem_meta += HEADER_SIZE;
-		mem_free += len - HEADER_SIZE;
+    if (size + sizeof(px_heap_chunk_t) <= size2) {
+        px_heap_chunk_t* chunk2 = (px_heap_chunk_t*)(((char*)chunk) + HEADER_SIZE + size);
+        px_memory_chunk_init(chunk2);
+        dlist_insert_after(&chunk->all, &chunk2->all);
+        len = px_memory_chunk_size(chunk2);
+        int n = px_memory_chunk_slot(len);
+        px_debugf("  adding chunk @ 0x%p 0x%lx [%d]\n", chunk2, len, n);
+        DLIST_PUSH(&free_chunk[n], chunk2, free);
+        mem_meta += HEADER_SIZE;
+        mem_free += len - HEADER_SIZE;
     }
 
-	chunk->used = 1;
+    chunk->used = 1;
     memset(chunk->data, 0xAA, size);
-	px_debugf("AAAA\n");
+    px_debugf("AAAA\n");
     mem_free -= size2;
     mem_used += size2 - len - HEADER_SIZE;
     px_debugf("  = %p [%p]\n", chunk->data, chunk);
@@ -175,7 +175,7 @@ void free(void* mem) {
     px_heap_chunk_t* chunk = (px_heap_chunk_t*)((char*)mem - HEADER_SIZE);
     px_heap_chunk_t* next = CONTAINER(px_heap_chunk_t, all, chunk->all.next);
     px_heap_chunk_t* prev = CONTAINER(px_heap_chunk_t, all, chunk->all.prev);
-	px_debugf("%s(0x%p): 0x@%p 0x%lx [%d]\n", 
+    px_debugf("%s(0x%p): 0x@%p 0x%lx [%d]\n", 
         __FUNCTION__,
         mem,
         chunk,
@@ -185,25 +185,25 @@ void free(void* mem) {
     mem_used -= px_memory_chunk_size(chunk);
 
     if (next->used == 0) {
-		// merge in next
-		px_remove_free(next);
-		dlist_remove(&next->all);
-		memset(next, 0xDD, sizeof(px_heap_chunk_t));
-		mem_meta -= HEADER_SIZE;
-		mem_free += HEADER_SIZE;
+        // merge in next
+        px_remove_free(next);
+        dlist_remove(&next->all);
+        memset(next, 0xDD, sizeof(px_heap_chunk_t));
+        mem_meta -= HEADER_SIZE;
+        mem_free += HEADER_SIZE;
     }
     if (prev->used == 0) {
-		// merge to prev
-		px_remove_free(prev);
-		dlist_remove(&chunk->all);
-		memset(chunk, 0xDD, sizeof(px_heap_chunk_t));
-		px_push_free(prev);
-		mem_meta -= HEADER_SIZE;
-		mem_free += HEADER_SIZE;
+        // merge to prev
+        px_remove_free(prev);
+        dlist_remove(&chunk->all);
+        memset(chunk, 0xDD, sizeof(px_heap_chunk_t));
+        px_push_free(prev);
+        mem_meta -= HEADER_SIZE;
+        mem_free += HEADER_SIZE;
     } else {
-		// make chunk as free
-		chunk->used = 0;
-		dlist_init(&chunk->free);
-		px_push_free(chunk);
+        // make chunk as free
+        chunk->used = 0;
+        dlist_init(&chunk->free);
+        px_push_free(chunk);
     }
 }

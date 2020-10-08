@@ -47,9 +47,9 @@ static inline int px_arch_cpuid_vendor(int flag, int regs[4]) {
 }
 
 const char* const px_cpu_get_vendor() {
-	static char vendor[16];
-	px_arch_cpuid_vendor(0, (int *)(vendor));
-	return vendor;
+    static char vendor[16];
+    px_arch_cpuid_vendor(0, (int *)(vendor));
+    return vendor;
 }
 
 const char* const px_cpu_get_model() {
@@ -57,10 +57,10 @@ const char* const px_cpu_get_model() {
     // EAX, EBX, ECX, and EDX to store the string, so we basically
     // are appending all 4 register values to this char array each time.
     static char model[48];
-	px_arch_cpuid(0x80000002, (int *)(model));
+    px_arch_cpuid(0x80000002, (int *)(model));
     px_arch_cpuid(0x80000003, (int *)(model+16));
     px_arch_cpuid(0x80000004, (int *)(model+32));
-	return model;
+    return model;
 }
 
 /**
