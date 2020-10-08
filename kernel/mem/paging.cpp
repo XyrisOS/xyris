@@ -101,23 +101,21 @@ static void px_paging_init_dir() {
 }
 
 static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
-    char dbg[300];
     // Set the page directory entry (pde) and page table entry (pte)
     uint32_t pde = vaddr.page_dir_index;
     uint32_t pte = vaddr.page_table_index;
-    px_page_table_entry *entry = &(page_tables[pde].pages[pte]);
-    // Print a debug message to serial
-    px_ksprintf(dbg, "map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr, vaddr.val, pde, pte);
-    px_rs232_print(dbg);
     // If the page's virtual address is not aligned
     if (vaddr.page_offset != 0) {
         PANIC("Attempted to map a non-page-aligned virtual address.\n");
     }
+#if defined(DEBUG)
+    // Print a debug message to serial
+    px_page_table_entry *entry = &(page_tables[pde].pages[pte]);
+    px_debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr, vaddr.val, pde, pte);
     // If the page is already mapped into memory
     if (entry->present) {
         size_t bit_idx = INDEX_FROM_BIT(vaddr.val >> 12);
-        px_ksprintf(
-            dbg,
+        px_debugf(
             "pte { present = %d, read_write = %d, usermode = %d, "
             "write_through = %d,\n      cache_disable = %d, accessed = %d, "
             "dirty = %d,\n      page_att_table = %d, global = %d, frame = 0x%08x\n}\n"
@@ -126,9 +124,9 @@ static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
             entry->cache_disable, entry->accessed, entry->dirty, entry->page_att_table,
             entry->global, entry->frame, mapped_pages[bit_idx - 1],
             mapped_pages[bit_idx], mapped_pages[bit_idx + 1]);
-        px_rs232_print(dbg);
         PANIC("Attempted to map already mapped page.\n");
     }
+#endif
     // Set the page information
     page_tables[pde].pages[pte] = {
         .present = 1,           // The page is present
@@ -142,8 +140,8 @@ static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
 }
 
 static void px_paging_map_early_mem() {
+    px_debugf("==== MAP EARLY MEM ====\n");
     px_virtual_address_t a;
-    px_rs232_print("==== MAP EARLY MEM ====\n");
     for (a = VADDR(0); a.val < 0x100000; a.val += PAGE_SIZE) {
         // identity map the early memory
         px_map_kernel_page(a, a.val);
@@ -151,11 +149,11 @@ static void px_paging_map_early_mem() {
 }
 
 static void px_paging_map_hh_kernel() {
-    px_virtual_address_t addr;
-    px_rs232_print("==== MAP HH KERNEL ====\n");
-    for (addr = VADDR(KERNEL_START); addr.val < KERNEL_END; addr.val += PAGE_SIZE) {
+    px_debugf("==== MAP HH KERNEL ====\n");
+    px_virtual_address_t a;
+    for (a = VADDR(KERNEL_START); a.val < KERNEL_END; a.val += PAGE_SIZE) {
         // map the higher-half kernel in
-        px_map_kernel_page(addr, KADDR_TO_PHYS(addr.val));
+        px_map_kernel_page(a, KADDR_TO_PHYS(a.val));
     }
 }
 

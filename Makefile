@@ -119,6 +119,14 @@ dist/kernel: $(OBJ)
 	$(LD) $(LD_FLAGS) -o $@ $(OBJ)
 	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
 
+# Debug build
+debug: CXXFLAGS += -DDEBUG
+debug: CFLAGS += -DDEBUG
+debug: dist/kernel
+
+# Release build
+release: dist/kernel
+
 # ********************************
 # * Kernel Distribution Creation *
 # ********************************
@@ -172,8 +180,8 @@ vbox: vbox-create
 	$(VBOX) startvm --putenv --debug $(VM_NAME)
 
 # Open the connection to qemu and load our kernel-object file with symbols
-.PHONY: debug
-debug: dist/kernel
+.PHONY: debugger
+debugger: dist/kernel
 	# Start QEMU with debugger
 	($(QEMU)         \
 	-S -s            \
