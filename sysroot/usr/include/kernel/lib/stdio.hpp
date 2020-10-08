@@ -22,7 +22,7 @@
  * @param buf Pointer to a buffer where the result is stored
  * @param fmt C string that contains a format string
  * @param args A value identifying a variable arguments list
- * @return int The total number of character written.
+ * @return int The total number of characters written.
  * The number of characters not written if negative.
  */
 int px_kvsprintf(char* buf, const char* fmt, va_list args);
@@ -32,7 +32,7 @@ int px_kvsprintf(char* buf, const char* fmt, va_list args);
  * @param buf Pointer to a buffer where the result is stored
  * @param fmt C string that contains a format string
  * @param ... Sequence of additional arguments
- * @return int The total number of character written.
+ * @return int The total number of characters written.
  * The number of characters not written if negative.
  */
 int px_ksprintf(char* buf, const char* fmt, ...);
@@ -41,7 +41,7 @@ int px_ksprintf(char* buf, const char* fmt, ...);
  * 
  * @param fmt C string that contains a format string
  * @param args A value identifying a variable arguments list
- * @return int The total number of character written.
+ * @return int The total number of characters written.
  * The number of characters not written if negative.
  */
 int px_kvprintf(const char* fmt, va_list args);
@@ -50,7 +50,7 @@ int px_kvprintf(const char* fmt, va_list args);
  * 
  * @param fmt C string that contains a format string
  * @param ... Sequence of additional arguments
- * @return int The total number of character written.
+ * @return int The total number of characters written.
  * The number of characters not written if negative.
  */
 int px_kprintf(const char* fmt, ...);
@@ -66,3 +66,12 @@ int putchar(char c);
  * @param str String to be printed.
  */
 int puts(const char *str);
+/**
+ * @brief Prints a statement to serial debugger if the kernel
+ * is built with the debug flag defined. Max message size is
+ * 1024 (including null terminator).
+ * @param fmt Formatted C string
+ * @param ... Sequence of additional arguments
+ * @return int The total number of characters written.
+ */
+int px_debugf(const char* fmt, ...);
