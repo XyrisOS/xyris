@@ -76,7 +76,7 @@ extern "C" void px_call_constructors() {
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
 extern "C" void __stack_chk_fail(void)
 {
-	PANIC("Smashed stack detected.");
+    PANIC("Smashed stack detected.");
 }
 
 /**

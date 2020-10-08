@@ -23,8 +23,8 @@ typedef struct px_heap_chunk {
     DList all;
     int used;
     union {
-	    char data[0];
-	    DList free;
+        char data[0];
+        DList free;
     };
 } px_heap_chunk_t;
 
