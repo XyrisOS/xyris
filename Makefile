@@ -4,7 +4,7 @@
 # TODO: Create seperate makefiles as needed and integrate into one makefile
 #
 
-.DEFAULT_GOAL := dist/kernel
+.DEFAULT_GOAL := release
 GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 
 # *****************************
@@ -58,7 +58,6 @@ CFLAGS =                   \
 # them at a later time. For example, paging disable.
 #
 CXXFLAGS =                  \
-	-g                      \
 	-m32                    \
 	-target i386-none-elf   \
 	-ffreestanding          \
@@ -120,11 +119,13 @@ dist/kernel: $(OBJ)
 	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
 
 # Debug build
-debug: CXXFLAGS += -DDEBUG
-debug: CFLAGS += -DDEBUG
+debug: CXXFLAGS += -DDEBUG -g
+debug: CFLAGS += -DDEBUG -g
 debug: dist/kernel
 
 # Release build
+release: CXXFLAGS += -Ofast -mno-sse -mno-avx
+release: CFLAGS += -Ofast -mno-sse -mno-avx
 release: dist/kernel
 
 # ********************************
