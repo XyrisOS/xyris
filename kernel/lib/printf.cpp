@@ -42,30 +42,30 @@ Revised May 12, 2000
 
 %[flag][width][.prec][mod][conv]
 flag:    
-    -    left justify, pad right w/ blanks        DONE
-    0    pad left w/ 0 for numerics                DONE
-    +    always print sign, + or -                no
-    ' '    (blank)                                    no
-    #    (???)                                    no
+    -    left justify, pad right w/ blanks      DONE
+    0    pad left w/ 0 for numerics             DONE
+    +    always print sign, + or -              no
+    ' '    (blank)                              no
+    #    (???)                                  no
 
-width:        (field width)                        DONE
+width:        (field width)                     DONE
 
-prec:        (precision)                            no
+prec:        (precision)                        no
 
-conv:    d,i    decimal int                            DONE
-    u    decimal unsigned                        DONE
-    o    octal                                    DONE
-    x,X    hex                                        DONE
-    f,e,g,E,G float                                no
-    c    char                                    DONE
-    s    string                                    DONE
-    p    ptr                                        DONE
+conv:    d,i    decimal int                     DONE
+    u    decimal unsigned                       DONE
+    o    octal                                  DONE
+    x,X    hex                                  DONE
+    f,e,g,E,G float                             no
+    c    char                                   DONE
+    s    string                                 DONE
+    p    ptr                                    DONE
 
-mod:    N    near ptr                            DONE
-    F    far ptr                                    no
-    h    short (16-bit) int                        DONE
-    l    long (32-bit) int                        DONE
-    L    long long (64-bit) int                    no
+mod:    N    near ptr                           DONE
+    F    far ptr                                no
+    h    short (16-bit) int                     DONE
+    l    long (32-bit) int                      DONE
+    L    long long (64-bit) int                 no
 *****************************************************************************/
 
 /* Assume: width of stack == width of int. Don't use sizeof(char *) or
