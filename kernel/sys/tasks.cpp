@@ -265,7 +265,7 @@ static void _schedule()
         px_task_t *borrowed = px_current_task;
         // set the current task to null to indicate an idle state
         px_current_task = NULL;
-        //_idle_start = _get_cpu_time_ns();
+        _idle_start = _get_cpu_time_ns();
         do {
             // enable interrupts to process timer and other events
             asm ("sti");
@@ -274,13 +274,14 @@ static void _schedule()
             // disable interrupts to restore our lock
             asm ("cli");
             // check if there's a task ready to be run
-        } while(task = _px_tasks_dequeue_ready(), task == NULL);
+        } while (task = _px_tasks_dequeue_ready(), task == NULL);
         // count the time we spent idling
         px_tasks_update_time();
         // reset the current task
         px_current_task = borrowed;
-        //_idle_start = _idle_start - _get_cpu_time_ns();
-        //px_kprintf("Slept for %lld nanoseconds.\n", _idle_start);
+        _idle_start = _idle_start - _get_cpu_time_ns();
+        _idle_time += _idle_start;
+        px_kprintf("Slept for %lld nanoseconds.\n", _idle_start);
     } else {
         // just do time accounting once
         px_tasks_update_time();
