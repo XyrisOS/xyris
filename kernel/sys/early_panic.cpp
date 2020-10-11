@@ -19,6 +19,13 @@ early_panic(const char *str) {
     volatile uint16_t* where;
     int x = 0;
 	int y = 0;
+    // Clear the screen
+    for (int i = 0; i < X86_TTY_WIDTH; i++) {
+        for (int j = 0; j < X86_TTY_HEIGHT; j ++) {
+            where = x86_bios_vga_mem + (j * X86_TTY_WIDTH + i);
+            *where = VGA_CHAR(' ', VGA_COLOR(VGA_Black, VGA_White));
+        }
+    }
     // For each character in the string
     for (int i = 0; str[i] != '\0'; ++i) {
         switch(str[i]) {
