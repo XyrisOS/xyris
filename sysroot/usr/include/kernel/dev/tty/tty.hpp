@@ -81,6 +81,8 @@ enum px_tty_ansi_color {
     ANSI_BrightCyan     = 96,
     ANSI_BrightWhite    = 97
 };
+#define VGA_COLOR(bg, fg) (((bg)<<4)|((fg)&0xF))
+#define VGA_CHAR(ch, co) ((ch)|((co)<<8))
 // Coorinate trackers
 extern uint8_t tty_coords_x;
 extern uint8_t tty_coords_y;

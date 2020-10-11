@@ -6,6 +6,8 @@
 # function in C++ by telling the compiler they exist "somewhere"
 .extern px_kernel_main
 .extern px_call_constructors
+# minimal panic function that works in most situations
+.extern early_panic
 
 .extern _KERNEL_START
 .extern _KERNEL_END
@@ -59,7 +61,8 @@ _start:
     orl $PAGE_PERM, page_directory
 
     xor %eax, %eax
-    _start.lowmem:
+
+_start.lowmem:
     movl %eax, %ecx
     shrl $PAGE_SHIFT, %ecx
     andl $0x3ff, %ecx
@@ -86,7 +89,8 @@ _start:
         orl $PAGE_PERM, page_directory(,%edx,4)
 
     movl $_KERNEL_START, %eax # the kernel's current virtual start
-    _start.higher:
+
+_start.higher:
         # compute the page table offset
         # this only works because the two page tables are adjacent
     movl %eax, %edx
@@ -125,12 +129,39 @@ _start:
     # setup and adjust the stack
     movl  $(stack + STACK_SIZE), %esp
 
+    # check if SSE is available
+    movl $0x1, %eax
+    cpuid
+    test $(1<<25), %edx
+    jnz _start.has_sse
+
+    # panic because no SSE :'(
+    push $no_sse_msg
+    call early_panic
+
+    # infinite loop if panic returns
+    jmp _start.catchfire
+
+_start.has_sse:
+    # enable SSE
+    movl %cr0, %eax
+    andw $0xFFFB, %ax  # clear coprocessor emulation CR0.EM
+    orw $0x2, %ax      # set coprocessor monitoring  CR0.MP
+    movl %eax, %cr0
+    movl %cr4, %eax
+    orw $(3<<9), %ax # set CR4.OSFXSR and CR4.OSXMMEXCPT at the same time
+    movl %eax, %cr4
+
+    # push kernel main parameters
     pushl multiboot_magic               # Multiboot magic number
     pushl multiboot_info                # Multiboot info structure
+
     # Set NULL stack frame for trace
     xor %ebp, %ebp
+
     # Enter the high-level kernel.
     call px_kernel_main
+
     # By this point we should be into the wild world of C++
     # So, this should never be called unless the kernel returns
     _start.catchfire:
@@ -139,20 +170,23 @@ _start:
 
 .section .early_bss, "aw", @nobits
 .align 4096
-page_directory:       # should also be page aligned (hopefully)
+page_directory:        # should also be page aligned (hopefully)
     .space 1024*4      # reserve 1024 DWORDs for our page table pointers
 lowmem_pt:
     .space 1024*4      # lowmem identity mappings
 kernel_pt:
     .space 1024*4      # our kernel page table mappings
 pages_pt:
-        .space 1024*4      # a page table that maps pages that contain page tables
+    .space 1024*4      # a page table that maps pages that contain page tables
 
-.section .early_data, "aw", @nobits
+.section .early_data, "aw"
+.align 4
 multiboot_magic:
     .long 0
 multiboot_info:
     .long 0
+no_sse_msg:
+    .asciz "Error: No SSE support available!"
 
 .section .bss, "aw", @nobits
 .align 4

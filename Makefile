@@ -58,6 +58,8 @@ CFLAGS =                   \
 # them at a later time. For example, paging disable.
 #
 CXXFLAGS =                  \
+	-g                      \
+	-O3                     \
 	-m32                    \
 	-target i386-none-elf   \
 	-ffreestanding          \
@@ -124,8 +126,8 @@ debug: CFLAGS += -DDEBUG -g
 debug: dist/kernel
 
 # Release build
-release: CXXFLAGS += -Ofast -mno-sse -mno-avx
-release: CFLAGS += -Ofast -mno-sse -mno-avx
+release: CXXFLAGS += -Ofast -mno-avx
+release: CFLAGS += -Ofast -mno-avx
 release: dist/kernel
 
 # ********************************
