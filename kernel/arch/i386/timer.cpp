@@ -15,7 +15,7 @@
 #include <dev/tty/tty.hpp>
 
 static void px_timer_callback(registers_t *regs);
-uint32_t tick;
+volatile uint32_t tick;
 
 /**
  * Sleep Timer Non-Busy Waiting Idea:

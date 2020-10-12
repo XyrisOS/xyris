@@ -73,7 +73,9 @@ extern "C" void px_call_constructors() {
  * for when a smashed stack is detected.
  *
  */
+__attribute__ ((used))
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
+__attribute__ ((used))
 extern "C" void __stack_chk_fail(void)
 {
     PANIC("Smashed stack detected.");
@@ -140,8 +142,8 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
                 i = -1;
                 break;
         }
+        asm volatile("hlt");
         i++;
-        asm("hlt");
     }
     PANIC("Kernel terminated unexpectedly!");
 }

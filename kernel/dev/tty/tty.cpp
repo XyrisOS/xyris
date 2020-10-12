@@ -46,14 +46,14 @@ void px_tty_clear(px_tty_vga_color fore, px_tty_vga_color back) {
     reset_fore = fore;
     reset_back = back;
     volatile uint16_t* where;
-    uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
+    uint16_t attrib = VGA_COLOR(color_back, color_fore);
     // For each character in each line of the TTY, set to ' '.
     for (int y = 0; y < X86_TTY_HEIGHT; y++) {
         for (int x = 0; x < X86_TTY_WIDTH; x++) {
             // This is a direct write to the BIOS TTY memory.
             // It is much more efficient than calling putchar().
             where = x86_bios_vga_mem + (y * X86_TTY_WIDTH + x);
-            *where = ' ' | (attrib << 8);
+            *where = VGA_CHAR(' ', attrib);
         }
     }
     // Reset the cursor position
