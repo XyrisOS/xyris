@@ -31,6 +31,8 @@ px_tasklist_t px_tasks_sleeping = { 0 };
 static uint64_t _idle_time = 0;
 static uint64_t _idle_start = 0;
 static uint64_t _last_time = 0;
+static uint64_t _time_slice_remaining = 0;
+static uint64_t _last_timer_time = 0;
 static size_t _scheduler_lock = 0;
 static uint64_t _instr_per_ns;
 
@@ -86,7 +88,11 @@ void px_tasks_init()
         // just say that this task hasn't spent any time running yet
         .time_used = 0
     };
+    // update the timer variables
     _last_time = _get_cpu_time_ns();
+    _last_timer_time = _last_time;
+    // enable time slices
+    _time_slice_remaining = TIME_SLICE_SIZE;
     // this is the current task
     px_current_task = this_task;
     px_timer_register_callback(_on_timer);
@@ -256,8 +262,12 @@ static void _schedule()
     if (task == NULL) {
         if (px_current_task->state == TASK_RUNNING) {
             // still running the same task
+            // but also reset the time slice counter
+            _time_slice_remaining = TIME_SLICE_SIZE;
             return;
         }
+        // disable time slices because there are no tasks available to run
+        _time_slice_remaining = 0;
         // count the time that this task ran for
         px_tasks_update_time();
         /*** idle ***/
@@ -281,11 +291,14 @@ static void _schedule()
         px_current_task = borrowed;
         _idle_start = _idle_start - _get_cpu_time_ns();
         _idle_time += _idle_start;
-        px_kprintf("Slept for %lld nanoseconds.\n", _idle_start);
     } else {
         // just do time accounting once
         px_tasks_update_time();
     }
+    // reset the time slice because a new task is being scheduled
+    _time_slice_remaining = TIME_SLICE_SIZE;
+    // reset the last "timer time" since the time slice was reset
+    _last_timer_time = _get_cpu_time_ns();
     // switch to the task
     px_tasks_switch_to(task);
 }
@@ -335,12 +348,16 @@ void _wakeup(px_task_t *task)
 static void _on_timer()
 {
     _aquire_scheduler_lock();
+
     px_task_t *pre = NULL;
     px_task_t *task = px_tasks_sleeping.head;
     bool need_schedule = false;
     uint64_t time = _get_cpu_time_ns();
+    uint64_t time_delta;
+
     while (task != NULL) {
         if (time >= task->wakeup_time) {
+            //px_rs232_print("timer: waking sleeping task\n");
             _remove_task(&px_tasks_sleeping, task, pre);
             _wakeup(task);
             need_schedule = true;
@@ -348,9 +365,25 @@ static void _on_timer()
         pre = task;
         task = task->next_task;
     }
+
+    if (_time_slice_remaining != 0) {
+        time_delta = time - _last_timer_time;
+        _last_timer_time = time;
+        if (time_delta >= _time_slice_remaining) {
+            // schedule (and maybe pre-empt)
+            // the schedule function will reset the time slice
+            //px_rs232_print("timer: time slice expired\n");
+            need_schedule = true;
+        } else {
+            // decrement the time slice counter
+            _time_slice_remaining -= time_delta;
+        }
+    }
+    
     if (need_schedule) {
         _schedule();
     }
+
     _release_scheduler_lock();
 }
 
@@ -369,3 +402,4 @@ void px_tasks_nano_sleep(uint64_t time)
 {
     px_tasks_nano_sleep_until(_get_cpu_time_ns() + time);
 }
+

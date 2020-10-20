@@ -16,6 +16,8 @@
 #include <arch/arch.hpp>    // Architecture specific features
 #include <mem/paging.hpp>
 
+#define TIME_SLICE_SIZE (1 * 1000 * 1000ULL)
+
 enum px_task_state {
     TASK_RUNNING  = 0,
     TASK_READY    = 1,
