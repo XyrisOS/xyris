@@ -23,10 +23,22 @@
 
 #include <arch/arch.hpp>
 
+/* forward declarations for macros */
+static void _enqueue_task(px_tasklist_t *, px_task *);
+static px_task_t *_dequeue_task(px_tasklist_t *);
+
+/* macro to create a new named tasklist and associated helper functions */
+#define NAMED_TASKLIST(name) \
+    px_tasklist_t px_tasks_##name = { 0 }; \
+    static inline void _enqueue_##name(px_task_t *task) { \
+        _enqueue_task(&px_tasks_##name, task); } \
+    static inline px_task_t *_dequeue_##name() { \
+        return _dequeue_task(&px_tasks_##name); }
+
 px_task_t *px_current_task = NULL;
 
 px_tasklist_t px_tasks_ready = { 0 };
-px_tasklist_t px_tasks_sleeping = { 0 };
+NAMED_TASKLIST(sleeping);
 
 static uint64_t _idle_time = 0;
 static uint64_t _idle_start = 0;
@@ -190,16 +202,6 @@ extern "C" void _px_tasks_enqueue_ready(px_task_t *task)
 static px_task_t *_px_tasks_dequeue_ready()
 {
     return _dequeue_task(&px_tasks_ready);
-}
-
-static void _enqueue_sleeping(px_task_t *task)
-{
-    _enqueue_task(&px_tasks_sleeping, task);
-}
-
-static px_task_t *_dequeue_sleeping()
-{
-    return _dequeue_task(&px_tasks_sleeping);
 }
 
 px_task_t *px_tasks_new(void (*entry)(void))
