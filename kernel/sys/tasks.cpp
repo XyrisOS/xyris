@@ -12,7 +12,7 @@
 #include <mem/heap.hpp>
 #include <sys/panic.hpp>
 #include <lib/stdio.hpp>
-
+#include <dev/serial/rs232.hpp>
 #include <stdint.h>    // Data type definitions
 // this is a literal hack to specifically circumvent validation checks
 // it seems to work fine for the specific intrinsic we need
@@ -23,9 +23,10 @@
 
 #include <arch/arch.hpp>
 
-/* forward declarations for macros */
+/* forward declarations */
 static void _enqueue_task(px_tasklist_t *, px_task *);
 static px_task_t *_dequeue_task(px_tasklist_t *);
+static void _cleaner_task_impl(void);
 
 /* macro to create a new named tasklist and associated helper functions */
 #define NAMED_TASKLIST(name) \
@@ -36,9 +37,12 @@ static px_task_t *_dequeue_task(px_tasklist_t *);
         return _dequeue_task(&px_tasks_##name); }
 
 px_task_t *px_current_task = NULL;
+static px_task_t _cleaner_task;
+static px_task_t _first_task;
 
 px_tasklist_t px_tasks_ready = { 0 };
 NAMED_TASKLIST(sleeping);
+NAMED_TASKLIST(stopped);
 
 static uint64_t _idle_time = 0;
 static uint64_t _idle_start = 0;
@@ -82,10 +86,8 @@ static void _on_timer();
 
 void px_tasks_init()
 {
-    // allocate memory for our task structure
-    px_task_t *this_task = (px_task_t*)malloc(sizeof(px_task_t));
-    // panic if the alloc fails (we have no fallback)
-    if (this_task == NULL) PANIC("Unable to allocate memory for new task struct.\n");
+    // get a pointer to the first task's tcb
+    px_task_t *this_task = &_first_task;
     // discover the CPU speed for accurate scheduling
     _discover_cpu_speed();
     *this_task = {
@@ -100,6 +102,9 @@ void px_tasks_init()
         // just say that this task hasn't spent any time running yet
         .time_used = 0
     };
+    // create a task for the cleaner and set it's state to "paused"
+    (void) px_tasks_new(_cleaner_task_impl, &_cleaner_task, TASK_PAUSED);
+    _cleaner_task.state = TASK_PAUSED;
     // update the timer variables
     _last_time = _get_cpu_time_ns();
     _last_timer_time = _last_time;
@@ -123,7 +128,7 @@ static void _task_stopping()
 {
     // this is called whenever a task is about to stop (i.e. it returned)
     // it is run in the context of the stopping task
-    px_tasks_block_current(TASK_STOPPED);
+    px_tasks_exit();
     // prevent undefined behavior from returning to a random address
     PANIC("Attempted to schedule a stopped task\n");
 }
@@ -204,12 +209,17 @@ static px_task_t *_px_tasks_dequeue_ready()
     return _dequeue_task(&px_tasks_ready);
 }
 
-px_task_t *px_tasks_new(void (*entry)(void))
+px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state state)
 {
-    // allocate memory for our task structure
-    px_task_t *new_task = (px_task_t*)malloc(sizeof(px_task_t));
-    // panic if the alloc fails (we have no fallback)
-    if (new_task == NULL) PANIC("Unable to allocate memory for new task struct.\n");
+    px_task_t *new_task = storage;
+    if (storage == NULL) {
+        // allocate memory for our task structure
+        new_task = (px_task_t*)malloc(sizeof(px_task_t));
+        // panic if the alloc fails (we have no fallback)
+        if (new_task == NULL) {
+            PANIC("Unable to allocate memory for new task struct.\n");
+        }
+    }
     // allocate a page for this stack (we might change this later)
     uint8_t *stack = (uint8_t *)px_get_new_page(PAGE_SIZE - 1);
     if (stack == NULL) PANIC("Unable to allocate memory for new task stack.\n");
@@ -233,10 +243,12 @@ px_task_t *px_tasks_new(void (*entry)(void))
         .stack_top = (uintptr_t)stack_pointer,
         .page_dir = px_get_phys_page_dir(),
         .next_task = NULL,
-        .state = TASK_READY,
+        .state = state,
         .time_used = 0
     };
-    _px_tasks_enqueue_ready(new_task);
+    if (state == TASK_READY) {
+        _px_tasks_enqueue_ready(new_task);
+    }
     return new_task;
 }
 
@@ -405,3 +417,53 @@ void px_tasks_nano_sleep(uint64_t time)
     px_tasks_nano_sleep_until(_get_cpu_time_ns() + time);
 }
 
+void px_tasks_exit()
+{
+    char str[32];
+
+    // userspace cleanup can happen here
+    px_ksprintf(str, "task 0x%08x exiting.\n", (uint32_t)px_current_task);
+    px_rs232_print(str);
+
+    _aquire_scheduler_lock();
+    // all scheduling-specific operations must happen here
+    _enqueue_stopped(px_current_task);
+
+    // the ordering of these two should really be reversed
+    // but the scheduler currently isn't very smart
+    px_tasks_unblock(&_cleaner_task);
+    px_tasks_block_current(TASK_STOPPED);
+
+    _release_scheduler_lock();
+}
+
+static void _clean_stopped_task(px_task_t *task)
+{
+    // free the stack page
+    uintptr_t page = task->stack_top & PAGE_ALIGN;
+    px_free_page((void *)page, PAGE_SIZE - 1);
+    // somehow determine if the task was dynamically allocated or not
+    // just assume statically allocated tasks will never exit (bad idea)
+    free(task);
+}
+
+static void _cleaner_task_impl()
+{
+    char str[32];
+    for (;;) {
+        px_task_t *task;
+        _aquire_scheduler_lock();
+        
+        while (px_tasks_stopped.head != NULL) {
+            task = _dequeue_stopped();
+            px_ksprintf(str, "cleaning up task 0x%08x.\n", (uint32_t)task);
+            px_rs232_print(str);
+            _clean_stopped_task(task);
+        }
+
+        _release_scheduler_lock();
+        // a schedule occuring at this point would be okay
+        // it just needs to occur before the loop repeats
+        px_tasks_block_current(TASK_PAUSED);
+    }
+}

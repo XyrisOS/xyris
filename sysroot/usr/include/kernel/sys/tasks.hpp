@@ -50,12 +50,13 @@ extern px_task_t *px_current_task;
 
 void px_tasks_init();
 extern "C" void px_tasks_switch_to(px_task_t *task);
-px_task_t *px_tasks_new(void (*entry)(void));
+px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state state);
 void px_tasks_schedule();
 uint64_t px_tasks_get_self_time();
 void px_tasks_block_current(px_task_state reason);
 void px_tasks_unblock(px_task_t *task);
 void px_tasks_nano_sleep_until(uint64_t time);
 void px_tasks_nano_sleep(uint64_t time);
+void px_tasks_exit(void);
 
 #endif /* PANIX_TASKS_HPP */
