@@ -17,6 +17,8 @@
 #define TIMER_COMMAND_PORT 0x43
 #define TIMER_DATA_PORT 0x40
 
+extern uint32_t px_timer_tick;
+
 /**
  * @brief Initialize the CPU timer with the given frequency.
  *
@@ -34,5 +36,7 @@ void px_timer_print();
  * @param ms Sleep length in milliseconds
  */
 void sleep(uint32_t ms);
+
+void px_timer_register_callback(void (*func)());
 
 #endif /* PANIX_I386_TIMER_HPP */
