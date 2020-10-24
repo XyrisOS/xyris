@@ -18,7 +18,9 @@
 // it seems to work fine for the specific intrinsic we need
 // we should probably investigate this further at some point...
 #define _X86INTRIN_H_INCLUDED
+#define __X86INTRIN_H
 #include <ia32intrin.h> // needed for __rdtsc
+#undef __X86INTRIN_H
 #undef _X86INTRIN_H_INCLUDED
 
 #include <arch/arch.hpp>
@@ -239,13 +241,11 @@ px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state s
     _px_stack_push_word(&stack_pointer, 0);
     _px_stack_push_word(&stack_pointer, 0);
     _px_stack_push_word(&stack_pointer, 0);
-    *new_task = {
-        .stack_top = (uintptr_t)stack_pointer,
-        .page_dir = px_get_phys_page_dir(),
-        .next_task = NULL,
-        .state = state,
-        .time_used = 0
-    };
+    new_task->stack_top = (uintptr_t)stack_pointer;
+    new_task->page_dir = px_get_phys_page_dir();
+    new_task->next_task = NULL;
+    new_task->state = state;
+    new_task->time_used = 0;
     if (state == TASK_READY) {
         _px_tasks_enqueue_ready(new_task);
     }

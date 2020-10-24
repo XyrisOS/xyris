@@ -61,7 +61,7 @@ void sleep(uint32_t ms) {
     uint32_t start = px_timer_tick;
     uint32_t final = start + ms;
     // Waste CPU cycles like a slob
-    while (px_timer_tick != final);
+    while (px_timer_tick < final);
     // Return now that we've waited long enough
     return;
 }

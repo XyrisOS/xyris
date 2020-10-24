@@ -42,7 +42,7 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Compilers/Assemblers/Linkers
 AS      = $(shell command -v i686-elf-as)
-NASM    = $(shell command -v llc)
+NASM    = $(shell command -v nasm)
 CXX     = $(shell command -v clang++)
 LD      = $(shell command -v ld.lld)
 OBJCP   = $(shell command -v llvm-objcopy)
@@ -63,6 +63,7 @@ CXXFLAGS =                  \
 	-ffreestanding          \
 	-fstack-protector-all   \
 	-fpermissive            \
+	-nostdlib               \
 	-nodefaultlibs          \
 	-fno-use-cxa-atexit     \
 	-fno-builtin            \
@@ -79,7 +80,7 @@ CPP_FLAGS =                 \
 # Assembler flags
 AS_FLAGS = --32
 # Linker flags
-LD_FLAGS = -T kernel/arch/i386/linker.ld
+LD_FLAGS = -T kernel/arch/i386/linker.ld -nostartfiles -nodefaultlibs -static-libgcc -lgcc
 
 
 # ***********************************
@@ -115,7 +116,7 @@ obj/%.o: kernel/%.S
 # Kernel object
 dist/kernel: $(OBJ)
 	@ mkdir -p dist
-	$(CXX) $(LD_FLAGS) -o $@ $(OBJ) $(CXXFLAGS)
+	$(CXX) -o $@ $(OBJ) $(CXXFLAGS) $(LD_FLAGS)
 	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
 
 # Debug build
@@ -187,7 +188,7 @@ debugger: dist/kernel
 	($(QEMU)         \
 	-S -s            \
 	-kernel $<       \
-	$(QEMU_FLAGS) &)
+	$(QEMU_FLAGS) > /dev/null &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
 	# After this start the visual studio debugger
