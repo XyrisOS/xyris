@@ -80,7 +80,7 @@ CPP_FLAGS =                 \
 # Assembler flags
 AS_FLAGS = --32
 # Linker flags
-LD_FLAGS = -T kernel/arch/i386/linker.ld -nostartfiles -nodefaultlibs -static-libgcc -lgcc
+LD_FLAGS = --script kernel/arch/i386/linker.ld -L. -lgcc
 
 
 # ***********************************
@@ -116,7 +116,7 @@ obj/%.o: kernel/%.S
 # Kernel object
 dist/kernel: $(OBJ)
 	@ mkdir -p dist
-	$(CXX) -o $@ $(OBJ) $(CXXFLAGS) $(LD_FLAGS)
+	$(LD) -o $@ $(OBJ) $(LD_FLAGS)
 	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
 
 # Debug build
