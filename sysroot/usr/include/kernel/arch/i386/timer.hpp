@@ -17,7 +17,7 @@
 #define TIMER_COMMAND_PORT 0x43
 #define TIMER_DATA_PORT 0x40
 
-extern uint32_t px_timer_tick;
+extern volatile uint32_t px_timer_tick;
 
 /**
  * @brief Initialize the CPU timer with the given frequency.
