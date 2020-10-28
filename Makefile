@@ -48,8 +48,9 @@ LD      = $(shell command -v ld.lld)
 OBJCP   = $(shell command -v llvm-objcopy)
 MKGRUB  = $(shell command -v grub-mkrescue)
 # C / C++ flags (include directory)
-CFLAGS =                   \
-	-I ${SYSROOT}/usr/include/kernel/
+CFLAGS :=                   \
+	-I ${SYSROOT}/usr/include/kernel/ \
+	${CFLAGS}
 # C++ only flags (-lgcc flag is used b/c it has helpful functions)
 # Flags explained:
 #
@@ -57,7 +58,7 @@ CFLAGS =                   \
 # We need to ignore unused functions because we may use
 # them at a later time. For example, paging disable.
 #
-CXXFLAGS =                  \
+CXXFLAGS :=                  \
 	-m32                    \
 	-target i386-none-elf   \
 	-ffreestanding          \
@@ -73,14 +74,16 @@ CXXFLAGS =                  \
 	-Wall                   \
 	-Werror                 \
 	-Wno-unused-function    \
-	-std=c++17
+	-std=c++17              \
+	${CXXFLAGS}
 # C / C++ pre-processor flags
-CPP_FLAGS =                 \
-	-D VERSION=\"$(GIT_VERSION)\"
+CPP_FLAGS :=                 \
+	-D VERSION=\"$(GIT_VERSION)\" \
+	${CPP_FLAGS}
 # Assembler flags
-AS_FLAGS = --32
+AS_FLAGS := ${AS_FLAGS} --32
 # Linker flags
-LD_FLAGS = --script kernel/arch/i386/linker.ld -L. -lgcc
+LD_FLAGS := ${LD_FLAGS} --script kernel/arch/i386/linker.ld -lgcc
 
 
 # ***********************************
