@@ -50,7 +50,7 @@ MKGRUB  = $(shell command -v grub-mkrescue)
 # C / C++ flags (include directory)
 CFLAGS :=                   \
 	-I ${SYSROOT}/usr/include/kernel/ \
-	${CFLAGS}
+	${PANIX_CFLAGS}
 # C++ only flags (-lgcc flag is used b/c it has helpful functions)
 # Flags explained:
 #
@@ -58,7 +58,7 @@ CFLAGS :=                   \
 # We need to ignore unused functions because we may use
 # them at a later time. For example, paging disable.
 #
-CXXFLAGS :=                  \
+CXXFLAGS :=                 \
 	-m32                    \
 	-target i386-none-elf   \
 	-ffreestanding          \
@@ -75,15 +75,15 @@ CXXFLAGS :=                  \
 	-Werror                 \
 	-Wno-unused-function    \
 	-std=c++17              \
-	${CXXFLAGS}
+	${PANIX_CXXFLAGS}
 # C / C++ pre-processor flags
-CPP_FLAGS :=                 \
+CPPFLAGS :=                \
 	-D VERSION=\"$(GIT_VERSION)\" \
-	${CPP_FLAGS}
+	${PANIX_CPPFLAGS}
 # Assembler flags
-AS_FLAGS := ${AS_FLAGS} --32
+ASFLAGS := ${PANIX_ASFLAGS} --32
 # Linker flags
-LD_FLAGS := ${LD_FLAGS} --script kernel/arch/i386/linker.ld -lgcc
+LDFLAGS := ${PANIX_LDFLAGS} --script kernel/arch/i386/linker.ld -lgcc
 
 
 # ***********************************
@@ -105,12 +105,12 @@ mkdir_obj_dirs:
 # C++ source -> object
 obj/%.o: kernel/%.cpp $(HEADERS)
 	$(MAKE) mkdir_obj_dirs
-	$(CXX) $(CPP_FLAGS) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 # Assembly source -> object
 obj/%.o: kernel/%.s
 	$(MAKE) mkdir_obj_dirs
-	$(AS) $(AS_FLAGS) -o $@ $<
+	$(AS) $(ASFLAGS) -o $@ $<
 
 obj/%.o: kernel/%.S
 	$(MAKE) mkdir_obj_dirs
@@ -119,7 +119,7 @@ obj/%.o: kernel/%.S
 # Kernel object
 dist/kernel: $(OBJ)
 	@ mkdir -p dist
-	$(LD) -o $@ $(OBJ) $(LD_FLAGS)
+	$(LD) -o $@ $(OBJ) $(LDFLAGS)
 	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
 
 # Debug build
