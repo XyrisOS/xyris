@@ -97,7 +97,6 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_isr_install();           // Initialize Interrupt Service Requests
     px_rs232_init(RS_232_COM1); // RS232 Serial
     px_paging_init(0);          // Initialize paging service (0 is placeholder)
-    px_heap_init(32*PAGE_SIZE); // Initialize the kernel heap
     px_kbd_init();              // Initialize PS/2 Keyboard
     px_rtc_init();              // Initialize Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
