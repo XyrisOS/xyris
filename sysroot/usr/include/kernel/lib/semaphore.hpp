@@ -11,11 +11,13 @@
 #pragma once
 
 #include <stdint.h>
+#include <sys/tasks.hpp>
 
 typedef struct px_semaphore
 {
     bool shared;
     uint32_t count;
+    px_tasks_sync_t task_sync;
     px_semaphore();
 } px_sem_t;
 

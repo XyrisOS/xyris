@@ -41,6 +41,7 @@ int px_mutex_init(px_mutex_t *mutex) {
     IS_MUTEX_VALID(mutex);
     // Initialize the value to false
     mutex->locked = false;
+    TASKS_SYNC_INIT(&mutex->task_sync);
     // Success, return 0
     return 0;
 }
@@ -57,7 +58,8 @@ int px_mutex_lock(px_mutex_t *mutex) {
     // Check if the mutex is unlocked
     while (ACQUIRE_MUTEX_LOCK(mutex))
     {
-        // Busy wait while trying to get the lock
+        // Block the current kernel task
+        px_tasks_block_current(TASK_BLOCKED);
     }
     // Success, return 0
     return 0;
