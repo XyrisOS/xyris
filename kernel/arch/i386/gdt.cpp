@@ -17,6 +17,8 @@
 
 // Defined in the gdt_flush.s file.
 extern "C" void gdt_flush(uintptr_t);
+// Function declarations
+void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags);
 // Define our local variables
 gdt_entry_t gdt_entries[5];
 gdt_ptr_t   gdt_ptr;

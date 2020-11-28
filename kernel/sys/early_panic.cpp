@@ -12,6 +12,10 @@
 #include <arch/arch.hpp>
 #include <dev/tty/tty.hpp>
 
+// Provide a function prototype to make the compiler warnings happy. Don't
+// want to make it public though, so we won't put it in the panic header.
+extern "C" void early_panic(const char *str);
+
 extern "C" void
 __attribute__ ((section(".early_text")))
 early_panic(const char *str) {

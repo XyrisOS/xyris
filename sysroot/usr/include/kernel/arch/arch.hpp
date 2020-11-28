@@ -15,8 +15,8 @@
 #ifndef PANIX_ARCH_HPP
 #define PANIX_ARCH_HPP
 
-const char* const px_cpu_get_vendor();
-const char* const px_cpu_get_model();
+const char* px_cpu_get_vendor();
+const char* px_cpu_get_model();
 
 struct registers;
 typedef struct registers registers_t;

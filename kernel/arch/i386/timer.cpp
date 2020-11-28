@@ -47,6 +47,7 @@ void px_timer_init(uint32_t freq) {
 }
 
 static void px_timer_callback(registers_t *regs) {
+    (void)regs;
     px_timer_tick++;
     for (size_t i = 0; i < _callback_count; i++) {
         _callbacks[i]();

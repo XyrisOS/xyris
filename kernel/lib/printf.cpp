@@ -92,6 +92,10 @@ Using & for division here, so STACK_WIDTH must be a power of 2. */
 #define PR_BUFLEN 16
 
 typedef int (*fnptr_t)(unsigned c, void** helper);
+
+/* Function declarations */
+int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr);
+
 /*****************************************************************************
 name:    do_printf
 action:    minimal subfunction for ?printf, calls function
