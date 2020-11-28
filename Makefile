@@ -66,19 +66,12 @@ WARNINGS :=              \
 # TODO: Include -Werror once we
 # Fix all of the warnings
 # C only warnings
-WARNINGS_C :=            \
+CWARNINGS :=             \
 	-Wnested-externs     \
 	-Wstrict-prototypes  \
 	-Wmissing-prototypes \
-# C & C++ flags (include directory)
-CFLAGS :=                             \
-	${PANIX_CFLAGS}                   \
-	${WARNINGS}                       \
-	-I ${SYSROOT}/usr/include/kernel/ \
-# C++ flags
-# Flags explained:
-CXXFLAGS :=                 \
-	${PANIX_CXXFLAGS}       \
+# Common (C & C++) flags
+FLAGS :=                    \
 	-m32                    \
 	-ffreestanding          \
 	-fstack-protector-all   \
@@ -90,11 +83,24 @@ CXXFLAGS :=                 \
 	-fno-rtti               \
 	-fno-exceptions         \
 	-fno-omit-frame-pointer \
+# C flags (include directory)
+CFLAGS :=           \
+	${FLAGS}        \
+	${PANIX_CFLAGS} \
+	${WARNINGS}     \
+	$(CWARNINGS)    \
+	-std=c17
+# C++ flags
+CXXFLAGS :=           \
+	${FLAGS}          \
+	${PANIX_CXXFLAGS} \
+	${WARNINGS}       \
 	-std=c++17
 # C / C++ pre-processor flags
 CPPFLAGS :=                       \
 	${PANIX_CPPFLAGS}             \
 	-D VERSION=\"$(GIT_VERSION)\" \
+	-I ${SYSROOT}/usr/include/kernel/
 # Assembler flags
 ASFLAGS :=           \
 	${PANIX_ASFLAGS} \
@@ -105,7 +111,6 @@ LDFLAGS :=                        \
 	-m elf_i386                   \
 	-T kernel/arch/i386/linker.ld \
 	-lgcc
-
 
 # ***********************************
 # * Source Code Compilation Targets *
@@ -127,12 +132,12 @@ mkdir_obj_dirs:
 # C source -> object
 obj/%.o: kernel/%.c $(HEADERS)
 	$(MAKE) mkdir_obj_dirs
-	$(CXX) $(CFLAGS) $(CPPFLAGS) $(WARNINGS_C) -c -o $@ $<
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 # C++ source -> object
 obj/%.o: kernel/%.cpp $(HEADERS)
 	$(MAKE) mkdir_obj_dirs
-	$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 # Assembly source -> object
 obj/%.o: kernel/%.s
