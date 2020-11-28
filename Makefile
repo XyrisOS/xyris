@@ -48,17 +48,35 @@ CXX     = $(shell command -v i686-elf-gcc)
 LD      = $(shell command -v i686-elf-ld)
 OBJCP   = $(shell command -v i686-elf-objcopy)
 MKGRUB  = $(shell command -v grub-mkrescue)
-# C / C++ flags (include directory)
+# Warning flags
+# (Disable unused functions warning)
+WARNINGS :=              \
+	-Wno-unused-function \
+	-Wall                \
+	-Wextra              \
+	-Winline             \
+	-Wshadow             \
+	-Wcast-align         \
+	-Wno-long-long       \
+	-Wpointer-arith      \
+    -Wconversion         \
+    -Wwrite-strings      \
+    -Wredundant-decls    \
+	-Wmissing-declarations
+# TODO: Include -Werror once we
+# Fix all of the warnings
+# C only warnings
+WARNINGS_C :=            \
+	-Wnested-externs     \
+	-Wstrict-prototypes  \
+	-Wmissing-prototypes \
+# C & C++ flags (include directory)
 CFLAGS :=                             \
 	${PANIX_CFLAGS}                   \
+	${WARNINGS}                       \
 	-I ${SYSROOT}/usr/include/kernel/ \
-# C++ only flags (-lgcc flag is used b/c it has helpful functions)
+# C++ flags
 # Flags explained:
-#
-# -Wno-unused-function
-# We need to ignore unused functions because we may use
-# them at a later time. For example, paging disable.
-#
 CXXFLAGS :=                 \
 	${PANIX_CXXFLAGS}       \
 	-m32                    \
@@ -72,9 +90,6 @@ CXXFLAGS :=                 \
 	-fno-rtti               \
 	-fno-exceptions         \
 	-fno-omit-frame-pointer \
-	-Wall                   \
-	-Werror                 \
-	-Wno-unused-function    \
 	-std=c++17
 # C / C++ pre-processor flags
 CPPFLAGS :=                       \
@@ -112,7 +127,7 @@ mkdir_obj_dirs:
 # C source -> object
 obj/%.o: kernel/%.c $(HEADERS)
 	$(MAKE) mkdir_obj_dirs
-	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CXX) $(CFLAGS) $(CPPFLAGS) $(WARNINGS_C) -c -o $@ $<
 
 # C++ source -> object
 obj/%.o: kernel/%.cpp $(HEADERS)
