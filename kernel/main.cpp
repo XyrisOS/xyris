@@ -73,9 +73,7 @@ extern "C" void px_call_constructors() {
  * for when a smashed stack is detected.
  *
  */
-__attribute__ ((used))
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
-__attribute__ ((used))
 extern "C" void __stack_chk_fail(void)
 {
     PANIC("Smashed stack detected.");

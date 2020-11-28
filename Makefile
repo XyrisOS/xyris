@@ -41,16 +41,16 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 # **********************************
 
 # Compilers/Assemblers/Linkers
-AS      = $(shell command -v i686-elf-as)
 NASM    = $(shell command -v nasm)
-CXX     = $(shell command -v clang++)
-LD      = $(shell command -v ld.lld)
-OBJCP   = $(shell command -v llvm-objcopy)
+AS      = $(shell command -v i686-elf-as)
+CXX     = $(shell command -v i686-elf-gcc)
+LD      = $(shell command -v i686-elf-ld)
+OBJCP   = $(shell command -v i686-elf-objcopy)
 MKGRUB  = $(shell command -v grub-mkrescue)
 # C / C++ flags (include directory)
-CFLAGS :=                   \
+CFLAGS :=                             \
+	${PANIX_CFLAGS}                   \
 	-I ${SYSROOT}/usr/include/kernel/ \
-	${PANIX_CFLAGS}
 # C++ only flags (-lgcc flag is used b/c it has helpful functions)
 # Flags explained:
 #
@@ -59,8 +59,8 @@ CFLAGS :=                   \
 # them at a later time. For example, paging disable.
 #
 CXXFLAGS :=                 \
+	${PANIX_CXXFLAGS}       \
 	-m32                    \
-	-target i386-none-elf   \
 	-ffreestanding          \
 	-fstack-protector-all   \
 	-fpermissive            \
@@ -74,16 +74,21 @@ CXXFLAGS :=                 \
 	-Wall                   \
 	-Werror                 \
 	-Wno-unused-function    \
-	-std=c++17              \
-	${PANIX_CXXFLAGS}
+	-std=c++17
 # C / C++ pre-processor flags
-CPPFLAGS :=                \
+CPPFLAGS :=                       \
+	${PANIX_CPPFLAGS}             \
 	-D VERSION=\"$(GIT_VERSION)\" \
-	${PANIX_CPPFLAGS}
 # Assembler flags
-ASFLAGS := ${PANIX_ASFLAGS} --32
+ASFLAGS :=           \
+	${PANIX_ASFLAGS} \
+	--32
 # Linker flags
-LDFLAGS := ${PANIX_LDFLAGS} --script kernel/arch/i386/linker.ld -lgcc
+LDFLAGS :=                        \
+	${PANIX_LDFLAGS}              \
+	-m elf_i386                   \
+	-T kernel/arch/i386/linker.ld \
+	-lgcc
 
 
 # ***********************************
@@ -92,7 +97,7 @@ LDFLAGS := ${PANIX_LDFLAGS} --script kernel/arch/i386/linker.ld -lgcc
 
 # All objects
 OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) \
-	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC)) \
+	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC))   \
 	  $(patsubst kernel/%.S, obj/%.o, $(NASM_SRC))
 # Object directories, mirroring source
 OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
@@ -188,9 +193,9 @@ vbox: vbox-create
 .PHONY: debugger
 debugger: dist/kernel
 	# Start QEMU with debugger
-	($(QEMU)         \
-	-S -s            \
-	-kernel $<       \
+	($(QEMU)   \
+	-S -s      \
+	-kernel $< \
 	$(QEMU_FLAGS) > /dev/null &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
