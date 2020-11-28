@@ -8,46 +8,41 @@
 GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 
 # *****************************
-# * Various Source Code Flags *
+# * Source Code & Directories *
 # *****************************
 
+# Directories
+BUILD   = obj
+LIBRARY = libs
+KERNEL  = kernel
+PRODUCT = dist
 SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
-ATT_SRC = $(shell find kernel -name "*.s")
-NASM_SRC = $(shell find kernel -name "*.S")
-C_SRC   = $(shell find kernel -name "*.c")
-CPP_SRC = $(shell find kernel -name "*.cpp")
-HEADERS = $(shell find $(INCLUDE) -name "*.hpp" -name "*.h")
 
-# *********************************
-# * Various Virtual Machine Flags *
-# *********************************
+# Source code
+ATT_SRC  = $(shell find $(KERNEL) $(LIBRARY) -name "*.s")
+NASM_SRC = $(shell find $(KERNEL) $(LIBRARY) -name "*.S")
+C_SRC    = $(shell find $(KERNEL) $(LIBRARY) -name "*.c")
+CPP_SRC  = $(shell find $(KERNEL) $(LIBRARY) -name "*.cpp")
+HEADERS  = $(shell find $(INCLUDE) $(LIBRARY) -name "*.hpp" -or -name "*.h")
 
-# QEMU flags
-QEMU_FLAGS =        \
-    -m 4G           \
-    -rtc clock=host \
-    -vga std        \
-    -serial stdio
-QEMU_ARCH = i386
-# Virtualbox flags
-VM_NAME	= panix-box
-VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
-# VM executable locations
-VBOX = $(shell command -v VBoxManage)
-QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
-
-# **********************************
-# * 32-Bit i686 Architecture Flags *
-# **********************************
+# *******************
+# * i686 Toolchains *
+# *******************
 
 # Compilers/Assemblers/Linkers
 NASM    = $(shell command -v nasm)
 AS      = $(shell command -v i686-elf-as)
-CXX     = $(shell command -v i686-elf-gcc)
+CC      = $(shell command -v i686-elf-gcc)
+CXX     = $(shell command -v i686-elf-g++)
 LD      = $(shell command -v i686-elf-ld)
 OBJCP   = $(shell command -v i686-elf-objcopy)
 MKGRUB  = $(shell command -v grub-mkrescue)
+
+# *******************
+# * Toolchain Flags *
+# *******************
+
 # Warning flags
 # (Disable unused functions warning)
 WARNINGS :=              \
@@ -112,47 +107,9 @@ LDFLAGS :=                        \
 	-T kernel/arch/i386/linker.ld \
 	-lgcc
 
-# ***********************************
-# * Source Code Compilation Targets *
-# ***********************************
-
-# All objects
-OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) \
-	  $(patsubst kernel/%.c, obj/%.o, $(C_SRC))     \
-	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC))   \
-	  $(patsubst kernel/%.S, obj/%.o, $(NASM_SRC))
-# Object directories, mirroring source
-OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
-
-# Create object file directories
-.PHONY: mkdir_obj_dirs
-mkdir_obj_dirs:
-	mkdir -p $(OBJ_DIRS)
-
-# C source -> object
-obj/%.o: kernel/%.c $(HEADERS)
-	$(MAKE) mkdir_obj_dirs
-	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-# C++ source -> object
-obj/%.o: kernel/%.cpp $(HEADERS)
-	$(MAKE) mkdir_obj_dirs
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
-
-# Assembly source -> object
-obj/%.o: kernel/%.s
-	$(MAKE) mkdir_obj_dirs
-	$(AS) $(ASFLAGS) -o $@ $<
-
-obj/%.o: kernel/%.S
-	$(MAKE) mkdir_obj_dirs
-	$(NASM) -f elf32 -o $@ $<
-
-# Kernel object
-dist/kernel: $(OBJ)
-	@ mkdir -p dist
-	$(LD) -o $@ $(OBJ) $(LDFLAGS)
-	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
+# ************************
+# * Kernel Build Targets *
+# ************************
 
 # Debug build
 debug: CXXFLAGS += -DDEBUG -g
@@ -163,6 +120,46 @@ debug: dist/kernel
 release: CXXFLAGS += -O3 -mno-avx
 release: CFLAGS += -O3 -mno-avx
 release: dist/kernel
+
+# *************************
+# * Kernel Source Objects *
+# *************************
+
+# All objects
+OBJ = $(patsubst $(KERNEL)/%.cpp, $(BUILD)/%.o, $(CPP_SRC)) \
+	  $(patsubst $(KERNEL)/%.c,   $(BUILD)/%.o, $(C_SRC))   \
+	  $(patsubst $(KERNEL)/%.s,   $(BUILD)/%.o, $(ATT_SRC)) \
+	  $(patsubst $(KERNEL)/%.S,   $(BUILD)/%.o, $(NASM_SRC))
+# Object directories, mirroring source
+OBJ_DIRS = $(subst $(KERNEL), $(BUILD), $(shell find $(KERNEL) -type d))
+
+# Create object file directories
+.PHONY: mkdir_obj_dirs
+mkdir_obj_dirs:
+	mkdir -p $(OBJ_DIRS)
+
+# C source -> object
+$(BUILD)/%.o: $(KERNEL)/%.c $(HEADERS)
+	$(MAKE) mkdir_obj_dirs
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+# C++ source -> object
+$(BUILD)/%.o: $(KERNEL)/%.cpp $(HEADERS)
+	$(MAKE) mkdir_obj_dirs
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+# GAS assembly -> object
+$(BUILD)/%.o: $(KERNEL)/%.s
+	$(MAKE) mkdir_obj_dirs
+	$(AS) $(ASFLAGS) -o $@ $<
+# NASM assembly -> object
+$(BUILD)/%.o: $(KERNEL)/%.S
+	$(MAKE) mkdir_obj_dirs
+	$(NASM) -f elf32 -o $@ $<
+
+# Kernel object
+$(PRODUCT)/kernel: $(OBJ)
+	@ mkdir -p dist
+	$(LD) -o $@ $(OBJ) $(LDFLAGS)
+	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
 
 # ********************************
 # * Kernel Distribution Creation *
@@ -188,6 +185,24 @@ vmdk: dist/kernel
 	@ echo "\nBuilding VMDK image of Panix..."
 	@ qemu-img convert -f raw -O vmdk dist/kernel dist/panix.vmdk
 	@ echo Done building VMDK image of Panix!
+
+# *************************
+# * Virtual Machine Flags *
+# *************************
+
+# QEMU flags
+QEMU_FLAGS =        \
+    -m 4G           \
+    -rtc clock=host \
+    -vga std        \
+    -serial stdio
+QEMU_ARCH = i386
+# Virtualbox flags
+VM_NAME	= panix-box
+VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
+# VM executable locations
+VBOX = $(shell command -v VBoxManage)
+QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # ***************************
 # * Virtual Machine Testing *
@@ -229,9 +244,9 @@ debugger: dist/kernel
 	# After this start the visual studio debugger
 	# gdb dist/kernel
 
-# ************************************
-# * Doxygen Documentation Generation *
-# ************************************
+# ****************************
+# * Documentation Generation *
+# ****************************
 
 .PHONY: docs
 docs:
