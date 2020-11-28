@@ -15,6 +15,7 @@ SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
 ATT_SRC = $(shell find kernel -name "*.s")
 NASM_SRC = $(shell find kernel -name "*.S")
+C_SRC   = $(shell find kernel -name "*.c")
 CPP_SRC = $(shell find kernel -name "*.cpp")
 HEADERS = $(shell find $(INCLUDE) -name "*.hpp" -name "*.h")
 
@@ -97,6 +98,7 @@ LDFLAGS :=                        \
 
 # All objects
 OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) \
+	  $(patsubst kernel/%.c, obj/%.o, $(C_SRC))     \
 	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC))   \
 	  $(patsubst kernel/%.S, obj/%.o, $(NASM_SRC))
 # Object directories, mirroring source
@@ -106,6 +108,11 @@ OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
 .PHONY: mkdir_obj_dirs
 mkdir_obj_dirs:
 	mkdir -p $(OBJ_DIRS)
+
+# C source -> object
+obj/%.o: kernel/%.c $(HEADERS)
+	$(MAKE) mkdir_obj_dirs
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 # C++ source -> object
 obj/%.o: kernel/%.cpp $(HEADERS)
