@@ -59,9 +59,9 @@ WARNINGS :=              \
 	-Wcast-align         \
 	-Wno-long-long       \
 	-Wpointer-arith      \
-    -Wconversion         \
-    -Wwrite-strings      \
-    -Wredundant-decls    \
+	-Wconversion         \
+	-Wwrite-strings      \
+	-Wredundant-decls    \
 	-Wmissing-declarations
 # TODO: Include -Werror once we
 # Fix all of the warnings
