@@ -16,6 +16,10 @@
 #include <lib/stdio.hpp>
 
 void px_rtc_callback(registers_t *regs);
+int px_rtc_get_update_in_progress();
+uint8_t px_rtc_get_register(int reg);
+void px_read_rtc();
+
 // Current values from RTC
 uint8_t px_rtc_second;      // Current UTC second
 uint8_t px_rtc_minute;      // Current UTC minute
@@ -40,6 +44,7 @@ void px_rtc_init() {
 }
 
 void px_rtc_callback(registers_t *regs) {
+    (void)regs;
     px_kprintf(DBG_INFO "RTC updated.\n");
 }
 

@@ -25,7 +25,6 @@ static int px_rs232_is_transmit_empty();
 static char px_rs232_read_char();
 static void px_rs232_write_char(char c);
 static void px_rs232_callback(registers_t *regs);
-void px_rs232_init(uint16_t port_num);
 
 static int px_rs232_received() {
     return px_read_byte(rs_232_port_base + RS_232_LINE_STATUS_REG) & 1;
@@ -52,6 +51,7 @@ void px_rs232_print(const char* str) {
 }
 
 static void px_rs232_callback(registers_t *regs) {
+    (void)regs;
     // Grab the input character
     char in = px_rs232_read_char();
     // Change carriage returns to newlines

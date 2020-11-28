@@ -36,6 +36,9 @@ px_heap_chunk_t* last = NULL;
 
 void* slot[NUM_SLOTS] = { NULL };
 
+// Function declarations
+void check(void);
+
 static void px_memory_chunk_init(px_heap_chunk_t* chunk) {
     px_debugf("%s(0x%p)\n", __FUNCTION__, chunk);
     dlist_init(&chunk->all);
@@ -155,7 +158,7 @@ void* malloc(size_t size) {
         px_memory_chunk_init(chunk2);
         dlist_insert_after(&chunk->all, &chunk2->all);
         len = px_memory_chunk_size(chunk2);
-        int n = px_memory_chunk_slot(len);
+        n = px_memory_chunk_slot(len);
         px_debugf("  adding chunk @ 0x%p 0x%lx [%d]\n", chunk2, len, n);
         DLIST_PUSH(&free_chunk[n], chunk2, free);
         mem_meta += HEADER_SIZE;

@@ -19,6 +19,8 @@ uint8_t px_kbd_scode_buff_pos = 0;
 void px_kbd_push_scode(uint8_t scode);
 
 static void px_kbd_callback(registers_t *regs) {
+    // Ignore the registers for now
+    (void)regs;
     uint8_t scode = px_read_byte(KBD_DATA_PORT);
     // If the keyboard scancode corresponds to an "on key down"
     px_kbd_push_scode(scode);
@@ -32,5 +34,5 @@ void px_kbd_push_scode(uint8_t scode) {
     // Push our scancode onto the buffer
     px_kbd_scode_buff[px_kbd_scode_buff_pos] = scode;
     // Increment and loop back if necessary
-    px_kbd_scode_buff_pos = (px_kbd_scode_buff_pos + 1) % 256;
+    px_kbd_scode_buff_pos = (uint8_t)((px_kbd_scode_buff_pos + 1) % 256);
 }
