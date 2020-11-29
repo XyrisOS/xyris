@@ -46,17 +46,17 @@ MKGRUB  = $(shell command -v grub-mkrescue)
 # Warning flags
 # (Disable unused functions warning)
 WARNINGS :=              \
-	-Wno-unused-function \
 	-Wall                \
 	-Wextra              \
 	-Winline             \
 	-Wshadow             \
+	-Wconversion         \
 	-Wcast-align         \
 	-Wno-long-long       \
 	-Wpointer-arith      \
-	-Wconversion         \
 	-Wwrite-strings      \
 	-Wredundant-decls    \
+	-Wno-unused-function \
 	-Wmissing-declarations
 # TODO: Include -Werror once we
 # Fix all of the warnings
@@ -68,15 +68,15 @@ CWARNINGS :=             \
 # Common (C & C++) flags
 FLAGS :=                    \
 	-m32                    \
-	-ffreestanding          \
-	-fstack-protector-all   \
-	-fpermissive            \
 	-nostdlib               \
 	-nodefaultlibs          \
-	-fno-use-cxa-atexit     \
-	-fno-builtin            \
+	-fpermissive            \
+	-ffreestanding          \
+	-fstack-protector-all   \
 	-fno-rtti               \
+	-fno-builtin            \
 	-fno-exceptions         \
+	-fno-use-cxa-atexit     \
 	-fno-omit-frame-pointer \
 # C flags (include directory)
 CFLAGS :=           \
@@ -159,7 +159,7 @@ $(BUILD)/%.o: $(KERNEL)/%.S
 $(PRODUCT)/kernel: $(OBJ)
 	@ mkdir -p dist
 	$(LD) -o $@ $(OBJ) $(LDFLAGS)
-	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
+	$(OBJCP) --only-keep-debug $(PRODUCT)/kernel $(PRODUCT)/panix.sym
 
 # ********************************
 # * Kernel Distribution Creation *
