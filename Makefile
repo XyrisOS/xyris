@@ -166,25 +166,12 @@ $(PRODUCT)/kernel: $(OBJ)
 # ********************************
 
 # Create bootable ISO
-.PHONY: iso
-iso: dist/kernel
+iso: $(PRODUCT)/kernel
 	@ mkdir -p iso/boot/grub
 	@ cp dist/kernel iso/boot/
 	@ cp boot/grub.cfg iso/boot/grub/grub.cfg
-	@ $(MKGRUB) -o dist/panix.iso iso
+	@ $(MKGRUB) -o $(PRODUCT)/panix.iso iso
 	@ rm -rf iso
-
-.PHONY: vdi
-vdi: dist/kernel
-	@ echo Building VDI image of Panix...
-	@ qemu-img convert -f raw -O vdi dist/kernel dist/panix.vdi
-	@ echo Done building VDI image of Panix!
-
-.PHONY: vmdk
-vmdk: dist/kernel
-	@ echo "\nBuilding VMDK image of Panix..."
-	@ qemu-img convert -f raw -O vmdk dist/kernel dist/panix.vmdk
-	@ echo Done building VMDK image of Panix!
 
 # *************************
 # * Virtual Machine Flags *
@@ -210,14 +197,14 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: dist/kernel
+run: $(PRODUCT)/kernel
 	$(QEMU)             \
 	-kernel dist/kernel \
 	$(QEMU_FLAGS)
 
 # Create Virtualbox VM
 .PHONY: vbox-create
-vbox-create: dist/panix.iso
+vbox-create: $(PRODUCT)/panix.iso
 	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/dist
 	$(VBOX) modifyvm $(VM_NAME)                 \
 	--memory 256 --ioapic on --cpus 2 --vram 16 \
@@ -233,7 +220,7 @@ vbox: vbox-create
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: debugger
-debugger: dist/kernel
+debugger: $(PRODUCT)/kernel
 	# Start QEMU with debugger
 	($(QEMU)   \
 	-S -s      \
