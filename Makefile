@@ -28,12 +28,16 @@ PRODUCT = dist
 SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
 
-# Source code
-ATT_SRC  = $(shell find $(KERNEL) $(LIBRARY) -name "*.s")
-NASM_SRC = $(shell find $(KERNEL) $(LIBRARY) -name "*.S")
-C_SRC    = $(shell find $(KERNEL) $(LIBRARY) -name "*.c")
-CPP_SRC  = $(shell find $(KERNEL) $(LIBRARY) -name "*.cpp")
-HEADERS  = $(shell find $(INCLUDE) $(LIBRARY) -name "*.hpp" -or -name "*.h")
+# Assembly
+ATT_SRC  = $(shell find $(KERNEL) $(LIBRARY) -type f -name "*.s")
+NASM_SRC = $(shell find $(KERNEL) $(LIBRARY) -type f -name "*.S")
+# C / C++
+C_SRC    = $(shell find $(KERNEL) $(LIBRARY) -type f -name "*.c")
+CPP_SRC  = $(shell find $(KERNEL) $(LIBRARY) -type f -name "*.cpp")
+# Headers
+C_HDR    = $(shell find $(INCLUDE) $(LIBRARY) -type f -name "*.h")
+CPP_HDR  = $(shell find $(INCLUDE) $(LIBRARY) -type f -name "*.hpp")
+HEADERS  = $(CPP_HDR) $(C_HDR)
 
 # *******************
 # * i686 Toolchains *
@@ -258,7 +262,7 @@ docs:
 
 .PHONY: todo
 todo:
-	-@for file in $(ALLFILES:Makefile=); do fgrep -H --color=always -e TODO -e FIXME $$file; done; true
+	-@for file in $(ALLFILES:Makefile=); do fgrep -i -H --color=always -e TODO -e FIXME $$file; done; true
 
 # ********************
 # * Cleaning Targets *
