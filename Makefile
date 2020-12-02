@@ -143,6 +143,8 @@ OBJ = $(patsubst $(KERNEL)/%.cpp, $(BUILD)/%.o, $(CPP_SRC)) \
 OBJ_DIRS = $(subst $(KERNEL), $(BUILD), $(shell find $(KERNEL) -type d))
 # Dependency files
 DEP = $(OBJ:%.o=%.d)
+# All files (source, header, etc.)
+ALLFILES = $(ATT_SRC) $(NASM_SRC) $(C_SRC) $(CPP_SRC) $(HEADERS)
 # Include all .d files
 -include $(DEP)
 
@@ -253,6 +255,10 @@ debugger: $(PRODUCT)/kernel
 docs:
 	@echo Generating docs according to the Doxyfile...
 	@doxygen ./Doxyfile
+
+.PHONY: todo
+todo:
+	-@for file in $(ALLFILES:Makefile=); do fgrep -H --color=always -e TODO -e FIXME $$file; done; true
 
 # ********************
 # * Cleaning Targets *
