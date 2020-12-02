@@ -12,6 +12,7 @@ GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 # ******************************
 
 COLOR_COM  = \033[0;34m
+COLOR_OK   = \033[0;32m
 COLOR_NONE = \033[m
 
 # *****************************
@@ -22,6 +23,7 @@ COLOR_NONE = \033[m
 BUILD   = obj
 LIBRARY = libs
 KERNEL  = kernel
+SYMBOLS = $(KERNEL).sym
 PRODUCT = dist
 SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
@@ -139,6 +141,10 @@ OBJ = $(patsubst $(KERNEL)/%.cpp, $(BUILD)/%.o, $(CPP_SRC)) \
 	  $(patsubst $(KERNEL)/%.S,   $(BUILD)/%.o, $(NASM_SRC))
 # Object directories, mirroring source
 OBJ_DIRS = $(subst $(KERNEL), $(BUILD), $(shell find $(KERNEL) -type d))
+# Dependency files
+DEP = $(OBJ:%.o=%.d)
+# Include all .d files
+-include $(DEP)
 
 # Create object file directories
 .PHONY: mkdir_obj_dirs
@@ -148,12 +154,12 @@ mkdir_obj_dirs:
 # C source -> object
 $(BUILD)/%.o: $(KERNEL)/%.c $(HEADERS)
 	@$(MAKE) mkdir_obj_dirs
-	@$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -c -o $@ $<
 	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$@\n"
 # C++ source -> object
 $(BUILD)/%.o: $(KERNEL)/%.cpp $(HEADERS)
 	@$(MAKE) mkdir_obj_dirs
-	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -c -o $@ $<
 	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$@\n"
 # GAS assembly -> object
 $(BUILD)/%.o: $(KERNEL)/%.s
@@ -166,10 +172,10 @@ $(BUILD)/%.o: $(KERNEL)/%.S
 	@$(NASM) -f elf32 -o $@ $<
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
 # Kernel object
-$(PRODUCT)/kernel: $(OBJ)
+$(PRODUCT)/$(KERNEL): $(OBJ)
 	@mkdir -p dist
 	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
-	@$(OBJCP) --only-keep-debug $(PRODUCT)/kernel $(PRODUCT)/panix.sym
+	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
 
 # ********************************
 # * Kernel Distribution Creation *
@@ -257,11 +263,11 @@ docs:
 # Clear out objects and BIN
 .PHONY: clean
 clean:
-	@echo Cleaning obj directory...
-	@rm -rf obj
-	@echo Cleaning bin files...
-	@rm -rf dist/*
-	@echo "Done cleaning!"
+	@printf "$(COLOR_OK)Cleaning objects...$(COLOR_NONE)\n"
+	$(RM) $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS) $(OBJ) $(DEP)
+	@printf "$(COLOR_OK)Cleaning directories...$(COLOR_NONE)\n"
+	$(RM) -r $(OBJ_DIRS)
+	@printf "$(COLOR_OK)Cleaning complete.$(COLOR_NONE)\n"
 
 .PHONY: clean-vm
 clean-vm:
