@@ -7,6 +7,13 @@
 .DEFAULT_GOAL := release
 GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 
+# ******************************
+# * Compiler Output Formatting *
+# ******************************
+
+COLOR_COM  = \033[0;34m
+COLOR_NONE = \033[m
+
 # *****************************
 # * Source Code & Directories *
 # *****************************
@@ -47,10 +54,10 @@ MKGRUB  = $(shell command -v grub-mkrescue)
 # (Disable unused functions warning)
 WARNINGS :=              \
 	-Wall                \
+	-Werror              \
 	-Wextra              \
 	-Winline             \
 	-Wshadow             \
-	-Wconversion         \
 	-Wcast-align         \
 	-Wno-long-long       \
 	-Wpointer-arith      \
@@ -58,8 +65,8 @@ WARNINGS :=              \
 	-Wredundant-decls    \
 	-Wno-unused-function \
 	-Wmissing-declarations
-# TODO: Include -Werror once we
-# Fix all of the warnings
+# Flags to be added later
+#   -Wconversion
 # C only warnings
 CWARNINGS :=             \
 	-Wnested-externs     \
@@ -77,7 +84,7 @@ FLAGS :=                    \
 	-fno-builtin            \
 	-fno-exceptions         \
 	-fno-use-cxa-atexit     \
-	-fno-omit-frame-pointer \
+	-fno-omit-frame-pointer
 # C flags (include directory)
 CFLAGS :=           \
 	${FLAGS}        \
@@ -136,30 +143,33 @@ OBJ_DIRS = $(subst $(KERNEL), $(BUILD), $(shell find $(KERNEL) -type d))
 # Create object file directories
 .PHONY: mkdir_obj_dirs
 mkdir_obj_dirs:
-	mkdir -p $(OBJ_DIRS)
+	@mkdir -p $(OBJ_DIRS)
 
 # C source -> object
 $(BUILD)/%.o: $(KERNEL)/%.c $(HEADERS)
-	$(MAKE) mkdir_obj_dirs
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+	@$(MAKE) mkdir_obj_dirs
+	@$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$@\n"
 # C++ source -> object
 $(BUILD)/%.o: $(KERNEL)/%.cpp $(HEADERS)
-	$(MAKE) mkdir_obj_dirs
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	@$(MAKE) mkdir_obj_dirs
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$@\n"
 # GAS assembly -> object
 $(BUILD)/%.o: $(KERNEL)/%.s
-	$(MAKE) mkdir_obj_dirs
-	$(AS) $(ASFLAGS) -o $@ $<
+	@$(MAKE) mkdir_obj_dirs
+	@$(AS) $(ASFLAGS) -o $@ $<
+	@printf "$(COLOR_COM)(AS)$(COLOR_NONE)\t$@\n"
 # NASM assembly -> object
 $(BUILD)/%.o: $(KERNEL)/%.S
-	$(MAKE) mkdir_obj_dirs
-	$(NASM) -f elf32 -o $@ $<
-
+	@$(MAKE) mkdir_obj_dirs
+	@$(NASM) -f elf32 -o $@ $<
+	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
 # Kernel object
 $(PRODUCT)/kernel: $(OBJ)
-	@ mkdir -p dist
-	$(LD) -o $@ $(OBJ) $(LDFLAGS)
-	$(OBJCP) --only-keep-debug $(PRODUCT)/kernel $(PRODUCT)/panix.sym
+	@mkdir -p dist
+	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
+	@$(OBJCP) --only-keep-debug $(PRODUCT)/kernel $(PRODUCT)/panix.sym
 
 # ********************************
 # * Kernel Distribution Creation *
@@ -167,11 +177,11 @@ $(PRODUCT)/kernel: $(OBJ)
 
 # Create bootable ISO
 iso: $(PRODUCT)/kernel
-	@ mkdir -p iso/boot/grub
-	@ cp dist/kernel iso/boot/
-	@ cp boot/grub.cfg iso/boot/grub/grub.cfg
-	@ $(MKGRUB) -o $(PRODUCT)/panix.iso iso
-	@ rm -rf iso
+	@mkdir -p iso/boot/grub
+	@cp dist/kernel iso/boot/
+	@cp boot/grub.cfg iso/boot/grub/grub.cfg
+	@$(MKGRUB) -o $(PRODUCT)/panix.iso iso
+	@rm -rf iso
 
 # *************************
 # * Virtual Machine Flags *
@@ -237,8 +247,8 @@ debugger: $(PRODUCT)/kernel
 
 .PHONY: docs
 docs:
-	@ echo Generating docs according to the Doxyfile...
-	@ doxygen ./Doxyfile
+	@echo Generating docs according to the Doxyfile...
+	@doxygen ./Doxyfile
 
 # ********************
 # * Cleaning Targets *
@@ -247,13 +257,13 @@ docs:
 # Clear out objects and BIN
 .PHONY: clean
 clean:
-	@ echo Cleaning obj directory...
-	@ rm -rf obj
-	@ echo Cleaning bin files...
-	@ rm -rf dist/*
-	@ echo "Done cleaning!"
+	@echo Cleaning obj directory...
+	@rm -rf obj
+	@echo Cleaning bin files...
+	@rm -rf dist/*
+	@echo "Done cleaning!"
 
 .PHONY: clean-vm
 clean-vm:
-	@ echo Removing VM
-	@ $(VBOX) unregistervm $(VM_NAME) --delete
+	@echo Removing VM
+	@$(VBOX) unregistervm $(VM_NAME) --delete
