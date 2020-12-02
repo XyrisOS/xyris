@@ -1,8 +1,13 @@
-# Panix Kernel Makefile
-# Compiles the kernel source code located in the kernel/ folder.
+#  ____             _        _  __                    _
+# |  _ \ __ _ _ __ (_)_  __ | |/ /___ _ __ _ __   ___| |
+# | |_) / _` | '_ \| \ \/ / | ' // _ \ '__| '_ \ / _ \ |
+# |  __/ (_| | | | | |>  <  | . \  __/ |  | | | |  __/ |
+# |_|   \__,_|_| |_|_/_/\_\ |_|\_\___|_|  |_| |_|\___|_|
 #
-# TODO: Create seperate makefiles as needed and integrate into one makefile
-#
+# Compiles the kernel source code located in the kernel folder.
+
+# Designed by Keeton Feavel & Micah Switzer
+# Copyright the Panix Contributors (c) 2019
 
 .DEFAULT_GOAL := release
 GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
