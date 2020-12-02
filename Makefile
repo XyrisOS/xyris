@@ -19,7 +19,7 @@ COLOR_NONE = \033[m
 # * Source Code & Directories *
 # *****************************
 
-# Directories
+# Directories & files
 BUILD   = obj
 LIBRARY = libs
 KERNEL  = kernel
@@ -123,12 +123,12 @@ LDFLAGS :=                        \
 # Debug build
 debug: CXXFLAGS += -DDEBUG -g
 debug: CFLAGS += -DDEBUG -g
-debug: dist/kernel
+debug: $(PRODUCT)/$(KERNEL)
 
 # Release build
 release: CXXFLAGS += -O3 -mno-avx
 release: CFLAGS += -O3 -mno-avx
-release: dist/kernel
+release: $(PRODUCT)/$(KERNEL)
 
 # *************************
 # * Kernel Source Objects *
@@ -173,7 +173,7 @@ $(BUILD)/%.o: $(KERNEL)/%.S
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
 # Kernel object
 $(PRODUCT)/$(KERNEL): $(OBJ)
-	@mkdir -p dist
+	@mkdir -p $(PRODUCT)
 	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
 	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
 
@@ -182,9 +182,9 @@ $(PRODUCT)/$(KERNEL): $(OBJ)
 # ********************************
 
 # Create bootable ISO
-iso: $(PRODUCT)/kernel
+iso: $(PRODUCT)/$(KERNEL)
 	@mkdir -p iso/boot/grub
-	@cp dist/kernel iso/boot/
+	@cp $(PRODUCT)/$(KERNEL) iso/boot/
 	@cp boot/grub.cfg iso/boot/grub/grub.cfg
 	@$(MKGRUB) -o $(PRODUCT)/panix.iso iso
 	@rm -rf iso
@@ -202,7 +202,7 @@ QEMU_FLAGS =        \
 QEMU_ARCH = i386
 # Virtualbox flags
 VM_NAME	= panix-box
-VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
+VBOX_VM_FILE=$(PRODUCT)/$(VM_NAME)/$(VM_NAME).vbox
 # VM executable locations
 VBOX = $(shell command -v VBoxManage)
 QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
@@ -213,22 +213,22 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: $(PRODUCT)/kernel
-	$(QEMU)             \
-	-kernel dist/kernel \
+run: $(PRODUCT)/$(KERNEL)
+	$(QEMU)                      \
+	-kernel $(PRODUCT)/$(KERNEL) \
 	$(QEMU_FLAGS)
 
 # Create Virtualbox VM
 .PHONY: vbox-create
 vbox-create: $(PRODUCT)/panix.iso
-	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/dist
+	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCT)
 	$(VBOX) modifyvm $(VM_NAME)                 \
 	--memory 256 --ioapic on --cpus 2 --vram 16 \
 	--graphicscontroller vboxvga --boot1 disk   \
 	--audiocontroller sb16 --uart1 0x3f8 4      \
 	--uartmode1 file $(shell pwd)/com1.txt
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix.iso
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCT)/panix.iso
 
 .PHONY: vbox-create
 vbox: vbox-create
@@ -244,8 +244,6 @@ debugger: $(PRODUCT)/kernel
 	$(QEMU_FLAGS) > /dev/null &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
-	# After this start the visual studio debugger
-	# gdb dist/kernel
 
 # ****************************
 # * Documentation Generation *
