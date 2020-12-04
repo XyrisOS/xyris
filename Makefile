@@ -9,7 +9,6 @@
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
 
-.DEFAULT_GOAL := release
 GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 
 # ******************************
@@ -28,6 +27,7 @@ COLOR_NONE = \033[m
 BUILD   = obj
 LIBRARY = libs
 KERNEL  = kernel
+ISOIMG  = panix.iso
 SYMBOLS = $(KERNEL).sym
 PRODUCT = dist
 SYSROOT	= sysroot
@@ -129,15 +129,17 @@ LDFLAGS :=                        \
 # * Kernel Build Targets *
 # ************************
 
+# Release build
+# This will be build by default since it
+# is the first target in the Makefile
+release: CXXFLAGS += -O3 -mno-avx
+release: CFLAGS += -O3 -mno-avx
+release: $(PRODUCT)/$(KERNEL)
+
 # Debug build
 debug: CXXFLAGS += -DDEBUG -g
 debug: CFLAGS += -DDEBUG -g
 debug: $(PRODUCT)/$(KERNEL)
-
-# Release build
-release: CXXFLAGS += -O3 -mno-avx
-release: CFLAGS += -O3 -mno-avx
-release: $(PRODUCT)/$(KERNEL)
 
 # *************************
 # * Kernel Source Objects *
@@ -197,7 +199,7 @@ iso: $(PRODUCT)/$(KERNEL)
 	@mkdir -p iso/boot/grub
 	@cp $(PRODUCT)/$(KERNEL) iso/boot/
 	@cp boot/grub.cfg iso/boot/grub/grub.cfg
-	@$(MKGRUB) -o $(PRODUCT)/panix.iso iso
+	@$(MKGRUB) -o $(PRODUCT)/$(ISOIMG) iso
 	@rm -rf iso
 
 # *************************
@@ -231,7 +233,7 @@ run: $(PRODUCT)/$(KERNEL)
 
 # Create Virtualbox VM
 .PHONY: vbox-create
-vbox-create: $(PRODUCT)/panix.iso
+vbox-create: $(PRODUCT)/$(ISOIMG)
 	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCT)
 	$(VBOX) modifyvm $(VM_NAME)                 \
 	--memory 256 --ioapic on --cpus 2 --vram 16 \
@@ -239,7 +241,7 @@ vbox-create: $(PRODUCT)/panix.iso
 	--audiocontroller sb16 --uart1 0x3f8 4      \
 	--uartmode1 file $(shell pwd)/com1.txt
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCT)/panix.iso
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCT)/$(ISOIMG)
 
 .PHONY: vbox-create
 vbox: vbox-create
@@ -247,7 +249,7 @@ vbox: vbox-create
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: debugger
-debugger: $(PRODUCT)/kernel
+debugger: $(PRODUCT)/$(KERNEL)
 	# Start QEMU with debugger
 	($(QEMU)   \
 	-S -s      \
