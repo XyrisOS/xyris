@@ -9,6 +9,9 @@
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
 
+# Makefile flags
+# prevent make from showing "entering/leaving directory" messages
+MAKEFLAGS 	  += --no-print-directory
 GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 
 # ******************************
@@ -34,18 +37,19 @@ SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
 
 # Assembly
-ATT_SRC  = $(shell find $(KERNEL) $(LIBRARY) -type f -name "*.s")
-NASM_SRC = $(shell find $(KERNEL) $(LIBRARY) -type f -name "*.S")
+ATT_SRC  = $(shell find $(KERNEL) -type f -name "*.s")
+NASM_SRC = $(shell find $(KERNEL) -type f -name "*.S")
 # C / C++
-C_SRC    = $(shell find $(KERNEL) $(LIBRARY) -type f -name "*.c")
-CPP_SRC  = $(shell find $(KERNEL) $(LIBRARY) -type f -name "*.cpp")
+C_SRC    = $(shell find $(KERNEL) -type f -name "*.c")
+CPP_SRC  = $(shell find $(KERNEL) -type f -name "*.cpp")
 # Headers
-C_HDR    = $(shell find $(INCLUDE) $(LIBRARY) -type f -name "*.h")
-CPP_HDR  = $(shell find $(INCLUDE) $(LIBRARY) -type f -name "*.hpp")
+C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h")
+CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp")
 HEADERS  = $(CPP_HDR) $(C_HDR)
 # Libraries
-LIB_A    = $(shell find $(LIBRARY) -type f -name "*.a")
-LIBS     = $(addprefix -l:, $(LIB_A))
+LIB_DIRS = $(shell find $(LIBRARY) -type d)
+LIBS_A   = $(shell find $(LIBRARY) -type f -name "*.a")
+LIBS     = $(addprefix -l:, $(LIBS_A))
 
 # *******************
 # * i686 Toolchains *
@@ -151,14 +155,15 @@ debug: $(PRODUCT)/$(KERNEL)
 # *************************
 
 # All objects
-OBJ = $(patsubst $(KERNEL)/%.cpp, $(BUILD)/%.o, $(CPP_SRC)) \
-	  $(patsubst $(KERNEL)/%.c,   $(BUILD)/%.o, $(C_SRC))   \
-	  $(patsubst $(KERNEL)/%.s,   $(BUILD)/%.o, $(ATT_SRC)) \
-	  $(patsubst $(KERNEL)/%.S,   $(BUILD)/%.o, $(NASM_SRC))
+OBJ_C   = $(patsubst $(KERNEL)/%.c,   $(BUILD)/%.o, $(C_SRC))
+OBJ_CPP = $(patsubst $(KERNEL)/%.cpp, $(BUILD)/%.o, $(CPP_SRC))
+OBJ_ASM = $(patsubst $(KERNEL)/%.s,   $(BUILD)/%.o, $(ATT_SRC)) \
+          $(patsubst $(KERNEL)/%.S,   $(BUILD)/%.o, $(NASM_SRC))
+OBJ     = $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM)
 # Object directories, mirroring source
 OBJ_DIRS = $(subst $(KERNEL), $(BUILD), $(shell find $(KERNEL) -type d))
 # Dependency files
-DEP = $(OBJ:%.o=%.d)
+DEP = $(OBJ_CPP:%.o=%.d) $(OBJ_C:%.o=%.d)
 # All files (source, header, etc.)
 ALLFILES = $(ATT_SRC) $(NASM_SRC) $(C_SRC) $(CPP_SRC) $(HEADERS)
 # Include all .d files
@@ -190,7 +195,7 @@ $(BUILD)/%.o: $(KERNEL)/%.S
 	@$(NASM) -f elf32 -o $@ $<
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
 # Kernel object
-$(PRODUCT)/$(KERNEL): $(OBJ)
+$(PRODUCT)/$(KERNEL): $(LIBRARY) $(OBJ)
 	@mkdir -p $(PRODUCT)
 	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
 	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
