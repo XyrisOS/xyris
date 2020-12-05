@@ -44,8 +44,8 @@ C_HDR    = $(shell find $(INCLUDE) $(LIBRARY) -type f -name "*.h")
 CPP_HDR  = $(shell find $(INCLUDE) $(LIBRARY) -type f -name "*.hpp")
 HEADERS  = $(CPP_HDR) $(C_HDR)
 # Libraries
-LIB_DIRS = $(shell find $(LIBRARY) -name '*.a')
-LIBS 	 = $(addprefix -l:, $(LIB_DIRS))
+LIB_A    = $(shell find $(LIBRARY) -type f -name "*.a")
+LIBS     = $(addprefix -l:, $(LIB_A))
 
 # *******************
 # * i686 Toolchains *
