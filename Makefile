@@ -43,6 +43,9 @@ CPP_SRC  = $(shell find $(KERNEL) $(LIBRARY) -type f -name "*.cpp")
 C_HDR    = $(shell find $(INCLUDE) $(LIBRARY) -type f -name "*.h")
 CPP_HDR  = $(shell find $(INCLUDE) $(LIBRARY) -type f -name "*.hpp")
 HEADERS  = $(CPP_HDR) $(C_HDR)
+# Libraries
+LIB_DIRS = $(shell find $(LIBRARY) -name '*.a')
+LIBS 	 = $(addprefix -l:, $(LIB_DIRS))
 
 # *******************
 # * i686 Toolchains *
@@ -123,6 +126,8 @@ LDFLAGS :=                        \
 	${PANIX_LDFLAGS}              \
 	-m elf_i386                   \
 	-T kernel/arch/i386/linker.ld \
+	-L $(LIBRARY)                 \
+	$(LIBS)                       \
 	-lgcc
 
 # ************************
