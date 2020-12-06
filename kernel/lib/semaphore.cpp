@@ -97,6 +97,7 @@ int sem_trywait(px_sem_t *sem) {
 
 int sem_timedwait(px_sem_t *sem, const uint32_t *usec) {
     // TODO: Add the timer functionality here.
+    (void)usec;
     // Check if the semaphore is valid
     if (sem == NULL)
     {
@@ -131,6 +132,8 @@ int px_sem_post(px_sem_t *sem) {
 }
 
 uint32_t px_sem_getval(px_sem_t *sem, uint32_t *val) {
+    // FIXME: I don't think val should be unused?
+    (void)val;
     // Check if the semaphore is valid
     if (sem == NULL)
     {

@@ -1,26 +1,226 @@
-# Panix Kernel Makefile
-# Compiles the kernel source code located in the kernel/ folder.
+#  ____             _        _  __                    _
+# |  _ \ __ _ _ __ (_)_  __ | |/ /___ _ __ _ __   ___| |
+# | |_) / _` | '_ \| \ \/ / | ' // _ \ '__| '_ \ / _ \ |
+# |  __/ (_| | | | | |>  <  | . \  __/ |  | | | |  __/ |
+# |_|   \__,_|_| |_|_/_/\_\ |_|\_\___|_|  |_| |_|\___|_|
 #
-# TODO: Create seperate makefiles as needed and integrate into one makefile
-#
+# Compiles the kernel source code located in the kernel folder.
 
-.DEFAULT_GOAL := release
+# Designed by Keeton Feavel & Micah Switzer
+# Copyright the Panix Contributors (c) 2019
+
+PROJ_NAME = panix
+
+# Makefile flags
+# prevent make from showing "entering/leaving directory" messages
+MAKEFLAGS 	  += --no-print-directory
 GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 
+# ******************************
+# * Compiler Output Formatting *
+# ******************************
+
+COLOR_COM  = \033[0;34m
+COLOR_OK   = \033[0;32m
+COLOR_NONE = \033[m
+
 # *****************************
-# * Various Source Code Flags *
+# * Source Code & Directories *
 # *****************************
 
+# Directories & files
+BUILD   = obj
+LIBRARY = libs
+KERNEL  = kernel
+ISOIMG  = $(PROJ_NAME).iso
+SYMBOLS = $(KERNEL).sym
+PRODUCT = dist
 SYSROOT	= sysroot
 INCLUDE = $(SYSROOT)/usr/include
-ATT_SRC = $(shell find kernel -name "*.s")
-NASM_SRC = $(shell find kernel -name "*.S")
-CPP_SRC = $(shell find kernel -name "*.cpp")
-HEADERS = $(shell find $(INCLUDE) -name "*.hpp" -name "*.h")
 
-# *********************************
-# * Various Virtual Machine Flags *
-# *********************************
+# Assembly
+ATT_SRC  = $(shell find $(KERNEL) -type f -name "*.s")
+NASM_SRC = $(shell find $(KERNEL) -type f -name "*.S")
+# C / C++
+C_SRC    = $(shell find $(KERNEL) -type f -name "*.c")
+CPP_SRC  = $(shell find $(KERNEL) -type f -name "*.cpp")
+# Headers
+C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h")
+CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp")
+HEADERS  = $(CPP_HDR) $(C_HDR)
+# Libraries
+LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
+LIBS_A   = $(shell find $(LIBRARY) -type f -name "*.a")
+LIBS     = $(addprefix -l:,$(LIBS_A))
+
+# *******************
+# * i686 Toolchains *
+# *******************
+
+# Compilers/Assemblers/Linkers
+NASM    = $(shell command -v nasm)
+AS      = $(shell command -v i686-elf-as)
+CC      = $(shell command -v i686-elf-gcc)
+CXX     = $(shell command -v i686-elf-g++)
+LD      = $(shell command -v i686-elf-ld)
+OBJCP   = $(shell command -v i686-elf-objcopy)
+MKGRUB  = $(shell command -v grub-mkrescue)
+
+# *******************
+# * Toolchain Flags *
+# *******************
+
+# Warning flags
+# (Disable unused functions warning)
+WARNINGS :=              \
+	-Wall                \
+	-Werror              \
+	-Wextra              \
+	-Winline             \
+	-Wshadow             \
+	-Wcast-align         \
+	-Wno-long-long       \
+	-Wpointer-arith      \
+	-Wwrite-strings      \
+	-Wredundant-decls    \
+	-Wno-unused-function \
+	-Wmissing-declarations
+# Flags to be added later
+#   -Wconversion
+# C only warnings
+CWARNINGS :=             \
+	-Wnested-externs     \
+	-Wstrict-prototypes  \
+	-Wmissing-prototypes \
+# Common (C & C++) flags
+FLAGS :=                    \
+	-m32                    \
+	-nostdlib               \
+	-nodefaultlibs          \
+	-fpermissive            \
+	-ffreestanding          \
+	-fstack-protector-all   \
+	-fno-rtti               \
+	-fno-builtin            \
+	-fno-exceptions         \
+	-fno-use-cxa-atexit     \
+	-fno-omit-frame-pointer
+# C flags (include directory)
+CFLAGS :=           \
+	${FLAGS}        \
+	${PANIX_CFLAGS} \
+	${WARNINGS}     \
+	$(CWARNINGS)    \
+	-std=c17
+# C++ flags
+CXXFLAGS :=           \
+	${FLAGS}          \
+	${PANIX_CXXFLAGS} \
+	${WARNINGS}       \
+	-std=c++17
+# C / C++ pre-processor flags
+CPPFLAGS :=                       \
+	${PANIX_CPPFLAGS}             \
+	-D VERSION=\"$(GIT_VERSION)\" \
+	-I ${SYSROOT}/usr/include/kernel/
+# Assembler flags
+ASFLAGS :=           \
+	${PANIX_ASFLAGS} \
+	--32
+# Linker flags
+LDFLAGS =                         \
+	${PANIX_LDFLAGS}              \
+	-m elf_i386                   \
+	-T kernel/arch/i386/linker.ld \
+	-L.                           \
+	$(LIBS)                       \
+	-lgcc
+
+# ************************
+# * Kernel Build Targets *
+# ************************
+
+# Release build
+# This will be build by default since it
+# is the first target in the Makefile
+release: CXXFLAGS += -O3 -mno-avx
+release: CFLAGS += -O3 -mno-avx
+release: $(KERNEL)
+
+# Debug build
+debug: CXXFLAGS += -DDEBUG -g
+debug: CFLAGS += -DDEBUG -g
+debug: $(KERNEL)
+
+# *************************
+# * Kernel Source Objects *
+# *************************
+
+# All objects
+OBJ_C   = $(patsubst $(KERNEL)/%.c,   $(BUILD)/%.o, $(C_SRC))
+OBJ_CPP = $(patsubst $(KERNEL)/%.cpp, $(BUILD)/%.o, $(CPP_SRC))
+OBJ_ASM = $(patsubst $(KERNEL)/%.s,   $(BUILD)/%.o, $(ATT_SRC)) \
+          $(patsubst $(KERNEL)/%.S,   $(BUILD)/%.o, $(NASM_SRC))
+OBJ     = $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM)
+# Object directories, mirroring source
+OBJ_DIRS = $(subst $(KERNEL), $(BUILD), $(shell find $(KERNEL) -type d))
+# Create object file directories
+OBJ_DIRS_MAKE := mkdir -p $(OBJ_DIRS)
+# Dependency files
+DEP = $(OBJ_CPP:%.o=%.d) $(OBJ_C:%.o=%.d)
+# All files (source, header, etc.)
+ALLFILES = $(ATT_SRC) $(NASM_SRC) $(C_SRC) $(CPP_SRC) $(HEADERS)
+# Include all .d files
+-include $(DEP)
+
+# C source -> object
+$(BUILD)/%.o: $(KERNEL)/%.c $(HEADERS)
+	@$(OBJ_DIRS_MAKE)
+	@$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -c -o $@ $<
+	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$@\n"
+# C++ source -> object
+$(BUILD)/%.o: $(KERNEL)/%.cpp $(HEADERS)
+	@$(OBJ_DIRS_MAKE)
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -c -o $@ $<
+	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$@\n"
+# GAS assembly -> object
+$(BUILD)/%.o: $(KERNEL)/%.s
+	@$(OBJ_DIRS_MAKE)
+	@$(AS) $(ASFLAGS) -o $@ $<
+	@printf "$(COLOR_COM)(AS)$(COLOR_NONE)\t$@\n"
+# NASM assembly -> object
+$(BUILD)/%.o: $(KERNEL)/%.S
+	@$(OBJ_DIRS_MAKE)
+	@$(NASM) -f elf32 -o $@ $<
+	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
+# Kernel object
+$(PRODUCT)/$(KERNEL): $(LIBS_A) $(OBJ)
+	@mkdir -p $(PRODUCT)
+	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
+	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
+# Kernel (Linked With Libraries)
+.PHONY: $(KERNEL)
+$(KERNEL):
+	@for dir in $(LIB_DIRS); do        \
+        $(MAKE) -C $$dir $(PROJ_NAME); \
+    done
+	@$(MAKE) $(PRODUCT)/$(KERNEL)
+
+# ********************************
+# * Kernel Distribution Creation *
+# ********************************
+
+# Create bootable ISO
+iso: $(PRODUCT)/$(KERNEL)
+	@mkdir -p iso/boot/grub
+	@cp $(PRODUCT)/$(KERNEL) iso/boot/
+	@cp boot/grub.cfg iso/boot/grub/grub.cfg
+	@$(MKGRUB) -o $(PRODUCT)/$(ISOIMG) iso
+	@rm -rf iso
+
+# *************************
+# * Virtual Machine Flags *
+# *************************
 
 # QEMU flags
 QEMU_FLAGS =        \
@@ -30,132 +230,11 @@ QEMU_FLAGS =        \
     -serial stdio
 QEMU_ARCH = i386
 # Virtualbox flags
-VM_NAME	= panix-box
-VBOX_VM_FILE=dist/$(VM_NAME)/$(VM_NAME).vbox
+VM_NAME	= $(PROJ_NAME)-box
+VBOX_VM_FILE=$(PRODUCT)/$(VM_NAME)/$(VM_NAME).vbox
 # VM executable locations
 VBOX = $(shell command -v VBoxManage)
 QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
-
-# **********************************
-# * 32-Bit i686 Architecture Flags *
-# **********************************
-
-# Compilers/Assemblers/Linkers
-AS      = $(shell command -v i686-elf-as)
-NASM    = $(shell command -v nasm)
-CXX     = $(shell command -v clang++)
-LD      = $(shell command -v ld.lld)
-OBJCP   = $(shell command -v llvm-objcopy)
-MKGRUB  = $(shell command -v grub-mkrescue)
-# C / C++ flags (include directory)
-CFLAGS :=                   \
-	-I ${SYSROOT}/usr/include/kernel/ \
-	${PANIX_CFLAGS}
-# C++ only flags (-lgcc flag is used b/c it has helpful functions)
-# Flags explained:
-#
-# -Wno-unused-function
-# We need to ignore unused functions because we may use
-# them at a later time. For example, paging disable.
-#
-CXXFLAGS :=                 \
-	-m32                    \
-	-target i386-none-elf   \
-	-ffreestanding          \
-	-fstack-protector-all   \
-	-fpermissive            \
-	-nostdlib               \
-	-nodefaultlibs          \
-	-fno-use-cxa-atexit     \
-	-fno-builtin            \
-	-fno-rtti               \
-	-fno-exceptions         \
-	-fno-omit-frame-pointer \
-	-Wall                   \
-	-Werror                 \
-	-Wno-unused-function    \
-	-std=c++17              \
-	${PANIX_CXXFLAGS}
-# C / C++ pre-processor flags
-CPPFLAGS :=                \
-	-D VERSION=\"$(GIT_VERSION)\" \
-	${PANIX_CPPFLAGS}
-# Assembler flags
-ASFLAGS := ${PANIX_ASFLAGS} --32
-# Linker flags
-LDFLAGS := ${PANIX_LDFLAGS} --script kernel/arch/i386/linker.ld -lgcc
-
-
-# ***********************************
-# * Source Code Compilation Targets *
-# ***********************************
-
-# All objects
-OBJ = $(patsubst kernel/%.cpp, obj/%.o, $(CPP_SRC)) \
-	  $(patsubst kernel/%.s, obj/%.o, $(ATT_SRC)) \
-	  $(patsubst kernel/%.S, obj/%.o, $(NASM_SRC))
-# Object directories, mirroring source
-OBJ_DIRS = $(subst kernel, obj, $(shell find kernel -type d))
-
-# Create object file directories
-.PHONY: mkdir_obj_dirs
-mkdir_obj_dirs:
-	mkdir -p $(OBJ_DIRS)
-
-# C++ source -> object
-obj/%.o: kernel/%.cpp $(HEADERS)
-	$(MAKE) mkdir_obj_dirs
-	$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
-
-# Assembly source -> object
-obj/%.o: kernel/%.s
-	$(MAKE) mkdir_obj_dirs
-	$(AS) $(ASFLAGS) -o $@ $<
-
-obj/%.o: kernel/%.S
-	$(MAKE) mkdir_obj_dirs
-	$(NASM) -f elf32 -o $@ $<
-
-# Kernel object
-dist/kernel: $(OBJ)
-	@ mkdir -p dist
-	$(LD) -o $@ $(OBJ) $(LDFLAGS)
-	$(OBJCP) --only-keep-debug dist/kernel dist/panix.sym
-
-# Debug build
-debug: CXXFLAGS += -DDEBUG -g
-debug: CFLAGS += -DDEBUG -g
-debug: dist/kernel
-
-# Release build
-release: CXXFLAGS += -O3 -mno-avx
-release: CFLAGS += -O3 -mno-avx
-release: dist/kernel
-
-# ********************************
-# * Kernel Distribution Creation *
-# ********************************
-
-# Create bootable ISO
-.PHONY: iso
-iso: dist/kernel
-	@ mkdir -p iso/boot/grub
-	@ cp dist/kernel iso/boot/
-	@ cp boot/grub.cfg iso/boot/grub/grub.cfg
-	@ $(MKGRUB) -o dist/panix.iso iso
-	@ rm -rf iso
-
-.PHONY: vdi
-vdi: dist/kernel
-	@ echo Building VDI image of Panix...
-	@ qemu-img convert -f raw -O vdi dist/kernel dist/panix.vdi
-	@ echo Done building VDI image of Panix!
-
-.PHONY: vmdk
-vmdk: dist/kernel
-	@ echo "\nBuilding VMDK image of Panix..."
-	@ qemu-img convert -f raw -O vmdk dist/kernel dist/panix.vmdk
-	@ echo Done building VMDK image of Panix!
 
 # ***************************
 # * Virtual Machine Testing *
@@ -163,22 +242,22 @@ vmdk: dist/kernel
 
 # Run Panix in QEMU
 .PHONY: run
-run: dist/kernel
-	$(QEMU)             \
-	-kernel dist/kernel \
+run: $(PRODUCT)/$(KERNEL)
+	$(QEMU)                      \
+	-kernel $(PRODUCT)/$(KERNEL) \
 	$(QEMU_FLAGS)
 
 # Create Virtualbox VM
 .PHONY: vbox-create
-vbox-create: dist/panix.iso
-	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/dist
+vbox-create: $(PRODUCT)/$(ISOIMG)
+	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCT)
 	$(VBOX) modifyvm $(VM_NAME)                 \
 	--memory 256 --ioapic on --cpus 2 --vram 16 \
 	--graphicscontroller vboxvga --boot1 disk   \
 	--audiocontroller sb16 --uart1 0x3f8 4      \
 	--uartmode1 file $(shell pwd)/com1.txt
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium dist/panix.iso
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCT)/$(ISOIMG)
 
 .PHONY: vbox-create
 vbox: vbox-create
@@ -186,25 +265,27 @@ vbox: vbox-create
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: debugger
-debugger: dist/kernel
+debugger: $(PRODUCT)/$(KERNEL)
 	# Start QEMU with debugger
-	($(QEMU)         \
-	-S -s            \
-	-kernel $<       \
+	($(QEMU)   \
+	-S -s      \
+	-kernel $< \
 	$(QEMU_FLAGS) > /dev/null &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
-	# After this start the visual studio debugger
-	# gdb dist/kernel
 
-# ************************************
-# * Doxygen Documentation Generation *
-# ************************************
+# ****************************
+# * Documentation Generation *
+# ****************************
 
 .PHONY: docs
 docs:
-	@ echo Generating docs according to the Doxyfile...
-	@ doxygen ./Doxyfile
+	@echo Generating docs according to the Doxyfile...
+	@doxygen ./Doxyfile
+
+.PHONY: todo
+todo:
+	-@for file in $(ALLFILES:Makefile=); do fgrep -i -H --color=always -e TODO -e FIXME $$file; done; true
 
 # ********************
 # * Cleaning Targets *
@@ -213,13 +294,18 @@ docs:
 # Clear out objects and BIN
 .PHONY: clean
 clean:
-	@ echo Cleaning obj directory...
-	@ rm -rf obj
-	@ echo Cleaning bin files...
-	@ rm -rf dist/*
-	@ echo "Done cleaning!"
+	@printf "$(COLOR_OK)Cleaning objects...$(COLOR_NONE)\n"
+	$(RM) -r $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS) $(PRODUCT)/$(ISOIMG) $(BUILD)
+	@printf "$(COLOR_OK)Cleaning directories...$(COLOR_NONE)\n"
+	$(RM) -r $(OBJ_DIRS)
+	@printf "$(COLOR_OK)Cleaning libraries...$(COLOR_NONE)\n"
+	@for dir in $(LIB_DIRS); do    \
+		printf " -   " &&          \
+        $(MAKE) -s -C $$dir clean; \
+    done
+	@printf "$(COLOR_OK)Cleaning complete.$(COLOR_NONE)\n"
 
 .PHONY: clean-vm
 clean-vm:
-	@ echo Removing VM
-	@ $(VBOX) unregistervm $(VM_NAME) --delete
+	@echo Removing VM
+	@$(VBOX) unregistervm $(VM_NAME) --delete

@@ -92,6 +92,11 @@ Using & for division here, so STACK_WIDTH must be a power of 2. */
 #define PR_BUFLEN 16
 
 typedef int (*fnptr_t)(unsigned c, void** helper);
+
+/* Function declarations */
+int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr);
+int vprintf_help(unsigned c, void** ptr);
+
 /*****************************************************************************
 name:    do_printf
 action:    minimal subfunction for ?printf, calls function
@@ -174,6 +179,7 @@ int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
             /* FALL THROUGH */
             /* STATE 4: AWAITING CONVERSION CHARS (Xxpndiuocs) */
         case 4:
+        {
             where = buf + PR_BUFLEN - 1;
             *where = '\0';
             switch (*fmt) {
@@ -221,7 +227,7 @@ int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
                     }
                 }
                 /* convert binary to octal/decimal/hex ASCII
-OK, I found my mistake. The math here is _always_ unsigned */
+                OK, I found my mistake. The math here is _always_ unsigned */
                 do {
                     unsigned long temp;
 
@@ -288,6 +294,10 @@ OK, I found my mistake. The math here is _always_ unsigned */
             default:
                 break;
             }
+            // Tell the compiler that this isn't an issue
+            // (at least I'm assuming it isn't)
+            [[fallthrough]];
+        }
         default:
             state = flags = given_wd = 0;
             break;
@@ -333,7 +343,8 @@ int px_ksprintf(char* buf, const char* fmt, ...)
 *****************************************************************************/
 int vprintf_help(unsigned c, void** ptr)
 {
-    putchar(c);
+    (void)ptr;
+    putchar((char)c);
     return 0;
 }
 /*****************************************************************************

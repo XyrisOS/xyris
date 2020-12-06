@@ -18,6 +18,7 @@
 #include <lib/stdio.hpp>
 
 // Function prototypes
+void printPanicScreen(int exception);
 void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(registers_t *regs);
 
@@ -68,7 +69,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     asm volatile ("cli");
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
-    char msg[64];
+    char msg[128];
     px_ksprintf(
         msg, 
         "Exception: %i (%s)\n\n",
@@ -109,7 +110,6 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         const char* uss = (us ? "user-mode " : "kernel ");
         const char* avail = (reserved ? "reserved" : "available");
         // Now that we assigned all of our string, put together the message
-        char msg[128];
         px_ksprintf(
             msg,
             "Page fault (%s%s%s%s) at 0x0x%08X (id -> %i)\n",

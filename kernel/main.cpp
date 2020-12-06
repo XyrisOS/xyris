@@ -36,6 +36,9 @@
 #define VERSION "unknown"
 #endif
 
+extern "C" void px_call_constructors();
+extern "C" void __stack_chk_fail(void);
+extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic);
 void px_kernel_print_splash();
 void px_kernel_boot_tone();
 
@@ -73,9 +76,7 @@ extern "C" void px_call_constructors() {
  * for when a smashed stack is detected.
  *
  */
-__attribute__ ((used))
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
-__attribute__ ((used))
 extern "C" void __stack_chk_fail(void)
 {
     PANIC("Smashed stack detected.");
@@ -86,6 +87,8 @@ extern "C" void __stack_chk_fail(void)
  * assembly written in boot.S located in arch/i386/boot.S.
  */
 extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic) {
+    (void)mb_struct;
+    (void)mb_magic;
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     // Install the GDT

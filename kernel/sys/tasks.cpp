@@ -29,10 +29,13 @@
 static void _enqueue_task(px_tasklist_t *, px_task *);
 static px_task_t *_dequeue_task(px_tasklist_t *);
 static void _cleaner_task_impl(void);
+extern "C" void _px_tasks_enqueue_ready(px_task_t *task);
+void px_tasks_update_time();
+void _wakeup(px_task_t *task);
 
 /* macro to create a new named tasklist and associated helper functions */
 #define NAMED_TASKLIST(name) \
-    px_tasklist_t px_tasks_##name = { 0 }; \
+    px_tasklist_t px_tasks_##name = { /* Zero */ }; \
     static inline void _enqueue_##name(px_task_t *task) { \
         _enqueue_task(&px_tasks_##name, task); } \
     static inline px_task_t *_dequeue_##name() { \
@@ -42,7 +45,7 @@ px_task_t *px_current_task = NULL;
 static px_task_t _cleaner_task;
 static px_task_t _first_task;
 
-px_tasklist_t px_tasks_ready = { 0 };
+px_tasklist_t px_tasks_ready = { /* Zero */ };
 NAMED_TASKLIST(sleeping);
 NAMED_TASKLIST(stopped);
 
@@ -102,7 +105,9 @@ void px_tasks_init()
         // this task is currently running
         .state = TASK_RUNNING,
         // just say that this task hasn't spent any time running yet
-        .time_used = 0
+        .time_used = 0,
+        // Set wakeup time to 0 to make compiler happy
+        .wakeup_time = 0
     };
     // create a task for the cleaner and set it's state to "paused"
     (void) px_tasks_new(_cleaner_task_impl, &_cleaner_task, TASK_PAUSED);

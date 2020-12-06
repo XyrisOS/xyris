@@ -73,6 +73,12 @@ static inline void px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *ta
         .present = 1,
         .read_write = 1,
         .usermode = 0,
+        .write_through = 0,
+        .cache_disable = 0,
+        .accessed = 0,
+        .ignored_a = 0,
+        .page_size = 0,
+        .ignored_b = 0,
         // compute the physical address of this page table
         // the virtual address is obtained with the & operator and
         // the offset is applied from the load address of the kernel
@@ -88,7 +94,7 @@ static void px_paging_init_dir() {
         px_map_kernel_page_table(i, &page_tables[i]);
         // clear out the page tables
         for (int j = 0; j < PAGE_ENTRIES; j++) {
-            page_tables[i].pages[j] = (px_page_table_entry_t){ 0 };
+            page_tables[i].pages[j] = (px_page_table_entry_t){ /* ZERO */ };
         }
     }
     // recursively map the last page table to the page directory
@@ -132,6 +138,13 @@ static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
         .present = 1,           // The page is present
         .read_write = 1,        // The page has r/w permissions
         .usermode = 0,          // These are kernel pages
+        .write_through = 0,     // Disable write through
+        .cache_disable = 0,     // The page is cached
+        .accessed = 0,          // The page is unaccessed
+        .dirty = 0,             // The page is clean
+        .page_att_table = 0,    // The page has no attribute table
+        .global = 0,            // The page is local
+        .unused = 0,            // Ignored
         .frame = paddr >> 12    // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
@@ -224,7 +237,7 @@ void px_free_page(void *page, uint32_t size) {
         // basically it's frame 0, 1...(2^21-1)
         bitmap_clear_bit(mapped_mem, pte->frame);
         // zero it out to unmap it
-        *pte = { 0 };
+        *pte = { /* Zero */ };
         // clear that tlb
         px_invalidate_page(page);
     }
