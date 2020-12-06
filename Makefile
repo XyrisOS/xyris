@@ -132,7 +132,7 @@ LDFLAGS :=                        \
 	${PANIX_LDFLAGS}              \
 	-m elf_i386                   \
 	-T kernel/arch/i386/linker.ld \
-	-L $(LIBRARY)                 \
+	-L.                           \
 	$(LIBS)                       \
 	-lgcc
 
@@ -197,10 +197,9 @@ $(BUILD)/%.o: $(KERNEL)/%.S
 	@$(NASM) -f elf32 -o $@ $<
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
 # Kernel Libraries
-.PHONY: $(LIBRARY)
 $(LIBRARY):
-	@for dir in $(LIB_DIRS); do        \
-        $(MAKE) -C $$dir $(PROJ_NAME); \
+	@for dir in $(LIB_DIRS); do           \
+        $(MAKE) -s -C $$dir $(PROJ_NAME); \
     done
 # Kernel object
 $(PRODUCT)/$(KERNEL): $(LIBRARY) $(OBJ)
