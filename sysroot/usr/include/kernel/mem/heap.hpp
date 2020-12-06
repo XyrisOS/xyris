@@ -20,7 +20,6 @@
 
 extern "C"
 {
-
 /**
  * @brief This function is supposed to lock the memory data structures. It
  * could be as simple as disabling interrupts or acquiring a spinlock.
@@ -65,7 +64,6 @@ extern void     *malloc(size_t);
 extern void     *realloc(void *, size_t);
 extern void     *calloc(size_t, size_t);
 extern void      free(void *);
-
 }
 
 #endif /* PANIX_MEM_HEAP */
