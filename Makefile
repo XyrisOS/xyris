@@ -128,7 +128,7 @@ ASFLAGS :=           \
 	${PANIX_ASFLAGS} \
 	--32
 # Linker flags
-LDFLAGS =                        \
+LDFLAGS =                         \
 	${PANIX_LDFLAGS}              \
 	-m elf_i386                   \
 	-T kernel/arch/i386/linker.ld \
@@ -145,12 +145,12 @@ LDFLAGS =                        \
 # is the first target in the Makefile
 release: CXXFLAGS += -O3 -mno-avx
 release: CFLAGS += -O3 -mno-avx
-release: kernel
+release: $(KERNEL)
 
 # Debug build
 debug: CXXFLAGS += -DDEBUG -g
 debug: CFLAGS += -DDEBUG -g
-debug: $(PRODUCT)/$(KERNEL)
+debug: $(KERNEL)
 
 # *************************
 # * Kernel Source Objects *
@@ -164,6 +164,8 @@ OBJ_ASM = $(patsubst $(KERNEL)/%.s,   $(BUILD)/%.o, $(ATT_SRC)) \
 OBJ     = $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM)
 # Object directories, mirroring source
 OBJ_DIRS = $(subst $(KERNEL), $(BUILD), $(shell find $(KERNEL) -type d))
+# Create object file directories
+OBJ_DIRS_MAKE := mkdir -p $(OBJ_DIRS)
 # Dependency files
 DEP = $(OBJ_CPP:%.o=%.d) $(OBJ_C:%.o=%.d)
 # All files (source, header, etc.)
@@ -171,43 +173,38 @@ ALLFILES = $(ATT_SRC) $(NASM_SRC) $(C_SRC) $(CPP_SRC) $(HEADERS)
 # Include all .d files
 -include $(DEP)
 
-# Create object file directories
-.PHONY: mkdir_obj_dirs
-mkdir_obj_dirs:
-	@mkdir -p $(OBJ_DIRS)
-
 # C source -> object
 $(BUILD)/%.o: $(KERNEL)/%.c $(HEADERS)
-	@$(MAKE) mkdir_obj_dirs
+	@$(OBJ_DIRS_MAKE)
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -c -o $@ $<
 	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$@\n"
 # C++ source -> object
 $(BUILD)/%.o: $(KERNEL)/%.cpp $(HEADERS)
-	@$(MAKE) mkdir_obj_dirs
+	@$(OBJ_DIRS_MAKE)
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -c -o $@ $<
 	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$@\n"
 # GAS assembly -> object
 $(BUILD)/%.o: $(KERNEL)/%.s
-	@$(MAKE) mkdir_obj_dirs
+	@$(OBJ_DIRS_MAKE)
 	@$(AS) $(ASFLAGS) -o $@ $<
 	@printf "$(COLOR_COM)(AS)$(COLOR_NONE)\t$@\n"
 # NASM assembly -> object
 $(BUILD)/%.o: $(KERNEL)/%.S
-	@$(MAKE) mkdir_obj_dirs
+	@$(OBJ_DIRS_MAKE)
 	@$(NASM) -f elf32 -o $@ $<
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
-# Kernel Libraries
-.PHONY: kernel
-kernel:
-	@for dir in $(LIB_DIRS); do        \
-        $(MAKE) -C $$dir $(PROJ_NAME); \
-    done
-	@$(MAKE) $(PRODUCT)/$(KERNEL)
 # Kernel object
 $(PRODUCT)/$(KERNEL): $(LIBS_A) $(OBJ)
 	@mkdir -p $(PRODUCT)
 	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
 	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
+# Kernel (Linked With Libraries)
+.PHONY: $(KERNEL)
+$(KERNEL):
+	@for dir in $(LIB_DIRS); do        \
+        $(MAKE) -C $$dir $(PROJ_NAME); \
+    done
+	@$(MAKE) $(PRODUCT)/$(KERNEL)
 
 # ********************************
 # * Kernel Distribution Creation *
