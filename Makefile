@@ -49,9 +49,9 @@ C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h")
 CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp")
 HEADERS  = $(CPP_HDR) $(C_HDR)
 # Libraries
-LIB_DIRS = $(shell find $(LIBRARY) -type d -maxdepth 1)
+LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
 LIBS_A   = $(shell find $(LIBRARY) -type f -name "*.a")
-LIBS     = $(addprefix -l:, $(LIBS_A))
+LIBS     = $(addprefix -l:,$(LIBS_A))
 
 # *******************
 # * i686 Toolchains *
@@ -128,7 +128,7 @@ ASFLAGS :=           \
 	${PANIX_ASFLAGS} \
 	--32
 # Linker flags
-LDFLAGS :=                        \
+LDFLAGS =                        \
 	${PANIX_LDFLAGS}              \
 	-m elf_i386                   \
 	-T kernel/arch/i386/linker.ld \
@@ -145,7 +145,7 @@ LDFLAGS :=                        \
 # is the first target in the Makefile
 release: CXXFLAGS += -O3 -mno-avx
 release: CFLAGS += -O3 -mno-avx
-release: $(PRODUCT)/$(KERNEL)
+release: kernel
 
 # Debug build
 debug: CXXFLAGS += -DDEBUG -g
@@ -197,12 +197,14 @@ $(BUILD)/%.o: $(KERNEL)/%.S
 	@$(NASM) -f elf32 -o $@ $<
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
 # Kernel Libraries
-$(LIBRARY):
-	@for dir in $(LIB_DIRS); do           \
-        $(MAKE) -s -C $$dir $(PROJ_NAME); \
+.PHONY: kernel
+kernel:
+	@for dir in $(LIB_DIRS); do        \
+        $(MAKE) -C $$dir $(PROJ_NAME); \
     done
+	@$(MAKE) $(PRODUCT)/$(KERNEL)
 # Kernel object
-$(PRODUCT)/$(KERNEL): $(LIBRARY) $(OBJ)
+$(PRODUCT)/$(KERNEL): $(LIBS_A) $(OBJ)
 	@mkdir -p $(PRODUCT)
 	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
 	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
