@@ -94,7 +94,7 @@ CWARNINGS :=             \
 	-Wstrict-prototypes  \
 	-Wmissing-prototypes \
 # C flags (include directory)
-CFLAGS :=           \
+CFLAGS :=                   \
 	-m32                    \
 	-nostdlib               \
 	-nodefaultlibs          \
@@ -102,11 +102,11 @@ CFLAGS :=           \
 	-fstack-protector-all   \
 	-fno-builtin            \
 	-fno-omit-frame-pointer \
-	${PANIX_CFLAGS} \
+	${PANIX_CFLAGS}         \
 	${WARNINGS}
 # C++ flags
-CXXFLAGS :=           		\
-	${PANIX_CXXFLAGS} 		\
+CXXFLAGS :=                 \
+	${PANIX_CXXFLAGS}       \
 	-fpermissive            \
 	-fno-rtti               \
 	-fno-exceptions         \
