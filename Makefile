@@ -9,6 +9,8 @@
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
 
+PROJ_NAME = panix
+
 # Makefile flags
 # prevent make from showing "entering/leaving directory" messages
 MAKEFLAGS 	  += --no-print-directory
@@ -30,7 +32,7 @@ COLOR_NONE = \033[m
 BUILD   = obj
 LIBRARY = libs
 KERNEL  = kernel
-ISOIMG  = panix.iso
+ISOIMG  = $(PROJ_NAME).iso
 SYMBOLS = $(KERNEL).sym
 PRODUCT = dist
 SYSROOT	= sysroot
@@ -47,7 +49,7 @@ C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h")
 CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp")
 HEADERS  = $(CPP_HDR) $(C_HDR)
 # Libraries
-LIB_DIRS = $(shell find $(LIBRARY) -type d)
+LIB_DIRS = $(shell find $(LIBRARY) -type d -maxdepth 1)
 LIBS_A   = $(shell find $(LIBRARY) -type f -name "*.a")
 LIBS     = $(addprefix -l:, $(LIBS_A))
 
@@ -194,6 +196,12 @@ $(BUILD)/%.o: $(KERNEL)/%.S
 	@$(MAKE) mkdir_obj_dirs
 	@$(NASM) -f elf32 -o $@ $<
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
+# Kernel Libraries
+.PHONY: $(LIBRARY)
+$(LIBRARY):
+	@for dir in $(LIB_DIRS); do        \
+        $(MAKE) -C $$dir $(PROJ_NAME); \
+    done
 # Kernel object
 $(PRODUCT)/$(KERNEL): $(LIBRARY) $(OBJ)
 	@mkdir -p $(PRODUCT)
@@ -224,7 +232,7 @@ QEMU_FLAGS =        \
     -serial stdio
 QEMU_ARCH = i386
 # Virtualbox flags
-VM_NAME	= panix-box
+VM_NAME	= $(PROJ_NAME)-box
 VBOX_VM_FILE=$(PRODUCT)/$(VM_NAME)/$(VM_NAME).vbox
 # VM executable locations
 VBOX = $(shell command -v VBoxManage)
