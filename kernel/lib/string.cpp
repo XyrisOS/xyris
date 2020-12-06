@@ -31,7 +31,7 @@ char* strcat(const char *s1, const char *s2) {
     return result;
 }
 
-void strcpy(const char* source, char* destination) {
+void strcpy(char* destination, const char* source) {
     int i = 0;
     while (source[i] != '\0') {
         destination[i] = source[i];

@@ -28,7 +28,7 @@ int strlen(const char* s);
  * @param source String to be copied
  * @param destination Location where string will be copied
  */
-void strcpy(const char* source, char* destination);
+void strcpy(char* destination, const char* source);
 /**
  * @brief Concatanates string one onto string two.
  * 
