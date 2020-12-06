@@ -1,0 +1,4 @@
+[submodule "libs/liballoc"]
+	path = libs/liballoc
+	url = https://github.com/panix-os/liballoc.git
+	branch = panix

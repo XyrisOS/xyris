@@ -58,13 +58,14 @@ LIBS     = $(addprefix -l:,$(LIBS_A))
 # *******************
 
 # Compilers/Assemblers/Linkers
-NASM    = $(shell command -v nasm)
-AS      = $(shell command -v i686-elf-as)
-CC      = $(shell command -v i686-elf-gcc)
-CXX     = $(shell command -v i686-elf-g++)
-LD      = $(shell command -v i686-elf-ld)
-OBJCP   = $(shell command -v i686-elf-objcopy)
-MKGRUB  = $(shell command -v grub-mkrescue)
+export NASM    := $(shell command -v nasm)
+export AS      := $(shell command -v i686-elf-as)
+export AR      := $(shell command -v i686-elf-ar)
+export CC      := $(shell command -v i686-elf-gcc)
+export CXX     := $(shell command -v i686-elf-g++)
+export LD      := $(shell command -v i686-elf-ld)
+export OBJCP   := $(shell command -v i686-elf-objcopy)
+export MKGRUB  := $(shell command -v grub-mkrescue)
 
 # *******************
 # * Toolchain Flags *
@@ -92,31 +93,24 @@ CWARNINGS :=             \
 	-Wnested-externs     \
 	-Wstrict-prototypes  \
 	-Wmissing-prototypes \
-# Common (C & C++) flags
-FLAGS :=                    \
+# C flags (include directory)
+CFLAGS :=                   \
 	-m32                    \
 	-nostdlib               \
 	-nodefaultlibs          \
-	-fpermissive            \
 	-ffreestanding          \
 	-fstack-protector-all   \
-	-fno-rtti               \
 	-fno-builtin            \
+	-fno-omit-frame-pointer \
+	${PANIX_CFLAGS}         \
+	${WARNINGS}
+# C++ flags
+CXXFLAGS :=                 \
+	${PANIX_CXXFLAGS}       \
+	-fpermissive            \
+	-fno-rtti               \
 	-fno-exceptions         \
 	-fno-use-cxa-atexit     \
-	-fno-omit-frame-pointer
-# C flags (include directory)
-CFLAGS :=           \
-	${FLAGS}        \
-	${PANIX_CFLAGS} \
-	${WARNINGS}     \
-	$(CWARNINGS)    \
-	-std=c17
-# C++ flags
-CXXFLAGS :=           \
-	${FLAGS}          \
-	${PANIX_CXXFLAGS} \
-	${WARNINGS}       \
 	-std=c++17
 # C / C++ pre-processor flags
 CPPFLAGS :=                       \
@@ -176,30 +170,33 @@ ALLFILES = $(ATT_SRC) $(NASM_SRC) $(C_SRC) $(CPP_SRC) $(HEADERS)
 # C source -> object
 $(BUILD)/%.o: $(KERNEL)/%.c $(HEADERS)
 	@$(OBJ_DIRS_MAKE)
-	@$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -c -o $@ $<
 	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$@\n"
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(CWARNINGS) -std=c17 -MMD -c -o $@ $<
 # C++ source -> object
 $(BUILD)/%.o: $(KERNEL)/%.cpp $(HEADERS)
 	@$(OBJ_DIRS_MAKE)
-	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -c -o $@ $<
 	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$@\n"
+	@$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -MMD -c -o $@ $<
 # GAS assembly -> object
 $(BUILD)/%.o: $(KERNEL)/%.s
 	@$(OBJ_DIRS_MAKE)
-	@$(AS) $(ASFLAGS) -o $@ $<
 	@printf "$(COLOR_COM)(AS)$(COLOR_NONE)\t$@\n"
+	@$(AS) $(ASFLAGS) -o $@ $<
 # NASM assembly -> object
 $(BUILD)/%.o: $(KERNEL)/%.S
 	@$(OBJ_DIRS_MAKE)
-	@$(NASM) -f elf32 -o $@ $<
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
+	@$(NASM) -f elf32 -o $@ $<
 # Kernel object
 $(PRODUCT)/$(KERNEL): $(LIBS_A) $(OBJ)
 	@mkdir -p $(PRODUCT)
+	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$@\n"
 	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
+	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$@\n"
 	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
 # Kernel (Linked With Libraries)
 .PHONY: $(KERNEL)
+$(KERNEL): export CFLAGS += $(CWARNINGS)
 $(KERNEL):
 	@for dir in $(LIB_DIRS); do        \
         $(MAKE) -C $$dir $(PROJ_NAME); \

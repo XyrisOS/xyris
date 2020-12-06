@@ -16,43 +16,54 @@
 #ifndef PANIX_MEM_HEAP
 #define PANIX_MEM_HEAP
 
-#include <stdint.h>
-#include <lib/linked_list.hpp>
+#include <stddef.h>
 
-typedef struct px_heap_chunk {
-    DList all;
-    int used;
-    union {
-        char data[0];
-        DList free;
-    };
-} px_heap_chunk_t;
-
-enum {
-    NUM_SIZES = 32,
-    ALIGN = 4,
-    MIN_SIZE = sizeof(DList),
-    HEADER_SIZE = __builtin_offsetof(px_heap_chunk_t, data)
-};
+extern "C"
+{
+/**
+ * @brief This function is supposed to lock the memory data structures. It
+ * could be as simple as disabling interrupts or acquiring a spinlock.
+ * It's up to you to decide.
+ *
+ * @return 0 if the lock was acquired successfully. Anything else is
+ * failure.
+ */
+int liballoc_lock();
 
 /**
- * @brief Initializes the kernel heap.
- * 
- * @param size Number of bytes to be used for the heap.
+ * @brief This function unlocks what was previously locked by the liballoc_lock
+ * function.  If it disabled interrupts, it enables interrupts. If it
+ * had acquiried a spinlock, it releases the spinlock. etc.
+ *
+ * @return 0 if the lock was successfully released.
  */
-void px_heap_init(size_t size);
+int liballoc_unlock();
+
 /**
- * @brief Dynamically allocate memory.
- * 
- * @param size Number of bytes to be allocated.
- * @return void* Address of allocated memory.
+ * @brief This is the hook into the local system which allocates pages. It
+ * accepts an integer parameter which is the number of pages
+ * required.  The page size was set up in the liballoc_init function.
+ *
+ * @return NULL if the pages were not allocated.
+ * @return A pointer to the allocated memory.
  */
-void* malloc(size_t size);
+void* liballoc_alloc(int);
+
 /**
- * @brief Frees dynamically allocated memory
- * 
- * @param mem Address of memory to be freed.
+ * @brief This frees previously allocated memory. The void* parameter passed
+ * to the function is the exact same value returned from a previous
+ * liballoc_alloc call.
+ *
+ * The integer value is the number of pages to free.
+ *
+ * @return 0 if the memory was successfully freed.
  */
-void free(void* mem);
+int liballoc_free(void*,int);
+
+extern void     *malloc(size_t);
+extern void     *realloc(void *, size_t);
+extern void     *calloc(size_t, size_t);
+extern void      free(void *);
+}
 
 #endif /* PANIX_MEM_HEAP */
