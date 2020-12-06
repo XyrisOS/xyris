@@ -298,9 +298,14 @@ todo:
 .PHONY: clean
 clean:
 	@printf "$(COLOR_OK)Cleaning objects...$(COLOR_NONE)\n"
-	$(RM) $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS) $(OBJ) $(DEP)
+	$(RM) -r $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS) $(PRODUCT)/$(ISOIMG) $(BUILD)
 	@printf "$(COLOR_OK)Cleaning directories...$(COLOR_NONE)\n"
 	$(RM) -r $(OBJ_DIRS)
+	@printf "$(COLOR_OK)Cleaning libraries...$(COLOR_NONE)\n"
+	@for dir in $(LIB_DIRS); do    \
+		printf " -   " &&          \
+        $(MAKE) -s -C $$dir clean; \
+    done
 	@printf "$(COLOR_OK)Cleaning complete.$(COLOR_NONE)\n"
 
 .PHONY: clean-vm
