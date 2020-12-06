@@ -88,6 +88,7 @@ void* memmove(void* destination, const void* source, size_t size);
  * @param size 
  * @return void* 
  */
+extern "C"
 void* memcpy(void* dstptr, const void* srcptr, size_t size);
 
 #endif /* PANIX_LIB_STRING_HPP */
