@@ -131,16 +131,13 @@ int px_sem_post(px_sem_t *sem) {
     return 0;
 }
 
-uint32_t px_sem_getval(px_sem_t *sem, uint32_t *val) {
-    // FIXME: I don't think val should be unused?
-    (void)val;
+int px_sem_getval(px_sem_t *sem, uint32_t *val) {
     // Check if the semaphore is valid
     if (sem == NULL)
     {
         errno = EINVAL;
         return -1;
     }
-    uint32_t count = -1;
-    __atomic_load(&sem->count, &count, __ATOMIC_ACQUIRE);
-    return count;
+    __atomic_load(&sem->count, &val, __ATOMIC_ACQUIRE);
+    return 0;
 }

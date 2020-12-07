@@ -79,11 +79,11 @@ int px_sem_post(px_sem_t *sem);
  * @brief Gets the counter value from a semaphore structure.
  * 
  * @param sem Reference semaphore
- * @param val 
+ * @param val Pointer to the semaphore value variable
  * @return int Returns 0 on success and -1 on failure.
  * When an error occurs errno is set.
  */
-uint32_t px_sem_getval(px_sem_t *sem, uint32_t *val);
+int px_sem_getval(px_sem_t *sem, uint32_t *val);
 /**
  * @brief Destroys a semaphore by removing it from memory.
  * 
