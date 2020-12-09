@@ -9,8 +9,6 @@
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
 
-PROJ_NAME = panix
-
 # *****************************
 # * Source Code & Directories *
 # *****************************
@@ -22,6 +20,10 @@ SYMBOLS = $(KERNEL).sym
 PRODUCT = ../dist
 SYSROOT	= ../sysroot
 INCLUDE = $(SYSROOT)/usr/include
+
+# The `| sed "s|^\./||"` command is included to remove the leading
+# ./ from all of the paths so that the objects are generated
+# properly. Otherwise the object directory is "obj." and not "obj"
 
 # Assembly
 ATT_SRC  = $(shell find . -type f -name "*.s" | sed "s|^\./||")
@@ -36,9 +38,6 @@ HEADERS  = $(CPP_HDR) $(C_HDR)
 #Libraries
 LIBS_B   = $(addprefix ../, $(LIBS_A))
 LIBS     = $(addprefix -l:,$(LIBS_B))
-# The `| sed "s|^\./||"` command is included to remove the leading
-# ./ from all of the paths so that the objects are generated
-# properly. Otherwise the object directory is "obj." and not "obj"
 
 # *******************
 # * Toolchain Flags *

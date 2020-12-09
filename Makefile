@@ -9,7 +9,7 @@
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
 
-PROJ_NAME = panix
+export PROJ_NAME = panix
 
 # Makefile flags
 # prevent make from showing "entering/leaving directory" messages
@@ -233,13 +233,13 @@ todo:
 .PHONY: clean
 clean:
 	@printf "$(COLOR_OK)Cleaning objects...$(COLOR_NONE)\n"
-	$(RM) -r $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS) $(PRODUCT)/$(ISOIMG) $(BUILD)
+	$(RM) -r $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS) $(PRODUCT)/$(ISOIMG)
 	@printf "$(COLOR_OK)Cleaning directories...$(COLOR_NONE)\n"
-	$(RM) -r $(OBJ_DIRS)
+	$(RM) -r $(BUILD)
 	@printf "$(COLOR_OK)Cleaning libraries...$(COLOR_NONE)\n"
-	@for dir in $(LIB_DIRS); do    \
-		printf " -   " &&          \
-        $(MAKE) -s -C $$dir clean; \
+	@for dir in $(LIB_DIRS); do \
+		printf " -   " &&       \
+        $(MAKE) -C $$dir clean; \
     done
 	@printf "$(COLOR_OK)Cleaning complete.$(COLOR_NONE)\n"
 
