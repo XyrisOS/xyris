@@ -18,6 +18,7 @@ BUILD   = ../obj
 KERNEL  = kernel
 SYMBOLS = $(KERNEL).sym
 PRODUCT = ../dist
+LIBRARY = ../libs
 SYSROOT	= ../sysroot
 INCLUDE = $(SYSROOT)/usr/include
 
@@ -36,8 +37,8 @@ C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h" | sed "s|^\./||")
 CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp" | sed "s|^\./||")
 HEADERS  = $(CPP_HDR) $(C_HDR)
 #Libraries
-LIBS_B   = $(addprefix ../, $(LIBS_A))
-LIBS     = $(addprefix -l:,$(LIBS_B))
+LIBS_A   = $(shell find $(LIBRARY) -type f -name "*.a")
+LIBS     = $(addprefix -l:, $(LIBS_A))
 
 # *******************
 # * Toolchain Flags *
@@ -95,7 +96,7 @@ $(BUILD)/%.o: %.S
 $(KERNEL): $(OBJ)
 	@mkdir -p $(PRODUCT)
 	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$@\n"
-	$(LD) -o $@ $(OBJ) $(LDFLAGS)
+	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
 	@mv $(KERNEL) $(PRODUCT)/$(KERNEL)
 	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$@\n"
 	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)

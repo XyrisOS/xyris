@@ -35,12 +35,9 @@ KERNEL  = kernel
 ISOIMG  = $(PROJ_NAME).iso
 SYMBOLS = $(KERNEL).sym
 PRODUCT = dist
-SYSROOT	= sysroot
-INCLUDE = $(SYSROOT)/usr/include
 
 # Libraries
 export LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
-export LIBS_A   = $(shell find $(LIBRARY) -type f -name "*.a")
 
 # *******************
 # * i686 Toolchains *
@@ -62,26 +59,26 @@ export MKGRUB  := $(shell command -v grub-mkrescue)
 
 # Warning flags
 # (Disable unused functions warning)
-export WARNINGS :=       \
-	-Wall                \
-	-Werror              \
-	-Wextra              \
-	-Winline             \
-	-Wshadow             \
-	-Wcast-align         \
-	-Wno-long-long       \
-	-Wpointer-arith      \
-	-Wwrite-strings      \
-	-Wredundant-decls    \
-	-Wno-unused-function \
+export WARNINGS :=          \
+	-Wall                   \
+	-Werror                 \
+	-Wextra                 \
+	-Winline                \
+	-Wshadow                \
+	-Wcast-align            \
+	-Wno-long-long          \
+	-Wpointer-arith         \
+	-Wwrite-strings         \
+	-Wredundant-decls       \
+	-Wno-unused-function    \
 	-Wmissing-declarations
 # Flags to be added later
 #   -Wconversion
 # C only warnings
-export CWARNINGS :=      \
-	-Wnested-externs     \
-	-Wstrict-prototypes  \
-	-Wmissing-prototypes \
+export CWARNINGS :=         \
+	-Wnested-externs        \
+	-Wstrict-prototypes     \
+	-Wmissing-prototypes    \
 # C flags (include directory)
 export CFLAGS :=            \
 	-m32                    \
@@ -106,15 +103,15 @@ export CPPFLAGS :=                \
 	${PANIX_CPPFLAGS}             \
 	-D VERSION=\"$(GIT_VERSION)\"
 # Assembler flags
-export ASFLAGS :=    \
-	${PANIX_ASFLAGS} \
+export ASFLAGS :=           \
+	${PANIX_ASFLAGS}        \
 	--32
 # Linker flags
-export LDFLAGS :=                 \
-	${PANIX_LDFLAGS}              \
-	-m elf_i386                   \
-	-L.                           \
-	-lgcc
+export LDFLAGS :=           \
+	${PANIX_LDFLAGS}        \
+	-m elf_i386             \
+	-lgcc                   \
+	-L.
 
 # ************************
 # * Kernel Build Targets *
@@ -132,16 +129,14 @@ debug: CXXFLAGS += -DDEBUG -g
 debug: CFLAGS += -DDEBUG -g
 debug: $(KERNEL)
 
-# *************************
-# * Kernel Source Objects *
-# *************************
-
 # Kernel (Linked With Libraries)
 .PHONY: $(KERNEL)
 $(KERNEL):
+	# Compile all of the libraries
 	@for dir in $(LIB_DIRS); do        \
         $(MAKE) -C $$dir $(PROJ_NAME); \
     done
+	# Compile the kernel
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 
 # ********************************
