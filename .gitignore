@@ -29,9 +29,10 @@
 *.elf
 .DS_Store
 
-# Ignore build directories
+# Ignore build output
 obj/
 dist/
+tests/run_tests
 
 # Serial Output
 com1.txt
