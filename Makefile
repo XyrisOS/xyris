@@ -1,28 +1,29 @@
-#  ____             _        _  __                    _
-# |  _ \ __ _ _ __ (_)_  __ | |/ /___ _ __ _ __   ___| |
-# | |_) / _` | '_ \| \ \/ / | ' // _ \ '__| '_ \ / _ \ |
-# |  __/ (_| | | | | |>  <  | . \  __/ |  | | | |  __/ |
-# |_|   \__,_|_| |_|_/_/\_\ |_|\_\___|_|  |_| |_|\___|_|
+#  ____             _
+# |  _ \ __ _ _ __ (_)_  __
+# | |_) / _` | '_ \| \ \/ /
+# |  __/ (_| | | | | |>  <
+# |_|   \__,_|_| |_|_/_/\_\
 #
 # Compiles the kernel source code located in the kernel folder.
 
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
 
-PROJ_NAME = panix
+export PROJ_NAME = panix
 
 # Makefile flags
 # prevent make from showing "entering/leaving directory" messages
-MAKEFLAGS 	  += --no-print-directory
-GIT_VERSION   := "$(shell git describe --abbrev=8 --dirty --always --tags)"
+export MAKEFLAGS   += --no-print-directory
+export GIT_VERSION := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 
 # ******************************
 # * Compiler Output Formatting *
 # ******************************
 
-COLOR_COM  = \033[0;34m
-COLOR_OK   = \033[0;32m
-COLOR_NONE = \033[m
+export COLOR_COM  = \033[0;34m
+export COLOR_OK   = \033[0;32m
+export COLOR_INFO = \033[0;93m
+export COLOR_NONE = \033[m
 
 # *****************************
 # * Source Code & Directories *
@@ -35,23 +36,9 @@ KERNEL  = kernel
 ISOIMG  = $(PROJ_NAME).iso
 SYMBOLS = $(KERNEL).sym
 PRODUCT = dist
-SYSROOT	= sysroot
-INCLUDE = $(SYSROOT)/usr/include
 
-# Assembly
-ATT_SRC  = $(shell find $(KERNEL) -type f -name "*.s")
-NASM_SRC = $(shell find $(KERNEL) -type f -name "*.S")
-# C / C++
-C_SRC    = $(shell find $(KERNEL) -type f -name "*.c")
-CPP_SRC  = $(shell find $(KERNEL) -type f -name "*.cpp")
-# Headers
-C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h")
-CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp")
-HEADERS  = $(CPP_HDR) $(C_HDR)
 # Libraries
-LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
-LIBS_A   = $(shell find $(LIBRARY) -type f -name "*.a")
-LIBS     = $(addprefix -l:,$(LIBS_A))
+export LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
 
 # *******************
 # * i686 Toolchains *
@@ -73,28 +60,28 @@ export MKGRUB  := $(shell command -v grub-mkrescue)
 
 # Warning flags
 # (Disable unused functions warning)
-WARNINGS :=              \
-	-Wall                \
-	-Werror              \
-	-Wextra              \
-	-Winline             \
-	-Wshadow             \
-	-Wcast-align         \
-	-Wno-long-long       \
-	-Wpointer-arith      \
-	-Wwrite-strings      \
-	-Wredundant-decls    \
-	-Wno-unused-function \
+export WARNINGS :=          \
+	-Wall                   \
+	-Werror                 \
+	-Wextra                 \
+	-Winline                \
+	-Wshadow                \
+	-Wcast-align            \
+	-Wno-long-long          \
+	-Wpointer-arith         \
+	-Wwrite-strings         \
+	-Wredundant-decls       \
+	-Wno-unused-function    \
 	-Wmissing-declarations
 # Flags to be added later
 #   -Wconversion
 # C only warnings
-CWARNINGS :=             \
-	-Wnested-externs     \
-	-Wstrict-prototypes  \
-	-Wmissing-prototypes \
+export CWARNINGS :=         \
+	-Wnested-externs        \
+	-Wstrict-prototypes     \
+	-Wmissing-prototypes    \
 # C flags (include directory)
-CFLAGS :=                   \
+export CFLAGS :=            \
 	-m32                    \
 	-nostdlib               \
 	-nodefaultlibs          \
@@ -105,7 +92,7 @@ CFLAGS :=                   \
 	${PANIX_CFLAGS}         \
 	${WARNINGS}
 # C++ flags
-CXXFLAGS :=                 \
+export CXXFLAGS :=          \
 	${PANIX_CXXFLAGS}       \
 	-fpermissive            \
 	-fno-rtti               \
@@ -113,22 +100,19 @@ CXXFLAGS :=                 \
 	-fno-use-cxa-atexit     \
 	-std=c++17
 # C / C++ pre-processor flags
-CPPFLAGS :=                       \
+export CPPFLAGS :=                \
 	${PANIX_CPPFLAGS}             \
-	-D VERSION=\"$(GIT_VERSION)\" \
-	-I ${SYSROOT}/usr/include/kernel/
+	-D VERSION=\"$(GIT_VERSION)\"
 # Assembler flags
-ASFLAGS :=           \
-	${PANIX_ASFLAGS} \
+export ASFLAGS :=           \
+	${PANIX_ASFLAGS}        \
 	--32
 # Linker flags
-LDFLAGS =                         \
-	${PANIX_LDFLAGS}              \
-	-m elf_i386                   \
-	-T kernel/arch/i386/linker.ld \
-	-L.                           \
-	$(LIBS)                       \
-	-lgcc
+export LDFLAGS :=           \
+	${PANIX_LDFLAGS}        \
+	-m elf_i386             \
+	-lgcc                   \
+	-L.
 
 # ************************
 # * Kernel Build Targets *
@@ -146,62 +130,16 @@ debug: CXXFLAGS += -DDEBUG -g
 debug: CFLAGS += -DDEBUG -g
 debug: $(KERNEL)
 
-# *************************
-# * Kernel Source Objects *
-# *************************
-
-# All objects
-OBJ_C   = $(patsubst $(KERNEL)/%.c,   $(BUILD)/%.o, $(C_SRC))
-OBJ_CPP = $(patsubst $(KERNEL)/%.cpp, $(BUILD)/%.o, $(CPP_SRC))
-OBJ_ASM = $(patsubst $(KERNEL)/%.s,   $(BUILD)/%.o, $(ATT_SRC)) \
-          $(patsubst $(KERNEL)/%.S,   $(BUILD)/%.o, $(NASM_SRC))
-OBJ     = $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM)
-# Object directories, mirroring source
-OBJ_DIRS = $(subst $(KERNEL), $(BUILD), $(shell find $(KERNEL) -type d))
-# Create object file directories
-OBJ_DIRS_MAKE := mkdir -p $(OBJ_DIRS)
-# Dependency files
-DEP = $(OBJ_CPP:%.o=%.d) $(OBJ_C:%.o=%.d)
-# All files (source, header, etc.)
-ALLFILES = $(ATT_SRC) $(NASM_SRC) $(C_SRC) $(CPP_SRC) $(HEADERS)
-# Include all .d files
--include $(DEP)
-
-# C source -> object
-$(BUILD)/%.o: $(KERNEL)/%.c $(HEADERS)
-	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$@\n"
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(CWARNINGS) -std=c17 -MMD -c -o $@ $<
-# C++ source -> object
-$(BUILD)/%.o: $(KERNEL)/%.cpp $(HEADERS)
-	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$@\n"
-	@$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -MMD -c -o $@ $<
-# GAS assembly -> object
-$(BUILD)/%.o: $(KERNEL)/%.s
-	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(AS)$(COLOR_NONE)\t$@\n"
-	@$(AS) $(ASFLAGS) -o $@ $<
-# NASM assembly -> object
-$(BUILD)/%.o: $(KERNEL)/%.S
-	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
-	@$(NASM) -f elf32 -o $@ $<
-# Kernel object
-$(PRODUCT)/$(KERNEL): $(LIBS_A) $(OBJ)
-	@mkdir -p $(PRODUCT)
-	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$@\n"
-	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
-	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$@\n"
-	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
 # Kernel (Linked With Libraries)
 .PHONY: $(KERNEL)
-$(KERNEL): export CFLAGS += $(CWARNINGS)
 $(KERNEL):
+	@printf "$(COLOR_INFO)Making Libs$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do        \
         $(MAKE) -C $$dir $(PROJ_NAME); \
     done
-	@$(MAKE) $(PRODUCT)/$(KERNEL)
+	@printf "$(COLOR_INFO)Making Kernel$(COLOR_NONE)\n"
+	@$(MAKE) -C $(KERNEL) $(KERNEL)
+	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
 
 # ********************************
 # * Kernel Distribution Creation *
@@ -292,13 +230,13 @@ todo:
 .PHONY: clean
 clean:
 	@printf "$(COLOR_OK)Cleaning objects...$(COLOR_NONE)\n"
-	$(RM) -r $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS) $(PRODUCT)/$(ISOIMG) $(BUILD)
+	$(RM) -r $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS) $(PRODUCT)/$(ISOIMG)
 	@printf "$(COLOR_OK)Cleaning directories...$(COLOR_NONE)\n"
-	$(RM) -r $(OBJ_DIRS)
+	$(RM) -r $(BUILD)
 	@printf "$(COLOR_OK)Cleaning libraries...$(COLOR_NONE)\n"
-	@for dir in $(LIB_DIRS); do    \
-		printf " -   " &&          \
-        $(MAKE) -s -C $$dir clean; \
+	@for dir in $(LIB_DIRS); do \
+		printf " -   " &&       \
+        $(MAKE) -C $$dir clean; \
     done
 	@printf "$(COLOR_OK)Cleaning complete.$(COLOR_NONE)\n"
 
