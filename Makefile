@@ -22,6 +22,7 @@ export GIT_VERSION := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 
 export COLOR_COM  = \033[0;34m
 export COLOR_OK   = \033[0;32m
+export COLOR_INFO = \033[0;93m
 export COLOR_NONE = \033[m
 
 # *****************************
@@ -132,12 +133,13 @@ debug: $(KERNEL)
 # Kernel (Linked With Libraries)
 .PHONY: $(KERNEL)
 $(KERNEL):
-	# Compile all of the libraries
+	@printf "$(COLOR_INFO)Making Libs$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do        \
         $(MAKE) -C $$dir $(PROJ_NAME); \
     done
-	# Compile the kernel
+	@printf "$(COLOR_INFO)Making Kernel$(COLOR_NONE)\n"
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
+	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
 
 # ********************************
 # * Kernel Distribution Creation *
