@@ -93,10 +93,10 @@ $(BUILD)/%.o: %.S
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
 	@$(NASM) -f elf32 -o $@ $<
 # Kernel object
-$(KERNEL): $(OBJ)
+$(KERNEL): $(PRODUCT)/$(KERNEL)
+$(PRODUCT)/$(KERNEL): $(OBJ)
 	@mkdir -p $(PRODUCT)
 	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$@\n"
 	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
-	@mv $(KERNEL) $(PRODUCT)/$(KERNEL)
 	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$@\n"
 	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
