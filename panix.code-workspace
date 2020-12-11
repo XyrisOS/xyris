@@ -18,7 +18,6 @@
 		"C_Cpp.clang_format_fallbackStyle": "LLVM",
 		"C_Cpp.default.cppStandard": "c++17",
 		"C_Cpp.default.cStandard": "c17",
-		"C_Cpp.default.intelliSenseMode": "gcc-x86",
 		"doxdocgen.file.copyrightTag": [
 			"@copyright Copyright the Panix Contributors (c) {year}"
 		],
