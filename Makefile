@@ -36,6 +36,7 @@ KERNEL  = kernel
 ISOIMG  = $(PROJ_NAME).iso
 SYMBOLS = $(KERNEL).sym
 PRODUCT = dist
+TESTS   = tests
 
 # Libraries
 export LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
@@ -141,6 +142,18 @@ $(KERNEL):
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
 
+# *********************
+# * Kernel Unit Tests *
+# *********************
+
+.PHONY: $(TESTS)
+$(TESTS):
+	@$(MAKE) -C $(TESTS)
+
+.PHONY: test
+test:
+	@$(MAKE) -C $(TESTS) test
+
 # ********************************
 # * Kernel Distribution Creation *
 # ********************************
@@ -239,6 +252,10 @@ clean:
         $(MAKE) -C $$dir clean; \
     done
 	@printf "$(COLOR_OK)Cleaning complete.$(COLOR_NONE)\n"
+
+.PHONY: clean-tests
+clean-tests:
+	@$(MAKE) -C $(TESTS) clean
 
 .PHONY: clean-vm
 clean-vm:
