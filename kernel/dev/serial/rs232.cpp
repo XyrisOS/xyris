@@ -15,10 +15,13 @@
 #include <arch/arch.hpp>
 #include <dev/serial/rs232.hpp>
 #include <mem/heap.hpp>
+#include <lib/mutex.hpp>
 
 static px_ring_buff_t* read_buffer = NULL;
 uint8_t rs_232_line_index;
 uint16_t rs_232_port_base;
+px_mutex_t mutex_data;
+px_mutex_t mutex_init;
 
 static int px_rs232_received();
 static int px_rs232_is_transmit_empty();
@@ -35,13 +38,21 @@ static int px_rs232_is_transmit_empty() {
 }
 
 static char px_rs232_read_char() {
+    // Gain mutual exclusion
+    px_mutex_lock(&mutex_data);
     while (px_rs232_received() == 0);
+    // Release mutual exclusion
+    px_mutex_unlock(&mutex_data);
     return px_read_byte(rs_232_port_base + RS_232_DATA_REG);
 }
 
 static void px_rs232_write_char(char c) {
+    // Gain mutual exclusion
+    px_mutex_lock(&mutex_data);
     while (px_rs232_is_transmit_empty() == 0);
     px_write_byte(rs_232_port_base + RS_232_DATA_REG, c);
+    // Release mutual exclusion
+    px_mutex_unlock(&mutex_data);
 }
 
 void px_rs232_print(const char* str) {
@@ -67,6 +78,8 @@ static void px_rs232_callback(registers_t *regs) {
 }
 
 void px_rs232_init(uint16_t com_id) {
+    // Gain mutual exclusion
+    px_mutex_lock(&mutex_init);
     // Register the IRQ callback
     rs_232_port_base = com_id;
     uint8_t IRQ = 0x20 + (com_id == RS_232_COM1 ? RS_232_COM1_IRQ : RS_232_COM2_IRQ);
@@ -92,15 +105,23 @@ void px_rs232_init(uint16_t com_id) {
         "/_/    \\__,_/_/ /_/_/_/|_|    |___/____/  \n\n\033[0m"
         "Panix Serial Output Debugger\n\n"
     );
+    // Release mutual exclusion
+    px_mutex_unlock(&mutex_init);
 }
 
 px_ring_buff_t* px_rs232_init_buffer(int size) {
+    // Gain mutual exclusion
+    px_mutex_lock(&mutex_init);
     // Allocate space for the input buffer
     read_buffer = (px_ring_buff_t*)malloc(sizeof(px_ring_buff_t));
     // Initialize the ring buffer
     if (px_ring_buffer_init(read_buffer, size) == 0) {
+        // Release mutual exclusion
+        px_mutex_unlock(&mutex_init);
         return read_buffer;
     } else {
+        // Release mutual exclusion
+        px_mutex_unlock(&mutex_init);
         return NULL;
     }
 }
@@ -111,16 +132,22 @@ px_ring_buff_t* px_rs232_get_buffer() {
 }
 
 char px_rs232_get_char() {
+    // Gain mutual exclusion
+    px_mutex_lock(&mutex_data);
     // Grab the last byte and convert to a char
     uint8_t data = 0;
     if (read_buffer != NULL)
     {
         px_ring_buffer_dequeue(read_buffer, &data);
     }
+    // Release mutual exclusion
+    px_mutex_unlock(&mutex_data);
     return (char)data;
 }
 
 int px_rs232_get_str(char* str, int max) {
+    // Gain mutual exclusion
+    px_mutex_lock(&mutex_data);
     int idx = 0;
     // Keep reading until the buffer is empty or
     // a newline is read.
@@ -140,15 +167,21 @@ int px_rs232_get_str(char* str, int max) {
             break;
         }
     }
+    // Release mutual exclusion
+    px_mutex_unlock(&mutex_data);
     // Return the string
     return idx;
 }
 
 int px_rs232_close() {
+    // Gain mutual exclusion
+    px_mutex_lock(&mutex_init);
     int ret = -1;
     if (read_buffer != NULL) {
         ret = px_ring_buffer_destroy(read_buffer);
         read_buffer = NULL;
     }
+    // Release mutual exclusion
+    px_mutex_unlock(&mutex_init);
     return ret;
 }
