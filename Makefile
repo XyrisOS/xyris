@@ -39,7 +39,13 @@ PRODUCT = dist
 TESTS   = tests
 
 # Libraries
+# Okay, time to rant. For *whatever* reason, when I compile and install my
+# i686-elf cross compiler, libgcc can never be found. It doesn't matter if
+# I'm running macOS, Arch, etc. It always has this issue, so, I decided to
+# solve it by just having GCC tell me where it is and then linking against
+# that absolute path directly. That way I never have to deal with it again
 export LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
+export LIB_GCC  := $(shell i686-elf-gcc -print-libgcc-file-name)
 
 # *******************
 # * i686 Toolchains *
@@ -111,8 +117,8 @@ export ASFLAGS :=           \
 # Linker flags
 export LDFLAGS :=           \
 	${PANIX_LDFLAGS}        \
+	$(LIB_GCC)              \
 	-m elf_i386             \
-	-lgcc                   \
 	-L.
 
 # ************************
