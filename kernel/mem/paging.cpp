@@ -14,12 +14,14 @@
 #include <mem/paging.hpp>
 #include <lib/bitmap.hpp>
 #include <lib/stdio.hpp>
+#include <lib/mutex.hpp>
 #include <dev/serial/rs232.hpp>
 #include <stddef.h>
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 
 static uint32_t machine_page_count;
+static px_mutex_t mutex_paging;
 
 #define MEM_BITMAP_SIZE BITMAP_SIZE(ADDRESS_SPACE_SIZE / PAGE_SIZE)
 
@@ -212,6 +214,7 @@ static uint32_t find_next_free_phys_page() {
  * map in a new page. if you request less than one page, you will get exactly one page
  */
 void* px_get_new_page(uint32_t size) {
+    px_mutex_lock(&mutex_paging);
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t free_idx = find_next_free_virt_addr(page_count);
     if (free_idx == SIZE_T_MAX_VALUE) return NULL;
@@ -220,10 +223,12 @@ void* px_get_new_page(uint32_t size) {
         if (phys_page_idx == SIZE_T_MAX_VALUE) return NULL;
         px_map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
     }
+    px_mutex_unlock(&mutex_paging);
     return (void *)(free_idx * PAGE_SIZE);
 }
 
 void px_free_page(void *page, uint32_t size) {
+    px_mutex_lock(&mutex_paging);
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t page_index = (uint32_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
@@ -241,6 +246,7 @@ void px_free_page(void *page, uint32_t size) {
         // clear that tlb
         px_invalidate_page(page);
     }
+    px_mutex_unlock(&mutex_paging);
 }
 
 bool px_page_is_present(size_t addr) {
