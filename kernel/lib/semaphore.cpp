@@ -23,36 +23,38 @@
 #include <mem/heap.hpp>
 #include <stddef.h>
 
+#define IS_SEMAPHORE_VALID(sem) { \
+    if (sem == NULL)              \
+    {                             \
+        errno = EINVAL;           \
+        return -1;                \
+    }                             \
+}
+
+#define COMPARE_EXCHANGE(sem, curVal, failure_memorder) __atomic_compare_exchange_n( \
+    &sem->count,                                                                     \
+    &curVal,                                                                         \
+    curVal - 1,                                                                      \
+    false,                                                                           \
+    __ATOMIC_RELEASE,                                                                \
+    failure_memorder                                                                 \
+)
+
 int px_sem_init(px_sem_t *sem, bool shared, uint32_t value) {
-    // Check if the semaphore is valid
-    if (sem == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_SEMAPHORE_VALID(sem);
     sem->count = value;
     sem->shared = shared;
     return 0;
 }
 
 int px_sem_destroy(px_sem_t *sem) {
-    // Check if the semaphore is valid
-    if (sem == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_SEMAPHORE_VALID(sem);
     free(sem);
     return 0;
 }
 
 int px_sem_wait(px_sem_t *sem) {
-    // Check if the semaphore is valid
-    if (sem == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_SEMAPHORE_VALID(sem);
     // Used to store the current value of the semaphore for atomic comparison later.
     uint32_t curVal = sem->count;
     // Compare the semaphore's current value to the value recorded earlier.
@@ -64,18 +66,13 @@ int px_sem_wait(px_sem_t *sem) {
             curVal = sem->count;
         }
     // Fail using atomic relaxed because it may allow us to get to the "waiting" state faster.
-    } while(!__atomic_compare_exchange_n(&sem->count, &curVal, curVal - 1, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED));
+    } while(!COMPARE_EXCHANGE(sem, curVal, __ATOMIC_RELAXED));
     // Return success
     return 0;
 }
 
 int sem_trywait(px_sem_t *sem) {
-    // Check if the semaphore is valid
-    if (sem == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_SEMAPHORE_VALID(sem);
     // Used to store the current value of the semaphore for atomic comparison later.
     uint32_t curVal = sem->count;
     // Compare the semaphore's current value to the value recorded earlier.
@@ -90,20 +87,15 @@ int sem_trywait(px_sem_t *sem) {
             return -1;
         }
     // We need to fail on an Atomic Acquire Release because it will fail less often (i.e. fewer loop iterations)
-    } while(!__atomic_compare_exchange_n(&sem->count, &curVal, curVal - 1, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE));
+    } while(!COMPARE_EXCHANGE(sem, curVal, __ATOMIC_ACQUIRE));
     // To get here the semaphore must not have been locked.
     return 0;
 }
 
 int sem_timedwait(px_sem_t *sem, const uint32_t *usec) {
+    IS_SEMAPHORE_VALID(sem);
     // TODO: Add the timer functionality here.
     (void)usec;
-    // Check if the semaphore is valid
-    if (sem == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
     // Used to store the current value of the semaphore for atomic comparison later.
     uint32_t curVal = sem->count;
     // Compare the semaphore's current value to the value recorded earlier.
@@ -115,29 +107,19 @@ int sem_timedwait(px_sem_t *sem, const uint32_t *usec) {
             curVal = sem->count;
         }
     // Fail using atomic relaxed because it may allow us to get to the "waiting" state faster.
-    } while(!__atomic_compare_exchange_n(&sem->count, &curVal, curVal - 1, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE));
+    } while(!COMPARE_EXCHANGE(sem, curVal, __ATOMIC_ACQUIRE));
     // Return success
     return 0;
 }
 
 int px_sem_post(px_sem_t *sem) {
-    // Check if the semaphore is valid
-    if (sem == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_SEMAPHORE_VALID(sem);
     __atomic_fetch_add(&sem->count, 1, __ATOMIC_RELEASE);
     return 0;
 }
 
 int px_sem_getval(px_sem_t *sem, uint32_t *val) {
-    // Check if the semaphore is valid
-    if (sem == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_SEMAPHORE_VALID(sem);
     __atomic_load(&sem->count, &val, __ATOMIC_ACQUIRE);
     return 0;
 }
