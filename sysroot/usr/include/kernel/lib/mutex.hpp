@@ -14,9 +14,7 @@
 
 typedef struct px_mutex {
     bool locked;
-    px_mutex() {
-        locked = false;
-    };
+    px_mutex();
 } px_mutex_t;
 
 /**

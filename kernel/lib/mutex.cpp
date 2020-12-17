@@ -33,6 +33,10 @@
     }                           \
 }
 
+px_mutex::px_mutex() {
+    locked = false;
+};
+
 int px_mutex_init(px_mutex_t *mutex) {
     IS_MUTEX_VALID(mutex);
     // Initialize the value to false
