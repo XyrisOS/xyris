@@ -23,13 +23,18 @@
 #include <mem/heap.hpp>
 #include <stddef.h>
 
+#define ACQUIRE_MUTEX_LOCK(mutex) __atomic_test_and_set(&mutex->locked, __ATOMIC_RELEASE)
+
+#define IS_MUTEX_VALID(mutex) { \
+    if (mutex == NULL)          \
+    {                           \
+        errno = EINVAL;         \
+        return -1;              \
+    }                           \
+}
+
 int px_mutex_init(px_mutex_t *mutex) {
-    // Check if the mutex is valid
-    if (mutex == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_MUTEX_VALID(mutex);
     // Initialize the value to false
     mutex->locked = false;
     // Success, return 0
@@ -37,26 +42,16 @@ int px_mutex_init(px_mutex_t *mutex) {
 }
 
 int px_mutex_destroy(px_mutex_t *mutex) {
-    // Check if the mutex is valid
-    if (mutex == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_MUTEX_VALID(mutex);
     free(mutex);
     // Success, return 0
     return 0;
 }
 
 int px_mutex_lock(px_mutex_t *mutex) {
-    // Check if the mutex is valid
-    if (mutex == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_MUTEX_VALID(mutex);
     // Check if the mutex is unlocked
-    while (__atomic_test_and_set(&mutex->locked, __ATOMIC_RELEASE))
+    while (ACQUIRE_MUTEX_LOCK(mutex))
     {
         // Busy wait while trying to get the lock
     }
@@ -65,14 +60,9 @@ int px_mutex_lock(px_mutex_t *mutex) {
 }
 
 int px_mutex_trylock(px_mutex_t *mutex) {
-    // Check if the mutex is valid
-    if (mutex == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_MUTEX_VALID(mutex);
     // If we cannot immediately acquire the lock then just return an error
-    if (__atomic_test_and_set(&mutex->locked, __ATOMIC_RELEASE))
+    if (ACQUIRE_MUTEX_LOCK(mutex))
     {
         errno = EINVAL;
         return -1;
@@ -82,12 +72,7 @@ int px_mutex_trylock(px_mutex_t *mutex) {
 }
 
 int px_mutex_unlock(px_mutex_t *mutex) {
-    // Check if the mutex is valid
-    if (mutex == NULL)
-    {
-        errno = EINVAL;
-        return -1;
-    }
+    IS_MUTEX_VALID(mutex);
     // Clear the lock if it is locked
     __atomic_clear(&mutex->locked, __ATOMIC_RELEASE);
     // Success, return 0
