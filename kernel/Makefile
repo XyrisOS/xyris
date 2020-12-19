@@ -4,7 +4,7 @@
 # |  __/ (_| | | | | |>  <  | . \  __/ |  | | | |  __/ |
 # |_|   \__,_|_| |_|_/_/\_\ |_|\_\___|_|  |_| |_|\___|_|
 #
-# Compiles the kernel source code located in the kernel folder.
+# Compiles the kernel source code.
 
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
@@ -56,11 +56,13 @@ LDFLAGS +=                 \
 # *************************
 
 # All objects
-OBJ_C   = $(patsubst %.c,   $(BUILD)/%.o, $(C_SRC))
-OBJ_CPP = $(patsubst %.cpp, $(BUILD)/%.o, $(CPP_SRC))
-OBJ_ASM = $(patsubst %.s,   $(BUILD)/%.o, $(ATT_SRC)) \
-          $(patsubst %.S,   $(BUILD)/%.o, $(NASM_SRC))
-OBJ     = $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM)
+OBJ_C     = $(patsubst %.c,   $(BUILD)/%.o, $(C_SRC))
+OBJ_CPP   = $(patsubst %.cpp, $(BUILD)/%.o, $(CPP_SRC))
+OBJ_ASM   = $(patsubst %.s,   $(BUILD)/%.o, $(ATT_SRC)) \
+            $(patsubst %.S,   $(BUILD)/%.o, $(NASM_SRC))
+OBJ_CRTI := $(shell $(CC) -print-file-name=crtbegin.o)
+OBJ_CRTN := $(shell $(CC) -print-file-name=crtend.o)
+OBJ       = $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM) $(OBJ_CRTI) $(OBJ_CRTN)
 # Object directories, mirroring source
 OBJ_DIRS = $(addprefix $(BUILD), $(shell find . -type d | sed "s|^\.||"))
 # Create object file directories

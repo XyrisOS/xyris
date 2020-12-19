@@ -25,6 +25,20 @@ export COLOR_OK   = \033[0;32m
 export COLOR_INFO = \033[0;93m
 export COLOR_NONE = \033[m
 
+# *******************
+# * i686 Toolchains *
+# *******************
+
+# Compilers/Assemblers/Linkers
+export NASM    := $(shell command -v nasm)
+export AS      := $(shell command -v i686-elf-as)
+export AR      := $(shell command -v i686-elf-ar)
+export CC      := $(shell command -v i686-elf-gcc)
+export CXX     := $(shell command -v i686-elf-g++)
+export LD      := $(shell command -v i686-elf-ld)
+export OBJCP   := $(shell command -v i686-elf-objcopy)
+export MKGRUB  := $(shell command -v grub-mkrescue)
+
 # *****************************
 # * Source Code & Directories *
 # *****************************
@@ -45,21 +59,7 @@ TESTS   = tests
 # solve it by just having GCC tell me where it is and then linking against
 # that absolute path directly. That way I never have to deal with it again
 export LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
-export LIB_GCC  := $(shell i686-elf-gcc -print-libgcc-file-name)
-
-# *******************
-# * i686 Toolchains *
-# *******************
-
-# Compilers/Assemblers/Linkers
-export NASM    := $(shell command -v nasm)
-export AS      := $(shell command -v i686-elf-as)
-export AR      := $(shell command -v i686-elf-ar)
-export CC      := $(shell command -v i686-elf-gcc)
-export CXX     := $(shell command -v i686-elf-g++)
-export LD      := $(shell command -v i686-elf-ld)
-export OBJCP   := $(shell command -v i686-elf-objcopy)
-export MKGRUB  := $(shell command -v grub-mkrescue)
+export LIB_GCC  := $(shell $(CC) -print-libgcc-file-name)
 
 # *******************
 # * Toolchain Flags *
@@ -201,6 +201,17 @@ run: $(PRODUCT)/$(KERNEL)
 	-kernel $(PRODUCT)/$(KERNEL) \
 	$(QEMU_FLAGS)
 
+# Open the connection to qemu and load our kernel-object file with symbols
+.PHONY: run-debug
+run-debug: $(PRODUCT)/$(KERNEL)
+	# Start QEMU with debugger
+	($(QEMU)   \
+	-S -s      \
+	-kernel $< \
+	$(QEMU_FLAGS) > /dev/null &)
+	sleep 1
+	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
+
 # Create Virtualbox VM
 .PHONY: vbox-create
 vbox-create: $(PRODUCT)/$(ISOIMG)
@@ -216,17 +227,6 @@ vbox-create: $(PRODUCT)/$(ISOIMG)
 .PHONY: vbox-create
 vbox: vbox-create
 	$(VBOX) startvm --putenv --debug $(VM_NAME)
-
-# Open the connection to qemu and load our kernel-object file with symbols
-.PHONY: debugger
-debugger: $(PRODUCT)/$(KERNEL)
-	# Start QEMU with debugger
-	($(QEMU)   \
-	-S -s      \
-	-kernel $< \
-	$(QEMU_FLAGS) > /dev/null &)
-	sleep 1
-	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
 
 # ****************************
 # * Documentation Generation *

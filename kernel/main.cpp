@@ -36,38 +36,10 @@
 #define VERSION "unknown"
 #endif
 
-extern "C" void px_call_constructors();
 extern "C" void __stack_chk_fail(void);
 extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic);
 void px_kernel_print_splash();
 void px_kernel_boot_tone();
-
-/**
- * @brief The global constuctor is a necessary step when using
- * global objects which need to be constructed before the main
- * function, px_kernel_main() in our case, is ever called. This
- * is much more necessary in an object-oriented architecture,
- * so it is less of a concern now. Regardless, the OSDev Wiki
- * take a *very* different approach to this, so refactoring
- * this might be on the eventual todo list.
- *
- * According to the OSDev Wiki this is only necessary for C++
- * objects. However, it is useful to know that the
- * global constructors are "stored in a sorted array of
- * function pointers and invoking these is as simple as
- * traversing the array and running each element."
- *
- */
-typedef void (*constructor)();
-extern "C" constructor _CTORS_START;
-extern "C" constructor _CTORS_END;
-extern "C" void px_call_constructors() {
-    // For each global object with a constructor starting at start_ctors,
-    for (constructor* i = &_CTORS_START; i != &_CTORS_END; i++) {
-        // Get the object and call the constructor manually.
-        (*i)();
-    }
-}
 
 /**
  * @brief This function is the global handler for all
