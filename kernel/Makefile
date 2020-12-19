@@ -56,13 +56,16 @@ LDFLAGS +=                 \
 # *************************
 
 # All objects
-OBJ_C     = $(patsubst %.c,   $(BUILD)/%.o, $(C_SRC))
-OBJ_CPP   = $(patsubst %.cpp, $(BUILD)/%.o, $(CPP_SRC))
-OBJ_ASM   = $(patsubst %.s,   $(BUILD)/%.o, $(ATT_SRC)) \
-            $(patsubst %.S,   $(BUILD)/%.o, $(NASM_SRC))
-OBJ_CRTI := $(shell $(CC) -print-file-name=crtbegin.o)
-OBJ_CRTN := $(shell $(CC) -print-file-name=crtend.o)
-OBJ       = $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM) $(OBJ_CRTI) $(OBJ_CRTN)
+OBJ_CRTBEGIN := $(shell $(CC) -print-file-name=crtbegin.o)
+OBJ_CRTEND   := $(shell $(CC) -print-file-name=crtend.o)
+OBJ_CRTI     := $(BUILD)/arch/i386/crti.o # hard-coded for now
+OBJ_CRTN     := $(BUILD)/arch/i386/crtn.o # hard-coded for now
+OBJ_C        := $(patsubst %.c,   $(BUILD)/%.o, $(C_SRC))
+OBJ_CPP      := $(patsubst %.cpp, $(BUILD)/%.o, $(CPP_SRC))
+OBJ_ASM_ALL  := $(patsubst %.s,   $(BUILD)/%.o, $(ATT_SRC)) \
+                $(patsubst %.S,   $(BUILD)/%.o, $(NASM_SRC))
+OBJ_ASM      := $(filter-out $(OBJ_CRTI) $(OBJ_CRTN),$(OBJ_ASM_ALL))
+OBJ          := $(OBJ_CRTI) $(OBJ_CRTBEGIN) $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM) $(OBJ_CRTEND) $(OBJ_CRTN)
 # Object directories, mirroring source
 OBJ_DIRS = $(addprefix $(BUILD), $(shell find . -type d | sed "s|^\.||"))
 # Create object file directories
