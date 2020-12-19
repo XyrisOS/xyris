@@ -15,6 +15,7 @@ typedef struct px_semaphore
 {
     bool shared;
     uint32_t count;
+    px_semaphore();
 } px_sem_t;
 
 /**

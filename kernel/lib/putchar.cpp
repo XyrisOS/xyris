@@ -11,6 +11,7 @@
 
 #include <stddef.h>
 #include <lib/stdio.hpp>
+#include <lib/mutex.hpp>
 #include <dev/tty/tty.hpp>
 
 static uint16_t ansi_values[8] = { 0 };
@@ -20,14 +21,14 @@ static size_t ansi_values_index = 0;
 #define CLEAR_VALS() ansi_values_index = 0
 #define ESC ('\033')
 // ANSI states
-enum ansi_state {
+typedef enum ansi_state {
     Normal,
     Esc,
     Bracket,
     Value
-};
+} ansi_state_t;
 // State and value storage
-ansi_state ansi_state = Normal;
+ansi_state_t ansi_state = Normal;
 uint16_t ansi_val = 0;
 // Saved cursor positions
 uint8_t ansi_cursor_x = 0;
@@ -39,8 +40,12 @@ uint16_t px_ansi_vga_table[16] = {
     VGA_LightGreen, VGA_Yellow, VGA_LightBlue, VGA_LightMagenta,
     VGA_LightCyan, VGA_White
 };
+// Printing mutual exclusion
+px_mutex_t put_mutex;
 
 int putchar(char c) {
+    // Gain mutual exclusion
+    px_mutex_lock(&put_mutex);
     // Moved to avoid cross initialization when calling goto error
     volatile uint16_t* where;
     uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
@@ -170,5 +175,7 @@ normal:
     ansi_state = Normal;
     ansi_val = 0;
 end:
+    // Release mutual exclusion
+    px_mutex_unlock(&put_mutex);
     return (int)c;
 }

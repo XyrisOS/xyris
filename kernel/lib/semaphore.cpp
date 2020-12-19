@@ -40,6 +40,11 @@
     failure_memorder                                                                 \
 )
 
+px_semaphore::px_semaphore() {
+    shared = false;
+    count = 0;
+}
+
 int px_sem_init(px_sem_t *sem, bool shared, uint32_t value) {
     IS_SEMAPHORE_VALID(sem);
     sem->count = value;

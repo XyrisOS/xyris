@@ -15,10 +15,12 @@
 #include <arch/arch.hpp>
 #include <dev/serial/rs232.hpp>
 #include <mem/heap.hpp>
+#include <lib/mutex.hpp>
 
 static px_ring_buff_t* read_buffer = NULL;
 uint8_t rs_232_line_index;
 uint16_t rs_232_port_base;
+px_mutex_t mutex_rs232;
 
 static int px_rs232_received();
 static int px_rs232_is_transmit_empty();
@@ -35,13 +37,17 @@ static int px_rs232_is_transmit_empty() {
 }
 
 static char px_rs232_read_char() {
+    px_mutex_lock(&mutex_rs232);
     while (px_rs232_received() == 0);
+    px_mutex_unlock(&mutex_rs232);
     return px_read_byte(rs_232_port_base + RS_232_DATA_REG);
 }
 
 static void px_rs232_write_char(char c) {
+    px_mutex_lock(&mutex_rs232);
     while (px_rs232_is_transmit_empty() == 0);
     px_write_byte(rs_232_port_base + RS_232_DATA_REG, c);
+    px_mutex_unlock(&mutex_rs232);
 }
 
 void px_rs232_print(const char* str) {
@@ -95,12 +101,15 @@ void px_rs232_init(uint16_t com_id) {
 }
 
 px_ring_buff_t* px_rs232_init_buffer(int size) {
+    px_mutex_lock(&mutex_rs232);
     // Allocate space for the input buffer
     read_buffer = (px_ring_buff_t*)malloc(sizeof(px_ring_buff_t));
     // Initialize the ring buffer
     if (px_ring_buffer_init(read_buffer, size) == 0) {
+        px_mutex_unlock(&mutex_rs232);
         return read_buffer;
     } else {
+        px_mutex_unlock(&mutex_rs232);
         return NULL;
     }
 }
@@ -111,16 +120,19 @@ px_ring_buff_t* px_rs232_get_buffer() {
 }
 
 char px_rs232_get_char() {
+    px_mutex_lock(&mutex_rs232);
     // Grab the last byte and convert to a char
     uint8_t data = 0;
     if (read_buffer != NULL)
     {
         px_ring_buffer_dequeue(read_buffer, &data);
     }
+    px_mutex_unlock(&mutex_rs232);
     return (char)data;
 }
 
 int px_rs232_get_str(char* str, int max) {
+    px_mutex_lock(&mutex_rs232);
     int idx = 0;
     // Keep reading until the buffer is empty or
     // a newline is read.
@@ -140,15 +152,18 @@ int px_rs232_get_str(char* str, int max) {
             break;
         }
     }
+    px_mutex_unlock(&mutex_rs232);
     // Return the string
     return idx;
 }
 
 int px_rs232_close() {
+    px_mutex_lock(&mutex_rs232);
     int ret = -1;
     if (read_buffer != NULL) {
         ret = px_ring_buffer_destroy(read_buffer);
         read_buffer = NULL;
     }
+    px_mutex_unlock(&mutex_rs232);
     return ret;
 }
