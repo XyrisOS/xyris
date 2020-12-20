@@ -107,10 +107,14 @@ void px_tasks_init()
         // just say that this task hasn't spent any time running yet
         .time_used = 0,
         // Set wakeup time to 0 to make compiler happy
-        .wakeup_time = 0
+        .wakeup_time = 0,
+        // name
+        .name = "[main]",
+        // this is not backed by dynamic memory
+        .alloc = ALLOC_STATIC,
     };
     // create a task for the cleaner and set it's state to "paused"
-    (void) px_tasks_new(_cleaner_task_impl, &_cleaner_task, TASK_PAUSED);
+    (void) px_tasks_new(_cleaner_task_impl, &_cleaner_task, TASK_PAUSED, "[cleaner]");
     _cleaner_task.state = TASK_PAUSED;
     // update the timer variables
     _last_time = _get_cpu_time_ns();
@@ -216,7 +220,7 @@ static px_task_t *_px_tasks_dequeue_ready()
     return _dequeue_task(&px_tasks_ready);
 }
 
-px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state state)
+px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state state, const char *name)
 {
     px_task_t *new_task = storage;
     if (storage == NULL) {
@@ -251,6 +255,8 @@ px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state s
     new_task->next_task = NULL;
     new_task->state = state;
     new_task->time_used = 0;
+    new_task->name = name;
+    new_task->alloc = storage == NULL ? ALLOC_STATIC : ALLOC_DYNAMIC;
     if (state == TASK_READY) {
         _px_tasks_enqueue_ready(new_task);
     }
@@ -424,10 +430,10 @@ void px_tasks_nano_sleep(uint64_t time)
 
 void px_tasks_exit()
 {
-    char str[32];
+    char str[64];
 
     // userspace cleanup can happen here
-    px_ksprintf(str, "task 0x%08x exiting.\n", (uint32_t)px_current_task);
+    px_ksprintf(str, "task \"%s\" (0x%08x) exiting\n", px_current_task->name, (uint32_t)px_current_task);
     px_rs232_print(str);
 
     _aquire_scheduler_lock();
@@ -449,19 +455,19 @@ static void _clean_stopped_task(px_task_t *task)
     px_free_page((void *)page, PAGE_SIZE - 1);
     // somehow determine if the task was dynamically allocated or not
     // just assume statically allocated tasks will never exit (bad idea)
-    free(task);
+    if (task->alloc == ALLOC_DYNAMIC) free(task);
 }
 
 static void _cleaner_task_impl()
 {
-    char str[32];
+    char str[64];
     for (;;) {
         px_task_t *task;
         _aquire_scheduler_lock();
         
         while (px_tasks_stopped.head != NULL) {
             task = _dequeue_stopped();
-            px_ksprintf(str, "cleaning up task 0x%08x.\n", (uint32_t)task);
+            px_ksprintf(str, "cleaning up task %s (0x%08x)\n", task->name ? task->name : "N/A", (uint32_t)task);
             px_rs232_print(str);
             _clean_stopped_task(task);
         }
@@ -471,4 +477,46 @@ static void _cleaner_task_impl()
         // it just needs to occur before the loop repeats
         px_tasks_block_current(TASK_PAUSED);
     }
+}
+
+void px_tasks_sync_block(px_tasks_sync_t *ts)
+{
+    _aquire_scheduler_lock();
+    // push the current task to the waiting queue
+    _enqueue_task(&ts->waiting, px_current_task);
+    _release_scheduler_lock();
+    // now block until the mutex is freed
+    px_tasks_block_current(TASK_BLOCKED);
+}
+
+void px_tasks_sync_unblock(px_tasks_sync_t *ts)
+{
+    _aquire_scheduler_lock();
+    // iterate all tasks that were blocked and unblock them
+    px_task_t *task = ts->waiting.head;
+    px_task_t *pre = NULL;
+    if (task == NULL) {
+        // no other tasks were blocked
+        goto exit;
+    }
+    do {
+        _remove_task(&ts->waiting, task, pre);
+        _wakeup(task);
+        pre = task;
+        task = task->next_task;
+    } while (task != NULL);
+    // we woke up some tasks
+    _schedule();
+exit:
+    _release_scheduler_lock();
+}
+
+void px_tasks_sync_aquire(px_tasks_sync_t *ts)
+{
+    ts->possessor = px_current_task;
+}
+
+void px_tasks_sync_release(px_tasks_sync_t *ts)
+{
+    ts->possessor = NULL;
 }

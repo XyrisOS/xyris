@@ -49,7 +49,7 @@ int px_sem_init(px_sem_t *sem, bool shared, uint32_t value) {
     IS_SEMAPHORE_VALID(sem);
     sem->count = value;
     sem->shared = shared;
-    TASKS_SYNC_INIT(&sem->task_sync);
+    px_tasks_sync_init(&sem->task_sync);
     return 0;
 }
 

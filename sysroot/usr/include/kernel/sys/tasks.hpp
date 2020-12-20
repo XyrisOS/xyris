@@ -26,6 +26,8 @@ enum px_task_state
     TASK_PAUSED
 };
 
+enum px_task_alloc { ALLOC_STATIC, ALLOC_DYNAMIC };
+
 typedef struct px_task px_task_t;
 struct px_task
 {
@@ -35,9 +37,13 @@ struct px_task
     px_task_state state;
     uint64_t time_used;
     uint64_t wakeup_time;
+    const char *name;
+    px_task_alloc alloc;
 };
 
 extern px_task_t *px_current_task;
+
+#define TASK_ONLY if (px_current_task != NULL)
 
 typedef struct px_tasklist
 {
@@ -49,15 +55,15 @@ typedef struct px_tasklist
 typedef struct px_tasks_sync
 {
     px_task_t* possessor;
-    uint16_t queued_head;
-    uint16_t queued_tail;
-    px_task_t *queued[MAX_TASKS_QUEUED];
+    px_tasklist_t waiting;
 } px_tasks_sync_t;
 
-#define TASKS_SYNC_INIT(sync) \
-    (sync)->possessor = NULL; \
-    (sync)->queued_head = 0; \
-    (sync)->queued_tail = 0
+static inline void px_tasks_sync_init(px_tasks_sync_t *ts) {
+    *ts = {
+        .possessor = NULL,
+        .waiting = { },
+    };
+}
 
 /**
  * @brief Initializes the kernel task manager.
@@ -81,7 +87,7 @@ extern "C" void px_tasks_switch_to(px_task_t *task);
  * @param state Task state structure
  * @return px_task_t* Pointer to the created kernel task
  */
-px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state state);
+px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state state, const char *name);
 /**
  * @brief Tell the kernel task scheduler to schedule all of the added tasks.
  *
@@ -122,3 +128,11 @@ void px_tasks_nano_sleep(uint64_t time);
  *
  */
 void px_tasks_exit(void);
+
+void px_tasks_sync_block(px_tasks_sync_t *tsc);
+
+void px_tasks_sync_unblock(px_tasks_sync_t *tsc);
+
+void px_tasks_sync_aquire(px_tasks_sync_t *tsc);
+
+void px_tasks_sync_release(px_tasks_sync_t *tsc);
