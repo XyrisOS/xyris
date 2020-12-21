@@ -170,6 +170,8 @@ error:
     // Return to normal
     ansi_state = Normal;
     ansi_val = 0;
+    // Release mutual exclusion
+    px_mutex_unlock(&put_mutex);
     return EOF;
 normal:
     ansi_state = Normal;
