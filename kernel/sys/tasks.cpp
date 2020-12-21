@@ -376,19 +376,23 @@ static void _on_timer()
 
     px_task_t *pre = NULL;
     px_task_t *task = px_tasks_sleeping.head;
+    px_task_t *next;
     bool need_schedule = false;
     uint64_t time = _get_cpu_time_ns();
     uint64_t time_delta;
 
     while (task != NULL) {
+        next = task->next_task;
         if (time >= task->wakeup_time) {
             //px_rs232_print("timer: waking sleeping task\n");
             _remove_task(&px_tasks_sleeping, task, pre);
             _wakeup(task);
+            task->next_task = NULL;
             need_schedule = true;
+        } else {
+            pre = task;
         }
-        pre = task;
-        task = task->next_task;
+        task = next;
     }
 
     if (_time_slice_remaining != 0) {
@@ -443,9 +447,10 @@ void px_tasks_exit()
     // the ordering of these two should really be reversed
     // but the scheduler currently isn't very smart
     px_tasks_unblock(&_cleaner_task);
-    px_tasks_block_current(TASK_STOPPED);
 
     _release_scheduler_lock();
+
+    px_tasks_block_current(TASK_STOPPED);
 }
 
 static void _clean_stopped_task(px_task_t *task)
@@ -494,17 +499,19 @@ void px_tasks_sync_unblock(px_tasks_sync_t *ts)
     _aquire_scheduler_lock();
     // iterate all tasks that were blocked and unblock them
     px_task_t *task = ts->waiting.head;
-    px_task_t *pre = NULL;
+    px_task_t *next = NULL;
     if (task == NULL) {
         // no other tasks were blocked
         goto exit;
     }
     do {
-        _remove_task(&ts->waiting, task, pre);
+        next = task->next_task;
         _wakeup(task);
-        pre = task;
-        task = task->next_task;
+        task->next_task = NULL;
+        task = next;
     } while (task != NULL);
+    ts->waiting.head = NULL;
+    ts->waiting.tail = NULL;
     // we woke up some tasks
     _schedule();
 exit:
