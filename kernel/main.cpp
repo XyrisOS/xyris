@@ -127,7 +127,7 @@ void px_kernel_print_splash() {
     px_kprintf(
         "\033[93mWelcome to Panix\n"
         "Developed by graduates and undergraduates of Cedarville University.\n"
-        "Copyright Keeton Feavel et al (c) %i. All rights reserved.\n\033[0m",
+        "Copyright the Panix Contributors (c) %i. All rights reserved.\n\033[0m",
         (\
             ((__DATE__)[7] - '0') * 1000 + \
             ((__DATE__)[8] - '0') * 100  + \
