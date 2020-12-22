@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  * 
  */
-
-#ifndef PANIX_TASKS_HPP
-#define PANIX_TASKS_HPP
+#pragma once
 
 #include <stdint.h>    // Data type definitions
 #include <arch/arch.hpp>    // Architecture specific features
@@ -58,5 +56,3 @@ void px_tasks_unblock(px_task_t *task);
 void px_tasks_nano_sleep_until(uint64_t time);
 void px_tasks_nano_sleep(uint64_t time);
 void px_tasks_exit(void);
-
-#endif /* PANIX_TASKS_HPP */

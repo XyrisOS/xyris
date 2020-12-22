@@ -10,9 +10,7 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  * 
  */
-
-#ifndef PX_RING_BUFFER_HPP
-#define PX_RING_BUFFER_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -96,5 +94,3 @@ int px_ring_buffer_length(px_ring_buff_t* buff);
  * @return int Buffer capacity in bytes
  */
 int px_ring_buffer_size(px_ring_buff_t* buff);
-
-#endif /* PX_RING_BUFFER_HPP */

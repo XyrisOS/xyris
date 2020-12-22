@@ -8,6 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  * 
  */
+#pragma once
 
 #include <stdint.h>
 

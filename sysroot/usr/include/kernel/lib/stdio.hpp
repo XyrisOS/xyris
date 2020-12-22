@@ -8,6 +8,7 @@
  * @copyright Copyright Keeton Feavel et al (c) 2020
  * 
  */
+#pragma once
 
 #include <stdint.h>
 #include <stdarg.h>

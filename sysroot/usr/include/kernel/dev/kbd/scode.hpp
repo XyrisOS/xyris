@@ -10,9 +10,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  * 
  */
-
-#ifndef PANIX_KEYBOARD_SCANCODES_HPP
-#define PANIX_KEYBOARD_SCANCODES_HPP
+#pragma once
 
 #define PX_SCODE_BACKSPACE 0x0E
 #define PX_SCODE_ENTER 0x1C
@@ -31,5 +29,3 @@ const char px_kbd_usa_ascii[] = {
     'b', 'n', 'm', ',', '.', '/', '\0', '*',
     '\0', ' '
 };
-
-#endif /* PANIX_KEYBOARD_SCANCODES_HPP */

@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  *
  */
-
-#ifndef PANIX_ISR_HPP
-#define PANIX_ISR_HPP
+#pragma once
 
 #include <stdint.h>
 #include <arch/arch.hpp>
@@ -149,5 +147,3 @@ extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler);
  *
  */
 extern "C" void px_irq_handler(registers_t *regs);
-
-#endif /* PANIX_ISR_HPP */

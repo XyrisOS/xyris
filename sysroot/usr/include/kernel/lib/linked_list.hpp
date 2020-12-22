@@ -9,9 +9,7 @@
  * Thanks for mrvn on the OSDev Wiki for the implementation:
  * Linked List Bucket Heap 2013 Goswin von Brederlow <goswin-v-b@web.de>
  */
-
-#ifndef PANIX_LIB_LINKED_LIST
-#define PANIX_LIB_LINKED_LIST
+#pragma once
 
 #include <stdint.h>
 #include <stddef.h>
@@ -120,5 +118,3 @@ DList* dlist_pop(DList **dp);
  * @param d2 Node to be removed
  */
 void dlist_remove_from(DList **d1p, DList *d2);
-
-#endif /* PANIX_LIB_LINKED_LIST */

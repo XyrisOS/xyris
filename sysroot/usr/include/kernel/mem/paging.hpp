@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  *
  */
-
-#ifndef PANIX_MEM_PAGING
-#define PANIX_MEM_PAGING
+#pragma once
 
 #include <stdint.h>
 #include <stddef.h>
@@ -157,5 +155,3 @@ bool px_page_is_present(size_t addr);
  * @returns the physical address of the current page directory.
  */
 uint32_t px_get_phys_page_dir();
-
-#endif /* PANIX_MEM_PAGING */

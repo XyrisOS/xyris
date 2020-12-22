@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  * 
  */
-
-#ifndef PANIX_X86_REGISTERS_HPP
-#define PANIX_X86_REGISTERS_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -47,5 +45,3 @@ typedef struct px_register_cr3
    uint32_t ignored_b               : 7;    // Ignored
    uint32_t page_dir                : 10;   // Page directory address
 } px_register_cr3_t;
-
-#endif /* PANIX_X86_REGISTERS_HPP */
