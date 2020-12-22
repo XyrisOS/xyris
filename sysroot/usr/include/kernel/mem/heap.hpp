@@ -12,9 +12,7 @@
  * 
  * https://wiki.osdev.org/User:Mrvn/LinkedListBucketHeapImplementation
  */
-
-#ifndef PANIX_MEM_HEAP
-#define PANIX_MEM_HEAP
+#pragma once
 
 #include <stddef.h>
 
@@ -65,5 +63,3 @@ extern void     *realloc(void *, size_t);
 extern void     *calloc(size_t, size_t);
 extern void      free(void *);
 }
-
-#endif /* PANIX_MEM_HEAP */

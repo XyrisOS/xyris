@@ -9,6 +9,7 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  *
  */
+#pragma once
 
 #include <stdint.h>
 #include <lib/ring_buffer.hpp>

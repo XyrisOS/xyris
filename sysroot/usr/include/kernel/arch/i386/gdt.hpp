@@ -9,8 +9,7 @@
  * @copyright Copyright Keeton Feavel (c) 2019
  *
  */
-#ifndef PANIX_GLOBAL_DESCRIPTOR_TABLE_HPP
-#define PANIX_GLOBAL_DESCRIPTOR_TABLE_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -92,5 +91,3 @@ typedef struct gdt_ptr gdt_ptr_t;
  *
  */
 extern void px_gdt_install();
-
-#endif /* PANIX_GLOBAL_DESCRIPTOR_TABLE_HPP */

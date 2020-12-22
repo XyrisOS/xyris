@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  *
  */
-
-#ifndef PANIX_LIB_STRING_HPP
-#define PANIX_LIB_STRING_HPP
+#pragma once
 
 #include <stdint.h>
 #include <stddef.h>
@@ -88,5 +86,3 @@ void* memmove(void* destination, const void* source, size_t size);
  * @return void* 
  */
 void* memcpy(void* dstptr, const void* srcptr, size_t size);
-
-#endif /* PANIX_LIB_STRING_HPP */

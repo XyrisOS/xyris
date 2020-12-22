@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  *
  */
-
-#ifndef PANIX_RTC_HPP
-#define PANIX_RTC_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -38,5 +36,3 @@ void px_rtc_init();
  * 
  */
 void px_rtc_print();
-
-#endif /* PANIX_RTC_CPP */

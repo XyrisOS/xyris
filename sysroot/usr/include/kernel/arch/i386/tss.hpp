@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  * 
  */
-
-#ifndef PANIX_TASK_STATE_SEGMENT
-#define PANIX_TASK_STATE_SEGMENT
+#pragma once
 
 #include <stdint.h>
 
@@ -64,5 +62,3 @@ typedef struct tss_entry {
     uint16_t    trap;
     uint16_t    iomap_base;
 } __attribute__ ((packed)) tss_entry_t;
-
-#endif /* PANIX_TASK_STATE_SEGMENT */

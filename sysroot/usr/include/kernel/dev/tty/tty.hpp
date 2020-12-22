@@ -13,8 +13,7 @@
  * @copyright Copyright Keeton Feavel (c) 2019
  *
  */
-#ifndef PANIX_PX_KPRINT_HPP
-#define PANIX_PX_KPRINT_HPP
+#pragma once
 
 #include <stdint.h>
 #include <arch/arch.hpp>
@@ -115,5 +114,3 @@ void px_tty_reset_defaults();
  * @param color Indicator color
  */
 void px_set_indicator(px_tty_vga_color color);
-
-#endif /* PANIX_px_kprint_HPP */

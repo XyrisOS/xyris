@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  * 
  */
-
-#ifndef PANIX_LIB_ERRNO_HPP
-#define PANIX_LIB_ERRNO_HPP
+#pragma once
 
 // This is currently not thread safe.
 // But we also don't have threads, so problem solved.
@@ -106,5 +104,3 @@ extern int errno;
 #define ETXTBSY         79    /* Text file busy. */
 #define EWOULDBLOCK     80    /* Operation would block (may be the same value as #define EAGAIN]). */
 #define EXDEV           81    /* Cross-device link. */
-
-#endif /* PANIX_LIB_ERRNO_HPP */

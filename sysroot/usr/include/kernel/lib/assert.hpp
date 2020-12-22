@@ -8,9 +8,8 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  * 
  */
+#pragma once
 
-#ifndef PANIX_ASSERT_HPP
-#define PANIX_ASSERT_HPP
 /**
  * @brief Creates an assertion which must be held to be true.
  * If the assertion passes, nothing happens and the kernel
@@ -21,5 +20,3 @@
  * 
  */
 #define assert(x) (!(x) ? (PANIC("Assert failed at ")) : (void)0)
-
-#endif /* PANIX_ASSERT_HPP */

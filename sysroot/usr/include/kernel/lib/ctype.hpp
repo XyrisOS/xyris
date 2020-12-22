@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  * 
  */
-
-#ifndef PANIX_CTYPE_HPP
-#define PANIX_CTYPE_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -38,5 +36,3 @@
  */
 // TODO: Set this to abide by the ASNI C standard function
 char* toupper(char* str);
-
-#endif /* PANIX_CTYPE_HPP */

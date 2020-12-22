@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  *
  */
-
-#ifndef PANIX_DEVICE_SPKR_HPP
-#define PANIX_DEVICE_SPKR_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -21,5 +19,3 @@
  * @param ms Length in milliseconds
  */
 void px_spkr_beep(uint32_t freq, uint32_t ms);
-
-#endif /* PANIX_DEVICE_SPKR_HPP */

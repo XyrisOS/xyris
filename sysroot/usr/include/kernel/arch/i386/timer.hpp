@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  *
  */
-
-#ifndef PANIX_I386_TIMER_HPP
-#define PANIX_I386_TIMER_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -38,5 +36,3 @@ void px_timer_print();
 void sleep(uint32_t ms);
 
 void px_timer_register_callback(void (*func)());
-
-#endif /* PANIX_I386_TIMER_HPP */
