@@ -43,6 +43,7 @@ void parse_stivale2(void* info);
 // Shared library code for i386+ & amd64 family
 #include <cpuid.h>
 #include <arch/i386/gdt.hpp>
+#include <arch/i386/tss.hpp>
 #include <arch/i386/idt.hpp>
 #include <arch/i386/isr.hpp>
 #include <arch/i386/timer.hpp>
