@@ -29,6 +29,7 @@
 static void _enqueue_task(px_tasklist_t *, px_task *);
 static px_task_t *_dequeue_task(px_tasklist_t *);
 static void _cleaner_task_impl(void);
+static void _schedule(void);
 extern "C" void _px_tasks_enqueue_ready(px_task_t *task);
 void px_tasks_update_time();
 void _wakeup(px_task_t *task);
@@ -55,16 +56,26 @@ static uint64_t _last_time = 0;
 static uint64_t _time_slice_remaining = 0;
 static uint64_t _last_timer_time = 0;
 static size_t _scheduler_lock = 0;
+static size_t _scheduler_postpone_count = 0;
+static bool _scheduler_postponed = false;
 static uint64_t _instr_per_ns;
 
 static void _aquire_scheduler_lock()
 {
     asm volatile("cli");
+    _scheduler_postpone_count++;
     _scheduler_lock++;
 }
 
 static void _release_scheduler_lock()
 {
+    _scheduler_postpone_count--;
+    if (_scheduler_postpone_count == 0) {
+        if (_scheduler_postponed) {
+            _scheduler_postponed = false;
+            _schedule();
+        }
+    }
     _scheduler_lock--;
     if (_scheduler_lock == 0) {
         asm volatile("sti");
@@ -277,6 +288,11 @@ void px_tasks_update_time()
 
 static void _schedule()
 {
+    if (_scheduler_postpone_count != 0) {
+        // don't schedule if there's more work to be done
+        _scheduler_postponed = true;
+        return;
+    }
     if (px_current_task == NULL) {
         // we are currently idling and will schedule at a later time
         return;
