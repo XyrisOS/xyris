@@ -23,7 +23,8 @@ enum px_task_state
     TASK_SLEEPING,
     TASK_BLOCKED,
     TASK_STOPPED,
-    TASK_PAUSED
+    TASK_PAUSED,
+    TASK_STATE_COUNT
 };
 
 enum px_task_alloc { ALLOC_STATIC, ALLOC_DYNAMIC };
@@ -33,7 +34,7 @@ struct px_task
 {
     uintptr_t stack_top;
     uintptr_t page_dir;
-    px_task_t *next_task;
+    px_task_t *next;
     px_task_state state;
     uint64_t time_used;
     uint64_t wakeup_time;
@@ -55,12 +56,14 @@ typedef struct px_tasklist
 typedef struct px_tasks_sync
 {
     px_task_t* possessor;
+    const char *dbg_name;
     px_tasklist_t waiting;
 } px_tasks_sync_t;
 
 static inline void px_tasks_sync_init(px_tasks_sync_t *ts) {
     *ts = {
         .possessor = NULL,
+        .dbg_name = NULL,
         .waiting = { },
     };
 }
@@ -132,7 +135,3 @@ void px_tasks_exit(void);
 void px_tasks_sync_block(px_tasks_sync_t *tsc);
 
 void px_tasks_sync_unblock(px_tasks_sync_t *tsc);
-
-void px_tasks_sync_aquire(px_tasks_sync_t *tsc);
-
-void px_tasks_sync_release(px_tasks_sync_t *tsc);

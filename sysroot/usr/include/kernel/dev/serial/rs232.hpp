@@ -11,6 +11,7 @@
  */
 #pragma once
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <lib/ring_buffer.hpp>
 
@@ -92,3 +93,7 @@ int px_rs232_get_str(char* str, int max);
  * is set appropriately.
  */
 int px_rs232_close();
+
+int px_rs232_vprintf(const char* fmt, va_list args);
+
+int px_rs232_printf(const char *format, ...);

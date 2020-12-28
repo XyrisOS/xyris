@@ -16,11 +16,13 @@
 #include <dev/serial/rs232.hpp>
 #include <mem/heap.hpp>
 #include <lib/mutex.hpp>
+#include <stdarg.h>
+#include <lib/stdio.hpp>
 
 static px_ring_buff_t* read_buffer = NULL;
 uint8_t rs_232_line_index;
 uint16_t rs_232_port_base;
-px_mutex_t mutex_rs232;
+px_mutex_t mutex_rs232("rs232");
 
 static int px_rs232_received();
 static int px_rs232_is_transmit_empty();
@@ -43,17 +45,44 @@ static char px_rs232_read_char() {
     return px_read_byte(rs_232_port_base + RS_232_DATA_REG);
 }
 
-static void px_rs232_write_char(char c) {
-    px_mutex_lock(&mutex_rs232);
+static inline void px_rs232_write_char(char c) {
     while (px_rs232_is_transmit_empty() == 0);
     px_write_byte(rs_232_port_base + RS_232_DATA_REG, c);
-    px_mutex_unlock(&mutex_rs232);
+}
+
+static int vprintf_helper(unsigned c, void **ptr)
+{
+    (void) ptr;
+    px_rs232_write_char((char)c);
+    return 0;
+}
+
+int px_rs232_vprintf(const char* fmt, va_list args)
+{
+    int retval;
+    //px_mutex_lock(&mutex_rs232);
+    retval = px_do_printf(fmt, args, vprintf_helper, NULL);
+    //px_mutex_unlock(&mutex_rs232);
+    return retval;
+}
+
+int px_rs232_printf(const char *format, ...)
+{
+    va_list args;
+    int ret_val;
+
+    va_start(args, format);
+    ret_val = px_rs232_vprintf(format, args);
+    va_end(args);
+    return ret_val;
 }
 
 void px_rs232_print(const char* str) {
+    //px_mutex_lock(&mutex_rs232);
     for (int i = 0; str[i] != 0; i++) {
         px_rs232_write_char(str[i]);
     }
+    //px_mutex_unlock(&mutex_rs232);
 }
 
 static void px_rs232_callback(registers_t *regs) {

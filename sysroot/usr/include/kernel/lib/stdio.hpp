@@ -12,10 +12,15 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#include <lib/mutex.hpp>
 
 #ifndef EOF
 #define EOF (-1)
 #endif
+
+typedef int (*fnptr_t)(unsigned c, void** helper);
+
+int px_do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr);
 
 /**
  * @brief Sends formatted output to a string using an argument list.
@@ -61,6 +66,8 @@ int px_kprintf(const char* fmt, ...);
  * @param c Character to be printed.
  */
 int putchar(char c);
+int putchar_unlocked(char c);
+extern px_mutex_t put_mutex;
 /**
  * @brief Prints a given string to the kernel display.
  * 

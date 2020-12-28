@@ -33,8 +33,8 @@
     }                           \
 }
 
-px_mutex::px_mutex() {
-    locked = false;
+px_mutex::px_mutex(const char *name) : locked(false) {
+    task_sync.dbg_name = name;
 };
 
 int px_mutex_init(px_mutex_t *mutex) {
@@ -61,8 +61,6 @@ int px_mutex_lock(px_mutex_t *mutex) {
         // Block the current kernel task
         TASK_ONLY px_tasks_sync_block(&mutex->task_sync);
     }
-    // aquire the sync structure
-    TASK_ONLY px_tasks_sync_aquire(&mutex->task_sync);
     // Success, return 0
     return 0;
 }
@@ -81,8 +79,6 @@ int px_mutex_trylock(px_mutex_t *mutex) {
 
 int px_mutex_unlock(px_mutex_t *mutex) {
     IS_MUTEX_VALID(mutex);
-    // Release the lock if it is locked
-    TASK_ONLY px_tasks_sync_release(&mutex->task_sync);
     // Clear the lock
     __atomic_clear(&mutex->locked, __ATOMIC_RELEASE);
     TASK_ONLY px_tasks_sync_unblock(&mutex->task_sync);

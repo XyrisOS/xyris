@@ -18,7 +18,7 @@ typedef struct px_semaphore
     bool shared;
     uint32_t count;
     px_tasks_sync_t task_sync;
-    px_semaphore();
+    px_semaphore(int count, const char *name = nullptr);
 } px_sem_t;
 
 /**

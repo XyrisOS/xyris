@@ -16,7 +16,7 @@
 typedef struct px_mutex {
     bool locked;
     px_tasks_sync_t task_sync;
-    px_mutex();
+    px_mutex(const char *name = nullptr);
 } px_mutex_t;
 
 /**

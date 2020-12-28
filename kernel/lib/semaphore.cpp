@@ -40,10 +40,7 @@
     failure_memorder                                                                 \
 )
 
-px_semaphore::px_semaphore() {
-    shared = false;
-    count = 0;
-}
+px_semaphore::px_semaphore(int c, const char *name) : shared(false), count(c) { task_sync.dbg_name = name; }
 
 int px_sem_init(px_sem_t *sem, bool shared, uint32_t value) {
     IS_SEMAPHORE_VALID(sem);
@@ -69,6 +66,7 @@ int px_sem_wait(px_sem_t *sem) {
     {
         while (curVal == 0)
         {
+            TASK_ONLY px_tasks_sync_block(&sem->task_sync);
             curVal = sem->count;
         }
     // Fail using atomic relaxed because it may allow us to get to the "waiting" state faster.
@@ -121,11 +119,12 @@ int sem_timedwait(px_sem_t *sem, const uint32_t *usec) {
 int px_sem_post(px_sem_t *sem) {
     IS_SEMAPHORE_VALID(sem);
     __atomic_fetch_add(&sem->count, 1, __ATOMIC_RELEASE);
+    TASK_ONLY px_tasks_sync_unblock(&sem->task_sync);
     return 0;
 }
 
 int px_sem_getval(px_sem_t *sem, uint32_t *val) {
     IS_SEMAPHORE_VALID(sem);
-    __atomic_load(&sem->count, &val, __ATOMIC_ACQUIRE);
+    __atomic_load(&sem->count, val, __ATOMIC_ACQUIRE);
     return 0;
 }

@@ -41,11 +41,21 @@ uint16_t px_ansi_vga_table[16] = {
     VGA_LightCyan, VGA_White
 };
 // Printing mutual exclusion
-px_mutex_t put_mutex;
+px_mutex_t put_mutex("putc");
 
-int putchar(char c) {
+int putchar(char c)
+{
+    int retval;
     // Gain mutual exclusion
     px_mutex_lock(&put_mutex);
+    retval = putchar_unlocked(c);
+    // Release mutual exclusion
+    px_mutex_unlock(&put_mutex);
+    return retval;
+}
+
+int putchar_unlocked(char c) {
+
     // Moved to avoid cross initialization when calling goto error
     volatile uint16_t* where;
     uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
@@ -170,14 +180,10 @@ error:
     // Return to normal
     ansi_state = Normal;
     ansi_val = 0;
-    // Release mutual exclusion
-    px_mutex_unlock(&put_mutex);
     return EOF;
 normal:
     ansi_state = Normal;
     ansi_val = 0;
 end:
-    // Release mutual exclusion
-    px_mutex_unlock(&put_mutex);
     return (int)c;
 }
