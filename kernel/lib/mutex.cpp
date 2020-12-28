@@ -33,14 +33,17 @@
     }                           \
 }
 
-px_mutex::px_mutex() {
-    locked = false;
+px_mutex::px_mutex(const char *name)
+    : locked(false)
+{
+    task_sync.dbg_name = name;
 };
 
 int px_mutex_init(px_mutex_t *mutex) {
     IS_MUTEX_VALID(mutex);
     // Initialize the value to false
     mutex->locked = false;
+    px_tasks_sync_init(&mutex->task_sync);
     // Success, return 0
     return 0;
 }
@@ -57,7 +60,8 @@ int px_mutex_lock(px_mutex_t *mutex) {
     // Check if the mutex is unlocked
     while (ACQUIRE_MUTEX_LOCK(mutex))
     {
-        // Busy wait while trying to get the lock
+        // Block the current kernel task
+        TASK_ONLY px_tasks_sync_block(&mutex->task_sync);
     }
     // Success, return 0
     return 0;
@@ -77,8 +81,9 @@ int px_mutex_trylock(px_mutex_t *mutex) {
 
 int px_mutex_unlock(px_mutex_t *mutex) {
     IS_MUTEX_VALID(mutex);
-    // Clear the lock if it is locked
+    // Clear the lock
     __atomic_clear(&mutex->locked, __ATOMIC_RELEASE);
+    TASK_ONLY px_tasks_sync_unblock(&mutex->task_sync);
     // Success, return 0
     return 0;
 }

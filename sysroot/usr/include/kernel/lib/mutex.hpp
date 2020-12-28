@@ -11,22 +11,24 @@
 #pragma once
 
 #include <stdint.h>
+#include <sys/tasks.hpp>
 
 typedef struct px_mutex {
     bool locked;
-    px_mutex();
+    px_tasks_sync_t task_sync;
+    px_mutex(const char *name = nullptr);
 } px_mutex_t;
 
 /**
  * @brief Initializes a mutex for further use.
- * 
+ *
  * @param mutex Reference mutex
  * @return int Returns 0 on success and -1 on error.
  */
 int px_mutex_init(px_mutex_t *mutex);
 /**
  * @brief Destroys a mutex and removes it from memory.
- * 
+ *
  * @param mutex Reference mutex
  * @return int Returns 0 on success and -1 on error.
  */
@@ -50,7 +52,7 @@ int px_mutex_lock(px_mutex_t *mutex);
 int px_mutex_trylock(px_mutex_t *mutex);
 /**
  * @brief Unlocks a mutex for others to use.
- * 
+ *
  * @param mutex Reference mutex
  * @return int Returns 0 on success and -1 on error.
  */

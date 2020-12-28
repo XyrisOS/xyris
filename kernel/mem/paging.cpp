@@ -21,7 +21,7 @@
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 
 static uint32_t machine_page_count;
-static px_mutex_t mutex_paging;
+static px_mutex_t mutex_paging("paging");
 
 #define MEM_BITMAP_SIZE BITMAP_SIZE(ADDRESS_SPACE_SIZE / PAGE_SIZE)
 

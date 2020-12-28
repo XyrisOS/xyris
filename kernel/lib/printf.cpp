@@ -91,19 +91,13 @@ Using & for division here, so STACK_WIDTH must be a power of 2. */
 2^32-1 in base 8 has 11 digits (add 5 for trailing NUL and for slop) */
 #define PR_BUFLEN 16
 
-typedef int (*fnptr_t)(unsigned c, void** helper);
-
-/* Function declarations */
-int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr);
-int vprintf_help(unsigned c, void** ptr);
-
 /*****************************************************************************
-name:    do_printf
+name:    px_do_printf
 action:    minimal subfunction for ?printf, calls function
     'fn' with arg 'ptr' for each character to be output
 returns:total number of characters output
 *****************************************************************************/
-int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
+int px_do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
 {
     unsigned char state, radix, *where, buf[PR_BUFLEN];
     unsigned flags, actual_wd, count, given_wd;
@@ -323,7 +317,7 @@ int px_kvsprintf(char* buf, const char* fmt, va_list args)
 {
     int ret_val;
 
-    ret_val = do_printf(fmt, args, vsprintf_help, (void*)buf);
+    ret_val = px_do_printf(fmt, args, vsprintf_help, (void*)buf);
     buf[ret_val] = '\0';
     return ret_val;
 }
@@ -341,17 +335,21 @@ int px_ksprintf(char* buf, const char* fmt, ...)
 }
 /*****************************************************************************
 *****************************************************************************/
-int vprintf_help(unsigned c, void** ptr)
+static int vprintf_help(unsigned c, void** ptr)
 {
     (void)ptr;
-    putchar((char)c);
+    // we use the unlocked putchar here becaus we lock at the printf level
+    putchar_unlocked((char)c);
     return 0;
 }
 /*****************************************************************************
 *****************************************************************************/
 int px_kvprintf(const char* fmt, va_list args)
 {
-    return do_printf(fmt, args, vprintf_help, NULL);
+    px_mutex_lock(&put_mutex);
+    int retval = px_do_printf(fmt, args, vprintf_help, NULL);
+    px_mutex_unlock(&put_mutex);
+    return retval;
 }
 /*****************************************************************************
 *****************************************************************************/

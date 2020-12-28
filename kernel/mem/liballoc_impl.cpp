@@ -3,7 +3,7 @@
 #include <lib/errno.h>
 #include <stddef.h>
 
-static px_mutex_t lock;
+static px_mutex_t lock("alloc");
 
 #ifdef __cplusplus
 extern "C" {
