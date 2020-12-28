@@ -46,10 +46,11 @@ px_mutex_t put_mutex("putc");
 int putchar(char c)
 {
     int retval;
-    // Gain mutual exclusion
+    // must lock when writing to the screen
     px_mutex_lock(&put_mutex);
+    // call the unlocked implementation of putchar
     retval = putchar_unlocked(c);
-    // Release mutual exclusion
+    // release the screen to be used by other tasks
     px_mutex_unlock(&put_mutex);
     return retval;
 }

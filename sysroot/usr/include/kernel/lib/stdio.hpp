@@ -66,6 +66,14 @@ int px_kprintf(const char* fmt, ...);
  * @param c Character to be printed.
  */
 int putchar(char c);
+/**
+ * @brief Prints a single character to the screen without locking the screen mutex
+ * 
+ * Callers of this function *must* manually lock and unlock `put_mutex` when utilizing
+ * this function to draw to the screen.
+ * 
+ * @param c the chraracter to be printed.
+ */ 
 int putchar_unlocked(char c);
 extern px_mutex_t put_mutex;
 /**

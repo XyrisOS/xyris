@@ -338,6 +338,7 @@ int px_ksprintf(char* buf, const char* fmt, ...)
 static int vprintf_help(unsigned c, void** ptr)
 {
     (void)ptr;
+    // we use the unlocked putchar here becaus we lock at the printf level
     putchar_unlocked((char)c);
     return 0;
 }
