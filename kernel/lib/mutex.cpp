@@ -33,7 +33,9 @@
     }                           \
 }
 
-px_mutex::px_mutex(const char *name) : locked(false) {
+px_mutex::px_mutex(const char *name)
+    : locked(false)
+{
     task_sync.dbg_name = name;
 };
 

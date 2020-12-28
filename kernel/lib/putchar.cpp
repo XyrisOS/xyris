@@ -55,7 +55,6 @@ int putchar(char c)
 }
 
 int putchar_unlocked(char c) {
-
     // Moved to avoid cross initialization when calling goto error
     volatile uint16_t* where;
     uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);

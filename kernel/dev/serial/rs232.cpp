@@ -60,9 +60,7 @@ static int vprintf_helper(unsigned c, void **ptr)
 int px_rs232_vprintf(const char* fmt, va_list args)
 {
     int retval;
-    //px_mutex_lock(&mutex_rs232);
     retval = px_do_printf(fmt, args, vprintf_helper, NULL);
-    //px_mutex_unlock(&mutex_rs232);
     return retval;
 }
 
@@ -78,11 +76,9 @@ int px_rs232_printf(const char *format, ...)
 }
 
 void px_rs232_print(const char* str) {
-    //px_mutex_lock(&mutex_rs232);
     for (int i = 0; str[i] != 0; i++) {
         px_rs232_write_char(str[i]);
     }
-    //px_mutex_unlock(&mutex_rs232);
 }
 
 static void px_rs232_callback(registers_t *regs) {

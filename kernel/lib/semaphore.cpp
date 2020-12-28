@@ -40,7 +40,11 @@
     failure_memorder                                                                 \
 )
 
-px_semaphore::px_semaphore(int c, const char *name) : shared(false), count(c) { task_sync.dbg_name = name; }
+px_semaphore::px_semaphore(int c, const char *name)
+    : shared(false), count(c)
+{
+    task_sync.dbg_name = name;
+}
 
 int px_sem_init(px_sem_t *sem, bool shared, uint32_t value) {
     IS_SEMAPHORE_VALID(sem);
