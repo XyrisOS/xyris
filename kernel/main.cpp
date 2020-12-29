@@ -29,7 +29,7 @@
 // Apps
 #include <apps/primes.hpp>
 
-extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic);
+extern "C" void px_kernel_main();
 static void px_kernel_print_splash();
 static void px_kernel_boot_tone();
 
@@ -37,9 +37,7 @@ static void px_kernel_boot_tone();
  * @brief This is the Panix kernel entry point. This function is called directly from the
  * assembly written in boot.S located in arch/i386/boot.S.
  */
-extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic) {
-    (void)mb_struct;
-    (void)mb_magic;
+extern "C" void px_kernel_main() {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     // Install the GDT
