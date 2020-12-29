@@ -17,7 +17,7 @@ export MAKEFLAGS   += --no-print-directory
 # Panix Version
 export GIT_COMMIT := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 export VER_MAJOR := "0"
-export VER_MINOR := "3"
+export VER_MINOR := "4"
 export VER_PATCH := "0"
 
 # ******************************
