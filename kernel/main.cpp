@@ -27,13 +27,19 @@
 
 // Used as a magic number for stack smashing protection
 #if UINT32_MAX == UINTPTR_MAX
-#define STACK_CHK_GUARD 0xDEADC0DE
+    #define STACK_CHK_GUARD 0xDEADC0DE
 #else
-#define STACK_CHK_GUARD 0xBADBADBADBADBAD1
+    #define STACK_CHK_GUARD 0xBADBADBADBADBAD1
 #endif
 // Define the Git commit version if not declared by compiler
-#ifndef VERSION
-#define VERSION "unknown"
+#ifndef COMMIT
+    #define COMMIT "unknown"
+#endif
+// Assume that if major isn't set none of them are
+#ifndef VER_MAJOR
+    #define VER_MAJOR '0'
+    #define VER_MINOR '0'
+    #define VER_PATCH '0'
 #endif
 
 extern "C" void __stack_chk_fail(void);
@@ -135,7 +141,7 @@ void px_kernel_print_splash() {
             ((__DATE__)[10] - '0') * 1     \
         )
     );
-    px_kprintf("Commit %s built on %s at %s.\n\n", VERSION, __DATE__, __TIME__);
+    px_kprintf("Commit %s (v%s.%s.%s) built on %s at %s.\n\n", COMMIT, VER_MAJOR, VER_MINOR, VER_PATCH, __DATE__, __TIME__);
 }
 
 void px_kernel_boot_tone() {
