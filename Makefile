@@ -49,9 +49,11 @@ export MKGRUB  := $(shell command -v grub-mkrescue)
 # *****************************
 
 # Directories & files
+BOOT    = boot
 BUILD   = obj
 LIBRARY = libs
 KERNEL  = kernel
+LIMINE  = limine.bin
 ISOIMG  = $(PROJ_NAME).iso
 SYMBOLS = $(KERNEL).sym
 PRODUCT = dist
@@ -156,6 +158,16 @@ $(KERNEL):
 	@printf "$(COLOR_INFO)Making Kernel$(COLOR_NONE)\n"
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
+
+# **********************
+# * Bootloader Targets *
+# **********************
+
+.PHONY: boot
+boot:
+	# Download Limine 1.0 binary
+	@curl -o ${BOOT}/${LIMINE} -O \
+	https://github.com/limine-bootloader/limine/blob/v1.0-branch/${LIMINE}?raw=true
 
 # *********************
 # * Kernel Unit Tests *
@@ -266,6 +278,8 @@ clean:
 		printf " -   " &&       \
         $(MAKE) -C $$dir clean; \
     done
+	@printf "$(COLOR_OK)Cleaning bootloader...$(COLOR_NONE)\n"
+	$(RM) ${BOOT}/${LIMINE}
 	@printf "$(COLOR_OK)Cleaning complete.$(COLOR_NONE)\n"
 
 .PHONY: clean-tests
