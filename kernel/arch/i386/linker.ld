@@ -28,6 +28,7 @@ SECTIONS
 
   _KERNEL_START = .;
 
+  .stivale2hdr ALIGN(4K) : AT(ADDR(.stivale2hdr) - 0xC0000000) { *(.stivalehdr) }
   .text ALIGN (4K) : AT(ADDR(.text) - 0xC0000000) { *(.text) }
   .rodata ALIGN (4K) : AT(ADDR(.rodata) - 0xC0000000) { *(.rodata*) }
   .data ALIGN (4K) : AT(ADDR(.data) - 0xC0000000)

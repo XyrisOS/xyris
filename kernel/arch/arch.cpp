@@ -11,6 +11,17 @@
 #include <arch/arch.hpp>
 #include <lib/stdio.hpp>
 
+/* Shared i386 & amd64 */
+#if defined(__i386__) | defined(__i686__) | defined(__amd64__) | defined(__x86_64__)
+// Stivale (v2) header information
+__attribute__((section(".stivale2hdr"), used))
+struct stivale2_header header2 = {
+    .entry_point = (uint64_t)px_kernel_main,
+    .stack       = 0,
+    .flags       = 0,
+    .tags        = 0
+};
+
 const char* px_exception_descriptions[] = {
     "Divide-By-Zero", "Debugging", "Non-Maskable", "Breakpoint",
     "Overflow", "Out Bound Range", "Invalid Opcode", "Device Not Avbl",
@@ -22,34 +33,10 @@ const char* px_exception_descriptions[] = {
     "RESERVED", "Security Excptn", "RESERVED", "Triple Fault", "FPU Error"
 };
 
-/**
- * @brief 
- * 
- * @param code 
- * @param str 
- * @return int 
- */
-static inline void px_arch_cpuid(int flag, unsigned long eax, unsigned long ebx, unsigned long ecx, unsigned long edx)
-{
-    __asm__ volatile ("cpuid" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx) : "a"(flag));
-}
-
-static inline int px_arch_cpuid(int flag, int regs[4]) {
-    // ECX and EDX are swapped in order to make the strings readable
-    __asm__ volatile ("cpuid" : "=a"(*regs), "=b"(*(regs+1)), "=c"(*(regs+2)), "=d"(*(regs+3)) : "a"(flag));
-    return (int)regs[0];
-}
-
-static inline int px_arch_cpuid_vendor(int flag, int regs[4]) {
-    // ECX and EDX are swapped in order to make the strings readable
-    __asm__ volatile ("cpuid" : "=a"(*regs), "=b"(*(regs+0)), "=d"(*(regs+1)), "=c"(*(regs+2)) : "a"(flag));
-    return (int)regs[0];
-}
-
 const char* px_cpu_get_vendor() {
-    static char vendor[16];
-    px_arch_cpuid_vendor(0, (int *)(vendor));
-    return vendor;
+    static int vendor[4];
+    __asm__ volatile ("cpuid" : "=a"(vendor[0]), "=b"(vendor[0]), "=d"(vendor[1]), "=c"(vendor[2]) : "a"(0));
+    return (char*)vendor;
 }
 
 const char* px_cpu_get_model() {
@@ -62,3 +49,5 @@ const char* px_cpu_get_model() {
     px_arch_cpuid(0x80000004, (int *)(model+32));
     return model;
 }
+
+#endif /* End shared i386 & amd64 */
