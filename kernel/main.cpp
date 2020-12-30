@@ -99,25 +99,12 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     // Keep the kernel alive.
     px_kprintf("\n");
     int i = 0;
+    const char spinnay[] = { '|', '/', '-', '\\' };
     while (true) {
         // Display a spinner to know that we're still running.
-        switch (i) {
-            case 0:
-                px_kprintf("\b|");
-                break;
-            case 1:
-                px_kprintf("\b/");
-                break;
-            case 2:
-                px_kprintf("\b-");
-                break;
-            case 3:
-                px_kprintf("\b\\");
-                i = -1;
-                break;
-        }
+        px_kprintf("\e[s\e[24;0f%c\e[u", spinnay[i]);
+        i = (i + 1) % sizeof(spinnay);
         asm volatile("hlt");
-        i++;
     }
     PANIC("Kernel terminated unexpectedly!");
 }
