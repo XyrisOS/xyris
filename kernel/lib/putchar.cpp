@@ -41,7 +41,7 @@ uint16_t px_ansi_vga_table[16] = {
     VGA_LightCyan, VGA_White
 };
 // Printing mutual exclusion
-px_mutex_t put_mutex("putc");
+px_mutex_t put_mutex;
 
 int putchar(char c)
 {
@@ -78,12 +78,12 @@ int putchar_unlocked(char c) {
             else if (c == 's') { // Save cursor position attribute
                 ansi_cursor_x = tty_coords_x;
                 ansi_cursor_y = tty_coords_y;
-                goto end;
+                goto normal;
             } 
             else if (c == 'u') { // Restore cursor position attribute
                 tty_coords_x = ansi_cursor_x;
                 tty_coords_y = ansi_cursor_y;
-                goto end;
+                goto normal;
             }
             break;
         case Value:
@@ -150,6 +150,10 @@ int putchar_unlocked(char c) {
         case '\n':
             tty_coords_x = 0;
             tty_coords_y++;
+            break;
+        // Carriage return
+        case '\r':
+            tty_coords_x = 0;
             break;
         // Anything else
         default:

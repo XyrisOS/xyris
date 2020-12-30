@@ -327,7 +327,7 @@ px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state s
     new_task->state = state;
     new_task->time_used = 0;
     new_task->name = name;
-    new_task->alloc = storage == NULL ? ALLOC_STATIC : ALLOC_DYNAMIC;
+    new_task->alloc = storage == NULL ? ALLOC_DYNAMIC : ALLOC_STATIC;
     if (state == TASK_READY) {
         _px_tasks_enqueue_ready(new_task);
     }
