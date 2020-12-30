@@ -15,13 +15,19 @@
 #include <dev/tty/tty.hpp>
 
 static void px_timer_callback(registers_t *regs);
-uint32_t tick;
+volatile uint32_t px_timer_tick;
+
+typedef void (*voidfunc_t)();
+
+#define MAX_CALLBACKS 8
+static size_t _callback_count = 0;
+static voidfunc_t _callbacks[MAX_CALLBACKS];
 
 /**
  * Sleep Timer Non-Busy Waiting Idea:
  * Create a struct that contains the end time and the callback
- * function pointer that should be called when tick = end
- * After each tick we check our end time and call the function
+ * function pointer that should be called when px_timer_tick = end
+ * After each px_timer_tick we check our end time and call the function
  * if we're equal.
  */
 
@@ -41,18 +47,29 @@ void px_timer_init(uint32_t freq) {
 }
 
 static void px_timer_callback(registers_t *regs) {
-    tick++;
+    (void)regs;
+    px_timer_tick++;
+    for (size_t i = 0; i < _callback_count; i++) {
+        _callbacks[i]();
+    }
 }
 
 void px_timer_print() {
-    px_kprintf(DBG_INFO "Tick: %i\n", tick);
+    px_kprintf(DBG_INFO "Tick: %i\n", px_timer_tick);
 }
 
 void sleep(uint32_t ms) {
-    uint32_t start = tick;
+    uint32_t start = px_timer_tick;
     uint32_t final = start + ms;
     // Waste CPU cycles like a slob
-    while (tick != final);
+    while (px_timer_tick < final);
     // Return now that we've waited long enough
     return;
+}
+
+void px_timer_register_callback(void (*func)()) {
+    if (_callback_count < MAX_CALLBACKS - 1) {
+        _callbacks[_callback_count] = func;
+        _callback_count++;
+    }
 }

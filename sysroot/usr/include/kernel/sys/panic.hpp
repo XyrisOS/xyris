@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  * 
  */
-
-#ifndef PANIX_PANIC_HPP
-#define PANIX_PANIC_HPP
+#pragma once
 
 #include <stdint.h>    // Data type definitions
 #include <arch/arch.hpp>    // Architecture specific features
@@ -28,7 +26,7 @@ extern const char* px_exception_descriptions[];
  * @param line Line with the error
  * @param func Function containing error
  */
-void panic(char* msg, const char *file, uint32_t line, const char *func);
+void panic(const char* msg, const char *file, uint32_t line, const char *func);
 /**
  * @brief Halts kernel execution and prints register info.
  * 
@@ -38,5 +36,3 @@ void panic(char* msg, const char *file, uint32_t line, const char *func);
  * @param func Function containing error
  */
 void panic(registers_t *regs, const char *file, uint32_t line, const char *func);
-
-#endif /* PANIX_PANIC_HPP */

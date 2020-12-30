@@ -21,7 +21,7 @@
 
 /*****************************************************************************
 Stripped-down printf()
-Chris Giese <geezer@execpc.com>	http://www.execpc.com/~geezer
+Chris Giese <geezer@execpc.com>    http://www.execpc.com/~geezer
 Release date: Dec 12, 2003
 This code is public domain (no copyright).
 You can do whatever you want with it.
@@ -41,31 +41,31 @@ Revised May 12, 2000
 - actually did some TESTING, maybe fixed some other bugs
 
 %[flag][width][.prec][mod][conv]
-flag:	
-    -	left justify, pad right w/ blanks	    DONE
-	0	pad left w/ 0 for numerics		        DONE
-	+	always print sign, + or -		        no
-	' '	(blank)					                no
-	#	(???)					                no
+flag:    
+    -    left justify, pad right w/ blanks      DONE
+    0    pad left w/ 0 for numerics             DONE
+    +    always print sign, + or -              no
+    ' '    (blank)                              no
+    #    (???)                                  no
 
-width:		(field width)				        DONE
+width:        (field width)                     DONE
 
-prec:		(precision)				            no
+prec:        (precision)                        no
 
-conv:	d,i	decimal int				            DONE
-	u	decimal unsigned			            DONE
-	o	octal					                DONE
-	x,X	hex					                    DONE
-	f,e,g,E,G float					            no
-	c	char					                DONE
-	s	string					                DONE
-	p	ptr					                    DONE
+conv:    d,i    decimal int                     DONE
+    u    decimal unsigned                       DONE
+    o    octal                                  DONE
+    x,X    hex                                  DONE
+    f,e,g,E,G float                             no
+    c    char                                   DONE
+    s    string                                 DONE
+    p    ptr                                    DONE
 
-mod:	N	near ptr				            DONE
-	F	far ptr					                no
-	h	short (16-bit) int			            DONE
-	l	long (32-bit) int			            DONE
-	L	long long (64-bit) int			        no
+mod:    N    near ptr                           DONE
+    F    far ptr                                no
+    h    short (16-bit) int                     DONE
+    l    long (32-bit) int                      DONE
+    L    long long (64-bit) int                 no
 *****************************************************************************/
 
 /* Assume: width of stack == width of int. Don't use sizeof(char *) or
@@ -91,14 +91,13 @@ Using & for division here, so STACK_WIDTH must be a power of 2. */
 2^32-1 in base 8 has 11 digits (add 5 for trailing NUL and for slop) */
 #define PR_BUFLEN 16
 
-typedef int (*fnptr_t)(unsigned c, void** helper);
 /*****************************************************************************
-name:	do_printf
-action:	minimal subfunction for ?printf, calls function
-	'fn' with arg 'ptr' for each character to be output
+name:    px_do_printf
+action:    minimal subfunction for ?printf, calls function
+    'fn' with arg 'ptr' for each character to be output
 returns:total number of characters output
 *****************************************************************************/
-int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
+int px_do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
 {
     unsigned char state, radix, *where, buf[PR_BUFLEN];
     unsigned flags, actual_wd, count, given_wd;
@@ -174,6 +173,7 @@ int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
             /* FALL THROUGH */
             /* STATE 4: AWAITING CONVERSION CHARS (Xxpndiuocs) */
         case 4:
+        {
             where = buf + PR_BUFLEN - 1;
             *where = '\0';
             switch (*fmt) {
@@ -221,7 +221,7 @@ int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
                     }
                 }
                 /* convert binary to octal/decimal/hex ASCII
-OK, I found my mistake. The math here is _always_ unsigned */
+                OK, I found my mistake. The math here is _always_ unsigned */
                 do {
                     unsigned long temp;
 
@@ -288,6 +288,10 @@ OK, I found my mistake. The math here is _always_ unsigned */
             default:
                 break;
             }
+            // Tell the compiler that this isn't an issue
+            // (at least I'm assuming it isn't)
+            [[fallthrough]];
+        }
         default:
             state = flags = given_wd = 0;
             break;
@@ -313,7 +317,7 @@ int px_kvsprintf(char* buf, const char* fmt, va_list args)
 {
     int ret_val;
 
-    ret_val = do_printf(fmt, args, vsprintf_help, (void*)buf);
+    ret_val = px_do_printf(fmt, args, vsprintf_help, (void*)buf);
     buf[ret_val] = '\0';
     return ret_val;
 }
@@ -331,16 +335,21 @@ int px_ksprintf(char* buf, const char* fmt, ...)
 }
 /*****************************************************************************
 *****************************************************************************/
-int vprintf_help(unsigned c, void** ptr)
+static int vprintf_help(unsigned c, void** ptr)
 {
-    putchar(c);
+    (void)ptr;
+    // we use the unlocked putchar here becaus we lock at the printf level
+    putchar_unlocked((char)c);
     return 0;
 }
 /*****************************************************************************
 *****************************************************************************/
 int px_kvprintf(const char* fmt, va_list args)
 {
-    return do_printf(fmt, args, vprintf_help, NULL);
+    px_mutex_lock(&put_mutex);
+    int retval = px_do_printf(fmt, args, vprintf_help, NULL);
+    px_mutex_unlock(&put_mutex);
+    return retval;
 }
 /*****************************************************************************
 *****************************************************************************/

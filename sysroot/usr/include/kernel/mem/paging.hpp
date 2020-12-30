@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  *
  */
-
-#ifndef PANIX_MEM_PAGING
-#define PANIX_MEM_PAGING
+#pragma once
 
 #include <stdint.h>
 #include <stddef.h>
@@ -142,5 +140,18 @@ void* px_get_new_page(uint32_t size);
  */
 void  px_free_page(void *page, uint32_t size);
 
-#endif /* PANIX_MEM_PAGING */
+/**
+ * @brief Checks whether an address is mapped into memory.
+ * 
+ * @param addr Address to be checked.
+ * @return true The address is mapped in and valid.
+ * @return false The address is not mapped into memory.
+ */
+bool px_page_is_present(size_t addr);
 
+/**
+ * @brief Gets the physical address of the current page directory.
+ * 
+ * @returns the physical address of the current page directory.
+ */
+uint32_t px_get_phys_page_dir();

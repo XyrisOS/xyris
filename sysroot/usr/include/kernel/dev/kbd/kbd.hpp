@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  *
  */
-
-#ifndef PANIX_KEYBOARD_HPP
-#define PANIX_KEYBOARD_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -37,5 +35,3 @@ extern uint8_t px_kbd_scode_buff[256];
 // This index is circular so when we would run
 // off the end of the array we loop back to 0.
 extern uint8_t px_kbd_scode_buff_pos;
-
-#endif /* PANIX_KEYBOARD_HPP */

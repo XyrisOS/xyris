@@ -8,9 +8,7 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  *
  */
-
-#ifndef PANIX_LIB_STRING_HPP
-#define PANIX_LIB_STRING_HPP
+#pragma once
 
 #include <stdint.h>
 #include <stddef.h>
@@ -28,15 +26,15 @@ int strlen(const char* s);
  * @param source String to be copied
  * @param destination Location where string will be copied
  */
-void strcpy(const char* source, char* destination);
+void strcpy(char* destination, const char* source);
 /**
- * @brief Concatanates string one onto string two.
+ * @brief Concatanates source onto destination.
  * 
- * @param s1 String one
- * @param s2 String two
- * @return char* Resulting concatenated string 
+ * @param dest Destination
+ * @param src Source
+ * @return char* Pointer to destination
  */
-char* strcat(const char *s1, const char *s2);
+char* strcat(char *dest, const char *src);
 /**
  * @brief Reverses the inputted string.
  * 
@@ -45,11 +43,11 @@ char* strcat(const char *s1, const char *s2);
 void reverse(char* s);
 /**
  * @brief Converts an integer into its ASCII representation.
+ * (This does not have a standard, ANSI implementation.)
  * 
  * @param n Number to be converted to ASCII
  * @param str Buffer to hold result
  */
-// TODO: Set this to abide by the ASNI C standard function
 void itoa(int n, char str[]);
 /**
  * @brief Sets the number of bytes in memory at ptr to the value.
@@ -65,12 +63,11 @@ void* memset(void* bufptr, int value, size_t num);
  * 
  * @param ptr1 Source pointer
  * @param ptr2 Destination pointer
- * @param size Number of bytes
+ * @param num Number of bytes
  * @return int Returns 0 if identical. If negative, pointer A is less than
  * than pointer B and vice versa for positive.
  */
-// TODO: Fix the return type to be ANSI compliant
-int memcmp(const void* ptr1, const void* ptr2, size_t size);
+int memcmp(const void* ptr1, const void* ptr2, size_t num);
 /**
  * @brief Moves a given number of bytes from the source to the destination.
  * 
@@ -89,5 +86,3 @@ void* memmove(void* destination, const void* source, size_t size);
  * @return void* 
  */
 void* memcpy(void* dstptr, const void* srcptr, size_t size);
-
-#endif /* PANIX_LIB_STRING_HPP */

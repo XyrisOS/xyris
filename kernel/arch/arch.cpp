@@ -11,6 +11,9 @@
 #include <arch/arch.hpp>
 #include <lib/stdio.hpp>
 
+// Function declarations
+void px_kernel_print_multiboot_memmap(const multiboot_info_t* mb_struct);
+
 const char* px_exception_descriptions[] = {
     "Divide-By-Zero", "Debugging", "Non-Maskable", "Breakpoint",
     "Overflow", "Out Bound Range", "Invalid Opcode", "Device Not Avbl",
@@ -46,21 +49,21 @@ static inline int px_arch_cpuid_vendor(int flag, int regs[4]) {
     return (int)regs[0];
 }
 
-const char* const px_cpu_get_vendor() {
-	static char vendor[16];
-	px_arch_cpuid_vendor(0, (int *)(vendor));
-	return vendor;
+const char* px_cpu_get_vendor() {
+    static char vendor[16];
+    px_arch_cpuid_vendor(0, (int *)(vendor));
+    return vendor;
 }
 
-const char* const px_cpu_get_model() {
+const char* px_cpu_get_model() {
     // The CPU model is broken up across 3 different calls, each using
     // EAX, EBX, ECX, and EDX to store the string, so we basically
     // are appending all 4 register values to this char array each time.
     static char model[48];
-	px_arch_cpuid(0x80000002, (int *)(model));
+    px_arch_cpuid(0x80000002, (int *)(model));
     px_arch_cpuid(0x80000003, (int *)(model+16));
     px_arch_cpuid(0x80000004, (int *)(model+32));
-	return model;
+    return model;
 }
 
 /**

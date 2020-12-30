@@ -9,8 +9,11 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  *
  */
+#pragma once
 
+#include <stdarg.h>
 #include <stdint.h>
+#include <lib/ring_buffer.hpp>
 
 #define RS_232_COM1 0x3F8
 #define RS_232_COM2 0x2F8
@@ -44,4 +47,53 @@ void px_rs232_init(uint16_t com_id);
  * serial output.
  * @param str Input string to be printed.
  */
-void px_rs232_print(char* str);
+void px_rs232_print(const char* str);
+
+/**
+ * @brief Initializes the serial input buffer and
+ * returns a pointer to said buffer if successful.
+ *
+ * @param size Buffer capacity (in bytes)
+ * @return px_ring_buff_t* Pointer to buffer. NULL
+ * if memory could not be allocated.
+ */
+px_ring_buff_t* px_rs232_init_buffer(int size);
+
+/**
+ * @brief Returns the pointer to the RS232 input
+ * buffer.
+ *
+ * @return px_ring_buff_t* Ring buffer pointer
+ */
+px_ring_buff_t* px_rs232_get_buffer();
+
+/**
+ * @brief Returns the most recently received byte
+ * from the serial input.
+ * @return char Character representation of latest
+ * buffer byte.
+ */
+char px_rs232_get_char();
+
+/**
+ * @brief Returns all of the characters within the
+ * input buffer up until a newline or a null terminator.
+ * 
+ * @param str Character buffer to hold the serial input
+ * @param max Max number of characters to read in
+ * @return char* Returns the number of characters read.
+ */
+int px_rs232_get_str(char* str, int max);
+
+/**
+ * @brief Closes the serial input buffer and frees all of
+ * the data contained within.
+ *
+ * @return int Returns 0 on success and -1 on error. Errno
+ * is set appropriately.
+ */
+int px_rs232_close();
+
+int px_rs232_vprintf(const char* fmt, va_list args);
+
+int px_rs232_printf(const char *format, ...);

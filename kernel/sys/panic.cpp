@@ -18,12 +18,13 @@
 #include <lib/stdio.hpp>
 
 // Function prototypes
+void printPanicScreen(int exception);
 void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(registers_t *regs);
 
 void printPanicScreen(int exception) {
     px_tty_clear(VGA_Black, VGA_White);
-    char* tag;
+    const char* tag;
     if (exception == 13) {
         tag = "< Wait... That's Illegal >\n";
     } else {
@@ -47,7 +48,7 @@ void printPanicScreen(int exception) {
     px_rs232_print(cow);
 }
 
-void panic(char* msg, const char *file, uint32_t line, const char *func) {
+void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     asm volatile ("cli");
     // Print the panic cow
     printPanicScreen(0);
@@ -68,7 +69,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     asm volatile ("cli");
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
-    char msg[64];
+    char msg[128];
     px_ksprintf(
         msg, 
         "Exception: %i (%s)\n\n",
@@ -109,15 +110,15 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         const char* uss = (us ? "user-mode " : "kernel ");
         const char* avail = (reserved ? "reserved" : "available");
         // Now that we assigned all of our string, put together the message
-        char msg[128];
         px_ksprintf(
             msg,
-            "Page fault (%s%s%s%s) at 0x0x%08X\n",
+            "Page fault (%s%s%s%s) at 0x0x%08X (id -> %i)\n",
             real,
             rws,
             uss,
             avail,
-            faulting_address
+            faulting_address,
+            id
         );
         // Print to VGA and serial
         px_kprintf("%s", msg);
@@ -164,22 +165,6 @@ void panic_print_register(registers_t *regs) {
         regs->edi, regs->esi, regs->ebp, regs->esp,
         regs->eax, regs->ebx, regs->ecx, regs->edx,
         regs->err_code, regs->eip, regs->cs, regs->eflags,
-        regs->ss
-    );
-    #endif
-    #if defined(__amd64__) | defined(__x86_64__)
-    // TODO: Update the panic registers to match amd64.
-    px_ksprintf(
-        msg,
-        "\033[31m DS:\033[0m 0x%08X\n"
-        "\033[31mRDI:\033[0m 0x%08X \033[31mRSI:\033[0m 0x%08X \033[31mRBP:\033[0m 0x%08X \033[31mRSP:\033[0m 0x%08X\n"
-        "\033[31mRAX:\033[0m 0x%08X \033[31mRBX:\033[0m 0x%08X \033[31mRCX:\033[0m 0x%08X \033[31mRDX:\033[0m 0x%08X\n"
-        "\033[31mERR:\033[0m 0x%08X \033[31mRIP:\033[0m 0x%08X \033[31m CS:\033[0m 0x%08X\n"
-        "\033[31mFLG:\033[0m 0x%08X \033[31m SS:\033[0m 0x%08X\n\n",
-        regs->ds,
-        regs->rdi, regs->rsi, regs->rbp, regs->rsp,
-        regs->rax, regs->rbx, regs->rcx, regs->rdx,
-        regs->err_code, regs->rip, regs->cs, regs->rflags,
         regs->ss
     );
     #endif

@@ -8,12 +8,8 @@
  * @copyright Copyright the Panix Contributors (c) 2020
  * 
  */
-
-#ifndef PANIX_SYS_TRACE_HPP
-#define PANIX_SYS_TRACE_HPP
+#pragma once
 
 #include <stddef.h>
 
 void px_stack_trace(size_t max);
-
-#endif /* PANIX_SYS_TRACE_HPP */

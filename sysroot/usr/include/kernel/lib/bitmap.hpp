@@ -8,9 +8,7 @@
  * @copyright Copyright Keeton Feavel et al (c) 2020
  *
  */
-
-#ifndef PANIX_LIB_BITMAP
-#define PANIX_LIB_BITMAP
+#pragma once
 
 #include <stddef.h>
 
@@ -36,12 +34,13 @@ static inline void bitmap_set_bit(bitmap_t *bitmap, size_t index) {
     SET_BIT_IN_MAP(bitmap, index);
 }
 
+static inline bool bitmap_get_bit(bitmap_t *bitmap, size_t index) {
+    return ((bitmap)[INDEX_FROM_BIT((index))] >> OFFSET_FROM_BIT((index))) & 1;
+}
+
 static inline void bitmap_clear_bit(bitmap_t *bitmap, size_t index) {
     UNSET_BIT_IN_MAP(bitmap, index);
 }
 
 size_t bitmap_find_first_bit_clear(bitmap_t *bitmap, size_t size);
 size_t bitmap_find_first_range_clear(bitmap_t *bitmap, size_t size, size_t count);
-
-#endif
-

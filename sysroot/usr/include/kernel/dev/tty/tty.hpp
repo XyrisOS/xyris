@@ -13,8 +13,7 @@
  * @copyright Copyright Keeton Feavel (c) 2019
  *
  */
-#ifndef PANIX_PX_KPRINT_HPP
-#define PANIX_PX_KPRINT_HPP
+#pragma once
 
 #include <stdint.h>
 #include <arch/arch.hpp>
@@ -81,6 +80,8 @@ enum px_tty_ansi_color {
     ANSI_BrightCyan     = 96,
     ANSI_BrightWhite    = 97
 };
+#define VGA_COLOR(bg, fg) (((bg)<<4)|((fg)&0xF))
+#define VGA_CHAR(ch, co) ((ch)|((co)<<8))
 // Coorinate trackers
 extern uint8_t tty_coords_x;
 extern uint8_t tty_coords_y;
@@ -113,5 +114,3 @@ void px_tty_reset_defaults();
  * @param color Indicator color
  */
 void px_set_indicator(px_tty_vga_color color);
-
-#endif /* PANIX_px_kprint_HPP */

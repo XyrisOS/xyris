@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef PANIX_IDT_HPP
-#define PANIX_IDT_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -63,5 +62,3 @@ void px_idt_set_gate(int n, uint32_t handler);
  *
  */
 void px_load_idt();
-
-#endif /* PANIX_IDT_HPP */

@@ -14,8 +14,7 @@
  * @copyright Copyright Keeton Feavel (c) 2019
  * 
  */
-#ifndef PANIX_PORT_HPP
-#define PANIX_PORT_HPP
+#pragma once
 
 #include <stdint.h>
 
@@ -68,5 +67,3 @@ uint32_t px_read_long(uint16_t port);
  * @param data Long to be written to the port
  */
 void px_write_long(uint16_t port, uint32_t data);
-
-#endif /* PANIX_PORT_HPP */
