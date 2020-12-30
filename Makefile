@@ -217,7 +217,7 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: $(PRODUCT)/$(KERNEL)
+run: $(KERNEL)
 	$(QEMU)                      \
 	-kernel $(PRODUCT)/$(KERNEL) \
 	$(QEMU_FLAGS)
