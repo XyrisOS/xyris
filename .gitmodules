@@ -2,3 +2,7 @@
 	path = libs/liballoc
 	url = https://github.com/panix-os/liballoc.git
 	branch = panix
+[submodule "thirdparty/limine"]
+	path = thirdparty/limine
+	url = https://github.com/limine-bootloader/limine.git
+	branch = v1.0-branch
