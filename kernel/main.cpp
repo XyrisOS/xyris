@@ -11,6 +11,7 @@
 // System library functions
 #include <stdint.h>
 #include <sys/panic.hpp>
+#include <sys/tasks.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 // Memory management & paging
@@ -24,6 +25,8 @@
 #include <dev/rtc/rtc.hpp>
 #include <dev/spkr/spkr.hpp>
 #include <dev/serial/rs232.hpp>
+// Apps
+#include <apps/primes.hpp>
 
 // Used as a magic number for stack smashing protection
 #if UINT32_MAX == UINTPTR_MAX
@@ -92,6 +95,11 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_rs232_print("\n");
     // Done
     px_kprintf(DBG_OKAY "Done.\n");
+
+    px_tasks_init();
+    px_task_t compute, status;
+    px_tasks_new(find_primes, &compute, TASK_READY, "prime_compute");
+    px_tasks_new(show_primes, &status, TASK_READY, "prime_display");
 
     // Now that we're done make a joyful noise
     px_kernel_boot_tone();
