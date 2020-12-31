@@ -15,6 +15,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct stivale2_tag {
     uint64_t identifier;
     uint64_t next;
@@ -177,5 +181,9 @@ struct stivale2_struct_tag_pxe_server_info {
     struct stivale2_tag tag;
     uint32_t server_ip;
 } __attribute__((packed));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

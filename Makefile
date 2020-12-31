@@ -52,7 +52,7 @@ export MKGRUB  := $(shell command -v grub-mkrescue)
 BUILD   = obj
 LIBRARY = libs
 KERNEL  = kernel
-LIMINE  = thirdparty/limine
+LIMINE  = ./thirdparty/limine
 ISOIMG  = $(PROJ_NAME).iso
 IMGIMG  = $(PROJ_NAME).img
 SYMBOLS = $(KERNEL).sym
@@ -163,8 +163,7 @@ $(KERNEL):
 # * Bootloader Targets *
 # **********************
 
-.PHONY: boot
-boot:
+$(LIMINE)/limine-install:
 	@printf "$(COLOR_INFO)Making Limine Bootloader$(COLOR_NONE)\n"
 	@$(MAKE) -C $(LIMINE) limine-install
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
@@ -193,6 +192,20 @@ iso: $(PRODUCT)/$(KERNEL)
 	@$(MKGRUB) -o $(PRODUCT)/$(ISOIMG) iso
 	@rm -rf iso
 
+# Create a bootable IMG
+$(PRODUCT)/$(KERNEL).img: $(PRODUCT)/$(KERNEL) $(LIMINE)/limine-install
+	@printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
+	@rm -f $@
+	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@
+	@parted -s $@ mklabel msdos
+	@parted -s $@ mkpart primary 1 100%
+	@parted -s $@ set 1 boot on # Workaround for buggy BIOSes
+	@echfs-utils -m -p0 $@ quick-format 32768
+	@echfs-utils -m -p0 $@ import boot/limine.cfg limine.cfg
+	@echfs-utils -m -p0 $@ import $< kernel
+	#@echfs-utils -m -p0 $@ import boot/bg.bmp bg.bmp
+	@$(LIMINE)/limine-install $(LIMINE)/limine.bin $@
+
 # *************************
 # * Virtual Machine Flags *
 # *************************
@@ -217,18 +230,18 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: $(KERNEL)
+run: $(PRODUCT)/$(KERNEL).img
 	$(QEMU)                      \
-	-kernel $(PRODUCT)/$(KERNEL) \
+	-hda $(PRODUCT)/$(KERNEL).img \
 	$(QEMU_FLAGS)
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: run-debug
-run-debug: $(PRODUCT)/$(KERNEL)
+run-debug: $(PRODUCT)/$(KERNEL).img
 	# Start QEMU with debugger
 	($(QEMU)   \
 	-S -s      \
-	-kernel $< \
+	-hda $< \
 	$(QEMU_FLAGS) > /dev/null &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above

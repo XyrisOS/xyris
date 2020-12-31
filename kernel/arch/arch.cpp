@@ -13,14 +13,6 @@
 
 /* Shared i386 & amd64 */
 #if defined(__i386__) | defined(__i686__) | defined(__amd64__) | defined(__x86_64__)
-// Stivale (v2) header information
-__attribute__((section(".stivale2hdr"), used))
-struct stivale2_header header2 = {
-    .entry_point = (uint64_t)px_kernel_main,
-    .stack       = 0,
-    .flags       = 0,
-    .tags        = 0
-};
 
 const char* px_exception_descriptions[] = {
     "Divide-By-Zero", "Debugging", "Non-Maskable", "Breakpoint",

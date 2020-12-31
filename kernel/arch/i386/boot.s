@@ -47,8 +47,9 @@
 _start:
     # save our multiboot information from grub before messing with registers
     # these can't be saved on the stack as we are about to zero it
+    popl %eax
     movl %eax, multiboot_magic
-    movl %ebx, multiboot_info
+#    movl %ebx, multiboot_info
 
     # zero the early BSS to start things off well
     movl $_EARLY_BSS_SIZE, %ecx
@@ -156,14 +157,15 @@ _start.has_sse:
     movl %eax, %cr4
 
     # push kernel main parameters
-    pushl multiboot_magic               # Multiboot magic number
-    pushl multiboot_info                # Multiboot info structure
+#    pushl multiboot_magic               # Multiboot magic number
+#    pushl multiboot_info                # Multiboot info structure
 
     # Set NULL stack frame for trace
     xor %ebp, %ebp
 
     # Call global constructors
     call _init
+    pushl multiboot_magic
     # Enter the high-level kernel.
     call px_kernel_main
     # Call global destructors

@@ -40,7 +40,6 @@ const char* px_cpu_get_vendor();
 const char* px_cpu_get_model();
 // Shared library code for i386+ & amd64 family
 #include <cpuid.h>
-#include <stivale2.h>
 #include <arch/i386/gdt.hpp>
 #include <arch/i386/idt.hpp>
 #include <arch/i386/isr.hpp>

@@ -12,6 +12,7 @@ SECTIONS
   _EARLY_KERNEL_START = .;
 
   .__mbHeader : { *(.__mbHeader) }
+  .stivale2hdr : { *(.stivale2hdr) }
   .early_text ALIGN (4K) : { *(.early_text) }
   .early_data ALIGN (4K) : { *(.early_data) }
   .early_bss ALIGN (4K) :
@@ -28,7 +29,6 @@ SECTIONS
 
   _KERNEL_START = .;
 
-  .stivale2hdr ALIGN(4K) : AT(ADDR(.stivale2hdr) - 0xC0000000) { *(.stivalehdr) }
   .text ALIGN (4K) : AT(ADDR(.text) - 0xC0000000) { *(.text) }
   .rodata ALIGN (4K) : AT(ADDR(.rodata) - 0xC0000000) { *(.rodata*) }
   .data ALIGN (4K) : AT(ADDR(.data) - 0xC0000000)
