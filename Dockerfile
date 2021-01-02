@@ -1,5 +1,5 @@
 # Use Arch Linux since it works with Scuba
-FROM archlinux
+FROM archlinux:latest
 # Packages necessary to build the cross compiler
 ARG TMP_PACKAGES="git patch fakeroot binutils gcc diffutils"
 ARG REQ_PACKAGES="sudo mtools make nasm"
