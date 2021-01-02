@@ -1,45 +1,75 @@
-FROM debian:stable-slim
-RUN apt-get update && \
-	apt-get install -y \
-	--no-install-recommends \
-	build-essential \
-	bison \
-	ca-certificates \
-	flex \
-	libgmp3-dev \
-	libmpc-dev \
-	libmpfr-dev \
-	texinfo \
-	wget \
-	&& apt-get clean \
-	&& rm -rf /var/lib/apt/lists/*
-ENV PREFIX="/opt/cross"
-RUN export TARGET=i686-elf && \
-	export MAKEFLAGS="-j $(grep -c ^processor /proc/cpuinfo)" && \
-	mkdir -p "$PREFIX" && \
-	mkdir src && \
-	cd src && \
-	wget -nv https://ftp.gnu.org/gnu/binutils/binutils-2.35.tar.gz && \
-	wget -nv https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.gz && \
-	tar -xf binutils-2.35.tar.gz && \
-	tar -xf gcc-9.3.0.tar.gz && \
-	rm binutils-2.35.tar.gz && \
-	rm gcc-9.3.0.tar.gz && \
-	mkdir build-binutils && \
-	ls && \
-	cd build-binutils && \
-	../binutils-2.35/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror && \
-	make && \
-	make install && \
-	cd .. && \
-	mkdir build-gcc && \
-	cd build-gcc && \
-	../gcc-9.3.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers && \
-	make all-gcc && \
-	make all-target-libgcc && \
-	make install-gcc && \
-	make install-target-libgcc && \
-	cd .. && \
-	rm -rf build-gcc && \
-	rm -rf build-binutils
-ENV PATH "$PREFIX/bin:$PATH"
+# Use Arch Linux since it works with Scuba
+FROM archlinux
+# Packages necessary to build the cross compiler
+ARG TMP_PACKAGES="git patch fakeroot binutils gcc diffutils"
+ARG REQ_PACKAGES="sudo mtools make nasm"
+ARG BIG_PACKAGES="perl db gdbm"
+# Enable multithreaded compilation
+ENV MAKEFLAGS="-j$(nproc)"
+# Update nobody to have sudo access
+RUN pacman -Sy --noconfirm ${REQ_PACKAGES} && passwd -d nobody && printf 'nobody ALL=(ALL) ALL\n' | tee -a /etc/sudoers
+USER nobody
+# Install necessary packages
+# Do all of this in one run command so we can
+# minimize the package size
+RUN sudo pacman -Syu --noconfirm ${TMP_PACKAGES} \
+	&& \
+	sudo mkdir /tmp/nobody/ && sudo chown -R nobody /tmp/nobody/ \
+	&& \
+	cd /tmp/nobody/ \
+	&& \
+	git clone https://aur.archlinux.org/i686-elf-binutils.git \
+	&& \
+	cd i686-elf-binutils \
+	&& \
+	makepkg --syncdeps --skippgpcheck && makepkg --install --noconfirm \
+	&& \
+	cd /tmp/nobody/ \
+	&& \
+	rm -rf i686-elf-binutils \
+	&& \
+	cd /tmp/nobody/ \
+	&& \
+	git clone https://aur.archlinux.org/i686-elf-gcc.git \
+	&& \
+	cd i686-elf-gcc \
+	&& \
+	makepkg --syncdeps --skippgpcheck && makepkg --install --noconfirm \
+	&& \
+	cd /tmp/nobody/ \
+	&& \
+	rm -rf i686-elf-gcc \
+	&& \
+	cd /tmp/nobody/ \
+	&& \
+	git clone https://github.com/echfs/echfs.git \
+	&& \
+	cd echfs \
+	&& \
+	make echfs-utils \
+	&& \
+	make mkfs.echfs \
+	&& \
+	sudo cp echfs-utils /usr/local/bin/ \
+	&& \
+	sudo cp mkfs.echfs /usr/local/bin/ \
+	&& \
+	cd /tmp/nobody/ \
+	&& \
+	rm -rf echfs \
+	&& \
+	sudo find $ROOTFS/usr/bin -type f \( -perm -0100 \) -print | \
+    xargs file | \
+    sed -n '/executable .*not stripped/s/: TAB .*//p' | \
+    xargs -rt strip --strip-unneeded \
+	&& \
+	sudo find $ROOTFS/usr/lib -type f \( -perm -0100 \) -print | \
+	xargs file | \
+	sed -n '/executable .*not stripped/s/: TAB .*//p' | \
+	xargs -rt strip --strip-unneeded \
+	&& \
+	sudo pacman -Scc \
+	&& \
+	sudo pacman -Rsdd --noconfirm ${TMP_PACKAGES} ${BIG_PACKAGES}
+# Default to root for scuba
+USER root
