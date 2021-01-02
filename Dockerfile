@@ -2,7 +2,7 @@
 FROM archlinux:latest
 # Packages necessary to build the cross compiler
 ARG TMP_PACKAGES="git patch fakeroot binutils gcc diffutils"
-ARG REQ_PACKAGES="sudo mtools make nasm"
+ARG REQ_PACKAGES="sudo mtools make nasm parted"
 ARG BIG_PACKAGES="perl db gdbm"
 # Enable multithreaded compilation
 ENV MAKEFLAGS="-j$(nproc)"
