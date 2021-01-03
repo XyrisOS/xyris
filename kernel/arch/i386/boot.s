@@ -29,27 +29,14 @@
 .equ PAGE_PERM, 3                  # default page permissions: present, read/write
 .equ STACK_SIZE, 4*PAGE_SIZE        # initial kernel stack space size of 16k
 
-.equ MULTIBOOT_MAGIC,       0x1badb002
-.equ MULTIBOOT_PAGE_ALIGN,  1<<0
-.equ MULTIBOOT_MEM_INFO,    1<<1
-.equ MULTIBOOT_FLAGS,       (MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEM_INFO)
-.equ MULTIBOOT_CHECKSUM,    -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)
-
-# Multiboot header section of our executable. See linker.ld
-.section .__mbHeader, "ax", @progbits
-.long MULTIBOOT_MAGIC
-.long MULTIBOOT_FLAGS
-.long MULTIBOOT_CHECKSUM
-
 # Text section of our executable. See linker.ld
 # This is the kernel entry point
 .section .early_text, "ax", @progbits
 _start:
     # save our multiboot information from grub before messing with registers
     # these can't be saved on the stack as we are about to zero it
-    popl %eax
     movl %eax, multiboot_magic
-#    movl %ebx, multiboot_info
+    movl %ebx, multiboot_info
 
     # zero the early BSS to start things off well
     movl $_EARLY_BSS_SIZE, %ecx
@@ -156,18 +143,19 @@ _start.has_sse:
     orw $(3<<9), %ax # set CR4.OSFXSR and CR4.OSXMMEXCPT at the same time
     movl %eax, %cr4
 
-    # push kernel main parameters
-#    pushl multiboot_magic               # Multiboot magic number
-#    pushl multiboot_info                # Multiboot info structure
-
     # Set NULL stack frame for trace
     xor %ebp, %ebp
 
     # Call global constructors
     call _init
-    pushl multiboot_magic
+
+    # push kernel main parameters
+    pushl multiboot_magic               # Multiboot magic number
+    pushl multiboot_info                # Multiboot info structure
+
     # Enter the high-level kernel.
     call px_kernel_main
+
     # Call global destructors
     call _fini
 

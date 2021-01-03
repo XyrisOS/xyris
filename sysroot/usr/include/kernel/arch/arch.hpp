@@ -34,7 +34,7 @@ static inline int px_arch_cpuid(int flag, int regs[4]) {
     return (int)regs[0];
 }
 // Kernel entry point
-extern "C" void px_kernel_main(stivale2_info *info);
+extern "C" void px_kernel_main(void *, uint32_t);
 // i386+ & amd64 functions
 const char* px_cpu_get_vendor();
 const char* px_cpu_get_model();
