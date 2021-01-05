@@ -46,7 +46,8 @@ LIBS     = $(addprefix -l:, $(LIBS_A))
 
 CPPFLAGS +=               \
 	-I ${INCLUDE}/kernel/ \
-	-I ${INCLUDE}/boot/
+	-I ${INCLUDE}/boot/   \
+	-I ../thirdparty/
 
 LDFLAGS +=                 \
 	-T arch/i386/linker.ld \

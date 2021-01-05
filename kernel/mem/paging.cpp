@@ -39,7 +39,6 @@ static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((sec
 // Function prototypes
 static void px_mem_page_fault(registers_t* regs);
 static void px_paging_init_dir();
-static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr);
 static void px_paging_map_early_mem();
 static void px_paging_map_hh_kernel();
 static uint32_t find_next_free_virt_addr(int seq);
@@ -108,7 +107,7 @@ static void px_paging_init_dir() {
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
 }
 
-static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
+void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
     // Set the page directory entry (pde) and page table entry (pte)
     uint32_t pde = vaddr.page_dir_index;
     uint32_t pte = vaddr.page_table_index;

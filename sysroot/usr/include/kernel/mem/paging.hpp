@@ -155,3 +155,5 @@ bool px_page_is_present(size_t addr);
  * @returns the physical address of the current page directory.
  */
 uint32_t px_get_phys_page_dir();
+
+void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr);

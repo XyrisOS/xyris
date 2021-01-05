@@ -38,6 +38,7 @@ extern "C" void px_kernel_main(void *, uint32_t);
 // i386+ & amd64 functions
 const char* px_cpu_get_vendor();
 const char* px_cpu_get_model();
+void px_parse_multiboot2(void *);
 // Shared library code for i386+ & amd64 family
 #include <cpuid.h>
 #include <arch/i386/gdt.hpp>

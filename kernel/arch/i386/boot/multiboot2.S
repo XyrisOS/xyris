@@ -10,6 +10,7 @@ extern _start:code
 MULTIBOOT_ENTRY equ _start
 
 %macro tag_begin 1-2 0
+align 8
 .start:
     dw %1
     dw %2
