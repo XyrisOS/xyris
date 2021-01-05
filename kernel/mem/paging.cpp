@@ -33,8 +33,8 @@ static uint32_t                  page_dir_addr;
 static px_page_table_t *         page_dir_virt[PAGE_ENTRIES];
 
 /* both of these must be page aligned for anything to work right at all */
-static px_page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((section (".page_tables")));
-static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables")));
+static px_page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((section (".page_tables,\"aw\", @nobits#")));
+static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables,\"aw\", @nobits#")));
 
 // Function prototypes
 static void px_mem_page_fault(registers_t* regs);
