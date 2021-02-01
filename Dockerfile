@@ -1,9 +1,7 @@
 # Use Arch Linux since it works with Scuba
-FROM archlinux:latest
+FROM archlinux:base-devel
 # Packages necessary to build the cross compiler
-ARG TMP_PACKAGES="patch fakeroot diffutils"
-ARG REQ_PACKAGES="git sudo mtools make nasm parted binutils gcc"
-ARG BIG_PACKAGES="perl db gdbm"
+ARG REQ_PACKAGES="git mtools nasm parted diffutils"
 # Enable multithreaded compilation
 ENV MAKEFLAGS="-j$(nproc)"
 # Update nobody to have sudo access
@@ -68,8 +66,6 @@ RUN sudo pacman -Syu --noconfirm ${TMP_PACKAGES} \
 	sed -n '/executable .*not stripped/s/: TAB .*//p' | \
 	xargs -rt strip --strip-unneeded \
 	&& \
-	sudo pacman -Scc \
-	&& \
-	sudo pacman -Rsdd --noconfirm ${TMP_PACKAGES} ${BIG_PACKAGES}
+	sudo pacman -Scc
 # Default to root for scuba
 USER root
