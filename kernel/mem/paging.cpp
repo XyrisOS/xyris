@@ -37,39 +37,39 @@ static px_page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((sec
 static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables")));
 
 // Function prototypes
-static void px_mem_page_fault(registers_t* regs);
-static void px_paging_init_dir();
-static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr);
-static void px_paging_map_early_mem();
-static void px_paging_map_hh_kernel();
-static uint32_t find_next_free_virt_addr(int seq);
-static uint32_t find_next_free_phys_page();
-static inline void px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *table);
-static inline void px_set_page_dir(uint32_t page_directory);
-static inline void px_paging_enable();
-static inline void px_paging_disable();
+static void _px_mem_page_fault(registers_t* regs);
+static void _px_paging_init_dir();
+static void _px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr);
+static void _px_paging_map_early_mem();
+static void _px_paging_map_hh_kernel();
+static uint32_t _find_next_free_virt_addr(int seq);
+static uint32_t _find_next_free_phys_page();
+static inline void _px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *table);
+static inline void _px_set_page_dir(uint32_t page_directory);
+static inline void _px_paging_enable();
+static inline void _px_paging_disable();
 
 void px_paging_init(uint32_t page_count) {
     machine_page_count = page_count;
     // we can set breakpoints or make a futile attempt to recover.
-    px_register_interrupt_handler(14, px_mem_page_fault);
+    px_register_interrupt_handler(14, _px_mem_page_fault);
     // init our structures
-    px_paging_init_dir();
+    _px_paging_init_dir();
     // identity map the first 1 MiB of RAM
-    px_paging_map_early_mem();
+    _px_paging_map_early_mem();
     // map in our higher-half kernel
-    px_paging_map_hh_kernel();
+    _px_paging_map_hh_kernel();
     // use our new set of page tables
-    px_set_page_dir(page_dir_addr & PAGE_ALIGN);
+    _px_set_page_dir(page_dir_addr & PAGE_ALIGN);
     // flush the tlb and we're off to the races!
-    px_paging_enable();
+    _px_paging_enable();
 }
 
-static void px_mem_page_fault(registers_t* regs) {
+static void _px_mem_page_fault(registers_t* regs) {
    PANIC(regs);
 }
 
-static inline void px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *table) {
+static inline void _px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *table) {
     page_dir_virt[pd_idx] = table;
     page_dir_phys[pd_idx] = {
         .present = 1,
@@ -90,17 +90,17 @@ static inline void px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *ta
     };
 }
 
-static void px_paging_init_dir() {
+static void _px_paging_init_dir() {
     // For every page in kernel memory
     for (int i = 0; i < PAGE_ENTRIES - 1; i++) {
-        px_map_kernel_page_table(i, &page_tables[i]);
+        _px_map_kernel_page_table(i, &page_tables[i]);
         // clear out the page tables
         for (int j = 0; j < PAGE_ENTRIES; j++) {
             page_tables[i].pages[j] = (px_page_table_entry_t){ /* ZERO */ };
         }
     }
     // recursively map the last page table to the page directory
-    px_map_kernel_page_table(PAGE_ENTRIES - 1, (px_page_table_t*)&page_dir_phys[0]);
+    _px_map_kernel_page_table(PAGE_ENTRIES - 1, (px_page_table_t*)&page_dir_phys[0]);
     for (uint32_t i = PAGE_ENTRIES * (PAGE_ENTRIES - 1); i < PAGE_ENTRIES * PAGE_ENTRIES; i++) {
         bitmap_set_bit(mapped_pages, i);
     }
@@ -108,7 +108,7 @@ static void px_paging_init_dir() {
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
 }
 
-static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
+static void _px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
     // Set the page directory entry (pde) and page table entry (pte)
     uint32_t pde = vaddr.page_dir_index;
     uint32_t pte = vaddr.page_table_index;
@@ -154,29 +154,29 @@ static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
     bitmap_set_bit(mapped_pages, vaddr.val >> 12);
 }
 
-static void px_paging_map_early_mem() {
+static void _px_paging_map_early_mem() {
     px_debugf("==== MAP EARLY MEM ====\n");
     px_virtual_address_t a;
     for (a = VADDR(0); a.val < 0x100000; a.val += PAGE_SIZE) {
         // identity map the early memory
-        px_map_kernel_page(a, a.val);
+        _px_map_kernel_page(a, a.val);
     }
 }
 
-static void px_paging_map_hh_kernel() {
+static void _px_paging_map_hh_kernel() {
     px_debugf("==== MAP HH KERNEL ====\n");
     px_virtual_address_t a;
     for (a = VADDR(KERNEL_START); a.val < KERNEL_END; a.val += PAGE_SIZE) {
         // map the higher-half kernel in
-        px_map_kernel_page(a, KADDR_TO_PHYS(a.val));
+        _px_map_kernel_page(a, KADDR_TO_PHYS(a.val));
     }
 }
 
-static inline void px_set_page_dir(size_t page_dir) {
+static inline void _px_set_page_dir(size_t page_dir) {
     asm volatile("mov %0, %%cr3" :: "b"(page_dir));
 }
 
-static inline void px_paging_enable() {
+static inline void _px_paging_enable() {
     size_t cr0;
     asm volatile("mov %%cr0, %0": "=b"(cr0));
     // 0x80000000 = 0b10000000000000000000000000000000
@@ -186,7 +186,7 @@ static inline void px_paging_enable() {
     asm volatile("mov %0, %%cr0":: "b"(cr0));
 }
 
-static inline void px_paging_disable() {
+static inline void _px_paging_disable() {
     size_t cr0;
     asm volatile("mov %%cr0, %0": "=b"(cr0));
     // 0x80000000 = 0b10000000000000000000000000000000
@@ -202,11 +202,11 @@ static inline void px_paging_disable() {
  * note: this can't find more than 32 sequential pages
  * @param seq the number of sequential pages to get
  */
-static uint32_t find_next_free_virt_addr(int seq) {
+static uint32_t _find_next_free_virt_addr(int seq) {
     return bitmap_find_first_range_clear(mapped_pages, ADDRESS_SPACE_SIZE / PAGE_SIZE, seq);
 }
 
-static uint32_t find_next_free_phys_page() {
+static uint32_t _find_next_free_phys_page() {
     return bitmap_find_first_bit_clear(mapped_mem, ADDRESS_SPACE_SIZE / PAGE_SIZE);
 }
 
@@ -216,12 +216,12 @@ static uint32_t find_next_free_phys_page() {
 void* px_get_new_page(uint32_t size) {
     px_mutex_lock(&mutex_paging);
     uint32_t page_count = (size / PAGE_SIZE) + 1;
-    uint32_t free_idx = find_next_free_virt_addr(page_count);
+    uint32_t free_idx = _find_next_free_virt_addr(page_count);
     if (free_idx == SIZE_T_MAX_VALUE) return NULL;
     for (uint32_t i = free_idx; i < free_idx + page_count; i++) {
-        uint32_t phys_page_idx = find_next_free_phys_page();
+        uint32_t phys_page_idx = _find_next_free_phys_page();
         if (phys_page_idx == SIZE_T_MAX_VALUE) return NULL;
-        px_map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
+        _px_map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
     }
     px_mutex_unlock(&mutex_paging);
     return (void *)(free_idx * PAGE_SIZE);

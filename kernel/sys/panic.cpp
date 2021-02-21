@@ -18,11 +18,11 @@
 #include <lib/stdio.hpp>
 
 // Function prototypes
-void printPanicScreen(int exception);
-void panic_print_file(const char *file, uint32_t line, const char *func);
-void panic_print_register(registers_t *regs);
+static void _panic_print_header(int exception);
+static void _panic_print_file(const char *file, uint32_t line, const char *func);
+static void _panic_print_register(registers_t *regs);
 
-void printPanicScreen(int exception) {
+void _panic_print_header(int exception) {
     px_tty_clear(VGA_Black, VGA_White);
     const char* tag;
     if (exception == 13) {
@@ -51,7 +51,7 @@ void printPanicScreen(int exception) {
 void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     asm volatile ("cli");
     // Print the panic cow
-    printPanicScreen(0);
+    _panic_print_header(0);
     // Print the message passed in on a new line
     char buf[128];
     px_ksprintf(buf, "\n%s\n", msg);
@@ -59,7 +59,7 @@ void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     px_kprintf("%s", buf);
     px_rs232_print(buf);
     // Print out file info to describe where crash occured
-    panic_print_file(file, line, func);
+    _panic_print_file(file, line, func);
     px_stack_trace(16);
     // Halt the CPU
     asm("hlt");
@@ -68,7 +68,7 @@ void panic(const char* msg, const char *file, uint32_t line, const char *func) {
 void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
     asm volatile ("cli");
     // Print the panic cow and exception description
-    printPanicScreen(regs->int_num);
+    _panic_print_header(regs->int_num);
     char msg[128];
     px_ksprintf(
         msg, 
@@ -91,7 +91,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         px_rs232_print(msg);
     }
     // Print out register values
-    panic_print_register(regs);
+    _panic_print_register(regs);
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
     size_t faulting_address;
@@ -124,13 +124,13 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         px_kprintf("%s", msg);
         px_rs232_print(msg);
     }
-    panic_print_file(file, line, func);
+    _panic_print_file(file, line, func);
     px_stack_trace(16);
     // Halt the CPU
     asm("hlt");
 }
 
-void panic_print_file(const char *file, uint32_t line, const char *func) {
+void _panic_print_file(const char *file, uint32_t line, const char *func) {
     char msg[128];
     px_ksprintf(
         msg,
@@ -145,7 +145,7 @@ void panic_print_file(const char *file, uint32_t line, const char *func) {
     px_rs232_print(msg);
 }
 
-void panic_print_register(registers_t *regs) {
+void _panic_print_register(registers_t *regs) {
     // I really wanted to add color codes here to make the register labels
     // red, but that would also mean resetting the background *and* foreground
     // colors each time (to print the numbers in back) since I can't just call

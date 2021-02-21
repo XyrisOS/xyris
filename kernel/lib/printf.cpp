@@ -91,6 +91,10 @@ Using & for division here, so STACK_WIDTH must be a power of 2. */
 2^32-1 in base 8 has 11 digits (add 5 for trailing NUL and for slop) */
 #define PR_BUFLEN 16
 
+// Function declarations
+static int _vsprintf_help(unsigned c, void** ptr);
+static int _vprintf_help(unsigned c, void** ptr);
+
 /*****************************************************************************
 name:    px_do_printf
 action:    minimal subfunction for ?printf, calls function
@@ -302,7 +306,7 @@ int px_do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
 /*****************************************************************************
 SPRINTF
 *****************************************************************************/
-static int vsprintf_help(unsigned c, void** ptr)
+static int _vsprintf_help(unsigned c, void** ptr)
 {
     char* dst;
 
@@ -317,7 +321,7 @@ int px_kvsprintf(char* buf, const char* fmt, va_list args)
 {
     int ret_val;
 
-    ret_val = px_do_printf(fmt, args, vsprintf_help, (void*)buf);
+    ret_val = px_do_printf(fmt, args, _vsprintf_help, (void*)buf);
     buf[ret_val] = '\0';
     return ret_val;
 }
@@ -335,10 +339,11 @@ int px_ksprintf(char* buf, const char* fmt, ...)
 }
 /*****************************************************************************
 *****************************************************************************/
-static int vprintf_help(unsigned c, void** ptr)
+static int _vprintf_help(unsigned c, void** ptr)
 {
     (void)ptr;
     // we use the unlocked putchar here becaus we lock at the printf level
+    // FIXME: Why do we lock at the printf level? Why not just lock at putchar?
     putchar_unlocked((char)c);
     return 0;
 }
@@ -347,7 +352,7 @@ static int vprintf_help(unsigned c, void** ptr)
 int px_kvprintf(const char* fmt, va_list args)
 {
     px_mutex_lock(&put_mutex);
-    int retval = px_do_printf(fmt, args, vprintf_help, NULL);
+    int retval = px_do_printf(fmt, args, _vprintf_help, NULL);
     px_mutex_unlock(&put_mutex);
     return retval;
 }

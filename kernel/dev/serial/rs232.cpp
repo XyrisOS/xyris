@@ -24,36 +24,36 @@ uint8_t rs_232_line_index;
 uint16_t rs_232_port_base;
 px_mutex_t mutex_rs232("rs232");
 
-static int px_rs232_received();
-static int px_rs232_is_transmit_empty();
-static char px_rs232_read_char();
-static void px_rs232_write_char(char c);
-static void px_rs232_callback(registers_t *regs);
+static int _px_rs232_received();
+static int _px_rs232_is_transmit_empty();
+static char _px_rs232_read_char();
+static void _px_rs232_write_char(char c);
+static void _px_rs232_callback(registers_t *regs);
 
-static int px_rs232_received() {
+static int _px_rs232_received() {
     return px_read_byte(rs_232_port_base + RS_232_LINE_STATUS_REG) & 1;
 }
 
-static int px_rs232_is_transmit_empty() {
+static int _px_rs232_is_transmit_empty() {
     return px_read_byte(rs_232_port_base + RS_232_LINE_STATUS_REG) & 0x20;
 }
 
-static char px_rs232_read_char() {
+static char _px_rs232_read_char() {
     px_mutex_lock(&mutex_rs232);
-    while (px_rs232_received() == 0);
+    while (_px_rs232_received() == 0);
     px_mutex_unlock(&mutex_rs232);
     return px_read_byte(rs_232_port_base + RS_232_DATA_REG);
 }
 
-static inline void px_rs232_write_char(char c) {
-    while (px_rs232_is_transmit_empty() == 0);
+static inline void _px_rs232_write_char(char c) {
+    while (_px_rs232_is_transmit_empty() == 0);
     px_write_byte(rs_232_port_base + RS_232_DATA_REG, c);
 }
 
 static int vprintf_helper(unsigned c, void **ptr)
 {
     (void) ptr;
-    px_rs232_write_char((char)c);
+    _px_rs232_write_char((char)c);
     return 0;
 }
 
@@ -77,14 +77,14 @@ int px_rs232_printf(const char *format, ...)
 
 void px_rs232_print(const char* str) {
     for (int i = 0; str[i] != 0; i++) {
-        px_rs232_write_char(str[i]);
+        _px_rs232_write_char(str[i]);
     }
 }
 
-static void px_rs232_callback(registers_t *regs) {
+static void _px_rs232_callback(registers_t *regs) {
     (void)regs;
     // Grab the input character
-    char in = px_rs232_read_char();
+    char in = _px_rs232_read_char();
     // Change carriage returns to newlines
     if (in == '\r') {
         in = '\n';
@@ -101,7 +101,7 @@ void px_rs232_init(uint16_t com_id) {
     // Register the IRQ callback
     rs_232_port_base = com_id;
     uint8_t IRQ = 0x20 + (com_id == RS_232_COM1 ? RS_232_COM1_IRQ : RS_232_COM2_IRQ);
-    px_register_interrupt_handler(IRQ, px_rs232_callback);
+    px_register_interrupt_handler(IRQ, _px_rs232_callback);
     // Write the port data to activate the device
     // disable interrupts
     px_write_byte(rs_232_port_base + RS_232_INTERRUPT_ENABLE_REG, 0x00);

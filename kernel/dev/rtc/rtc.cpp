@@ -15,10 +15,10 @@
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 
-void px_rtc_callback(registers_t *regs);
-int px_rtc_get_update_in_progress();
-uint8_t px_rtc_get_register(int reg);
-void px_read_rtc();
+void _px_rtc_callback(registers_t *regs);
+int _px_rtc_get_update_in_progress();
+uint8_t _px_rtc_get_register(int reg);
+void _px_read_rtc();
 
 // Current values from RTC
 uint8_t px_rtc_second;      // Current UTC second
@@ -40,20 +40,20 @@ void px_rtc_init() {
     px_write_byte(RTC_CMOS_PORT, 0x8B);
     px_write_byte(RTC_DATA_PORT, (prev | 0x40));
     // Register our callback function with IRQ 8
-    px_register_interrupt_handler(IRQ8, px_rtc_callback);
+    px_register_interrupt_handler(IRQ8, _px_rtc_callback);
 }
 
-void px_rtc_callback(registers_t *regs) {
+void _px_rtc_callback(registers_t *regs) {
     (void)regs;
     px_kprintf(DBG_INFO "RTC updated.\n");
 }
 
-int px_rtc_get_update_in_progress() {
+int _px_rtc_get_update_in_progress() {
     px_write_byte(RTC_CMOS_PORT, 0x0A);
     return (px_read_byte(RTC_DATA_PORT) & 0x80);
 }
 
-uint8_t px_rtc_get_register(int reg) {
+uint8_t _px_rtc_get_register(int reg) {
     px_write_byte(RTC_CMOS_PORT, reg);
     return px_read_byte(RTC_DATA_PORT);
 }
@@ -65,7 +65,7 @@ uint8_t px_rtc_get_register(int reg) {
     Note: This uses the "read registers until you get the same values twice in a row" technique
     to avoid getting dodgy/inconsistent values due to RTC updates
 */
-void px_read_rtc() {
+void _px_read_rtc() {
     // Previous values from RTC
     // Used as a cache to check if we should update
     uint8_t last_second = 0, last_minute = 0,
@@ -73,15 +73,15 @@ void px_read_rtc() {
             last_month = 0, last_year = 0,
             last_century = 0, registerB = 0;
     // Make sure an update isn't in progress
-    while (px_rtc_get_update_in_progress());
+    while (_px_rtc_get_update_in_progress());
 
-    px_rtc_second = px_rtc_get_register(0x00);
-    px_rtc_minute = px_rtc_get_register(0x02);
-    px_rtc_hour = px_rtc_get_register(0x04);
-    px_rtc_day = px_rtc_get_register(0x07);
-    px_rtc_month = px_rtc_get_register(0x08);
-    px_rtc_year = px_rtc_get_register(0x09);
-    px_rtc_century = px_rtc_get_register(RTC_CURRENT_CENTURY);
+    px_rtc_second = _px_rtc_get_register(0x00);
+    px_rtc_minute = _px_rtc_get_register(0x02);
+    px_rtc_hour = _px_rtc_get_register(0x04);
+    px_rtc_day = _px_rtc_get_register(0x07);
+    px_rtc_month = _px_rtc_get_register(0x08);
+    px_rtc_year = _px_rtc_get_register(0x09);
+    px_rtc_century = _px_rtc_get_register(RTC_CURRENT_CENTURY);
  
     while  ((last_second != px_rtc_second) || (last_minute != px_rtc_minute) || 
             (last_hour != px_rtc_hour)     || (last_day != px_rtc_day)       || 
@@ -97,20 +97,20 @@ void px_read_rtc() {
         last_century = px_rtc_century;
 
         // Make sure an update isn't in progress
-        while (px_rtc_get_update_in_progress());
+        while (_px_rtc_get_update_in_progress());
 
-        px_rtc_second = px_rtc_get_register(0x00);
-        px_rtc_minute = px_rtc_get_register(0x02);
-        px_rtc_hour = px_rtc_get_register(0x04);
-        px_rtc_day = px_rtc_get_register(0x07);
-        px_rtc_month = px_rtc_get_register(0x08);
-        px_rtc_year = px_rtc_get_register(0x09);
+        px_rtc_second = _px_rtc_get_register(0x00);
+        px_rtc_minute = _px_rtc_get_register(0x02);
+        px_rtc_hour = _px_rtc_get_register(0x04);
+        px_rtc_day = _px_rtc_get_register(0x07);
+        px_rtc_month = _px_rtc_get_register(0x08);
+        px_rtc_year = _px_rtc_get_register(0x09);
         if (RTC_CURRENT_CENTURY != 0) {
-            px_rtc_century = px_rtc_get_register(RTC_CURRENT_CENTURY);
+            px_rtc_century = _px_rtc_get_register(RTC_CURRENT_CENTURY);
         }
     }
  
-    registerB = px_rtc_get_register(0x0B);
+    registerB = _px_rtc_get_register(0x0B);
 
     // Convert BCD to binary values if necessary
     if (!(registerB & 0x04)) {
@@ -141,7 +141,7 @@ void px_read_rtc() {
 }
 
 void px_rtc_print() {
-    px_read_rtc();
+    _px_read_rtc();
     px_kprintf(
         DBG_INFO
         "UTC: %i/%i/%i %i:%i\n",

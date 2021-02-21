@@ -47,8 +47,8 @@
 
 extern "C" void __stack_chk_fail(void);
 extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic);
-void px_kernel_print_splash();
-void px_kernel_boot_tone();
+void _px_kernel_print_splash();
+void _px_kernel_boot_tone();
 
 /**
  * @brief This function is the global handler for all
@@ -71,7 +71,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     (void)mb_struct;
     (void)mb_magic;
     // Print the splash screen to show we've booted into the kernel properly.
-    px_kernel_print_splash();
+    _px_kernel_print_splash();
     // Install the GDT
     px_interrupts_disable();
     px_gdt_install();           // Initialize the Global Descriptor Table
@@ -108,7 +108,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_tasks_new(show_primes, &status, TASK_READY, "prime_display");
 
     // Now that we're done make a joyful noise
-    px_kernel_boot_tone();
+    _px_kernel_boot_tone();
 
     // Keep the kernel alive.
     px_kprintf("\n");
@@ -123,7 +123,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     PANIC("Kernel terminated unexpectedly!");
 }
 
-void px_kernel_print_splash() {
+void _px_kernel_print_splash() {
     px_tty_clear();
     px_kprintf(
         "\033[93mWelcome to Panix\n"
@@ -139,7 +139,7 @@ void px_kernel_print_splash() {
     px_kprintf("Commit %s (v%s.%s.%s) built on %s at %s.\n\n", COMMIT, VER_MAJOR, VER_MINOR, VER_PATCH, __DATE__, __TIME__);
 }
 
-void px_kernel_boot_tone() {
+void _px_kernel_boot_tone() {
     // Beep beep!
     px_spkr_beep(1000, 50);
     sleep(100);

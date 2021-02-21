@@ -12,7 +12,11 @@
 #include <arch/arch.hpp>
 #include <dev/spkr/spkr.hpp>
 
-static void px_spkr_tone(uint32_t freq) {
+// Function declarations
+static void _px_spkr_tone(uint32_t freq);
+static void _px_spkr_stop();
+
+static void _px_spkr_tone(uint32_t freq) {
     uint32_t div;
     uint8_t tmp;
     // Set the PIT to the desired frequency
@@ -27,14 +31,14 @@ static void px_spkr_tone(uint32_t freq) {
     }
 }
 
-static void px_spkr_stop() {
+static void _px_spkr_stop() {
     uint8_t tmp = px_read_byte(0x61) & 0xFC;    
     px_write_byte(0x61, tmp);
 }
 
 void px_spkr_beep(uint32_t freq, uint32_t ms) {
-    px_spkr_tone(freq);
+    _px_spkr_tone(freq);
     sleep(ms);
-    px_spkr_stop();
+    _px_spkr_stop();
     // set_PIT_2(old_frequency);
 }

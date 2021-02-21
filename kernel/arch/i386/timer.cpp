@@ -14,7 +14,7 @@
 #include <lib/string.hpp>
 #include <dev/tty/tty.hpp>
 
-static void px_timer_callback(registers_t *regs);
+static void _px_timer_callback(registers_t *regs);
 volatile uint32_t px_timer_tick;
 
 typedef void (*voidfunc_t)();
@@ -34,7 +34,7 @@ static voidfunc_t _callbacks[MAX_CALLBACKS];
 void px_timer_init(uint32_t freq) {
     px_kprintf(DBG_INFO "Initializing timer\n");
     /* Install the function we just wrote */
-    px_register_interrupt_handler(IRQ0, px_timer_callback);
+    px_register_interrupt_handler(IRQ0, _px_timer_callback);
     /* Get the PIT value: hardware clock at 1193180 Hz */
     uint32_t divisor = 1193180 / freq;
     uint8_t low  = (uint8_t)(divisor & 0xFF);
@@ -46,7 +46,7 @@ void px_timer_init(uint32_t freq) {
     px_kprintf(DBG_OKAY "Started timer\n");
 }
 
-static void px_timer_callback(registers_t *regs) {
+static void _px_timer_callback(registers_t *regs) {
     (void)regs;
     px_timer_tick++;
     for (size_t i = 0; i < _callback_count; i++) {
