@@ -5,7 +5,7 @@ STIVALE2_MAGIC equ 'stv2'
 
 section .early_text
 __stivale2_entry:
-    pop ebx
+    mov ebx, [esp + 4]
     mov eax, STIVALE2_MAGIC
     jmp _start
 
