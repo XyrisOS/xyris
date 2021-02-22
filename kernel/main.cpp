@@ -10,6 +10,7 @@
  */
 // System library functions
 #include <stdint.h>
+#include <sys/kernel.hpp>
 #include <sys/panic.hpp>
 #include <sys/tasks.hpp>
 #include <lib/string.hpp>
@@ -33,16 +34,6 @@
     #define STACK_CHK_GUARD 0xDEADC0DE
 #else
     #define STACK_CHK_GUARD 0xBADBADBADBADBAD1
-#endif
-// Define the Git commit version if not declared by compiler
-#ifndef COMMIT
-    #define COMMIT "unknown"
-#endif
-// Assume that if major isn't set none of them are
-#ifndef VER_MAJOR
-    #define VER_MAJOR '0'
-    #define VER_MINOR '0'
-    #define VER_PATCH '0'
 #endif
 
 extern "C" void __stack_chk_fail(void);
@@ -126,10 +117,11 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
 void px_kernel_print_splash() {
     px_tty_clear();
     px_kprintf(
-        "\033[93mWelcome to Panix\n"
+        "\033[93mWelcome to Panix %s\n"
         "Developed by graduates and undergraduates of Cedarville University.\n"
         "Copyright the Panix Contributors (c) %i. All rights reserved.\n\033[0m",
-        (\
+        VER_NAME,
+        (
             ((__DATE__)[7] - '0') * 1000 + \
             ((__DATE__)[8] - '0') * 100  + \
             ((__DATE__)[9] - '0') * 10   + \
