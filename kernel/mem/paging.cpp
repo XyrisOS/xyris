@@ -20,21 +20,21 @@
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 
-static uint32_t machine_page_count;
-static px_mutex_t mutex_paging("paging");
+static uint32_t _machine_page_count;
+static px_mutex_t _mutex_paging("paging");
 
 #define MEM_BITMAP_SIZE BITMAP_SIZE(ADDRESS_SPACE_SIZE / PAGE_SIZE)
 
 /* one bit for every page */
-static bitmap_t mapped_mem[MEM_BITMAP_SIZE] = { 0 };
-static bitmap_t mapped_pages[MEM_BITMAP_SIZE] = { 0 };
+static bitmap_t _mapped_mem[MEM_BITMAP_SIZE] = { 0 };
+static bitmap_t _mapped_pages[MEM_BITMAP_SIZE] = { 0 };
 
-static uint32_t                  page_dir_addr;
-static px_page_table_t *         page_dir_virt[PAGE_ENTRIES];
+static uint32_t                  _page_dir_addr;
+static px_page_table_t *         _page_dir_virt[PAGE_ENTRIES];
 
 /* both of these must be page aligned for anything to work right at all */
-static px_page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((section (".page_tables")));
-static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables")));
+static px_page_directory_entry_t _page_dir_phys[PAGE_ENTRIES] __attribute__ ((section (".page_tables")));
+static px_page_table_t           _page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables")));
 
 // Function prototypes
 static void _px_mem_page_fault(registers_t* regs);
@@ -50,7 +50,7 @@ static inline void _px_paging_enable();
 static inline void _px_paging_disable();
 
 void px_paging_init(uint32_t page_count) {
-    machine_page_count = page_count;
+    _machine_page_count = page_count;
     // we can set breakpoints or make a futile attempt to recover.
     px_register_interrupt_handler(14, _px_mem_page_fault);
     // init our structures
@@ -60,7 +60,7 @@ void px_paging_init(uint32_t page_count) {
     // map in our higher-half kernel
     _px_paging_map_hh_kernel();
     // use our new set of page tables
-    _px_set_page_dir(page_dir_addr & PAGE_ALIGN);
+    _px_set_page_dir(_page_dir_addr & PAGE_ALIGN);
     // flush the tlb and we're off to the races!
     _px_paging_enable();
 }
@@ -70,8 +70,8 @@ static void _px_mem_page_fault(registers_t* regs) {
 }
 
 static inline void _px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *table) {
-    page_dir_virt[pd_idx] = table;
-    page_dir_phys[pd_idx] = {
+    _page_dir_virt[pd_idx] = table;
+    _page_dir_phys[pd_idx] = {
         .present = 1,
         .read_write = 1,
         .usermode = 0,
@@ -93,19 +93,19 @@ static inline void _px_map_kernel_page_table(uint32_t pd_idx, px_page_table_t *t
 static void _px_paging_init_dir() {
     // For every page in kernel memory
     for (int i = 0; i < PAGE_ENTRIES - 1; i++) {
-        _px_map_kernel_page_table(i, &page_tables[i]);
+        _px_map_kernel_page_table(i, &_page_tables[i]);
         // clear out the page tables
         for (int j = 0; j < PAGE_ENTRIES; j++) {
-            page_tables[i].pages[j] = (px_page_table_entry_t){ /* ZERO */ };
+            _page_tables[i].pages[j] = (px_page_table_entry_t){ /* ZERO */ };
         }
     }
     // recursively map the last page table to the page directory
-    _px_map_kernel_page_table(PAGE_ENTRIES - 1, (px_page_table_t*)&page_dir_phys[0]);
+    _px_map_kernel_page_table(PAGE_ENTRIES - 1, (px_page_table_t*)&_page_dir_phys[0]);
     for (uint32_t i = PAGE_ENTRIES * (PAGE_ENTRIES - 1); i < PAGE_ENTRIES * PAGE_ENTRIES; i++) {
-        bitmap_set_bit(mapped_pages, i);
+        bitmap_set_bit(_mapped_pages, i);
     }
     // store the physical address of the page directory for quick access
-    page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
+    _page_dir_addr = KADDR_TO_PHYS((uint32_t)&_page_dir_phys[0]);
 }
 
 static void _px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
@@ -118,7 +118,7 @@ static void _px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
     }
 #if defined(DEBUG)
     // Print a debug message to serial
-    px_page_table_entry *entry = &(page_tables[pde].pages[pte]);
+    px_page_table_entry *entry = &(_page_tables[pde].pages[pte]);
     px_debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr, vaddr.val, pde, pte);
     // If the page is already mapped into memory
     if (entry->present) {
@@ -130,13 +130,13 @@ static void _px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
             "mem_map[i-1] = 0x%08x\nmem_map[i]   = 0x%08x\nmem_map[i+1] = 0x%08x\n",
             entry->present, entry->read_write, entry->usermode, entry->write_through,
             entry->cache_disable, entry->accessed, entry->dirty, entry->page_att_table,
-            entry->global, entry->frame, mapped_pages[bit_idx - 1],
-            mapped_pages[bit_idx], mapped_pages[bit_idx + 1]);
+            entry->global, entry->frame, _mapped_pages[bit_idx - 1],
+            _mapped_pages[bit_idx], _mapped_pages[bit_idx + 1]);
         PANIC("Attempted to map already mapped page.\n");
     }
 #endif
     // Set the page information
-    page_tables[pde].pages[pte] = {
+    _page_tables[pde].pages[pte] = {
         .present = 1,           // The page is present
         .read_write = 1,        // The page has r/w permissions
         .usermode = 0,          // These are kernel pages
@@ -150,8 +150,8 @@ static void _px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
         .frame = paddr >> 12    // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
-    bitmap_set_bit(mapped_mem, paddr >> 12);
-    bitmap_set_bit(mapped_pages, vaddr.val >> 12);
+    bitmap_set_bit(_mapped_mem, paddr >> 12);
+    bitmap_set_bit(_mapped_pages, vaddr.val >> 12);
 }
 
 static void _px_paging_map_early_mem() {
@@ -203,18 +203,18 @@ static inline void _px_paging_disable() {
  * @param seq the number of sequential pages to get
  */
 static uint32_t _find_next_free_virt_addr(int seq) {
-    return bitmap_find_first_range_clear(mapped_pages, ADDRESS_SPACE_SIZE / PAGE_SIZE, seq);
+    return bitmap_find_first_range_clear(_mapped_pages, ADDRESS_SPACE_SIZE / PAGE_SIZE, seq);
 }
 
 static uint32_t _find_next_free_phys_page() {
-    return bitmap_find_first_bit_clear(mapped_mem, ADDRESS_SPACE_SIZE / PAGE_SIZE);
+    return bitmap_find_first_bit_clear(_mapped_mem, ADDRESS_SPACE_SIZE / PAGE_SIZE);
 }
 
 /**
  * map in a new page. if you request less than one page, you will get exactly one page
  */
 void* px_get_new_page(uint32_t size) {
-    px_mutex_lock(&mutex_paging);
+    px_mutex_lock(&_mutex_paging);
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t free_idx = _find_next_free_virt_addr(page_count);
     if (free_idx == SIZE_T_MAX_VALUE) return NULL;
@@ -223,39 +223,39 @@ void* px_get_new_page(uint32_t size) {
         if (phys_page_idx == SIZE_T_MAX_VALUE) return NULL;
         _px_map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
     }
-    px_mutex_unlock(&mutex_paging);
+    px_mutex_unlock(&_mutex_paging);
     return (void *)(free_idx * PAGE_SIZE);
 }
 
 void px_free_page(void *page, uint32_t size) {
-    px_mutex_lock(&mutex_paging);
+    px_mutex_lock(&_mutex_paging);
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t page_index = (uint32_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
         // TODO: need locking here (maybe make a paging lock)
-        bitmap_clear_bit(mapped_pages, i);
+        bitmap_clear_bit(_mapped_pages, i);
         // how much more UN-readable can we make this?? (pls, i need to know...)
-        //*(uint32_t*)((uint32_t)page_tables + i * 4) = 0;
+        //*(uint32_t*)((uint32_t)_page_tables + i * 4) = 0;
         // this is the same as the line above
-        px_page_table_entry_t *pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
+        px_page_table_entry_t *pte = &(_page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
         // the frame field is actually the page frame's index
         // basically it's frame 0, 1...(2^21-1)
-        bitmap_clear_bit(mapped_mem, pte->frame);
+        bitmap_clear_bit(_mapped_mem, pte->frame);
         // zero it out to unmap it
         *pte = { /* Zero */ };
         // clear that tlb
         px_invalidate_page(page);
     }
-    px_mutex_unlock(&mutex_paging);
+    px_mutex_unlock(&_mutex_paging);
 }
 
 bool px_page_is_present(size_t addr) {
     // Convert the address into an index and
     // check whether the page is in the bitmap
-    return bitmap_get_bit(mapped_pages, (addr >> 12));
+    return bitmap_get_bit(_mapped_pages, (addr >> 12));
 }
 
 // TODO: maybe enforce access control here in the future
 uint32_t px_get_phys_page_dir() {
-    return page_dir_addr;
+    return _page_dir_addr;
 }

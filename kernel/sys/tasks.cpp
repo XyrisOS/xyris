@@ -31,8 +31,8 @@ static px_task_t *_dequeue_task(px_tasklist_t *);
 static void _cleaner_task_impl(void);
 static void _schedule(void);
 extern "C" void _px_tasks_enqueue_ready(px_task_t *task);
-void px_tasks_update_time();
-void _wakeup(px_task_t *task);
+static void _px_tasks_update_time();
+static void _wakeup(px_task_t *task);
 
 /* macro to create a new named tasklist and associated helper functions */
 #define NAMED_TASKLIST(name) \
@@ -335,7 +335,7 @@ px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state s
     return new_task;
 }
 
-void px_tasks_update_time()
+void _px_tasks_update_time()
 {
     uint64_t current_time = _get_cpu_time_ns();
     uint64_t delta = current_time - _last_time;
@@ -371,7 +371,7 @@ static void _schedule()
         // disable time slices because there are no tasks available to run
         _time_slice_remaining = 0;
         // count the time that this task ran for
-        px_tasks_update_time();
+        _px_tasks_update_time();
         /*** idle ***/
         // borrow this task to return to once we're not idle anymore
         px_task_t *borrowed = px_current_task;
@@ -388,14 +388,14 @@ static void _schedule()
             // check if there's a task ready to be run
         } while (task = _px_tasks_dequeue_ready(), task == NULL);
         // count the time we spent idling
-        px_tasks_update_time();
+        _px_tasks_update_time();
         // reset the current task
         px_current_task = borrowed;
         _idle_start = _idle_start - _get_cpu_time_ns();
         _idle_time += _idle_start;
     } else {
         // just do time accounting once
-        px_tasks_update_time();
+        _px_tasks_update_time();
     }
     // reset the time slice because a new task is being scheduled
     _time_slice_remaining = TIME_SLICE_SIZE;
@@ -421,7 +421,7 @@ void px_tasks_schedule()
 
 uint64_t px_tasks_get_self_time()
 {
-    px_tasks_update_time();
+    _px_tasks_update_time();
     return px_current_task->time_used;
 }
 
