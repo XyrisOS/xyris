@@ -10,6 +10,7 @@
  */
 // System library functions
 #include <stdint.h>
+#include <sys/kernel.hpp>
 #include <sys/panic.hpp>
 #include <sys/tasks.hpp>
 #include <lib/string.hpp>
@@ -28,40 +29,9 @@
 // Apps
 #include <apps/primes.hpp>
 
-// Used as a magic number for stack smashing protection
-#if UINT32_MAX == UINTPTR_MAX
-    #define STACK_CHK_GUARD 0xDEADC0DE
-#else
-    #define STACK_CHK_GUARD 0xBADBADBADBADBAD1
-#endif
-// Define the Git commit version if not declared by compiler
-#ifndef COMMIT
-    #define COMMIT "unknown"
-#endif
-// Assume that if major isn't set none of them are
-#ifndef VER_MAJOR
-    #define VER_MAJOR '0'
-    #define VER_MINOR '0'
-    #define VER_PATCH '0'
-#endif
-
-extern "C" void __stack_chk_fail(void);
 extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic);
-void px_kernel_print_splash();
-void px_kernel_boot_tone();
-
-/**
- * @brief This function is the global handler for all
- * stack protection. GCC will automatically write the
- * canary code and use this function as the handler
- * for when a smashed stack is detected.
- *
- */
-uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
-extern "C" void __stack_chk_fail(void)
-{
-    PANIC("Smashed stack detected.");
-}
+static void px_kernel_print_splash();
+static void px_kernel_boot_tone();
 
 /**
  * @brief This is the Panix kernel entry point. This function is called directly from the
@@ -123,13 +93,14 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     PANIC("Kernel terminated unexpectedly!");
 }
 
-void px_kernel_print_splash() {
+static void px_kernel_print_splash() {
     px_tty_clear();
     px_kprintf(
-        "\033[93mWelcome to Panix\n"
+        "\033[93mWelcome to Panix %s\n"
         "Developed by graduates and undergraduates of Cedarville University.\n"
         "Copyright the Panix Contributors (c) %i. All rights reserved.\n\033[0m",
-        (\
+        VER_NAME,
+        (
             ((__DATE__)[7] - '0') * 1000 + \
             ((__DATE__)[8] - '0') * 100  + \
             ((__DATE__)[9] - '0') * 10   + \
@@ -139,7 +110,7 @@ void px_kernel_print_splash() {
     px_kprintf("Commit %s (v%s.%s.%s) built on %s at %s.\n\n", COMMIT, VER_MAJOR, VER_MINOR, VER_PATCH, __DATE__, __TIME__);
 }
 
-void px_kernel_boot_tone() {
+static void px_kernel_boot_tone() {
     // Beep beep!
     px_spkr_beep(1000, 50);
     sleep(100);

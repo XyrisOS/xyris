@@ -19,6 +19,7 @@ export GIT_COMMIT := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 export VER_MAJOR := "0"
 export VER_MINOR := "4"
 export VER_PATCH := "0"
+export VER_NAME := "Phoenix"
 
 # ******************************
 # * Compiler Output Formatting *
@@ -116,7 +117,8 @@ export CPPFLAGS :=                \
 	-D COMMIT=\"$(GIT_COMMIT)\"   \
 	-D VER_MAJOR=\"$(VER_MAJOR)\" \
 	-D VER_MINOR=\"$(VER_MINOR)\" \
-	-D VER_PATCH=\"$(VER_PATCH)\"
+	-D VER_PATCH=\"$(VER_PATCH)\" \
+	-D VER_NAME=\"$(VER_NAME)\"
 # Assembler flags
 export ASFLAGS :=           \
 	${PANIX_ASFLAGS}        \
