@@ -58,6 +58,8 @@ IMGIMG  = $(PROJ_NAME).img
 SYMBOLS = $(KERNEL).sym
 PRODUCT = dist
 TESTS   = tests
+IMGTYPE ?= img
+RUNIMG  := $(PROJ_NAME).$(IMGTYPE)
 
 # Libraries
 # Okay, time to rant. For *whatever* reason, when I compile and install my
@@ -159,6 +161,8 @@ $(KERNEL):
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
 
+$(PRODUCT)/$(KERNEL): $(KERNEL)
+
 # **********************
 # * Bootloader Targets *
 # **********************
@@ -185,18 +189,18 @@ test:
 # ********************************
 
 # Create bootable ISO
-iso: $(PRODUCT)/$(KERNEL)
+$(PRODUCT)/$(ISOIMG): $(PRODUCT)/$(KERNEL)
 	@mkdir -p iso/boot/grub
 	@cp $(PRODUCT)/$(KERNEL) iso/boot/
 	@cp boot/grub.cfg iso/boot/grub/grub.cfg
-	@$(MKGRUB) -o $(PRODUCT)/$(ISOIMG) iso
+	@$(MKGRUB) -o $@ iso
 	@rm -rf iso
 
 # Create a bootable IMG
-$(PRODUCT)/$(KERNEL).img: $(PRODUCT)/$(KERNEL) $(LIMINE)/limine-install
+$(PRODUCT)/$(IMGIMG): $(PRODUCT)/$(KERNEL) $(LIMINE)/limine-install
 	@printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
 	@rm -f $@
-	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@
+	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
 	@parted -s $@ mklabel msdos
 	@parted -s $@ mkpart primary 1 100%
 	@parted -s $@ set 1 boot on # Workaround for buggy BIOSes
@@ -230,18 +234,18 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: $(PRODUCT)/$(KERNEL).img
-	$(QEMU)                      \
-	-hda $(PRODUCT)/$(KERNEL).img \
+run: $(PRODUCT)/$(RUNIMG)
+	$(QEMU)                           \
+	-drive file=$<,index=0,media=disk,format=raw \
 	$(QEMU_FLAGS)
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: run-debug
-run-debug: $(PRODUCT)/$(KERNEL).img
+run-debug: $(PRODUCT)/$(RUNIMG)
 	# Start QEMU with debugger
 	($(QEMU)   \
 	-S -s      \
-	-hda $< \
+	-drive file=$<,index=0,media=disk,format=raw \
 	$(QEMU_FLAGS) > /dev/null &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
