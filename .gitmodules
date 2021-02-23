@@ -6,3 +6,6 @@
 	path = thirdparty/limine
 	url = https://github.com/limine-bootloader/limine.git
 	branch = v1.0.6
+[submodule "thirdparty/stivale"]
+	path = thirdparty/stivale
+	url = https://github.com/stivale/stivale.git

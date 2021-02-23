@@ -5,7 +5,7 @@
 #include <dev/serial/rs232.hpp>
 
 #include <multiboot/multiboot2.h>
-#include <limine/stivale/stivale2.h>
+#include <stivale/stivale2.h>
 
 struct multiboot_fixed
 {
