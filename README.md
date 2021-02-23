@@ -1,7 +1,14 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/panix-os/panix/badge)](https://www.codefactor.io/repository/github/panix-os/panix)
-
 ![Logo](https://github.com/panix-os/panix-os.github.io/blob/master/img/logo.png?raw=true)
-### Panix
+
+<div style="text-align:center">
+    <a href="https://www.codefactor.io/repository/github/panix-os/panix"><img src="https://www.codefactor.io/repository/github/panix-os/panix/badge" alt="CodeFactor" /></a>
+    <a href="https://github.com/panix-os/Panix/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/panix-os/Panix"></a>
+    <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/panix-os/Panix">
+    <a href="https://discord.gg/FNbZMr7p9d"><img alt="Discord" src="https://img.shields.io/discord/732032083647660123"></a>
+    <a href="https://github.com/panix-os/Panix/blob/dev/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/panix-os/Panix"></a>
+</div>
+
+## Panix
 Panix is a small, hobbyist kernel started by [Keeton Feavel](https://github.com/Kfeavel) and further developed with the help of [Micah Switzer](https://github.com/micahswitzer).
 Having now undergone three rewrites from the ground up, Panix has come a long way since its first start in 2018.
 
@@ -13,3 +20,18 @@ Panix is the subject of an independent study and the associated final report pub
 
 ### How to Help
 We are constantly looking for people to help contribute to Panix. If you would like to contribute driver code or a new feature, feel free to fork the repository and submit a pull request. If you are a student who would like to get involved, feel free to contact any of the project contributors.
+
+
+### License
+Panix is available under the MIT license. This license may not apply to third party source code used by Panix. Third party source code used is listed below.
+
+See [LICENSE](https://github.com/panix-os/Panix/blob/stable/LICENSE) for details.
+
+## Contributors
+<a href="https://github.com/panix-os/panix/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=panix-os/panix" />
+</a>
+</br>
+
+## Third Party Projects
+* [Limine Bootloader](https://github.com/limine-bootloader/limine)
