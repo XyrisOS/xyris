@@ -112,7 +112,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         // Now that we assigned all of our string, put together the message
         px_ksprintf(
             msg,
-            "Page fault (%s%s%s%s) at 0x0x%08X (id -> %i)\n",
+            "Page fault (%s%s%s%s) at 0x%08X (id -> %i)\n",
             real,
             rws,
             uss,

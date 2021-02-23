@@ -52,10 +52,14 @@ export MKGRUB  := $(shell command -v grub-mkrescue)
 BUILD   = obj
 LIBRARY = libs
 KERNEL  = kernel
+LIMINE  = ./thirdparty/limine
 ISOIMG  = $(PROJ_NAME).iso
+IMGIMG  = $(PROJ_NAME).img
 SYMBOLS = $(KERNEL).sym
 PRODUCT = dist
 TESTS   = tests
+IMGTYPE ?= img
+RUNIMG  := $(PROJ_NAME).$(IMGTYPE)
 
 # Libraries
 # Okay, time to rant. For *whatever* reason, when I compile and install my
@@ -157,6 +161,17 @@ $(KERNEL):
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
 
+$(PRODUCT)/$(KERNEL): $(KERNEL)
+
+# **********************
+# * Bootloader Targets *
+# **********************
+
+$(LIMINE)/limine-install:
+	@printf "$(COLOR_INFO)Making Limine Bootloader$(COLOR_NONE)\n"
+	@$(MAKE) -C $(LIMINE) limine-install
+	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
+
 # *********************
 # * Kernel Unit Tests *
 # *********************
@@ -174,12 +189,26 @@ test:
 # ********************************
 
 # Create bootable ISO
-iso: $(PRODUCT)/$(KERNEL)
+$(PRODUCT)/$(ISOIMG): $(PRODUCT)/$(KERNEL)
 	@mkdir -p iso/boot/grub
 	@cp $(PRODUCT)/$(KERNEL) iso/boot/
 	@cp boot/grub.cfg iso/boot/grub/grub.cfg
-	@$(MKGRUB) -o $(PRODUCT)/$(ISOIMG) iso
+	@$(MKGRUB) -o $@ iso
 	@rm -rf iso
+
+# Create a bootable IMG
+$(PRODUCT)/$(IMGIMG): $(PRODUCT)/$(KERNEL) $(LIMINE)/limine-install
+	@printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
+	@rm -f $@
+	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
+	@parted -s $@ mklabel msdos
+	@parted -s $@ mkpart primary 1 100%
+	@parted -s $@ set 1 boot on # Workaround for buggy BIOSes
+	@echfs-utils -m -p0 $@ quick-format 32768
+	@echfs-utils -m -p0 $@ import boot/limine.cfg limine.cfg
+	@echfs-utils -m -p0 $@ import $< kernel
+	#@echfs-utils -m -p0 $@ import boot/bg.bmp bg.bmp
+	@$(LIMINE)/limine-install $(LIMINE)/limine.bin $@
 
 # *************************
 # * Virtual Machine Flags *
@@ -205,18 +234,18 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: $(PRODUCT)/$(KERNEL)
-	$(QEMU)                      \
-	-kernel $(PRODUCT)/$(KERNEL) \
+run: $(PRODUCT)/$(RUNIMG)
+	$(QEMU)                           \
+	-drive file=$<,index=0,media=disk,format=raw \
 	$(QEMU_FLAGS)
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: run-debug
-run-debug: $(PRODUCT)/$(KERNEL)
+run-debug: $(PRODUCT)/$(RUNIMG)
 	# Start QEMU with debugger
 	($(QEMU)   \
 	-S -s      \
-	-kernel $< \
+	-drive file=$<,index=0,media=disk,format=raw \
 	$(QEMU_FLAGS) > /dev/null &)
 	sleep 1
 	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
@@ -266,6 +295,8 @@ clean:
 		printf " -   " &&       \
         $(MAKE) -C $$dir clean; \
     done
+	@printf "$(COLOR_OK)Cleaning bootloader...$(COLOR_NONE)\n"
+	@$(MAKE) -C $(LIMINE) clean
 	@printf "$(COLOR_OK)Cleaning complete.$(COLOR_NONE)\n"
 
 .PHONY: clean-tests

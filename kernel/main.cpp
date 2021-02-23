@@ -29,17 +29,34 @@
 // Apps
 #include <apps/primes.hpp>
 
-extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic);
 static void px_kernel_print_splash();
 static void px_kernel_boot_tone();
+
+static void px_print_boot_info(void *boot_info, uint32_t magic)
+{
+    px_rs232_printf("Bootloader info at 0x%x\n", boot_info);
+    if (boot_info != NULL) {
+        uintptr_t page = (uintptr_t)boot_info & PAGE_ALIGN;
+        px_map_kernel_page(VADDR(page), page);
+    }
+    const char *boot_proto_name = "Unknown";
+    if (magic == 0x2BADB002) {
+        boot_proto_name = "Multiboot 1";
+    } else if (magic == 0x36d76289) {
+        boot_proto_name = "Multiboot 2";
+        px_parse_multiboot2(boot_info);
+    } else if (magic == *(uint32_t*)"stv2") {
+        boot_proto_name = "Stivale 2";
+    }
+    px_kprintf(DBG_INFO "Booted via %s\n", boot_proto_name);
+}
 
 /**
  * @brief This is the Panix kernel entry point. This function is called directly from the
  * assembly written in boot.S located in arch/i386/boot.S.
  */
-extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_magic) {
-    (void)mb_struct;
-    (void)mb_magic;
+void px_kernel_main(void *boot_info, uint32_t magic) {
+    (void)boot_info;
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     // Install the GDT
@@ -48,6 +65,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_isr_install();           // Initialize Interrupt Service Requests
     px_rs232_init(RS_232_COM1); // RS232 Serial
     px_paging_init(0);          // Initialize paging service (0 is placeholder)
+    px_print_boot_info(boot_info, magic);
     px_kbd_init();              // Initialize PS/2 Keyboard
     px_rtc_init();              // Initialize Real Time Clock
     px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
@@ -69,6 +87,7 @@ extern "C" void px_kernel_main(const multiboot_info_t* mb_struct, uint32_t mb_ma
     px_rs232_print("\n");
     px_rs232_print(model);
     px_rs232_print("\n");
+
     // Done
     px_kprintf(DBG_OKAY "Done.\n");
 

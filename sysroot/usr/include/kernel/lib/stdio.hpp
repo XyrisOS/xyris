@@ -88,6 +88,10 @@ int puts(const char *str);
  * 1024 (including null terminator).
  * @param fmt Formatted C string
  * @param ... Sequence of additional arguments
- * @return int The total number of characters written.
  */
-int px_debugf(const char* fmt, ...);
+#ifdef DEBUG
+#include <dev/serial/rs232.hpp>
+#define px_debugf(fmt, ...) px_rs232_printf(fmt, ##__VA_ARGS__)
+#else
+#define px_debugf(fmt, ...)
+#endif

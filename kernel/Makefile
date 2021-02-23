@@ -44,8 +44,10 @@ LIBS     = $(addprefix -l:, $(LIBS_A))
 # * Toolchain Flags *
 # *******************
 
-CPPFLAGS +=                           \
-	-I ${SYSROOT}/usr/include/kernel/
+CPPFLAGS +=               \
+	-I ${INCLUDE}/kernel/ \
+	-I ${INCLUDE}/boot/   \
+	-I ../thirdparty/
 
 LDFLAGS +=                 \
 	-T arch/i386/linker.ld \

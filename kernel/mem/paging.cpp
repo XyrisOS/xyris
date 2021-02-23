@@ -33,13 +33,12 @@ static uint32_t                  page_dir_addr;
 static px_page_table_t *         page_dir_virt[PAGE_ENTRIES];
 
 /* both of these must be page aligned for anything to work right at all */
-static px_page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((section (".page_tables")));
-static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables")));
+static px_page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((section (".page_tables,\"aw\", @nobits#")));
+static px_page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables,\"aw\", @nobits#")));
 
 // Function prototypes
 static void px_mem_page_fault(registers_t* regs);
 static void px_paging_init_dir();
-static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr);
 static void px_paging_map_early_mem();
 static void px_paging_map_hh_kernel();
 static uint32_t find_next_free_virt_addr(int seq);
@@ -108,7 +107,7 @@ static void px_paging_init_dir() {
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
 }
 
-static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
+void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
     // Set the page directory entry (pde) and page table entry (pte)
     uint32_t pde = vaddr.page_dir_index;
     uint32_t pte = vaddr.page_table_index;
@@ -116,13 +115,18 @@ static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
     if (vaddr.page_offset != 0) {
         PANIC("Attempted to map a non-page-aligned virtual address.\n");
     }
-#if defined(DEBUG)
-    // Print a debug message to serial
     px_page_table_entry *entry = &(page_tables[pde].pages[pte]);
+    // Print a debug message to serial
     px_debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr, vaddr.val, pde, pte);
     // If the page is already mapped into memory
     if (entry->present) {
+        if (entry->frame == paddr >> 12) {
+            // this page was already mapped the same way
+            return;
+        }
+#ifdef DEBUG
         size_t bit_idx = INDEX_FROM_BIT(vaddr.val >> 12);
+#endif
         px_debugf(
             "pte { present = %d, read_write = %d, usermode = %d, "
             "write_through = %d,\n      cache_disable = %d, accessed = %d, "
@@ -134,7 +138,6 @@ static void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr) {
             mapped_pages[bit_idx], mapped_pages[bit_idx + 1]);
         PANIC("Attempted to map already mapped page.\n");
     }
-#endif
     // Set the page information
     page_tables[pde].pages[pte] = {
         .present = 1,           // The page is present

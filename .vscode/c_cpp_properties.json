@@ -6,7 +6,8 @@
             "compilerPath": "/usr/bin/gcc",
             "includePath": [
                 "${default}",
-                "${workspaceFolder}/sysroot/usr/include/kernel/**"
+                "${workspaceFolder}/sysroot/usr/include/kernel/",
+                "${workspaceFolder}/thirdparty/"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
