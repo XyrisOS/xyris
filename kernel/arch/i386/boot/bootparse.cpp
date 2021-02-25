@@ -7,6 +7,13 @@
 #include <multiboot/multiboot2.h>
 #include <stivale/stivale2.h>
 
+/*
+ *  __  __      _ _   _ _              _   ___
+ * |  \/  |_  _| | |_(_) |__  ___  ___| |_|_  )
+ * | |\/| | || | |  _| | '_ \/ _ \/ _ \  _|/ /
+ * |_|  |_|\_,_|_|\__|_|_.__/\___/\___/\__/___|
+ */
+
 struct multiboot_fixed
 {
     uint32_t total_size;
@@ -116,10 +123,128 @@ void px_parse_multiboot2(void *info)
             break;
         }
         default:
-            px_rs232_printf("Unknown Multiboot2 Tag: %d\n", tag->type);
+            px_rs232_printf("Unknown Multiboot2 tag: %d\n", tag->type);
             break;
         }
         // move to the next tag, aligning if necessary
         tag = (struct multiboot_tag*)(((uintptr_t)tag + tag->size + 7) & ~((uintptr_t)7));
     }
+}
+
+/*
+ *  ___ _   _          _     ___
+ * / __| |_(_)_ ____ _| |___|_  )
+ * \__ \  _| \ V / _` | / -_)/ /
+ * |___/\__|_|\_/\__,_|_\___/___|
+ */
+
+static void print_stivale2_mmap(struct stivale2_struct_tag_memmap* mmap)
+{
+    static const char *mmap_types[] = {
+        [0] = "Invalid",
+        [STIVALE2_MMAP_USABLE] = "Available",
+        [STIVALE2_MMAP_RESERVED] = "Reserved",
+        [STIVALE2_MMAP_ACPI_RECLAIMABLE] = "ACPI reclaimable",
+        [STIVALE2_MMAP_ACPI_NVS] = "Non-volatile storage",
+        [STIVALE2_MMAP_BAD_MEMORY] = "Bad RAM"
+    };
+    // List of memory map entries
+    struct stivale2_mmap_entry* mmap_list = (struct stivale2_mmap_entry*)mmap->memmap;
+    for (uint64_t i = 0; i < mmap->entries; i++)
+    {
+        struct stivale2_mmap_entry* entry = &mmap_list[i];
+        px_rs232_printf("  addr: 0x%02x%08x, length: 0x%02x%08x, type: %s\n",
+            (uint32_t)(entry->base >> 32) & 0xff, (uint32_t)(entry->base & UINT32_MAX),
+            (uint32_t)(entry->length >> 32) & 0xff, (uint32_t)(entry->length & UINT32_MAX),
+            // Have to do this because the IDs aren't in an order that can be
+            // mapped into an array like Multiboot. The last two types start at
+            // 0x1000, so we have to do some ternary operator magic.
+            (entry->type < 6 ? mmap_types[entry->type]
+                             : (entry->type == STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE ? "Bootloader"
+                                                                                    : "Kernel & Modules")));
+    }
+}
+
+void px_parse_stivale2(void *info)
+{
+    auto fixed = (struct stivale2_struct*)info;
+    for (uintptr_t page = ((uintptr_t)info & PAGE_ALIGN) + PAGE_SIZE;
+         page <= ((uintptr_t)info & PAGE_ALIGN);
+         page += PAGE_SIZE) {
+        px_rs232_printf("Mapping bootinfo at 0x%08x\n", page);
+        px_map_kernel_page(VADDR(page), page);
+    }
+    // Walk the list of tags in the header
+    struct stivale2_tag* tag = (struct stivale2_tag*)(fixed->tags);
+    while (tag)
+    {
+        // Map in each tag since Stivale2 doesn't give us a total size like Multiboot does.
+        uintptr_t page = ((uintptr_t)tag & PAGE_ALIGN);
+        px_map_kernel_page(VADDR(page), page);
+        // Follows the tag list order in stivale2.h
+        switch(tag->identifier)
+        {
+            case STIVALE2_STRUCT_TAG_CMDLINE_ID:
+            {
+                auto cmdline = (struct stivale2_struct_tag_cmdline*)tag;
+                px_rs232_printf("Stivale2 cmdline: '%s'\n", (const char *)cmdline->cmdline);
+                break;
+            }
+            case STIVALE2_STRUCT_TAG_MEMMAP_ID:
+            {
+                auto memmap = (struct stivale2_struct_tag_memmap*)tag;
+                px_rs232_printf("Stivale2 memory map:\n");
+                print_stivale2_mmap(memmap);
+                break;
+            }
+            case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID:
+            {
+                px_rs232_printf("Framebuffer\n");
+                break;
+            }
+            case STIVALE2_STRUCT_TAG_FB_MTRR_ID:
+            {
+                px_rs232_printf("Framebuffer MTRR\n");
+                break;
+            }
+            case STIVALE2_STRUCT_TAG_MODULES_ID:
+            {
+                px_rs232_printf("Modules\n");
+                break;
+            }
+            case STIVALE2_STRUCT_TAG_RSDP_ID:
+            {
+                px_rs232_printf("RSDP\n");
+                break;
+            }
+            case STIVALE2_STRUCT_TAG_EPOCH_ID:
+            {
+                px_rs232_printf("Epoch\n");
+                break;
+            }
+            case STIVALE2_STRUCT_TAG_FIRMWARE_ID:
+            {
+                px_rs232_printf("Firmware\n");
+                break;
+            }
+            case STIVALE2_STRUCT_TAG_SMP_ID:
+            {
+                px_rs232_printf("SMP\n");
+                break;
+            }
+            case STIVALE2_STRUCT_TAG_PXE_SERVER_INFO:
+            {
+                px_rs232_printf("PXE\n");
+                break;
+            }
+            default:
+            {
+                px_rs232_printf("Unknown Stivale2 tag: %d\n", tag->identifier);
+                break;
+            }
+        }
+
+        tag = (struct stivale2_tag*)tag->next;
+    }
+    px_rs232_printf("Done\n");
 }
