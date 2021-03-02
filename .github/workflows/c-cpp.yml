@@ -9,7 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: kevincharm/i686-elf-gcc-toolchain
+    container:
+      image: docker.pkg.github.com/panix-os/panix/panixbuild:3.0.0
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.ghcr_token }}
     steps:
     - name: make
       run: make
