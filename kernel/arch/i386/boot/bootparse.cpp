@@ -149,10 +149,10 @@ static void print_stivale2_mmap(struct stivale2_struct_tag_memmap* mmap)
         [STIVALE2_MMAP_BAD_MEMORY] = "Bad RAM"
     };
     // List of memory map entries
-    struct stivale2_mmap_entry* mmap_list = (struct stivale2_mmap_entry*)mmap->memmap;
+    auto mmap_list = (struct stivale2_mmap_entry*)mmap->memmap;
     for (uint64_t i = 0; i < mmap->entries; i++)
     {
-        struct stivale2_mmap_entry* entry = &mmap_list[i];
+        auto entry = &mmap_list[i];
         px_rs232_printf("  addr: 0x%02x%08x, length: 0x%02x%08x, type: %s\n",
             (uint32_t)(entry->base >> 32) & 0xff, (uint32_t)(entry->base & UINT32_MAX),
             (uint32_t)(entry->length >> 32) & 0xff, (uint32_t)(entry->length & UINT32_MAX),
@@ -175,7 +175,7 @@ void px_parse_stivale2(void *info)
         px_map_kernel_page(VADDR(page), page);
     }
     // Walk the list of tags in the header
-    struct stivale2_tag* tag = (struct stivale2_tag*)(fixed->tags);
+    auto tag = (struct stivale2_tag*)(fixed->tags);
     while (tag)
     {
         // Map in each tag since Stivale2 doesn't give us a total size like Multiboot does.
