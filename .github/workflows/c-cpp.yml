@@ -13,7 +13,7 @@ jobs:
       image: docker.pkg.github.com/panix-os/panix/panixbuild:3.0.0
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.ghcr_token }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: make
       run: make
