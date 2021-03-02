@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: docker.pkg.github.com/panix-os/panix/panixbuild:3.0.0
+    runs-on: panixbuild
 
     steps:
     - name: make
