@@ -8,9 +8,8 @@ on:
 
 jobs:
   build:
-
-    runs-on: panixbuild
-
+    runs-on: ubuntu-latest
+    container: kevincharm/i686-elf-gcc-toolchain
     steps:
     - name: make
       run: make
