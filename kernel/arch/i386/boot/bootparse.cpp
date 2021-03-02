@@ -199,42 +199,80 @@ void px_parse_stivale2(void *info)
             }
             case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID:
             {
-                px_rs232_printf("Framebuffer\n");
+                auto framebuffer = (struct stivale2_struct_tag_framebuffer*)tag;
+                px_rs232_printf("Stivale2 framebuffer:\n");
+                px_rs232_printf("  Address: 0x%08X", framebuffer->framebuffer_addr);
+                px_rs232_printf("  Resolution: %ix%ix%i\n",
+                    framebuffer->framebuffer_width,
+                    framebuffer->framebuffer_height,
+                    (framebuffer->framebuffer_bpp * 8));
                 break;
             }
             case STIVALE2_STRUCT_TAG_FB_MTRR_ID:
             {
-                px_rs232_printf("Framebuffer MTRR\n");
+                px_rs232_printf("  Framebuffer has MTRR\n");
                 break;
             }
             case STIVALE2_STRUCT_TAG_MODULES_ID:
             {
-                px_rs232_printf("Modules\n");
+                auto modules = (struct stivale2_struct_tag_modules*)tag;
+                for (uint64_t i = 0; i < modules->module_count; i++) {
+                    stivale2_module mod = modules->modules[i];
+                    px_rs232_printf("Stivale2 module: %s\n  Module start: 0x%08x\n  Module end:   0x%08x\n",
+                        mod.string,
+                        mod.begin,
+                        mod.end
+                    );
+                }
                 break;
             }
             case STIVALE2_STRUCT_TAG_RSDP_ID:
             {
-                px_rs232_printf("RSDP\n");
+                auto rsdp = (struct stivale2_struct_tag_rsdp*)tag;
+                px_rs232_printf("ACPI RSDP: %08X\n", rsdp->rsdp);
                 break;
             }
             case STIVALE2_STRUCT_TAG_EPOCH_ID:
             {
-                px_rs232_printf("Epoch\n");
+                auto epoch = (struct stivale2_struct_tag_epoch*)tag;
+                px_rs232_printf("Stivale2 epoch: %i\n", epoch->epoch);
                 break;
             }
             case STIVALE2_STRUCT_TAG_FIRMWARE_ID:
             {
-                px_rs232_printf("Firmware\n");
+                auto firmware = (struct stivale2_struct_tag_firmware*)tag;
+                px_rs232_printf("Stivale2 firmware flags: 0x%08X\n", firmware->flags);
+                px_rs232_printf("  Booted using %s\n", (firmware->flags & 0x1 ? "BIOS" : "UEFI"));
                 break;
             }
             case STIVALE2_STRUCT_TAG_SMP_ID:
             {
-                px_rs232_printf("SMP\n");
+                auto smp = (struct stivale2_struct_tag_smp*)tag;
+                px_rs232_printf("Stivale2 SMP flags: 0x%08X\n", smp->flags);
+                px_rs232_printf("  x2APIC %savailable\n", (smp->flags & 0x1 ? "" : "un"));
+                px_rs232_printf("  LAPIC ID: 0x%08X\n", smp->bsp_lapic_id);
+                px_rs232_printf("  CPU Count: %i\n", smp->cpu_count);
+                for (uint64_t i = 0; i < smp->cpu_count; i++) {
+                    auto smp_info = smp->smp_info[i];
+                    px_rs232_printf("    CPU ID: 0x%08X\n", smp_info.processor_id);
+                    px_rs232_printf("      LAPIC ID: 0x%08X\n", smp_info.lapic_id);
+                    px_rs232_printf("      Stack addr: 0x%08X\n", smp_info.target_stack);
+                    px_rs232_printf("      goto addr: 0x%08X\n", smp_info.goto_address);
+                    px_rs232_printf("      extra args: 0x%08X\n", smp_info.extra_argument);
+                }
                 break;
             }
             case STIVALE2_STRUCT_TAG_PXE_SERVER_INFO:
             {
-                px_rs232_printf("PXE\n");
+                auto pxe = (struct stivale2_struct_tag_pxe_server_info*)tag;
+                unsigned char ip[4];
+                ip[0] = pxe->server_ip & 0xFF;
+                ip[1] = (pxe->server_ip >> 8) & 0xFF;
+                ip[2] = (pxe->server_ip >> 16) & 0xFF;
+                ip[3] = (pxe->server_ip >> 24) & 0xFF;
+                px_rs232_printf("Stivale2 PXE ip addr: %d.%d.%d.%d\n",
+                    ip[3], ip[2], ip[1], ip[0]
+                );
                 break;
             }
             default:
