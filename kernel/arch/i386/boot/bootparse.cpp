@@ -139,32 +139,25 @@ void px_parse_multiboot2(void *info)
 
 static const char* stivale2_mmap_type_to_string(uint32_t type)
 {
-    const char* str = "Invalid";
     switch (type)
     {
         case STIVALE2_MMAP_USABLE:
-            str = "Available";
-            break;
+            return "Available";
         case STIVALE2_MMAP_RESERVED:
-            str = "Reserved";
-            break;
+            return "Reserved";
         case STIVALE2_MMAP_ACPI_RECLAIMABLE:
-            str = "ACPI reclaimable";
-            break;
+            return "ACPI reclaimable";
         case STIVALE2_MMAP_ACPI_NVS:
-            str = "Non-volatile storage";
-            break;
+            return "Non-volatile storage";
         case STIVALE2_MMAP_BAD_MEMORY:
-            str = "Bad RAM";
-            break;
+            return "Bad RAM";
         case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
-            str = "Bootloader";
-            break;
+            return "Bootloader";
         case STIVALE2_MMAP_KERNEL_AND_MODULES:
-            str = "Kernel & Modules";
-            break;
+            return "Kernel & Modules";
+        default:
+            return "Invalid";
     }
-    return str;
 }
 
 static void print_stivale2_mmap(struct stivale2_struct_tag_memmap* mmap)
