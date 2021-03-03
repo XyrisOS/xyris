@@ -138,16 +138,38 @@ void px_parse_multiboot2(void *info)
  * |___/\__|_|\_/\__,_|_\___/___|
  */
 
+static const char* stivale2_mmap_type_to_string(uint32_t type)
+{
+    const char* str = "Invalid";
+    switch (type)
+    {
+        case STIVALE2_MMAP_USABLE:
+            str = "Available";
+            break;
+        case STIVALE2_MMAP_RESERVED:
+            str = "Reserved";
+            break;
+        case STIVALE2_MMAP_ACPI_RECLAIMABLE:
+            str = "ACPI reclaimable";
+            break;
+        case STIVALE2_MMAP_ACPI_NVS:
+            str = "Non-volatile storage";
+            break;
+        case STIVALE2_MMAP_BAD_MEMORY:
+            str = "Bad RAM";
+            break;
+        case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
+            str = "Bootloader";
+            break;
+        case STIVALE2_MMAP_KERNEL_AND_MODULES:
+            str = "Kernel & Modules";
+            break;
+    }
+    return str;
+}
+
 static void print_stivale2_mmap(struct stivale2_struct_tag_memmap* mmap)
 {
-    static const char *mmap_types[] = {
-        [0] = "Invalid",
-        [STIVALE2_MMAP_USABLE] = "Available",
-        [STIVALE2_MMAP_RESERVED] = "Reserved",
-        [STIVALE2_MMAP_ACPI_RECLAIMABLE] = "ACPI reclaimable",
-        [STIVALE2_MMAP_ACPI_NVS] = "Non-volatile storage",
-        [STIVALE2_MMAP_BAD_MEMORY] = "Bad RAM"
-    };
     // List of memory map entries
     auto mmap_list = (struct stivale2_mmap_entry*)mmap->memmap;
     for (uint64_t i = 0; i < mmap->entries; i++)
@@ -156,12 +178,8 @@ static void print_stivale2_mmap(struct stivale2_struct_tag_memmap* mmap)
         px_rs232_printf("  addr: 0x%02x%08x, length: 0x%02x%08x, type: %s\n",
             (uint32_t)(entry->base >> 32) & 0xff, (uint32_t)(entry->base & UINT32_MAX),
             (uint32_t)(entry->length >> 32) & 0xff, (uint32_t)(entry->length & UINT32_MAX),
-            // Have to do this because the IDs aren't in an order that can be
-            // mapped into an array like Multiboot. The last two types start at
-            // 0x1000, so we have to do some ternary operator magic.
-            (entry->type < 6 ? mmap_types[entry->type]
-                             : (entry->type == STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE ? "Bootloader"
-                                                                                    : "Kernel & Modules")));
+            stivale2_mmap_type_to_string(entry->type)
+        );
     }
 }
 
