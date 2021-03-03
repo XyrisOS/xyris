@@ -168,12 +168,6 @@ static void print_stivale2_mmap(struct stivale2_struct_tag_memmap* mmap)
 void px_parse_stivale2(void *info)
 {
     auto fixed = (struct stivale2_struct*)info;
-    for (uintptr_t page = ((uintptr_t)info & PAGE_ALIGN) + PAGE_SIZE;
-         page <= ((uintptr_t)info & PAGE_ALIGN);
-         page += PAGE_SIZE) {
-        px_rs232_printf("Mapping bootinfo at 0x%08x\n", page);
-        px_map_kernel_page(VADDR(page), page);
-    }
     // Walk the list of tags in the header
     auto tag = (struct stivale2_tag*)(fixed->tags);
     while (tag)
@@ -217,11 +211,11 @@ void px_parse_stivale2(void *info)
             {
                 auto modules = (struct stivale2_struct_tag_modules*)tag;
                 for (uint64_t i = 0; i < modules->module_count; i++) {
-                    stivale2_module mod = modules->modules[i];
+                    stivale2_module* mod = &modules->modules[i];
                     px_rs232_printf("Stivale2 module: %s\n  Module start: 0x%08x\n  Module end:   0x%08x\n",
-                        mod.string,
-                        mod.begin,
-                        mod.end
+                        mod->string,
+                        mod->begin,
+                        mod->end
                     );
                 }
                 break;
