@@ -50,9 +50,8 @@ struct RSDPDescriptor {
     uint32_t RsdtAddress;
 } __attribute__ ((packed));
 
-static void print_acpi1_rsdp(struct multiboot_tag_old_acpi *acpi)
+static void print_acpi1_rsdp(struct RSDPDescriptor* rsdp)
 {
-    auto rsdp = (struct RSDPDescriptor *) acpi->rsdp;
     size_t checksum = 0;
     for (unsigned i = 0; i < sizeof(*rsdp); i++) {
         checksum += ((uint8_t*)rsdp)[i];
@@ -114,7 +113,7 @@ void px_parse_multiboot2(void *info)
         }
         case MULTIBOOT_TAG_TYPE_ACPI_OLD: {
             auto oldacpi = (struct multiboot_tag_old_acpi *) tag;
-            print_acpi1_rsdp(oldacpi);
+            print_acpi1_rsdp((struct RSDPDescriptor *)oldacpi->rsdp);
             break;
         }
         case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR: {
@@ -241,7 +240,8 @@ void px_parse_stivale2(void *info)
             case STIVALE2_STRUCT_TAG_RSDP_ID:
             {
                 auto rsdp = (struct stivale2_struct_tag_rsdp*)tag;
-                px_rs232_printf("ACPI RSDP: %08X\n", rsdp->rsdp);
+                struct RSDPDescriptor* rsdp_desc = (struct RSDPDescriptor*)rsdp->rsdp;
+                print_acpi1_rsdp(rsdp_desc);
                 break;
             }
             case STIVALE2_STRUCT_TAG_EPOCH_ID:
