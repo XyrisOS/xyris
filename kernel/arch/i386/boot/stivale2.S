@@ -17,4 +17,17 @@ __stivale2_header:
     dd _EARLY_BSS_END
     dd 0 ; stack, high bits
     dq 0 ; flags
-    dq 0 ; tags
+    ; tags
+    dd 0 ; __stivale2_framebuffer
+    dd 0
+
+%if 0
+section .early_data
+align 4
+__stivale2_framebuffer:
+    dq 0x3ecc1bc43d0f7971
+    dq 0
+    dw 1280
+    dw 720
+    dw 32
+%endif

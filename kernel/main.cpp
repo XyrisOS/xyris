@@ -47,6 +47,7 @@ static void px_print_boot_info(void *boot_info, uint32_t magic)
         px_parse_multiboot2(boot_info);
     } else if (magic == *(uint32_t*)"stv2") {
         boot_proto_name = "Stivale 2";
+        px_parse_stivale2(boot_info);
     }
     px_kprintf(DBG_INFO "Booted via %s\n", boot_proto_name);
 }

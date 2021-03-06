@@ -34,11 +34,12 @@ static inline int px_arch_cpuid(int flag, int regs[4]) {
     return (int)regs[0];
 }
 // Kernel entry point
-extern "C" void px_kernel_main(void *, uint32_t);
+extern "C" void px_kernel_main(void* boot_info, uint32_t magic);
 // i386+ & amd64 functions
 const char* px_cpu_get_vendor();
 const char* px_cpu_get_model();
-void px_parse_multiboot2(void *);
+void px_parse_multiboot2(void* info);
+void px_parse_stivale2(void* info);
 // Shared library code for i386+ & amd64 family
 #include <cpuid.h>
 #include <arch/i386/gdt.hpp>
