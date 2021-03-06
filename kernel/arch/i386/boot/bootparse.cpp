@@ -33,7 +33,7 @@ static void print_multiboot2_mmap(struct multiboot_tag_mmap *mmap)
     uint32_t remaining = mmap->size - sizeof(*mmap);
     struct multiboot_mmap_entry *entry = mmap->entries;
     while (remaining > 0) {
-        px_rs232_printf("  addr: 0x%02x%08x, length: 0x%02x%08x, type: %s\n",
+        px_rs232_printf("\taddr: 0x%02x%08x, length: 0x%02x%08x, type: %s\n",
             (uint32_t)(entry->addr >> 32) & 0xff, (uint32_t)(entry->addr & UINT32_MAX),
             (uint32_t)(entry->len >> 32) & 0xff, (uint32_t)(entry->len & UINT32_MAX),
             mmap_types[entry->type]);
@@ -58,10 +58,10 @@ static void print_acpi1_rsdp(struct RSDPDescriptor* rsdp)
     }
     bool is_valid = (uint8_t)checksum == 0 && memcmp(rsdp->Signature, "RSD PTR ", sizeof(rsdp->Signature)) == 0;
     px_rs232_printf("Multiboot2 ACPI 1.0 RSDP:\n");
-    px_rs232_printf("  Checksum: %s\n", is_valid ? "Valid" : "Invalid");
-    px_rs232_printf("  OEMID: %.6s\n", rsdp->OEMID);
-    px_rs232_printf("  Revision: %u\n", rsdp->Revision);
-    px_rs232_printf("  RsdtAddress: 0x%08x\n", rsdp->RsdtAddress);
+    px_rs232_printf("\tChecksum: %s\n", is_valid ? "Valid" : "Invalid");
+    px_rs232_printf("\tOEMID: %.6s\n", rsdp->OEMID);
+    px_rs232_printf("\tRevision: %u\n", rsdp->Revision);
+    px_rs232_printf("\tRsdtAddress: 0x%08x\n", rsdp->RsdtAddress);
 }
 
 void px_parse_multiboot2(void *info)
@@ -167,7 +167,7 @@ static void print_stivale2_mmap(struct stivale2_struct_tag_memmap* mmap)
     for (uint64_t i = 0; i < mmap->entries; i++)
     {
         auto entry = &mmap_list[i];
-        px_rs232_printf("  addr: 0x%02x%08x, length: 0x%02x%08x, type: %s\n",
+        px_rs232_printf("\taddr: 0x%02x%08x, length: 0x%02x%08x, type: %s\n",
             (uint32_t)(entry->base >> 32) & 0xff, (uint32_t)(entry->base & UINT32_MAX),
             (uint32_t)(entry->length >> 32) & 0xff, (uint32_t)(entry->length & UINT32_MAX),
             stivale2_mmap_type_to_string(entry->type)
@@ -205,8 +205,8 @@ void px_parse_stivale2(void *info)
             {
                 auto framebuffer = (struct stivale2_struct_tag_framebuffer*)tag;
                 px_rs232_printf("Stivale2 framebuffer:\n");
-                px_rs232_printf("  Address: 0x%08X", framebuffer->framebuffer_addr);
-                px_rs232_printf("  Resolution: %ix%ix%i\n",
+                px_rs232_printf("\tAddress: 0x%08X", framebuffer->framebuffer_addr);
+                px_rs232_printf("\tResolution: %ix%ix%i\n",
                     framebuffer->framebuffer_width,
                     framebuffer->framebuffer_height,
                     (framebuffer->framebuffer_bpp * 8));
@@ -214,7 +214,7 @@ void px_parse_stivale2(void *info)
             }
             case STIVALE2_STRUCT_TAG_FB_MTRR_ID:
             {
-                px_rs232_printf("  Framebuffer has MTRR\n");
+                px_rs232_printf("\tFramebuffer has MTRR\n");
                 break;
             }
             case STIVALE2_STRUCT_TAG_MODULES_ID:
@@ -247,23 +247,23 @@ void px_parse_stivale2(void *info)
             {
                 auto firmware = (struct stivale2_struct_tag_firmware*)tag;
                 px_rs232_printf("Stivale2 firmware flags: 0x%08X\n", firmware->flags);
-                px_rs232_printf("  Booted using %s\n", (firmware->flags & 0x1 ? "BIOS" : "UEFI"));
+                px_rs232_printf("\tBooted using %s\n", (firmware->flags & 0x1 ? "BIOS" : "UEFI"));
                 break;
             }
             case STIVALE2_STRUCT_TAG_SMP_ID:
             {
                 auto smp = (struct stivale2_struct_tag_smp*)tag;
                 px_rs232_printf("Stivale2 SMP flags: 0x%08X\n", smp->flags);
-                px_rs232_printf("  x2APIC %savailable\n", (smp->flags & 0x1 ? "" : "un"));
-                px_rs232_printf("  LAPIC ID: 0x%08X\n", smp->bsp_lapic_id);
-                px_rs232_printf("  CPU Count: %i\n", smp->cpu_count);
+                px_rs232_printf("\tx2APIC %savailable\n", (smp->flags & 0x1 ? "" : "un"));
+                px_rs232_printf("\tLAPIC ID: 0x%08X\n", smp->bsp_lapic_id);
+                px_rs232_printf("\tCPU Count: %i\n", smp->cpu_count);
                 for (uint64_t i = 0; i < smp->cpu_count; i++) {
                     auto smp_info = smp->smp_info[i];
-                    px_rs232_printf("    CPU ID: 0x%08X\n", smp_info.processor_id);
-                    px_rs232_printf("      LAPIC ID: 0x%08X\n", smp_info.lapic_id);
-                    px_rs232_printf("      Stack addr: 0x%08X\n", smp_info.target_stack);
-                    px_rs232_printf("      goto addr: 0x%08X\n", smp_info.goto_address);
-                    px_rs232_printf("      extra args: 0x%08X\n", smp_info.extra_argument);
+                    px_rs232_printf("\t\tCPU ID: 0x%08X\n", smp_info.processor_id);
+                    px_rs232_printf("\t\t\tLAPIC ID: 0x%08X\n", smp_info.lapic_id);
+                    px_rs232_printf("\t\t\tStack addr: 0x%08X\n", smp_info.target_stack);
+                    px_rs232_printf("\t\t\tgoto addr: 0x%08X\n", smp_info.goto_address);
+                    px_rs232_printf("\t\t\textra args: 0x%08X\n", smp_info.extra_argument);
                 }
                 break;
             }
