@@ -20,6 +20,7 @@ static size_t ansi_values_index = 0;
 #define POP_VAL() ansi_values[--ansi_values_index]
 #define CLEAR_VALS() ansi_values_index = 0
 #define ESC ('\033')
+#define TAB_WIDTH 4u
 // ANSI states
 typedef enum ansi_state {
     Normal,
@@ -150,6 +151,12 @@ int putchar_unlocked(char c) {
         case '\n':
             tty_coords_x = 0;
             tty_coords_y++;
+            break;
+        case '\t':
+            while (++tty_coords_x % TAB_WIDTH) {
+                where = x86_bios_vga_mem + (tty_coords_y * X86_TTY_WIDTH + tty_coords_x);
+                *where = ' ' | (attrib << 8);
+            }
             break;
         // Carriage return
         case '\r':
