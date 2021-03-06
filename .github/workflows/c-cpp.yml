@@ -20,4 +20,9 @@ jobs:
       with:
         submodules: true
     - name: Build
-      run: make
+      run: make dist/panix.img
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: os-image
+        path: dist/panix.img
