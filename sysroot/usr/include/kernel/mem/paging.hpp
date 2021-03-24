@@ -30,6 +30,7 @@ extern "C" void px_invalidate_page(void *page_addr);
 #define ADDRESS_SPACE_SIZE  0x100000000
 #define PAGE_SIZE           0x1000
 #define PAGE_ALIGN          0xfffff000
+#define PAGE_ALIGNED(addr)  (addr % PAGE_SIZE == 0)
 #define NOT_PAGE_ALIGN      ~(PAGE_ALIGN)
 #define PAGE_ALIGN_UP(addr) (((addr) & NOT_PAGE_ALIGN) ? (((addr) & PAGE_ALIGN) + PAGE_SIZE) : ((addr)))
 #define PAGE_ENTRY_PRESENT  0x1
