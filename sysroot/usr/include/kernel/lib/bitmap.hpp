@@ -42,5 +42,5 @@ static inline void bitmap_clear_bit(bitmap_t *bitmap, size_t index) {
     UNSET_BIT_IN_MAP(bitmap, index);
 }
 
-size_t bitmap_find_first_bit_clear(bitmap_t *bitmap, size_t size);
-size_t bitmap_find_first_range_clear(bitmap_t *bitmap, size_t size, size_t count);
+size_t bitmap_find_first_bit_clear(bitmap_t *bitmap, size_t start, size_t size);
+size_t bitmap_find_first_range_clear(bitmap_t *bitmap, size_t start, size_t size, size_t count);

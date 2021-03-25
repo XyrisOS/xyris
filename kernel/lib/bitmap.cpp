@@ -4,10 +4,10 @@
 #include <stdio.h>
 #endif
 
-size_t bitmap_find_first_range_clear(bitmap_t *bitmap, size_t size, size_t count) {
+size_t bitmap_find_first_range_clear(bitmap_t *bitmap, size_t start, size_t size, size_t count) {
     size_t check_lo, check_hi, check, idx, ofst;
     size_t mask = ((size_t)1 << count) - (size_t)1;
-    for (size_t i = 0UL; i < size - count; i++) {
+    for (size_t i = start; i < size - count; i++) {
         idx = INDEX_FROM_BIT(i);
         ofst = OFFSET_FROM_BIT(i);
         check_lo = bitmap[idx] >> ofst;
@@ -24,10 +24,9 @@ size_t bitmap_find_first_range_clear(bitmap_t *bitmap, size_t size, size_t count
     return SIZE_T_MAX_VALUE;
 }
 
-size_t bitmap_find_first_bit_clear(bitmap_t *bitmap, size_t size) {
-    for (size_t i = 0; i < size; i++) {
+size_t bitmap_find_first_bit_clear(bitmap_t *bitmap, size_t start, size_t size) {
+    for (size_t i = start; i < size; i++) {
         if (!((bitmap[INDEX_FROM_BIT(i)] >> OFFSET_FROM_BIT(i)) & 1)) return i;
     }
     return SIZE_T_MAX_VALUE;
 }
-

@@ -206,11 +206,11 @@ static inline void px_paging_disable() {
  * @param seq the number of sequential pages to get
  */
 static uint32_t find_next_free_virt_addr(int seq) {
-    return bitmap_find_first_range_clear(mapped_pages, ADDRESS_SPACE_SIZE / PAGE_SIZE, seq);
+    return bitmap_find_first_range_clear(mapped_pages, 0, ADDRESS_SPACE_SIZE / PAGE_SIZE, seq);
 }
 
 static uint32_t find_next_free_phys_page() {
-    return bitmap_find_first_bit_clear(mapped_mem, ADDRESS_SPACE_SIZE / PAGE_SIZE);
+    return bitmap_find_first_bit_clear(mapped_mem, 0, ADDRESS_SPACE_SIZE / PAGE_SIZE);
 }
 
 /**
