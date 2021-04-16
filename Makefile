@@ -80,13 +80,18 @@ export WARNINGS :=          \
 	-Wall                   \
 	-Werror                 \
 	-Wextra                 \
+	-Wundef                 \
+	-Wpadded                \
 	-Winline                \
 	-Wshadow                \
+	-Wformat=2              \
+	-Wconversion            \
 	-Wcast-align            \
 	-Wno-long-long          \
 	-Wpointer-arith         \
 	-Wwrite-strings         \
 	-Wredundant-decls       \
+	-Wdouble-promotion      \
 	-Wno-unused-function    \
 	-Wmissing-declarations
 # Flags to be added later
@@ -109,12 +114,12 @@ export CFLAGS :=            \
 	${WARNINGS}
 # C++ flags
 export CXXFLAGS :=          \
-	${PANIX_CXXFLAGS}       \
 	-fpermissive            \
 	-fno-rtti               \
 	-fno-exceptions         \
 	-fno-use-cxa-atexit     \
-	-std=c++17
+	-std=c++17              \
+	${PANIX_CXXFLAGS}       \
 # C / C++ pre-processor flags
 export CPPFLAGS :=                \
 	${PANIX_CPPFLAGS}             \
@@ -222,8 +227,8 @@ QEMU_FLAGS =        \
     -serial stdio
 QEMU_ARCH = i386
 # Virtualbox flags
-VM_NAME	= $(PROJ_NAME)-box
-VBOX_VM_FILE=$(PRODUCT)/$(VM_NAME)/$(VM_NAME).vbox
+VM_NAME = $(PROJ_NAME)-box
+VBOX_VM_FILE = $(PRODUCT)/$(VM_NAME)/$(VM_NAME).vbox
 # VM executable locations
 VBOX = $(shell command -v VBoxManage)
 QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
@@ -292,7 +297,7 @@ clean:
 	$(RM) -r $(BUILD)
 	@printf "$(COLOR_OK)Cleaning libraries...$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do \
-		printf " -   " &&       \
+	    printf " -   " &&       \
         $(MAKE) -C $$dir clean; \
     done
 	@printf "$(COLOR_OK)Cleaning bootloader...$(COLOR_NONE)\n"
