@@ -4,11 +4,13 @@ MemoryRange::MemoryRange()
 {
     _base = 0;
     _size = 0;
+    _type = MemoryBad;
 }
 
-MemoryRange::MemoryRange(uintptr_t base, size_t size)
+MemoryRange::MemoryRange(uintptr_t base, size_t size, MemoryRangeType type)
     : _base(base)
     , _size(size)
+    , _type(type)
 {
     // Nothing to do
 }
@@ -51,4 +53,19 @@ bool MemoryRange::Aligned()
 bool MemoryRange::Contains(uintptr_t addr)
 {
     return ((addr >= Base()) && (addr <= End()));
+}
+
+MemoryRangeType MemoryRange::Type()
+{
+    return _type;
+}
+
+MemoryRange* MemoryRange::Next()
+{
+    return _next;
+}
+
+MemoryRange* MemoryRange::Previous()
+{
+    return _prev;
 }
