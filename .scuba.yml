@@ -3,3 +3,6 @@ image: docker.pkg.github.com/panix-os/panix/panixbuild:3.0.0
 aliases:
     build: make -j8
     clean: make clean
+    debug: make -j8 debug
+    release: make -j8 release
+    image: make -j8 dist
