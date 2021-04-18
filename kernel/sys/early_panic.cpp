@@ -27,7 +27,7 @@ early_panic(const char *str) {
     for (int i = 0; i < X86_TTY_WIDTH; i++) {
         for (int j = 0; j < X86_TTY_HEIGHT; j ++) {
             where = x86_bios_vga_mem + (j * X86_TTY_WIDTH + i);
-            *where = VGA_CHAR(' ', VGA_COLOR(VGA_Black, VGA_White));
+            *where = (uint16_t)VGA_CHAR(' ', VGA_COLOR(VGA_Black, VGA_White));
         }
     }
     // For each character in the string
@@ -41,7 +41,7 @@ early_panic(const char *str) {
             // Anything else
             default:
                 where = x86_bios_vga_mem + (y * X86_TTY_WIDTH + x);
-                *where = VGA_CHAR(str[i], VGA_COLOR(VGA_Red, VGA_White));
+                *where = (uint16_t)VGA_CHAR(str[i], VGA_COLOR(VGA_Red, VGA_White));
                 x++;
                 break;
         }

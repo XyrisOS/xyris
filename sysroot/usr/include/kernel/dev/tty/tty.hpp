@@ -35,7 +35,7 @@
  * in tty.cpp.
  * 
  */
-enum px_tty_vga_color {
+enum px_tty_vga_color : uint16_t {
     VGA_Black           = 0,
     VGA_Blue            = 1,
     VGA_Green           = 2,
@@ -62,7 +62,7 @@ enum px_tty_vga_color {
  * (i.e. ANSI_Red == 31 (fore)--> 41 (back))
  * 
  */
-enum px_tty_ansi_color {
+enum px_tty_ansi_color : uint16_t {
     ANSI_Black          = 30,
     ANSI_Red            = 31,
     ANSI_Green          = 32,

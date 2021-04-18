@@ -84,7 +84,6 @@ export WARNINGS :=          \
 	-Winline                \
 	-Wshadow                \
 	-Wformat=2              \
-	-Wconversion            \
 	-Wcast-align            \
 	-Wno-long-long          \
 	-Wpointer-arith         \
@@ -93,6 +92,10 @@ export WARNINGS :=          \
 	-Wdouble-promotion      \
 	-Wno-unused-function    \
 	-Wmissing-declarations
+# Add this back in soon when
+# we can fix the last conversion
+# issue.
+#	-Wconversion
 # Flags to be added later
 #   -Wconversion
 # C only warnings

@@ -16,18 +16,22 @@
 #include <lib/stdio.hpp>
 
 void px_rtc_callback(registers_t *regs);
-int px_rtc_get_update_in_progress();
-uint8_t px_rtc_get_register(int reg);
+bool px_rtc_get_update_in_progress();
+uint8_t px_rtc_get_register(uint8_t reg);
 void px_read_rtc();
 
 // Current values from RTC
-uint8_t px_rtc_second;      // Current UTC second
-uint8_t px_rtc_minute;      // Current UTC minute
-uint8_t px_rtc_hour;        // Current UTC hour
-uint8_t px_rtc_day;         // Current UTC day (not reliable)
-uint8_t px_rtc_month;       // Current UTC month
-uint32_t px_rtc_year;       // Current UTC year
-uint32_t px_rtc_century;    // Current UTC century
+// These variables are way larger than they ever
+// should be, but the compiler doesn't like our
+// math with anything smaller, so we're going
+// to live with it since memory is "cheap"
+uint32_t px_rtc_second;      // Current UTC second
+uint32_t px_rtc_minute;      // Current UTC minute
+uint32_t px_rtc_hour;        // Current UTC hour
+uint32_t px_rtc_day;         // Current UTC day (not reliable)
+uint32_t px_rtc_month;       // Current UTC month
+uint32_t px_rtc_year;        // Current UTC year
+uint32_t px_rtc_century;     // Current UTC century
 
 void px_rtc_init() {
     px_kprintf(DBG_INFO "Initializing RTC...\n");
@@ -48,12 +52,12 @@ void px_rtc_callback(registers_t *regs) {
     px_kprintf(DBG_INFO "RTC updated.\n");
 }
 
-int px_rtc_get_update_in_progress() {
+bool px_rtc_get_update_in_progress() {
     px_write_byte(RTC_CMOS_PORT, 0x0A);
     return (px_read_byte(RTC_DATA_PORT) & 0x80);
 }
 
-uint8_t px_rtc_get_register(int reg) {
+uint8_t px_rtc_get_register(uint8_t reg) {
     px_write_byte(RTC_CMOS_PORT, reg);
     return px_read_byte(RTC_DATA_PORT);
 }
@@ -68,9 +72,9 @@ uint8_t px_rtc_get_register(int reg) {
 void px_read_rtc() {
     // Previous values from RTC
     // Used as a cache to check if we should update
-    uint8_t last_second = 0, last_minute = 0,
+    uint32_t last_second = 0, last_minute = 0,
             last_hour = 0, last_day = 0,
-            last_month = 0, last_year = 0,
+            last_month = 0,  last_year = 0,
             last_century = 0, registerB = 0;
     // Make sure an update isn't in progress
     while (px_rtc_get_update_in_progress());
@@ -114,12 +118,12 @@ void px_read_rtc() {
 
     // Convert BCD to binary values if necessary
     if (!(registerB & 0x04)) {
-        px_rtc_second = (px_rtc_second & 0x0F) + ((px_rtc_second / 16) * 10);
-        px_rtc_minute = (px_rtc_minute & 0x0F) + ((px_rtc_minute / 16) * 10);
-        px_rtc_hour = ( (px_rtc_hour & 0x0F) + (((px_rtc_hour & 0x70) / 16) * 10) ) | (px_rtc_hour & 0x80);
-        px_rtc_day = (px_rtc_day & 0x0F) + ((px_rtc_day / 16) * 10);
-        px_rtc_month = (px_rtc_month & 0x0F) + ((px_rtc_month / 16) * 10);
-        px_rtc_year = (px_rtc_year & 0x0F) + ((px_rtc_year / 16) * 10);
+        px_rtc_second   = (px_rtc_second & 0x0F) + ((px_rtc_second / 16) * 10);
+        px_rtc_minute   = (px_rtc_minute & 0x0F) + ((px_rtc_minute / 16) * 10);
+        px_rtc_hour     = ((px_rtc_hour & 0x0F) + (((px_rtc_hour & 0x70) / 16) * 10)) | (px_rtc_hour & 0x80);
+        px_rtc_day      = (px_rtc_day & 0x0F) + ((px_rtc_day / 16) * 10);
+        px_rtc_month    = (px_rtc_month & 0x0F) + ((px_rtc_month / 16) * 10);
+        px_rtc_year     = (px_rtc_year & 0x0F) + ((px_rtc_year / 16) * 10);
 
         if (RTC_CURRENT_CENTURY != 0) {
             px_rtc_century = (px_rtc_century & 0x0F) + ((px_rtc_century / 16) * 10);
