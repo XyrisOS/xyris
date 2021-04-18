@@ -273,8 +273,8 @@ void px_parse_stivale2(void *info)
                 uint8_t ip[4];
                 ip[0] = (uint8_t)(pxe->server_ip & 0xFF);
                 ip[1] = (uint8_t)((pxe->server_ip >> 8) & 0xFF);
-                ip[3] = (uint8_t)((pxe->server_ip >> 24) & 0xFF);
                 ip[2] = (uint8_t)((pxe->server_ip >> 16) & 0xFF);
+                ip[3] = (uint8_t)((pxe->server_ip >> 24) & 0xFF);
                 px_rs232_printf("Stivale2 PXE ip addr: %d.%d.%d.%d\n",
                     ip[3], ip[2], ip[1], ip[0]
                 );
