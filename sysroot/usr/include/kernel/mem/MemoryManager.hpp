@@ -20,18 +20,18 @@ public:
     void DumpSerial(void);
 
 private:
-    static size_t machinePageCount;
-    static px_mutex_t mutexPaging;
+    size_t machinePageCount;
+    px_mutex_t mutexPaging;
 
-    static uint32_t pageDirectoryAddr;
-    static px_page_table_t* pageDirectoryVirt[PAGE_ENTRIES];
+    uint32_t pageDirectoryAddr;
+    px_page_table_t* pageDirectoryVirt[PAGE_ENTRIES];
 
     /* both of these must be page aligned for anything to work right at all */
     static px_page_directory_entry_t pageDirectoryPhys[PAGE_ENTRIES] __attribute__ ((section (".page_tables,\"aw\", @nobits#")));
     static px_page_table_t           pageTables[PAGE_ENTRIES]       __attribute__ ((section (".page_tables,\"aw\", @nobits#")));
 
-    static MemoryRange* _ranges;
-    static size_t _ranges_count;
+    MemoryRange* _ranges;
+    size_t _ranges_count;
 
     void RegisterInterruptHandler();
     void InitPagingDirectory();
