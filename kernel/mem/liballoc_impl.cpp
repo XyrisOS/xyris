@@ -34,7 +34,7 @@ int liballoc_unlock()
 /*
  * get a new page or pages.
  */
-void *liballoc_alloc(int count)
+void *liballoc_alloc(unsigned int count)
 {
     return px_get_new_page(count * PAGE_SIZE - 1);
 }
@@ -42,7 +42,7 @@ void *liballoc_alloc(int count)
 /*
  * free a page or pages.
  */
-int liballoc_free(void *page, int count)
+int liballoc_free(void *page, unsigned int count)
 {
     px_free_page(page, count * PAGE_SIZE - 1);
     return 0;
