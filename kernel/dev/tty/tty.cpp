@@ -68,7 +68,7 @@ void px_tty_reset_defaults() {
 
 void px_set_indicator(px_tty_vga_color color) {
     volatile uint16_t* where;
-    uint16_t attrib = (color << 4) | (color & 0x0F);
+    uint16_t attrib = (uint16_t)((color << 4) | (color & 0x0F));
     where = x86_bios_vga_mem + (X86_IND_Y * X86_TTY_WIDTH + X86_IND_X);
-    *where = ' ' | (attrib << 8);
+    *where = VGA_CHAR(' ', attrib);
 }

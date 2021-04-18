@@ -9,6 +9,9 @@
  * 
  */
 
+#pragma once
+#include <stdint.h>
+
 // Used as a magic number for stack smashing protection
 #if UINT32_MAX == UINTPTR_MAX
     #define STACK_CHK_GUARD 0xDEADC0DE

@@ -99,8 +99,8 @@ returns:total number of characters output
 *****************************************************************************/
 int px_do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
 {
-    unsigned char state, radix, *where, buf[PR_BUFLEN];
-    unsigned flags, actual_wd, count, given_wd;
+    unsigned char radix, *where, buf[PR_BUFLEN];
+    unsigned int state, flags, actual_wd, count, given_wd;
     long num;
 
     state = flags = count = given_wd = 0;
@@ -228,11 +228,11 @@ int px_do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
                     temp = (unsigned long)num % radix;
                     where--;
                     if (temp < 10)
-                        *where = temp + '0';
+                        *where = (unsigned char)(temp + '0');
                     else if (flags & PR_CA)
-                        *where = temp - 10 + 'A';
+                        *where = (unsigned char)(temp - 10 + 'A');
                     else
-                        *where = temp - 10 + 'a';
+                        *where = (unsigned char)(temp - 10 + 'a');
                     num = (unsigned long)num / radix;
                 } while (num != 0);
                 goto EMIT;

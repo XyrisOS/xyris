@@ -59,7 +59,7 @@ int putchar(char c)
 int putchar_unlocked(char c) {
     // Moved to avoid cross initialization when calling goto error
     volatile uint16_t* where;
-    uint16_t attrib = (color_back << 4) | (color_fore & 0x0F);
+    uint16_t attrib = (uint16_t)((color_back << 4) | (color_fore & 0x0F));
     // Check the ANSI state
     switch (ansi_state) {
         case Normal: // print the character out normally unless it's an ESC
@@ -98,7 +98,7 @@ int putchar_unlocked(char c) {
                 // take action here
                 // iterate through all values
                 while (ansi_values_index > 0) {
-                    ansi_val = POP_VAL();
+                    ansi_val = (uint16_t)POP_VAL();
                     if (ansi_val == 0) {
                         // Reset code will just reset to whatever was specified in tty_clear().
                         color_fore = reset_fore;
@@ -120,8 +120,8 @@ int putchar_unlocked(char c) {
                 if (ansi_values_index > 2) {
                     goto error;
                 }
-                tty_coords_x = POP_VAL();
-                tty_coords_y = POP_VAL();
+                tty_coords_x = (uint8_t)POP_VAL();
+                tty_coords_y = (uint8_t)POP_VAL();
                 goto normal;
             }
             else if (c == 'J') { // Clear screen attribute
@@ -131,7 +131,7 @@ int putchar_unlocked(char c) {
                 }
                 px_tty_clear();
             } else if (c >= '0' && c <= '9') { // just another digit of a value
-                ansi_val = ansi_val * 10 + (uint16_t)(c - '0');
+                ansi_val = (uint16_t)(ansi_val * 10 + (uint16_t)(c - '0'));
             } else break; // invald code, so just return to normal
             // we hit one of the cases so return
             goto end;
@@ -145,7 +145,7 @@ int putchar_unlocked(char c) {
                 tty_coords_x--;
             }
             where = x86_bios_vga_mem + (tty_coords_y * X86_TTY_WIDTH + tty_coords_x);
-            *where = ' ' | (attrib << 8);
+            *where = (uint16_t)(' ' | (attrib << 8));
             break;
         // Newline
         case '\n':
@@ -155,7 +155,7 @@ int putchar_unlocked(char c) {
         case '\t':
             while (++tty_coords_x % TAB_WIDTH) {
                 where = x86_bios_vga_mem + (tty_coords_y * X86_TTY_WIDTH + tty_coords_x);
-                *where = ' ' | (attrib << 8);
+                *where = (uint16_t)(' ' | (attrib << 8));
             }
             break;
         // Carriage return
@@ -165,7 +165,7 @@ int putchar_unlocked(char c) {
         // Anything else
         default:
             where = x86_bios_vga_mem + (tty_coords_y * X86_TTY_WIDTH + tty_coords_x);
-            *where = c | (attrib << 8);
+            *where = (uint16_t)(c | (attrib << 8));
             tty_coords_x++;
             break;
     }
@@ -179,7 +179,7 @@ int putchar_unlocked(char c) {
         px_shift_tty_up();
         where = x86_bios_vga_mem + ((X86_TTY_HEIGHT - 1) * X86_TTY_WIDTH - 1);
         for (size_t col = 0; col < X86_TTY_WIDTH; ++col) {
-            *(++where) = ' ' | (attrib << 8);
+            *(++where) = (uint16_t)(' ' | (attrib << 8));
         }
         tty_coords_x = 0;
         tty_coords_y = X86_TTY_HEIGHT - 1;
