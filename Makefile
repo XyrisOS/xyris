@@ -81,7 +81,6 @@ export WARNINGS :=          \
 	-Werror                 \
 	-Wextra                 \
 	-Wundef                 \
-	-Wpadded                \
 	-Winline                \
 	-Wshadow                \
 	-Wformat=2              \
