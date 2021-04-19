@@ -17,7 +17,7 @@ typedef struct registers registers_t;
 
 // Kernel entry point
 extern "C" void px_kernel_main(void* boot_info, uint32_t magic);
-void px_arch_main();
+void px_arch_init();
 
 /* Shared i386 & amd64 */
 #if defined(__i386__) | defined(__x86_64__)

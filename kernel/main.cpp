@@ -65,15 +65,16 @@ void px_kernel_main(void *boot_info, uint32_t magic) {
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
     // Initialize the CPU
-    px_arch_main();
-    // Initialize drivers
-    px_paging_init(0);          // Initialize paging service (0 is placeholder)
+    px_arch_init();
+    px_paging_init(0);          // FIXME: This should not be required this early. Paging should be done
+                                // after the boot information has been read in!
+    // Initialize serial debugger at COM1
     px_rs232_init(RS_232_COM1); // RS232 Serial
-    px_rs232_init_buffer(1024); // RS232 buffer
-    px_kbd_init();              // Initialize PS/2 Keyboard
-    px_rtc_init();              // Initialize Real Time Clock
     // Parse information from bootloader
     px_init_bootinfo(boot_info, magic);
+    // Initialize drivers
+    px_kbd_init();              // Initialize PS/2 Keyboard
+    px_rtc_init();              // Initialize Real Time Clock
     // Print some info to show we did things right
     px_rtc_print();
     // Get the CPU vendor and model data to print

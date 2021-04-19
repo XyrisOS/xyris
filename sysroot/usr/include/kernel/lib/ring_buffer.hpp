@@ -20,6 +20,7 @@ typedef struct px_ring_buff {
     int tail;
     int size;
     int length;
+    bool external;
 } px_ring_buff_t;
 
 /**
@@ -28,12 +29,16 @@ typedef struct px_ring_buff {
  * 
  * @param buff Reference circular buffer
  * @param size Maximum buffer capacity (in bytes)
+ * @param data Data buffer to be used. If NULL, a buffer of
+ * size will be allocated and internally managed. If a buffer
+ * is provided, the caller is responsible for memory management
+ * of the provided buffer.
  * @return int Returns 0 on success and -1 on error.
  */
-int px_ring_buffer_init(px_ring_buff_t* buff, int size);
+int px_ring_buffer_init(px_ring_buff_t* buff, int size, uint8_t* data);
 /**
  * @brief Destroys a circular buffer and frees all the
- * data memory.
+ * data memory if the buffer is internally managed.
  * 
  * @param buff Reference circular buffer
  * @return int Returns 0 on success and -1 on error.

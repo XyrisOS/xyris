@@ -1,6 +1,6 @@
 #include <arch/i386/i386.hpp>
 
-void px_arch_main()
+void px_arch_init()
 {
     px_interrupts_disable();
     px_gdt_install();           // Initialize the Global Descriptor Table

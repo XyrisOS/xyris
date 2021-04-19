@@ -15,7 +15,7 @@
 #include <mem/heap.hpp>
 #include <lib/errno.h>
 
-int px_ring_buffer_init(px_ring_buff_t* buff, int size) {
+int px_ring_buffer_init(px_ring_buff_t* buff, int size, uint8_t* data) {
     int status = 0;
     // Check if the pointer is valid
     if (buff != NULL) {
@@ -24,12 +24,19 @@ int px_ring_buffer_init(px_ring_buff_t* buff, int size) {
         buff->head = 0;
         buff->tail = 0;
         buff->length = 0;
-        // Allocate the memory for our buffer
-        buff->data = (uint8_t *)malloc(sizeof(uint8_t) * size);
-        // Did we actually allocate the data?
-        if (buff->data == NULL) {
-            status = -1;
-            errno = ENOMEM;
+        // Should we use provided buffer?
+        if (data != NULL) {
+            buff->data = data;
+            buff->external = true;
+        } else {
+            // Allocate the memory for our buffer
+            buff->data = (uint8_t *)malloc(sizeof(uint8_t) * size);
+            buff->external = false;
+            // Did we actually allocate the data?
+            if (buff->data == NULL) {
+                status = -1;
+                errno = ENOMEM;
+            }
         }
     } else {
         status = -1;
@@ -42,8 +49,11 @@ int px_ring_buffer_init(px_ring_buff_t* buff, int size) {
 int px_ring_buffer_destroy(px_ring_buff_t* buff) {
     int status = 0;
     if (buff != NULL) {
-        // Free our data buffer and set the struct to null
-        free(buff->data);
+        // Free the data buffer if self managed
+        if (buff->external == false) {
+            // Free our data buffer and set the struct to null
+            free(buff->data);
+        }
         buff = NULL;
     } else {
         status = -1;
