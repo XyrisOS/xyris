@@ -2,6 +2,7 @@
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 #include <mem/paging.hpp>
+#include <arch/BootInfo.hpp>
 #include <dev/serial/rs232.hpp>
 
 #include <multiboot/multiboot2.h>
@@ -42,14 +43,6 @@ static void print_multiboot2_mmap(struct multiboot_tag_mmap *mmap)
     }
 }
 
-struct RSDPDescriptor {
-    char Signature[8];
-    uint8_t Checksum;
-    char OEMID[6];
-    uint8_t Revision;
-    uint32_t RsdtAddress;
-} __attribute__ ((packed));
-
 static void print_acpi1_rsdp(struct RSDPDescriptor* rsdp)
 {
     size_t checksum = 0;
@@ -57,15 +50,16 @@ static void print_acpi1_rsdp(struct RSDPDescriptor* rsdp)
         checksum += ((uint8_t*)rsdp)[i];
     }
     bool is_valid = (uint8_t)checksum == 0 && memcmp(rsdp->Signature, "RSD PTR ", sizeof(rsdp->Signature)) == 0;
-    px_rs232_printf("Multiboot2 ACPI 1.0 RSDP:\n");
+    px_rs232_printf("ACPI 1.0 RSDP:\n");
     px_rs232_printf("\tChecksum: %s\n", is_valid ? "Valid" : "Invalid");
     px_rs232_printf("\tOEMID: %.6s\n", rsdp->OEMID);
     px_rs232_printf("\tRevision: %u\n", rsdp->Revision);
     px_rs232_printf("\tRsdtAddress: 0x%08x\n", rsdp->RsdtAddress);
 }
 
-void px_parse_multiboot2(void *info)
+void px_parse_multiboot2(BootInfo* handle, void *info)
 {
+    (void)handle;
     auto fixed = (struct multiboot_fixed *) info;
     for (uintptr_t page = ((uintptr_t)info & PAGE_ALIGN) + PAGE_SIZE;
          page <= (((uintptr_t)info + fixed->total_size) & PAGE_ALIGN);
@@ -175,8 +169,9 @@ static void print_stivale2_mmap(struct stivale2_struct_tag_memmap* mmap)
     }
 }
 
-void px_parse_stivale2(void *info)
+void px_parse_stivale2(BootInfo* handle, void *info)
 {
+    (void)handle;
     auto fixed = (struct stivale2_struct*)info;
     // Walk the list of tags in the header
     auto tag = (struct stivale2_tag*)(fixed->tags);

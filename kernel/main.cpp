@@ -20,6 +20,7 @@
 #include <mem/paging.hpp>
 // Architecture specific code
 #include <arch/arch.hpp>
+#include <arch/BootInfo.hpp>
 // Generic devices
 #include <dev/tty/tty.hpp>
 #include <dev/kbd/kbd.hpp>
@@ -32,8 +33,12 @@
 static void px_kernel_print_splash();
 static void px_kernel_boot_tone();
 
-static void px_print_boot_info(void *boot_info, uint32_t magic)
+static void px_init_bootinfo(void *boot_info, uint32_t magic)
 {
+    BootInfo handle = BootInfo();
+    handle.magic = magic;
+    handle.payload = boot_info;
+
     px_rs232_printf("Bootloader info at 0x%x\n", boot_info);
     if (boot_info != NULL) {
         uintptr_t page = (uintptr_t)boot_info & PAGE_ALIGN;
@@ -44,10 +49,10 @@ static void px_print_boot_info(void *boot_info, uint32_t magic)
         boot_proto_name = "Multiboot 1";
     } else if (magic == 0x36d76289) {
         boot_proto_name = "Multiboot 2";
-        px_parse_multiboot2(boot_info);
+        px_parse_multiboot2(&handle, boot_info);
     } else if (magic == *(uint32_t*)"stv2") {
         boot_proto_name = "Stivale 2";
-        px_parse_stivale2(boot_info);
+        px_parse_stivale2(&handle, boot_info);
     }
     px_kprintf(DBG_INFO "Booted via %s\n", boot_proto_name);
 }
@@ -57,23 +62,18 @@ static void px_print_boot_info(void *boot_info, uint32_t magic)
  * assembly written in boot.S located in arch/i386/boot.S.
  */
 void px_kernel_main(void *boot_info, uint32_t magic) {
-    (void)boot_info;
     // Print the splash screen to show we've booted into the kernel properly.
     px_kernel_print_splash();
-    // Install the GDT
-    px_interrupts_disable();
-    px_gdt_install();           // Initialize the Global Descriptor Table
-    px_isr_install();           // Initialize Interrupt Service Requests
-    px_rs232_init(RS_232_COM1); // RS232 Serial
+    // Initialize the CPU
+    px_arch_main();
+    // Initialize drivers
     px_paging_init(0);          // Initialize paging service (0 is placeholder)
-    px_print_boot_info(boot_info, magic);
+    px_rs232_init(RS_232_COM1); // RS232 Serial
+    px_rs232_init_buffer(1024); // RS232 buffer
     px_kbd_init();              // Initialize PS/2 Keyboard
     px_rtc_init();              // Initialize Real Time Clock
-    px_timer_init(1000);        // Programmable Interrupt Timer (1ms)
-    // Enable interrupts now that we're out of a critical area
-    px_interrupts_enable();
-    // Enable serial input
-    px_rs232_init_buffer(1024);
+    // Parse information from bootloader
+    px_init_bootinfo(boot_info, magic);
     // Print some info to show we did things right
     px_rtc_print();
     // Get the CPU vendor and model data to print

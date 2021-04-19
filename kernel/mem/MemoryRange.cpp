@@ -1,23 +1,30 @@
 #include <mem/MemoryRange.hpp>
+#include <mem/paging.hpp>
 
-MemoryRange::MemoryRange()
+MemoryRange MemoryRange::AlignUp(uintptr_t base, size_t size, MemoryRangeType type)
 {
-    _base = 0;
-    _size = 0;
-    _type = MemoryBad;
+    MemoryRange range = MemoryRange();
+
+    size_t padding = base % PAGE_SIZE;
+
+    range._base = base - padding;
+    range._size = PAGE_ALIGN_UP(size + padding);
+    range._type = type;
+
+    return range;
 }
 
-MemoryRange::MemoryRange(uintptr_t base, size_t size, MemoryRangeType type)
-    : _base(base)
-    , _size(size)
-    , _type(type)
+MemoryRange MemoryRange::AlignDown(uintptr_t base, size_t size, MemoryRangeType type)
 {
-    // Nothing to do
-}
+    MemoryRange range = MemoryRange();
 
-MemoryRange::~MemoryRange()
-{
-    // Nothing to do
+    size_t padding = ((base % PAGE_SIZE) ? (PAGE_SIZE - base % PAGE_SIZE) : 0);
+
+    range._base = base + padding;
+    range._size = PAGE_ALIGN_DOWN(size - padding);
+    range._type = type;
+
+    return range;
 }
 
 uintptr_t MemoryRange::Base()
@@ -58,14 +65,4 @@ bool MemoryRange::Contains(uintptr_t addr)
 MemoryRangeType MemoryRange::Type()
 {
     return _type;
-}
-
-MemoryRange* MemoryRange::Next()
-{
-    return _next;
-}
-
-MemoryRange* MemoryRange::Previous()
-{
-    return _prev;
 }
