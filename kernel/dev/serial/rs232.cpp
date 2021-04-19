@@ -19,7 +19,8 @@
 #include <stdarg.h>
 #include <lib/stdio.hpp>
 
-static ring_buff_t* read_buffer = NULL;
+static ring_buff_t read_buffer;
+uint8_t rs_232_data[1024];
 uint8_t rs_232_line_index;
 uint16_t rs_232_port_base;
 mutex_t mutex_rs232("rs232");
@@ -94,9 +95,12 @@ static void rs232_callback(registers_t *regs) {
     char str[2] = {in, '\0'};
     rs232_print(str);
     // Add the character to the circular buffer
-    ring_buffer_enqueue(read_buffer, (uint8_t)in);
+    ring_buffer_enqueue(&read_buffer, (uint8_t)in);
 }
 
+// FIXME: This should take a buffer as an argument so that
+// COM1 & COM2 can have different buffers, or find a way
+// to keep them separate.
 void rs232_init(uint16_t com_id) {
     // Register the IRQ callback
     rs_232_port_base = com_id;
@@ -125,33 +129,11 @@ void rs232_init(uint16_t com_id) {
     );
 }
 
-ring_buff_t* rs232_init_buffer(int size) {
-    mutex_lock(&mutex_rs232);
-    // Allocate space for the input buffer
-    read_buffer = (ring_buff_t*)malloc(sizeof(ring_buff_t));
-    // Initialize the ring buffer
-    if (ring_buffer_init(read_buffer, size) == 0) {
-        mutex_unlock(&mutex_rs232);
-        return read_buffer;
-    } else {
-        mutex_unlock(&mutex_rs232);
-        return NULL;
-    }
-}
-
-ring_buff_t* rs232_get_buffer() {
-    // Can return NULL. This is documented.
-    return read_buffer;
-}
-
 char rs232_get_char() {
     mutex_lock(&mutex_rs232);
     // Grab the last byte and convert to a char
     uint8_t data = 0;
-    if (read_buffer != NULL)
-    {
-        ring_buffer_dequeue(read_buffer, &data);
-    }
+    ring_buffer_dequeue(&read_buffer, &data);
     mutex_unlock(&mutex_rs232);
     return (char)data;
 }
@@ -161,9 +143,9 @@ int rs232_get_str(char* str, int max) {
     int idx = 0;
     // Keep reading until the buffer is empty or
     // a newline is read.
-    while (!ring_buffer_is_empty(read_buffer)) {
+    while (!ring_buffer_is_empty(&read_buffer)) {
         uint8_t byte;
-        ring_buffer_dequeue(read_buffer, &byte);
+        ring_buffer_dequeue(&read_buffer, &byte);
         str[idx] = (char)byte;
         ++idx;
         // Break if it's a newline or null
@@ -183,12 +165,9 @@ int rs232_get_str(char* str, int max) {
 }
 
 int rs232_close() {
-    mutex_lock(&mutex_rs232);
     int ret = -1;
-    if (read_buffer != NULL) {
-        ret = ring_buffer_destroy(read_buffer);
-        read_buffer = NULL;
-    }
+    mutex_lock(&mutex_rs232);
+    ret = ring_buffer_destroy(&read_buffer);
     mutex_unlock(&mutex_rs232);
     return ret;
 }

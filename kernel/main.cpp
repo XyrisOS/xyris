@@ -78,8 +78,6 @@ void kernel_main(void *boot_info, uint32_t magic) {
     timer_init(1000);               // Programmable Interrupt Timer (1ms)
     // Enable interrupts now that we're out of a critical area
     interrupts_enable();
-    // Enable serial input
-    rs232_init_buffer(1024);
     // Print some info to show we did things right
     rtc_print();
     // Get the CPU vendor and model data to print
