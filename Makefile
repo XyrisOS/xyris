@@ -217,6 +217,10 @@ $(PRODUCT)/$(IMGIMG): $(PRODUCT)/$(KERNEL) $(LIMINE)/limine-install
 	#@echfs-utils -m -p0 $@ import boot/bg.bmp bg.bmp
 	@$(LIMINE)/limine-install $(LIMINE)/limine.bin $@
 
+# Create a bootable image (either img or iso)
+.PHONY: $(PRODUCT)
+$(PRODUCT): $(PRODUCT)/$(RUNIMG)
+
 # *************************
 # * Virtual Machine Flags *
 # *************************

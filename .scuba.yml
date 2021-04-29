@@ -1,1 +1,11 @@
 image: docker.pkg.github.com/panix-os/panix/panixbuild:3.0.0
+
+aliases:
+    build: make -j$(nproc)
+    clean: make clean
+    debug: make -j$(nproc) debug
+    release: make -j$(nproc) release
+    image: make -j$(nproc) dist
+    img: make -j$(nproc) dist IMGTYPE=img
+    iso: make -j$(nproc) dist IMGTYPE=iso
+
