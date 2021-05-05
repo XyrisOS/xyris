@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <mem/phys.hpp>
+#include <mem/Physical.hpp>
 #include <lib/bitmap.hpp>
 #include <lib/assert.hpp>
 #include <lib/debugging.hpp>
