@@ -145,17 +145,18 @@ export LDFLAGS :=           \
 # * Kernel Build Targets *
 # ************************
 
+# Debug build
+debug: CPPFLAGS += -DDEBUG
+debug: CXXFLAGS += -ggdb3
+debug: CFLAGS += -ggdb3
+debug: $(KERNEL)
+
 # Release build
 # This will be build by default since it
 # is the first target in the Makefile
 release: CXXFLAGS += -O3 -mno-avx
 release: CFLAGS += -O3 -mno-avx
 release: $(KERNEL)
-
-# Debug build
-debug: CXXFLAGS += -DDEBUG -g
-debug: CFLAGS += -DDEBUG -g
-debug: $(KERNEL)
 
 # Kernel (Linked With Libraries)
 .PHONY: $(KERNEL)
