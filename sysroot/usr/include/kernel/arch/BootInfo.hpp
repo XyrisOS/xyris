@@ -19,7 +19,7 @@ struct BootInfo
 
     size_t memoryUsable;
 
-    MemoryRange memoryMap[MAX_MEMORY_RANGES];
+    Memory::MemoryRange memoryMap[MAX_MEMORY_RANGES];
     size_t memoryMapSize;
 
     uintptr_t fbAddr;

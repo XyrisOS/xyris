@@ -2,20 +2,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <mem/MemoryTypes.hpp>
 
 namespace Memory {
-
-typedef enum {
-    MMAP_AVAILABLE,
-    MMAP_RESERVED,
-    MMAP_ACPI_NV,
-    MMAP_ACPI_RECLAIMABLE
-} MapType;
 
 typedef struct {
     uintptr_t base;
     size_t length;
-    MapType type;
+    MemoryType type;
 } MapEntry;
 
 typedef bool (*px_mmap_iter_t)(MapEntry *, void *ctx);

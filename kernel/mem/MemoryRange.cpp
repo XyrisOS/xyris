@@ -1,7 +1,9 @@
 #include <mem/MemoryRange.hpp>
 #include <mem/paging.hpp>
 
-MemoryRange MemoryRange::AlignUp(uintptr_t base, size_t size, MemoryRangeType type)
+namespace Memory {
+
+MemoryRange MemoryRange::AlignUp(uintptr_t base, size_t size, MemoryType type)
 {
     MemoryRange range = MemoryRange();
 
@@ -14,7 +16,7 @@ MemoryRange MemoryRange::AlignUp(uintptr_t base, size_t size, MemoryRangeType ty
     return range;
 }
 
-MemoryRange MemoryRange::AlignDown(uintptr_t base, size_t size, MemoryRangeType type)
+MemoryRange MemoryRange::AlignDown(uintptr_t base, size_t size, MemoryType type)
 {
     MemoryRange range = MemoryRange();
 
@@ -62,7 +64,9 @@ bool MemoryRange::Contains(uintptr_t addr)
     return ((addr >= Base()) && (addr <= End()));
 }
 
-MemoryRangeType MemoryRange::Type()
+MemoryType MemoryRange::Type()
 {
     return _type;
+}
+
 }
