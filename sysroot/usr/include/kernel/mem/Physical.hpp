@@ -12,9 +12,9 @@ typedef struct {
     MemoryType type;
 } MapEntry;
 
-typedef bool (*px_mmap_iter_t)(MapEntry *, void *ctx);
+typedef bool (*MapIter)(MapEntry *, void *ctx);
 
-void PhysicalInit(size_t memSize, uintptr_t kernelEnd, px_mmap_iter_t mapIter, void *mapIterCtx);
+void PhysicalInit(size_t memSize, uintptr_t kernelEnd, MapIter mapIter, void *mapIterCtx);
 
 size_t PhysicalGetPageSize(void);
 

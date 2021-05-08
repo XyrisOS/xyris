@@ -15,7 +15,7 @@ static bitmap_t *_phys_map = NULL;
 static size_t _page_count = 1024 * 1024;
 static size_t _first_free = 0;
 
-void PhysicalInit(size_t memSize, uintptr_t kernelEnd, px_mmap_iter_t mapIter, void *mapIterCtx)
+void PhysicalInit(size_t memSize, uintptr_t kernelEnd, MapIter mapIter, void *mapIterCtx)
 {
     (void) memSize;
     (void) kernelEnd;
