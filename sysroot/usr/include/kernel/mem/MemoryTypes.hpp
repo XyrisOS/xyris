@@ -21,9 +21,9 @@ typedef enum {
 typedef union
 {
     struct {
-        uint32_t offset     : 12;       // Page offset address
-        uint32_t tableIndex : 10;       // Page table entry
-        uint32_t dirIndex   : 10;       // Page directory entry
+        uint32_t offset         : 12;   // Page offset address
+        uint32_t tableIndex     : 10;   // Page table entry
+        uint32_t dirIndex       : 10;   // Page directory entry
     };
     uint32_t val;
 } VirtualAddress;

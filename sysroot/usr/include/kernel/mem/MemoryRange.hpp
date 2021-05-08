@@ -7,6 +7,7 @@
 namespace Memory {
 
 class MemoryRange {
+
 public:
     static MemoryRange AlignUp(uintptr_t base, size_t size, MemoryType type);
     static MemoryRange AlignDown(uintptr_t base, size_t size, MemoryType type);
@@ -18,10 +19,11 @@ public:
     bool Aligned();
     bool Contains(uintptr_t addr);
     MemoryType Type();
+
 private:
-    uintptr_t _base;
-    size_t _size;
-    MemoryType _type;
+    uintptr_t base;
+    size_t size;
+    MemoryType type;
 };
 
 }

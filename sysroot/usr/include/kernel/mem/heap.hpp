@@ -58,8 +58,8 @@ void* liballoc_alloc(unsigned int);
  */
 int liballoc_free(void*, unsigned int);
 
-extern void     *malloc(size_t);
-extern void     *realloc(void *, size_t);
-extern void     *calloc(size_t, size_t);
-extern void      free(void *);
+extern void* malloc(size_t);
+extern void* realloc(void*, size_t);
+extern void* calloc(size_t, size_t);
+extern void  free(void*);
 }

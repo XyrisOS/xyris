@@ -10,7 +10,7 @@
 namespace Memory {
 
 // TODO: need a mutex to protect access
-static bitmap_t *_phys_map = NULL;
+static bitmap_t* _phys_map = NULL;
 // hard-coded for now, but can probably be gleaned from boot info
 static size_t _page_count = 1024 * 1024;
 static size_t _first_free = 0;

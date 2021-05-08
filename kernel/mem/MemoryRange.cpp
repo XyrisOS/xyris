@@ -9,9 +9,9 @@ MemoryRange MemoryRange::AlignUp(uintptr_t base, size_t size, MemoryType type)
 
     size_t padding = base % PAGE_SIZE;
 
-    range._base = base - padding;
-    range._size = PAGE_ALIGN_UP(size + padding);
-    range._type = type;
+    range.base = base - padding;
+    range.size = PAGE_ALIGN_UP(size + padding);
+    range.type = type;
 
     return range;
 }
@@ -22,21 +22,26 @@ MemoryRange MemoryRange::AlignDown(uintptr_t base, size_t size, MemoryType type)
 
     size_t padding = ((base % PAGE_SIZE) ? (PAGE_SIZE - base % PAGE_SIZE) : 0);
 
-    range._base = base + padding;
-    range._size = PAGE_ALIGN_DOWN(size - padding);
-    range._type = type;
+    range.base = base + padding;
+    range.size = PAGE_ALIGN_DOWN(size - padding);
+    range.type = type;
 
     return range;
 }
 
 uintptr_t MemoryRange::Base()
 {
-    return _base;
+    return base;
 }
 
 size_t MemoryRange::Size()
 {
-    return _size;
+    return size;
+}
+
+MemoryType MemoryRange::Type()
+{
+    return type;
 }
 
 uintptr_t MemoryRange::End()
@@ -62,11 +67,6 @@ bool MemoryRange::Aligned()
 bool MemoryRange::Contains(uintptr_t addr)
 {
     return ((addr >= Base()) && (addr <= End()));
-}
-
-MemoryType MemoryRange::Type()
-{
-    return _type;
 }
 
 }
