@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include <mem/Physical.hpp>
+#include <arch/arch.hpp>
 #include <lib/bitmap.hpp>
 #include <lib/assert.hpp>
 #include <lib/debugging.hpp>
@@ -17,7 +18,9 @@ static size_t _first_free = 0;
 
 void PhysicalInit(size_t memSize, uintptr_t kernelEnd, MapIter mapIter, void *mapIterCtx)
 {
-    (void) memSize;
+    // Total size of memory. Convert into pages and set _page_count.
+    _page_count = memSize / PAGE_SIZE;
+
     (void) kernelEnd;
     (void) mapIter;
     (void) mapIterCtx;
@@ -31,8 +34,7 @@ void PhysicalInit(size_t memSize, uintptr_t kernelEnd, MapIter mapIter, void *ma
 
 size_t PhysicalGetPageSize(void)
 {
-    // TODO: Make this architecture specific?
-    return 4 * 1024;
+    return PAGE_SIZE;
 }
 
 size_t PhysicalFindFree(size_t count)
