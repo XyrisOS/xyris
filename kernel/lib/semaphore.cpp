@@ -1,12 +1,12 @@
 /**
  * @file semaphore.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.3
  * @date 2020-08-28
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2020
- * 
+ *
  */
 
 // All of the GCC builtin functions used here are documented at the link provided
@@ -40,27 +40,27 @@
     failure_memorder                                                                 \
 )
 
-px_semaphore::px_semaphore(int c, const char *name)
+semaphore::semaphore(int c, const char *name)
     : shared(false), count(c)
 {
     task_sync.dbg_name = name;
 }
 
-int px_sem_init(px_sem_t *sem, bool shared, uint32_t value) {
+int sem_init(sem_t *sem, bool shared, uint32_t value) {
     IS_SEMAPHORE_VALID(sem);
     sem->count = value;
     sem->shared = shared;
-    px_tasks_sync_init(&sem->task_sync);
+    tasks_sync_init(&sem->task_sync);
     return 0;
 }
 
-int px_sem_destroy(px_sem_t *sem) {
+int sem_destroy(sem_t *sem) {
     IS_SEMAPHORE_VALID(sem);
     free(sem);
     return 0;
 }
 
-int px_sem_wait(px_sem_t *sem) {
+int sem_wait(sem_t *sem) {
     IS_SEMAPHORE_VALID(sem);
     // Used to store the current value of the semaphore for atomic comparison later.
     uint32_t curVal = sem->count;
@@ -70,7 +70,7 @@ int px_sem_wait(px_sem_t *sem) {
     {
         while (curVal == 0)
         {
-            TASK_ONLY px_tasks_sync_block(&sem->task_sync);
+            TASK_ONLY tasks_sync_block(&sem->task_sync);
             curVal = sem->count;
         }
     // Fail using atomic relaxed because it may allow us to get to the "waiting" state faster.
@@ -79,7 +79,7 @@ int px_sem_wait(px_sem_t *sem) {
     return 0;
 }
 
-int sem_trywait(px_sem_t *sem) {
+int sem_trywait(sem_t *sem) {
     IS_SEMAPHORE_VALID(sem);
     // Used to store the current value of the semaphore for atomic comparison later.
     uint32_t curVal = sem->count;
@@ -100,7 +100,7 @@ int sem_trywait(px_sem_t *sem) {
     return 0;
 }
 
-int sem_timedwait(px_sem_t *sem, const uint32_t *usec) {
+int sem_timedwait(sem_t *sem, const uint32_t *usec) {
     IS_SEMAPHORE_VALID(sem);
     // TODO: Add the timer functionality here.
     (void)usec;
@@ -120,14 +120,14 @@ int sem_timedwait(px_sem_t *sem, const uint32_t *usec) {
     return 0;
 }
 
-int px_sem_post(px_sem_t *sem) {
+int sem_post(sem_t *sem) {
     IS_SEMAPHORE_VALID(sem);
     __atomic_fetch_add(&sem->count, 1, __ATOMIC_RELEASE);
-    TASK_ONLY px_tasks_sync_unblock(&sem->task_sync);
+    TASK_ONLY tasks_sync_unblock(&sem->task_sync);
     return 0;
 }
 
-int px_sem_getval(px_sem_t *sem, uint32_t *val) {
+int sem_getval(sem_t *sem, uint32_t *val) {
     IS_SEMAPHORE_VALID(sem);
     __atomic_load(&sem->count, val, __ATOMIC_ACQUIRE);
     return 0;

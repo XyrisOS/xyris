@@ -40,32 +40,32 @@
  * @brief Activates the RS232 serial driver
  *
  */
-void px_rs232_init(uint16_t com_id);
+void rs232_init(uint16_t com_id);
 
 /**
  * @brief Prints a given character string to the
  * serial output.
  * @param str Input string to be printed.
  */
-void px_rs232_print(const char* str);
+void rs232_print(const char* str);
 
 /**
  * @brief Initializes the serial input buffer and
  * returns a pointer to said buffer if successful.
  *
  * @param size Buffer capacity (in bytes)
- * @return px_ring_buff_t* Pointer to buffer. NULL
+ * @return ring_buff_t* Pointer to buffer. NULL
  * if memory could not be allocated.
  */
-px_ring_buff_t* px_rs232_init_buffer(int size);
+ring_buff_t* rs232_init_buffer(int size);
 
 /**
  * @brief Returns the pointer to the RS232 input
  * buffer.
  *
- * @return px_ring_buff_t* Ring buffer pointer
+ * @return ring_buff_t* Ring buffer pointer
  */
-px_ring_buff_t* px_rs232_get_buffer();
+ring_buff_t* rs232_get_buffer();
 
 /**
  * @brief Returns the most recently received byte
@@ -73,17 +73,17 @@ px_ring_buff_t* px_rs232_get_buffer();
  * @return char Character representation of latest
  * buffer byte.
  */
-char px_rs232_get_char();
+char rs232_get_char();
 
 /**
  * @brief Returns all of the characters within the
  * input buffer up until a newline or a null terminator.
- * 
+ *
  * @param str Character buffer to hold the serial input
  * @param max Max number of characters to read in
  * @return char* Returns the number of characters read.
  */
-int px_rs232_get_str(char* str, int max);
+int rs232_get_str(char* str, int max);
 
 /**
  * @brief Closes the serial input buffer and frees all of
@@ -92,8 +92,8 @@ int px_rs232_get_str(char* str, int max);
  * @return int Returns 0 on success and -1 on error. Errno
  * is set appropriately.
  */
-int px_rs232_close();
+int rs232_close();
 
-int px_rs232_vprintf(const char* fmt, va_list args);
+int rs232_vprintf(const char* fmt, va_list args);
 
-int px_rs232_printf(const char *format, ...);
+int rs232_printf(const char *format, ...);

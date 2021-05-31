@@ -1,12 +1,12 @@
 /**
  * @file putchar.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.3
  * @date 2020-08-08
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2020
- * 
+ *
  */
 
 #include <stddef.h>
@@ -35,24 +35,24 @@ uint16_t ansi_val = 0;
 uint8_t ansi_cursor_x = 0;
 uint8_t ansi_cursor_y = 0;
 // The names don't really line up, so this will need refactoring.
-uint16_t px_ansi_vga_table[16] = {
+uint16_t ansi_vga_table[16] = {
     VGA_Black, VGA_Red, VGA_Green, VGA_Brown, VGA_Blue,
     VGA_Magenta, VGA_Cyan, VGA_LightGrey, VGA_DarkGrey, VGA_LightRed,
     VGA_LightGreen, VGA_Yellow, VGA_LightBlue, VGA_LightMagenta,
     VGA_LightCyan, VGA_White
 };
 // Printing mutual exclusion
-px_mutex_t put_mutex;
+mutex_t put_mutex;
 
 int putchar(char c)
 {
     int retval;
     // must lock when writing to the screen
-    px_mutex_lock(&put_mutex);
+    mutex_lock(&put_mutex);
     // call the unlocked implementation of putchar
     retval = putchar_unlocked(c);
     // release the screen to be used by other tasks
-    px_mutex_unlock(&put_mutex);
+    mutex_unlock(&put_mutex);
     return retval;
 }
 
@@ -80,7 +80,7 @@ int putchar_unlocked(char c) {
                 ansi_cursor_x = tty_coords_x;
                 ansi_cursor_y = tty_coords_y;
                 goto normal;
-            } 
+            }
             else if (c == 'u') { // Restore cursor position attribute
                 tty_coords_x = ansi_cursor_x;
                 tty_coords_y = ansi_cursor_y;
@@ -104,13 +104,13 @@ int putchar_unlocked(char c) {
                         color_fore = reset_fore;
                         color_back = reset_back;
                     } else if (ansi_val >= ANSI_Black && ansi_val <= ANSI_White) {
-                        color_fore = (px_tty_vga_color)px_ansi_vga_table[ansi_val - ANSI_Black];
+                        color_fore = (tty_vga_color)ansi_vga_table[ansi_val - ANSI_Black];
                     } else if (ansi_val >= (ANSI_Black + 10) && ansi_val <= (ANSI_White + 10)) {
-                        color_back = (px_tty_vga_color)px_ansi_vga_table[ansi_val - (ANSI_Black + 10)];
+                        color_back = (tty_vga_color)ansi_vga_table[ansi_val - (ANSI_Black + 10)];
                     } else if (ansi_val >= ANSI_BrightBlack && ansi_val <= ANSI_BrightWhite) {
-                        color_fore = (px_tty_vga_color)px_ansi_vga_table[ansi_val - ANSI_BrightBlack + 8];
+                        color_fore = (tty_vga_color)ansi_vga_table[ansi_val - ANSI_BrightBlack + 8];
                     } else if (ansi_val >= (ANSI_BrightBlack + 10) && ansi_val <= (ANSI_BrightWhite + 10)) {
-                        color_back = (px_tty_vga_color)px_ansi_vga_table[ansi_val - (ANSI_BrightBlack + 10) + 8];
+                        color_back = (tty_vga_color)ansi_vga_table[ansi_val - (ANSI_BrightBlack + 10) + 8];
                     } // else it was an unknown code
                 }
                 goto normal;
@@ -129,7 +129,7 @@ int putchar_unlocked(char c) {
                 if (ansi_val != 2) {
                     goto error;
                 }
-                px_tty_clear();
+                tty_clear();
             } else if (c >= '0' && c <= '9') { // just another digit of a value
                 ansi_val = (uint16_t)(ansi_val * 10 + (uint16_t)(c - '0'));
             } else break; // invald code, so just return to normal
@@ -176,7 +176,7 @@ int putchar_unlocked(char c) {
     }
     // Clear the screen
     if(tty_coords_y >= X86_TTY_HEIGHT) {
-        px_shift_tty_up();
+        shift_tty_up();
         where = x86_bios_vga_mem + ((X86_TTY_HEIGHT - 1) * X86_TTY_WIDTH - 1);
         for (size_t col = 0; col < X86_TTY_WIDTH; ++col) {
             *(++where) = (uint16_t)(' ' | (attrib << 8));

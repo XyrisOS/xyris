@@ -56,9 +56,9 @@ extern idt_register_t idt_reg;
  * @param n IDT index
  * @param handler Handler address
  */
-void px_idt_set_gate(int n, uint32_t handler);
+void idt_set_gate(int n, uint32_t handler);
 /**
  * @brief Calls the lidt instruction and installs the IDT onto the CPU.
  *
  */
-void px_load_idt();
+void load_idt();

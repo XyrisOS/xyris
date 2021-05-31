@@ -118,32 +118,32 @@ extern "C" void irq15();
  * @brief Disables interrupts.
  *
  */
-void px_interrupts_disable();
+void interrupts_disable();
 /**
  * @brief Enables interrupts.
  *
  */
-void px_interrupts_enable();
+void interrupts_enable();
 /**
  * @brief
  *
  */
-void px_isr_install();
+void isr_install();
 /**
  * @brief Handler for the Interrupt Service Request
  *
  * @param r Register information struct
  */
-extern "C" void px_isr_handler(registers_t *t);
+extern "C" void isr_handler(registers_t *t);
 /**
  * @brief
  *
  * @param n
  * @param handler
  */
-extern "C" void px_register_interrupt_handler(uint8_t n, isr_t handler);
+extern "C" void register_interrupt_handler(uint8_t n, isr_t handler);
 /**
  * @brief
  *
  */
-extern "C" void px_irq_handler(registers_t *regs);
+extern "C" void irq_handler(registers_t *regs);

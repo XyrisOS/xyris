@@ -15,19 +15,19 @@
 #define TIMER_COMMAND_PORT 0x43
 #define TIMER_DATA_PORT 0x40
 
-extern volatile uint32_t px_timer_tick;
+extern volatile uint32_t timer_tick;
 
 /**
  * @brief Initialize the CPU timer with the given frequency.
  *
  * @param freq Timer frequency
  */
-void px_timer_init(uint32_t freq);
+void timer_init(uint32_t freq);
 /**
  * @brief Prints out the current tick.
  *
  */
-void px_timer_print();
+void timer_print();
 /**
  * @brief Sleeps for a certain length of time.
  *
@@ -35,4 +35,4 @@ void px_timer_print();
  */
 void sleep(uint32_t ms);
 
-void px_timer_register_callback(void (*func)());
+void timer_register_callback(void (*func)());

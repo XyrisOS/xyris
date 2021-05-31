@@ -1,12 +1,12 @@
 /**
  * @file regs.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.3
  * @date 2019-12-10
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2019
- * 
+ *
  */
 #pragma once
 
@@ -19,7 +19,7 @@
 #define read_cr3(x) asm volatile("mov %%cr3, %0": "=r"(x))
 #define write_cr3(x) asm volatile("mov %0, %%cr3":: "r"(x))
 
-typedef struct px_register_cr0
+typedef struct register_cr0
 {
     uint32_t protected_mode         : 1;    // Protected mode?
     uint32_t monitor_co_processor   : 1;    // Control the interaction of wait instruction?
@@ -35,13 +35,13 @@ typedef struct px_register_cr0
     uint32_t non_write_through      : 1;    // Disable write through caching?
     uint32_t cache_disable          : 1;    // Cache disabled?
     uint32_t paging                 : 1;    // Enable paging?
-} px_register_cr0_t;
+} register_cr0_t;
 
-typedef struct px_register_cr3
+typedef struct register_cr3
 {
    uint32_t ignored_a               : 3;    // Ignored
    uint32_t write_through           : 1;    // Page level write through
    uint32_t cache_disable           : 1;    // Cache disable
    uint32_t ignored_b               : 7;    // Ignored
    uint32_t page_dir                : 10;   // Page directory address
-} px_register_cr3_t;
+} register_cr3_t;

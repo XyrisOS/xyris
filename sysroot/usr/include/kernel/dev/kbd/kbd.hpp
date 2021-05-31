@@ -25,13 +25,13 @@
 #define KBD_ARROW_RIGHT 0x103
 #define KBD_ARROW_LEFT  0x104
 
-void px_kbd_init();
+void kbd_init();
 
 // A 256 int long buffer of our scancode inputs.
 // Eventually this will need to be shared memory
 // or piped into usermode.
-extern uint8_t px_kbd_scode_buff[256];
+extern uint8_t kbd_scode_buff[256];
 // Position index to get the latest scancode.
 // This index is circular so when we would run
 // off the end of the array we loop back to 0.
-extern uint8_t px_kbd_scode_buff_pos;
+extern uint8_t kbd_scode_buff_pos;
