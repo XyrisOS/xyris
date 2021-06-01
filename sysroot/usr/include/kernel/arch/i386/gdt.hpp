@@ -90,4 +90,4 @@ typedef struct gdt_ptr gdt_ptr_t;
  * @brief Setup and install the GDT onto the system.
  *
  */
-extern void px_gdt_install();
+extern void gdt_install();

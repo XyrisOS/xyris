@@ -14,8 +14,8 @@
 
 /**
  * @brief Plays a given frequency for the provided duration.
- * 
+ *
  * @param freq Tone frequency
  * @param ms Length in milliseconds
  */
-void px_spkr_beep(uint32_t freq, uint32_t ms);
+void spkr_beep(uint32_t freq, uint32_t ms);

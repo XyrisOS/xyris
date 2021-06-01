@@ -23,7 +23,7 @@ void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(registers_t *regs);
 
 void printPanicScreen(int exception) {
-    px_tty_clear(VGA_Black, VGA_White);
+    tty_clear(VGA_Black, VGA_White);
     const char* tag;
     if (exception == 13) {
         tag = "< Wait... That's Illegal >\n";
@@ -31,7 +31,7 @@ void printPanicScreen(int exception) {
         tag = "< OH NO! Panix panicked! >\n";
     }
     char cow[256];
-    px_ksprintf(
+    ksprintf(
         cow,
         " ________________________\n"
         "%s"
@@ -44,8 +44,8 @@ void printPanicScreen(int exception) {
         tag
     );
     // Print to VGA and serial
-    px_kprintf("%s", cow);
-    px_rs232_print(cow);
+    kprintf("%s", cow);
+    rs232_print(cow);
 }
 
 void panic(const char* msg, const char *file, uint32_t line, const char *func) {
@@ -54,13 +54,13 @@ void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     printPanicScreen(0);
     // Print the message passed in on a new line
     char buf[128];
-    px_ksprintf(buf, "\n%s\n", msg);
+    ksprintf(buf, "\n%s\n", msg);
     // Print to VGA and serial
-    px_kprintf("%s", buf);
-    px_rs232_print(buf);
+    kprintf("%s", buf);
+    rs232_print(buf);
     // Print out file info to describe where crash occured
     panic_print_file(file, line, func);
-    px_stack_trace(16);
+    stack_trace(16);
     // Halt the CPU
     asm("hlt");
 }
@@ -70,25 +70,25 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
     char msg[128];
-    px_ksprintf(
-        msg, 
+    ksprintf(
+        msg,
         "Exception: %i (%s)\n\n",
         regs->int_num,
-        px_exception_descriptions[regs->int_num]
+        exception_descriptions[regs->int_num]
     );
     // Print to VGA and serial
-    px_kprintf("%s", msg);
-    px_rs232_print(msg);
+    kprintf("%s", msg);
+    rs232_print(msg);
     // Check if we have an error code and print
     if (regs->err_code) {
-        px_ksprintf(
+        ksprintf(
             msg,
             "Error code: %i",
             regs->err_code
         );
         // Print to VGA and serial
-        px_kprintf("%s", msg);
-        px_rs232_print(msg);
+        kprintf("%s", msg);
+        rs232_print(msg);
     }
     // Print out register values
     panic_print_register(regs);
@@ -110,7 +110,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
         const char* uss = (us ? "user-mode " : "kernel ");
         const char* avail = (reserved ? "reserved" : "available");
         // Now that we assigned all of our string, put together the message
-        px_ksprintf(
+        ksprintf(
             msg,
             "Page fault (%s%s%s%s) at 0x%08X (id -> %i)\n",
             real,
@@ -121,18 +121,18 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
             id
         );
         // Print to VGA and serial
-        px_kprintf("%s", msg);
-        px_rs232_print(msg);
+        kprintf("%s", msg);
+        rs232_print(msg);
     }
     panic_print_file(file, line, func);
-    px_stack_trace(16);
+    stack_trace(16);
     // Halt the CPU
     asm("hlt");
 }
 
 void panic_print_file(const char *file, uint32_t line, const char *func) {
     char msg[128];
-    px_ksprintf(
+    ksprintf(
         msg,
         "Crash location may be inaccurate.\n"
         "File: %s\nFunc: %s\nLine: %i\n",
@@ -141,8 +141,8 @@ void panic_print_file(const char *file, uint32_t line, const char *func) {
         line
     );
     // Print to VGA and serial
-    px_kprintf("%s", msg);
-    px_rs232_print(msg);
+    kprintf("%s", msg);
+    rs232_print(msg);
 }
 
 void panic_print_register(registers_t *regs) {
@@ -154,7 +154,7 @@ void panic_print_register(registers_t *regs) {
     char msg[512];
 
     #if defined(__i386__) | defined(__i686__)
-    px_ksprintf(
+    ksprintf(
         msg,
         "\033[31m DS:\033[0m 0x%08X\n"
         "\033[31mEDI:\033[0m 0x%08X \033[31mESI:\033[0m 0x%08X \033[31mEBP:\033[0m 0x%08X \033[31mESP:\033[0m 0x%08X\n"
@@ -169,6 +169,6 @@ void panic_print_register(registers_t *regs) {
     );
     #endif
     // Print to VGA and serial
-    px_kprintf("%s", msg);
-    px_rs232_print(msg);
+    kprintf("%s", msg);
+    rs232_print(msg);
 }

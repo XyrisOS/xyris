@@ -6,9 +6,9 @@
  * more keyboard options for other countries.
  * @version 0.3
  * @date 2019-11-18
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2019
- * 
+ *
  */
 #pragma once
 
@@ -19,7 +19,7 @@
 #define PX_SCODE_UP_ARROW 0x48
 
 // Any non-ASCII keys should have '\0'
-const char px_kbd_usa_ascii[] = {
+const char kbd_usa_ascii[] = {
     '\0', '`', '1', '2', '3', '4', '5', '6',
     '7', '8', '9', '0', '-', '=', '\0', '?',
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i',

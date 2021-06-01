@@ -1,12 +1,12 @@
 /**
- * @file px_tty.hpp
+ * @file tty.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief TTY is a small library to print unformatted strings to
  * the BIOS TTY. The important thing to keep in mind is that these
  * functions expect a null-terminator at the end of the string, which
  * C++ seems to take care of *most* of the time. These functions do
  * NOT accept formatted strings like printf. That is available in
- * px_kprintf().
+ * kprintf().
  * @version 0.3
  * @date 2019-09-26
  *
@@ -33,9 +33,9 @@
  * support for ANSI color codes. A translation
  * table is used to convert between ANSI and VGA
  * in tty.cpp.
- * 
+ *
  */
-enum px_tty_vga_color : uint16_t {
+enum tty_vga_color : uint16_t {
     VGA_Black           = 0,
     VGA_Blue            = 1,
     VGA_Green           = 2,
@@ -55,14 +55,14 @@ enum px_tty_vga_color : uint16_t {
 };
 /**
  * @brief ANSI color codes for use in functions
- * like px_kprintf(). However, the real printing
+ * like kprintf(). However, the real printing
  * is done in the putchar() function. To change
  * the color from the foreground to the background,
  * add 10 to the desired color value.
  * (i.e. ANSI_Red == 31 (fore)--> 41 (back))
- * 
+ *
  */
-enum px_tty_ansi_color : uint16_t {
+enum tty_ansi_color : uint16_t {
     ANSI_Black          = 30,
     ANSI_Red            = 31,
     ANSI_Green          = 32,
@@ -86,31 +86,31 @@ enum px_tty_ansi_color : uint16_t {
 extern uint8_t tty_coords_x;
 extern uint8_t tty_coords_y;
 // VGA colors (defaults are white on black)
-extern px_tty_vga_color color_back;
-extern px_tty_vga_color color_fore;
+extern tty_vga_color color_back;
+extern tty_vga_color color_fore;
 // Default colors set by tty_clear()
-extern px_tty_vga_color reset_back;
-extern px_tty_vga_color reset_fore;
+extern tty_vga_color reset_back;
+extern tty_vga_color reset_fore;
 /**
  * @brief Shifts the entire TTY screen up by one line.
- * 
+ *
  */
-void px_shift_tty_up();
+void shift_tty_up();
 /**
  * @brief Clears the TTY and resets the cursor position.
  *
  */
-void px_tty_clear(px_tty_vga_color fore = VGA_DEFAULT_FORE, px_tty_vga_color back = VGA_DEFAULT_BACK);
+void tty_clear(tty_vga_color fore = VGA_DEFAULT_FORE, tty_vga_color back = VGA_DEFAULT_BACK);
 /**
  * @brief Resets the default TTY background and foreground
  * colors without clearing the screen.
- * 
+ *
  */
-void px_tty_reset_defaults();
+void tty_reset_defaults();
 /**
  * @brief Sets the indicator in the top right corner.
  * Used mostly for debugging interrupts.
  *
  * @param color Indicator color
  */
-void px_set_indicator(px_tty_vga_color color);
+void set_indicator(tty_vga_color color);

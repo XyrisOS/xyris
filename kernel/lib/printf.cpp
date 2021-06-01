@@ -6,13 +6,13 @@
  * the public domain.
  * @version 0.3
  * @date 2020-07-09
- * 
+ *
  * @copyright This code is public domain (no copyright).
  * You can do whatever you want with it. Modified by
  * Keeton Feavel.
- * 
+ *
  * http://www.osdev.labedz.org/src/lib/stdio/printf.c
- * 
+ *
  */
 #include <lib/stdio.hpp>
 #include <stdarg.h>
@@ -41,7 +41,7 @@ Revised May 12, 2000
 - actually did some TESTING, maybe fixed some other bugs
 
 %[flag][width][.prec][mod][conv]
-flag:    
+flag:
     -    left justify, pad right w/ blanks      DONE
     0    pad left w/ 0 for numerics             DONE
     +    always print sign, + or -              no
@@ -92,12 +92,12 @@ Using & for division here, so STACK_WIDTH must be a power of 2. */
 #define PR_BUFLEN 16
 
 /*****************************************************************************
-name:    px_do_printf
+name:    do_printf
 action:    minimal subfunction for ?printf, calls function
     'fn' with arg 'ptr' for each character to be output
 returns:total number of characters output
 *****************************************************************************/
-int px_do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
+int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
 {
     unsigned char radix, *where, buf[PR_BUFLEN];
     unsigned int state, flags, actual_wd, count, given_wd;
@@ -313,23 +313,23 @@ static int vsprintf_help(unsigned c, void** ptr)
 }
 /*****************************************************************************
 *****************************************************************************/
-int px_kvsprintf(char* buf, const char* fmt, va_list args)
+int kvsprintf(char* buf, const char* fmt, va_list args)
 {
     int ret_val;
 
-    ret_val = px_do_printf(fmt, args, vsprintf_help, (void*)buf);
+    ret_val = do_printf(fmt, args, vsprintf_help, (void*)buf);
     buf[ret_val] = '\0';
     return ret_val;
 }
 /*****************************************************************************
 *****************************************************************************/
-int px_ksprintf(char* buf, const char* fmt, ...)
+int ksprintf(char* buf, const char* fmt, ...)
 {
     va_list args;
     int ret_val;
 
     va_start(args, fmt);
-    ret_val = px_kvsprintf(buf, fmt, args);
+    ret_val = kvsprintf(buf, fmt, args);
     va_end(args);
     return ret_val;
 }
@@ -344,23 +344,23 @@ static int vprintf_help(unsigned c, void** ptr)
 }
 /*****************************************************************************
 *****************************************************************************/
-int px_kvprintf(const char* fmt, va_list args)
+int kvprintf(const char* fmt, va_list args)
 {
-    px_mutex_lock(&put_mutex);
-    int retval = px_do_printf(fmt, args, vprintf_help, NULL);
-    px_mutex_unlock(&put_mutex);
+    mutex_lock(&put_mutex);
+    int retval = do_printf(fmt, args, vprintf_help, NULL);
+    mutex_unlock(&put_mutex);
     return retval;
 }
 /*****************************************************************************
 *****************************************************************************/
 
-int px_kprintf(const char* fmt, ...)
+int kprintf(const char* fmt, ...)
 {
     va_list args;
     int ret_val;
 
     va_start(args, fmt);
-    ret_val = px_kvprintf(fmt, args);
+    ret_val = kvprintf(fmt, args);
     va_end(args);
     return ret_val;
 }

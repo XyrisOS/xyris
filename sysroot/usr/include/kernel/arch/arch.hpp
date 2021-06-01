@@ -19,27 +19,27 @@ typedef struct registers registers_t;
 /* Shared i386 & amd64 */
 #if defined(__i386__) | defined(__i686__) | defined(__amd64__) | defined(__x86_64__)
 // Externed architecture variables
-extern const char* px_exception_descriptions[];
+extern const char* exception_descriptions[];
 // Architecture typedefs
 typedef void (*isr_t)(registers_t *);
 typedef struct stivale2_struct stivale2_info;
 // Architecture inline functions
-static inline void px_arch_cpuid(int flag, unsigned long eax, unsigned long ebx, unsigned long ecx, unsigned long edx)
+static inline void arch_cpuid(int flag, unsigned long eax, unsigned long ebx, unsigned long ecx, unsigned long edx)
 {
     __asm__ volatile ("cpuid" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx) : "a"(flag));
 }
-static inline int px_arch_cpuid(int flag, int regs[4]) {
+static inline int arch_cpuid(int flag, int regs[4]) {
     // ECX and EDX are swapped in order to make the strings readable
     __asm__ volatile ("cpuid" : "=a"(*regs), "=b"(*(regs+1)), "=c"(*(regs+2)), "=d"(*(regs+3)) : "a"(flag));
     return (int)regs[0];
 }
 // Kernel entry point
-extern "C" void px_kernel_main(void* boot_info, uint32_t magic);
+extern "C" void kernel_main(void* boot_info, uint32_t magic);
 // i386+ & amd64 functions
-const char* px_cpu_get_vendor();
-const char* px_cpu_get_model();
-void px_parse_multiboot2(void* info);
-void px_parse_stivale2(void* info);
+const char* cpu_get_vendor();
+const char* cpu_get_model();
+void parse_multiboot2(void* info);
+void parse_stivale2(void* info);
 // Shared library code for i386+ & amd64 family
 #include <cpuid.h>
 #include <arch/i386/gdt.hpp>

@@ -1,6 +1,6 @@
 # Defined in isr.c
-.extern px_isr_handler
-.extern px_irq_handler
+.extern isr_handler
+.extern irq_handler
 .align 4
 
 # Common ISR code
@@ -17,7 +17,7 @@ isr_common_stub:
     push %esp           # Push registers_t *r
     # 2. Clear the directory flag (eflags) & call C handler
     cld                 # C code following the sysV ABI requires DF to be clear on function entry
-    call px_isr_handler
+    call isr_handler
 
     # 3. Restore state
     addl $4, %esp
@@ -31,7 +31,7 @@ isr_common_stub:
     iret                # pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
     # These irets need to be iretq's when in long mode
 
-# Common IRQ code. Identical to ISR code except for the 'call' 
+# Common IRQ code. Identical to ISR code except for the 'call'
 # and the 'pop ebx'
 irq_common_stub:
     pushal
@@ -44,7 +44,7 @@ irq_common_stub:
     movw %ax, %gs
     pushl %esp
     cld
-    call px_irq_handler # Different than the ISR code
+    call irq_handler # Different than the ISR code
     add $4, %esp
     popl %ebx           # Different than the ISR code
     movw %bx, %ds

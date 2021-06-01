@@ -18,12 +18,12 @@
 // Defined in the gdt_flush.s file.
 extern "C" void gdt_flush(uintptr_t);
 // Function declarations
-void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags);
+void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags);
 // Define our local variables
 gdt_entry_t gdt_entries[5];
 gdt_ptr_t   gdt_ptr;
 
-void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags) {
+void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags) {
     // 32-bit address space
     // Now we have to squeeze the (32-bit) limit into 2.5 regiters (20-bit).
     // This is done by discarding the 12 least significant bits, but this
@@ -51,17 +51,17 @@ void px_gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags)
 }
 
 //gdt_flush((uintptr_t)gdtp);
-void px_gdt_install() {
-    px_kprintf(DBG_INFO "Installing the GDT...\n");
+void gdt_install() {
+    kprintf(DBG_INFO "Installing the GDT...\n");
     gdt_ptr.limit = (sizeof(gdt_entry_t) * 5) - 1;
     gdt_ptr.base  = (uint32_t)&gdt_entries;
 
-    px_gdt_set_gate(0, 0, 0, 0);                     // Null segment
-    px_gdt_set_gate(1, 0, 0x000FFFFF, GDT_CODE_PL0); // Kernel code segment
-    px_gdt_set_gate(2, 0, 0x000FFFFF, GDT_DATA_PL0); // Kernel data segment
-    px_gdt_set_gate(3, 0, 0x000FFFFF, GDT_CODE_PL3); // User mode code segment
-    px_gdt_set_gate(4, 0, 0x000FFFFF, GDT_DATA_PL3); // User mode data segment
+    gdt_set_gate(0, 0, 0, 0);                     // Null segment
+    gdt_set_gate(1, 0, 0x000FFFFF, GDT_CODE_PL0); // Kernel code segment
+    gdt_set_gate(2, 0, 0x000FFFFF, GDT_DATA_PL0); // Kernel data segment
+    gdt_set_gate(3, 0, 0x000FFFFF, GDT_CODE_PL3); // User mode code segment
+    gdt_set_gate(4, 0, 0x000FFFFF, GDT_DATA_PL3); // User mode data segment
 
     gdt_flush((uint32_t)&gdt_ptr);
-    px_kprintf(DBG_OKAY "Installed the GDT.\n");
+    kprintf(DBG_OKAY "Installed the GDT.\n");
 }

@@ -1,12 +1,12 @@
 /**
  * @file tasks.cpp
  * @author Micah Switzer (mswitzer@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.3
  * @date 2020-08-29
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2020
- * 
+ *
  */
 #include <sys/tasks.hpp>
 #include <mem/heap.hpp>
@@ -26,37 +26,37 @@
 #include <arch/arch.hpp>
 
 /* forward declarations */
-static void _enqueue_task(px_tasklist_t *, px_task *);
-static px_task_t *_dequeue_task(px_tasklist_t *);
+static void _enqueue_task(tasklist_t *, task *);
+static task_t *_dequeue_task(tasklist_t *);
 static void _cleaner_task_impl(void);
 static void _schedule(void);
-extern "C" void _px_tasks_enqueue_ready(px_task_t *task);
-void px_tasks_update_time();
-void _wakeup(px_task_t *task);
+extern "C" void _tasks_enqueue_ready(task_t *task);
+void tasks_update_time();
+void _wakeup(task_t *task);
 
 /* macro to create a new named tasklist and associated helper functions */
 #define NAMED_TASKLIST(name) \
-    px_tasklist_t px_tasks_##name = { /* Zero */ }; \
-    static inline void _enqueue_##name(px_task_t *task) { \
-        _enqueue_task(&px_tasks_##name, task); } \
-    static inline px_task_t *_dequeue_##name() { \
-        return _dequeue_task(&px_tasks_##name); }
+    tasklist_t tasks_##name = { /* Zero */ }; \
+    static inline void _enqueue_##name(task_t *task) { \
+        _enqueue_task(&tasks_##name, task); } \
+    static inline task_t *_dequeue_##name() { \
+        return _dequeue_task(&tasks_##name); }
 
-px_task_t *px_current_task = NULL;
-static px_task_t _cleaner_task;
-static px_task_t _first_task;
+task_t *current_task = NULL;
+static task_t _cleaner_task;
+static task_t _first_task;
 
-px_tasklist_t px_tasks_ready = { /* Zero */ };
+tasklist_t tasks_ready = { /* Zero */ };
 NAMED_TASKLIST(sleeping);
 NAMED_TASKLIST(stopped);
 
 // map between task state and the list it is in
-static px_tasklist_t *_state_lists[TASK_STATE_COUNT] = {
+static tasklist_t *_state_lists[TASK_STATE_COUNT] = {
     [TASK_RUNNING] = NULL, // not in a list
-    [TASK_READY] = &px_tasks_ready,
-    [TASK_SLEEPING] = &px_tasks_sleeping,
+    [TASK_READY] = &tasks_ready,
+    [TASK_SLEEPING] = &tasks_sleeping,
     [TASK_BLOCKED] = NULL, // in a list specific to the blocking primitive
-    [TASK_STOPPED] = &px_tasks_stopped,
+    [TASK_STOPPED] = &tasks_stopped,
     [TASK_PAUSED] = NULL, // not in a list
 };
 
@@ -104,9 +104,9 @@ static void _release_scheduler_lock()
 
 static void _discover_cpu_speed()
 {
-    uint32_t curr_tick = px_timer_tick;
+    uint32_t curr_tick = timer_tick;
     uint64_t curr_rtsc = __rdtsc();
-    while (px_timer_tick != curr_tick + 1) { }
+    while (timer_tick != curr_tick + 1) { }
     curr_rtsc = __rdtsc() - curr_rtsc;
     _instr_per_ns = curr_rtsc / 1000000;
     // will be inaccurate, but it's the best we can do in these circumstances
@@ -118,33 +118,33 @@ static inline uint64_t _get_cpu_time_ns()
     return (__rdtsc()) / _instr_per_ns;
 }
 
-static void _print_task(const px_task_t *task)
+static void _print_task(const task_t *task)
 {
-    px_rs232_printf("%s is %s\n", task->name, _state_names[task->state]);
+    rs232_printf("%s is %s\n", task->name, _state_names[task->state]);
 }
 
 #ifdef DEBUG
-#define TASK_ACTION(action, task) do { px_rs232_print(action " "); _print_task(task); } while(0)
+#define TASK_ACTION(action, task) do { rs232_print(action " "); _print_task(task); } while(0)
 #else
 #define TASK_ACTION(action, task)
 #endif
 
-static void _print_tasklist(const char *name, const px_tasklist_t *list)
+static void _print_tasklist(const char *name, const tasklist_t *list)
 {
-    px_task_t *task = list->head;
-    px_rs232_printf("%s:\n", name);
+    task_t *task = list->head;
+    rs232_printf("%s:\n", name);
     while (task != NULL) {
         _print_task(task);
         task = task->next;
     }
 }
 
-static void _print_tasklist(const px_task_t *task)
+static void _print_tasklist(const task_t *task)
 {
-    const px_tasklist_t *list = _state_lists[task->state];
+    const tasklist_t *list = _state_lists[task->state];
     const char *state_name = _state_names[task->state];
     if (list == NULL) {
-        px_rs232_printf("no tasklist available for %s tasks.\n", state_name);
+        rs232_printf("no tasklist available for %s tasks.\n", state_name);
         return;
     }
 
@@ -153,18 +153,18 @@ static void _print_tasklist(const px_task_t *task)
 
 static void _on_timer();
 
-void px_tasks_init()
+void tasks_init()
 {
     // get a pointer to the first task's tcb
-    px_task_t *this_task = &_first_task;
+    task_t *this_task = &_first_task;
     // discover the CPU speed for accurate scheduling
     _discover_cpu_speed();
     *this_task = {
         // this will be filled in when we switch to another task for the first time
         .stack_top = 0,
         // this will be the same for kernel tasks
-        .page_dir = px_get_phys_page_dir(),
-        // this is a linked list with only this task 
+        .page_dir = get_phys_page_dir(),
+        // this is a linked list with only this task
         .next = NULL,
         // this task is currently running
         .state = TASK_RUNNING,
@@ -179,7 +179,7 @@ void px_tasks_init()
     };
     TASK_ACTION("create task", this_task);
     // create a task for the cleaner and set it's state to "paused"
-    (void) px_tasks_new(_cleaner_task_impl, &_cleaner_task, TASK_PAUSED, "[cleaner]");
+    (void) tasks_new(_cleaner_task_impl, &_cleaner_task, TASK_PAUSED, "[cleaner]");
     _cleaner_task.state = TASK_PAUSED;
     // update the timer variables
     _last_time = _get_cpu_time_ns();
@@ -187,8 +187,8 @@ void px_tasks_init()
     // enable time slices
     _time_slice_remaining = TIME_SLICE_SIZE;
     // this is the current task
-    px_current_task = this_task;
-    px_timer_register_callback(_on_timer);
+    current_task = this_task;
+    timer_register_callback(_on_timer);
 }
 
 static void _task_starting()
@@ -208,14 +208,14 @@ static void _task_stopping()
 {
     // this is called whenever a task is about to stop (i.e. it returned)
     // it is run in the context of the stopping task
-    px_tasks_exit();
+    tasks_exit();
     // prevent undefined behavior from returning to a random address
     PANIC("Attempted to schedule a stopped task\n");
 }
 
 // emulate a stack push
 // this makes it easier and more intuitive to set up stacks
-static inline void _px_stack_push_word(void **stack_pointer, size_t value)
+static inline void _stack_push_word(void **stack_pointer, size_t value)
 {
     // decrement the stack pointer
     *(uintptr_t*)stack_pointer -= sizeof(size_t);
@@ -223,7 +223,7 @@ static inline void _px_stack_push_word(void **stack_pointer, size_t value)
     **(size_t**)stack_pointer = value;
 }
 
-static void _enqueue_task(px_tasklist_t *list, px_task *task)
+static void _enqueue_task(tasklist_t *list, task *task)
 {
     if (list->head == NULL) {
         list->head = task;
@@ -237,9 +237,9 @@ static void _enqueue_task(px_tasklist_t *list, px_task *task)
     list->tail = task;
 }
 
-static px_task_t *_dequeue_task(px_tasklist_t *list)
+static task_t *_dequeue_task(tasklist_t *list)
 {
-    px_task_t *task;
+    task_t *task;
     if (list->head == NULL) {
         // can't dequeue if there's not anything there
         return NULL;
@@ -259,7 +259,7 @@ static px_task_t *_dequeue_task(px_tasklist_t *list)
     return task;
 }
 
-static void _remove_task(px_tasklist_t *list, px_task_t *task, px_task_t *previous)
+static void _remove_task(tasklist_t *list, task_t *task, task_t *previous)
 {
     // if this is true, something's not right...
     if (previous != NULL && previous->next != task) {
@@ -281,68 +281,68 @@ static void _remove_task(px_tasklist_t *list, px_task_t *task, px_task_t *previo
     task->next = NULL;
 }
 
-extern "C" void _px_tasks_enqueue_ready(px_task_t *task)
+extern "C" void _tasks_enqueue_ready(task_t *task)
 {
-    _enqueue_task(&px_tasks_ready, task);
+    _enqueue_task(&tasks_ready, task);
 }
 
-static px_task_t *_px_tasks_dequeue_ready()
+static task_t *_tasks_dequeue_ready()
 {
-    return _dequeue_task(&px_tasks_ready);
+    return _dequeue_task(&tasks_ready);
 }
 
-px_task_t *px_tasks_new(void (*entry)(void), px_task_t *storage, px_task_state state, const char *name)
+task_t *tasks_new(void (*entry)(void), task_t *storage, task_state state, const char *name)
 {
-    px_task_t *new_task = storage;
+    task_t *new_task = storage;
     if (storage == NULL) {
         // allocate memory for our task structure
-        new_task = (px_task_t*)malloc(sizeof(px_task_t));
+        new_task = (task_t*)malloc(sizeof(task_t));
         // panic if the alloc fails (we have no fallback)
         if (new_task == NULL) {
             PANIC("Unable to allocate memory for new task struct.\n");
         }
     }
     // allocate a page for this stack (we might change this later)
-    uint8_t *stack = (uint8_t *)px_get_new_page(PAGE_SIZE - 1);
+    uint8_t *stack = (uint8_t *)get_new_page(PAGE_SIZE - 1);
     if (stack == NULL) PANIC("Unable to allocate memory for new task stack.\n");
     // remember, the stack grows up
     void *stack_pointer = stack + PAGE_SIZE;
     // a null stack frame to make the panic screen happy
-    _px_stack_push_word(&stack_pointer, 0);
+    _stack_push_word(&stack_pointer, 0);
     // the last thing to happen is the task stopping function
-    _px_stack_push_word(&stack_pointer, (size_t)_task_stopping);
+    _stack_push_word(&stack_pointer, (size_t)_task_stopping);
     // next entry is the main function to call (the start of the task)
-    _px_stack_push_word(&stack_pointer, (size_t)entry);
+    _stack_push_word(&stack_pointer, (size_t)entry);
     // when this task is started, the CPU will pop off this value which will become the new EIP
     // we push this function to allow some setup code to be run from within the context of the new task
-    _px_stack_push_word(&stack_pointer, (size_t)_task_starting);
+    _stack_push_word(&stack_pointer, (size_t)_task_starting);
     // our task switching code is going to pop four values off of the stack before returning
-    _px_stack_push_word(&stack_pointer, 0);
-    _px_stack_push_word(&stack_pointer, 0);
-    _px_stack_push_word(&stack_pointer, 0);
-    _px_stack_push_word(&stack_pointer, 0);
+    _stack_push_word(&stack_pointer, 0);
+    _stack_push_word(&stack_pointer, 0);
+    _stack_push_word(&stack_pointer, 0);
+    _stack_push_word(&stack_pointer, 0);
     new_task->stack_top = (uintptr_t)stack_pointer;
-    new_task->page_dir = px_get_phys_page_dir();
+    new_task->page_dir = get_phys_page_dir();
     new_task->next = NULL;
     new_task->state = state;
     new_task->time_used = 0;
     new_task->name = name;
     new_task->alloc = storage == NULL ? ALLOC_DYNAMIC : ALLOC_STATIC;
     if (state == TASK_READY) {
-        _px_tasks_enqueue_ready(new_task);
+        _tasks_enqueue_ready(new_task);
     }
     TASK_ACTION("create task", new_task);
     return new_task;
 }
 
-void px_tasks_update_time()
+void tasks_update_time()
 {
     uint64_t current_time = _get_cpu_time_ns();
     uint64_t delta = current_time - _last_time;
-    if (px_current_task == NULL) {
+    if (current_task == NULL) {
         _idle_time += delta;
     } else {
-        px_current_task->time_used += delta;
+        current_task->time_used += delta;
     }
     _last_time = current_time;
 }
@@ -354,15 +354,15 @@ static void _schedule()
         _scheduler_postponed = true;
         return;
     }
-    if (px_current_task == NULL) {
+    if (current_task == NULL) {
         // we are currently idling and will schedule at a later time
         return;
     }
     // get the next task
-    px_task_t *task = _px_tasks_dequeue_ready();
+    task_t *task = _tasks_dequeue_ready();
     // don't need to do anything if there's nothing ready to run
     if (task == NULL) {
-        if (px_current_task->state == TASK_RUNNING) {
+        if (current_task->state == TASK_RUNNING) {
             // still running the same task
             // but also reset the time slice counter
             _time_slice_remaining = TIME_SLICE_SIZE;
@@ -371,12 +371,12 @@ static void _schedule()
         // disable time slices because there are no tasks available to run
         _time_slice_remaining = 0;
         // count the time that this task ran for
-        px_tasks_update_time();
+        tasks_update_time();
         /*** idle ***/
         // borrow this task to return to once we're not idle anymore
-        px_task_t *borrowed = px_current_task;
+        task_t *borrowed = current_task;
         // set the current task to null to indicate an idle state
-        px_current_task = NULL;
+        current_task = NULL;
         _idle_start = _get_cpu_time_ns();
         do {
             // enable interrupts to process timer and other events
@@ -386,30 +386,30 @@ static void _schedule()
             // disable interrupts to restore our lock
             asm ("cli");
             // check if there's a task ready to be run
-        } while (task = _px_tasks_dequeue_ready(), task == NULL);
+        } while (task = _tasks_dequeue_ready(), task == NULL);
         // count the time we spent idling
-        px_tasks_update_time();
+        tasks_update_time();
         // reset the current task
-        px_current_task = borrowed;
+        current_task = borrowed;
         _idle_start = _idle_start - _get_cpu_time_ns();
         _idle_time += _idle_start;
     } else {
         // just do time accounting once
-        px_tasks_update_time();
+        tasks_update_time();
     }
     // reset the time slice because a new task is being scheduled
     _time_slice_remaining = TIME_SLICE_SIZE;
 #ifdef DEBUG
-    px_rs232_print("switching to ");
+    rs232_print("switching to ");
     _print_task(task);
 #endif
     // reset the last "timer time" since the time slice was reset
     _last_timer_time = _get_cpu_time_ns();
     // switch to the task
-    px_tasks_switch_to(task);
+    tasks_switch_to(task);
 }
 
-void px_tasks_schedule()
+void tasks_schedule()
 {
     // we must lock on all scheduling operations
     _aquire_scheduler_lock();
@@ -419,35 +419,35 @@ void px_tasks_schedule()
     _release_scheduler_lock();
 }
 
-uint64_t px_tasks_get_self_time()
+uint64_t tasks_get_self_time()
 {
-    px_tasks_update_time();
-    return px_current_task->time_used;
+    tasks_update_time();
+    return current_task->time_used;
 }
 
-void px_tasks_block_current(px_task_state reason)
+void tasks_block_current(task_state reason)
 {
     _aquire_scheduler_lock();
-    px_current_task->state = reason;
-    TASK_ACTION("block", px_current_task);
+    current_task->state = reason;
+    TASK_ACTION("block", current_task);
     _schedule();
     _release_scheduler_lock();
 }
 
-void px_tasks_unblock(px_task_t *task)
+void tasks_unblock(task_t *task)
 {
     _aquire_scheduler_lock();
     task->state = TASK_READY;
     TASK_ACTION("unblock", task);
-    _px_tasks_enqueue_ready(task);
+    _tasks_enqueue_ready(task);
     _release_scheduler_lock();
 }
 
-void _wakeup(px_task_t *task)
+void _wakeup(task_t *task)
 {
     task->state = TASK_READY;
     task->wakeup_time = (0ULL - 1);
-    _px_tasks_enqueue_ready(task);
+    _tasks_enqueue_ready(task);
     TASK_ACTION("wakeup", task);
 }
 
@@ -455,9 +455,9 @@ static void _on_timer()
 {
     _aquire_scheduler_lock();
 
-    px_task_t *pre = NULL;
-    px_task_t *task = px_tasks_sleeping.head;
-    px_task_t *next;
+    task_t *pre = NULL;
+    task_t *task = tasks_sleeping.head;
+    task_t *next;
     bool need_schedule = false;
     uint64_t time = _get_cpu_time_ns();
     uint64_t time_delta;
@@ -465,8 +465,8 @@ static void _on_timer()
     while (task != NULL) {
         next = task->next;
         if (time >= task->wakeup_time) {
-            //px_rs232_print("timer: waking sleeping task\n");
-            _remove_task(&px_tasks_sleeping, task, pre);
+            //rs232_print("timer: waking sleeping task\n");
+            _remove_task(&tasks_sleeping, task, pre);
             _wakeup(task);
             task->next = NULL;
             need_schedule = true;
@@ -482,14 +482,14 @@ static void _on_timer()
         if (time_delta >= _time_slice_remaining) {
             // schedule (and maybe pre-empt)
             // the schedule function will reset the time slice
-            //px_rs232_print("timer: time slice expired\n");
+            //rs232_print("timer: time slice expired\n");
             need_schedule = true;
         } else {
             // decrement the time slice counter
             _time_slice_remaining -= time_delta;
         }
     }
-    
+
     if (need_schedule) {
         _schedule();
     }
@@ -497,46 +497,46 @@ static void _on_timer()
     _release_scheduler_lock();
 }
 
-void px_tasks_nano_sleep_until(uint64_t time)
+void tasks_nano_sleep_until(uint64_t time)
 {
     // TODO: maybe validate that this time is in the future?
     _aquire_scheduler_lock();
-    px_current_task->state = TASK_SLEEPING;
-    px_current_task->wakeup_time = time;
-    _enqueue_sleeping(px_current_task);
-    TASK_ACTION("sleep", px_current_task);
+    current_task->state = TASK_SLEEPING;
+    current_task->wakeup_time = time;
+    _enqueue_sleeping(current_task);
+    TASK_ACTION("sleep", current_task);
     _schedule();
     _release_scheduler_lock();
 }
 
-void px_tasks_nano_sleep(uint64_t time)
+void tasks_nano_sleep(uint64_t time)
 {
-    px_tasks_nano_sleep_until(_get_cpu_time_ns() + time);
+    tasks_nano_sleep_until(_get_cpu_time_ns() + time);
 }
 
-void px_tasks_exit()
+void tasks_exit()
 {
     // userspace cleanup can happen here
-    px_rs232_printf("task \"%s\" (0x%08x) exiting\n", px_current_task->name, (uint32_t)px_current_task);
+    rs232_printf("task \"%s\" (0x%08x) exiting\n", current_task->name, (uint32_t)current_task);
 
     _aquire_scheduler_lock();
     // all scheduling-specific operations must happen here
-    _enqueue_stopped(px_current_task);
+    _enqueue_stopped(current_task);
 
     // the ordering of these two should really be reversed
     // but the scheduler currently isn't very smart
-    px_tasks_block_current(TASK_STOPPED);
-    
-    px_tasks_unblock(&_cleaner_task);
+    tasks_block_current(TASK_STOPPED);
+
+    tasks_unblock(&_cleaner_task);
 
     _release_scheduler_lock();
 }
 
-static void _clean_stopped_task(px_task_t *task)
+static void _clean_stopped_task(task_t *task)
 {
     // free the stack page
     uintptr_t page = task->stack_top & PAGE_ALIGN;
-    px_free_page((void *)page, PAGE_SIZE - 1);
+    free_page((void *)page, PAGE_SIZE - 1);
     // somehow determine if the task was dynamically allocated or not
     // just assume statically allocated tasks will never exit (bad idea)
     if (task->alloc == ALLOC_DYNAMIC) free(task);
@@ -545,49 +545,49 @@ static void _clean_stopped_task(px_task_t *task)
 static void _cleaner_task_impl()
 {
     for (;;) {
-        px_task_t *task;
+        task_t *task;
         _aquire_scheduler_lock();
-        
-        while (px_tasks_stopped.head != NULL) {
+
+        while (tasks_stopped.head != NULL) {
             task = _dequeue_stopped();
-            px_rs232_printf("cleaning up task %s (0x%08x)\n", task->name ? task->name : "N/A", (uint32_t)task);
+            rs232_printf("cleaning up task %s (0x%08x)\n", task->name ? task->name : "N/A", (uint32_t)task);
             _clean_stopped_task(task);
         }
 
         // a schedule occuring at this point would be okay
         // it just needs to occur before the loop repeats
-        px_tasks_block_current(TASK_PAUSED);
+        tasks_block_current(TASK_PAUSED);
 
         _release_scheduler_lock();
     }
 }
 
-void px_tasks_sync_block(px_tasks_sync_t *ts)
+void tasks_sync_block(tasks_sync_t *ts)
 {
     _aquire_scheduler_lock();
 #ifdef DEBUG
     if (ts->dbg_name != NULL) {
-        px_rs232_printf("blocking %s\n", ts->dbg_name);
+        rs232_printf("blocking %s\n", ts->dbg_name);
     }
 #endif
     // push the current task to the waiting queue
-    _enqueue_task(&ts->waiting, px_current_task);
+    _enqueue_task(&ts->waiting, current_task);
     // now block until the mutex is freed
-    px_tasks_block_current(TASK_BLOCKED);
+    tasks_block_current(TASK_BLOCKED);
     _release_scheduler_lock();
 }
 
-void px_tasks_sync_unblock(px_tasks_sync_t *ts)
+void tasks_sync_unblock(tasks_sync_t *ts)
 {
     _aquire_scheduler_lock();
 #ifdef DEBUG
     if (ts->dbg_name != NULL) {
-        px_rs232_printf("unblocking %s\n", ts->dbg_name);
+        rs232_printf("unblocking %s\n", ts->dbg_name);
     }
 #endif
     // iterate all tasks that were blocked and unblock them
-    px_task_t *task = ts->waiting.head;
-    px_task_t *next = NULL;
+    task_t *task = ts->waiting.head;
+    task_t *next = NULL;
     if (task == NULL) {
         // no other tasks were blocked
         goto exit;

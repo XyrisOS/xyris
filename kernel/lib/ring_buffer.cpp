@@ -6,16 +6,16 @@
  * data is done in a queue-like fashion.
  * @version 0.3
  * @date 2020-09-12
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2020
- * 
+ *
  */
 
 #include <lib/ring_buffer.hpp>
 #include <mem/heap.hpp>
 #include <lib/errno.h>
 
-int px_ring_buffer_init(px_ring_buff_t* buff, int size) {
+int ring_buffer_init(ring_buff_t* buff, int size) {
     int status = 0;
     // Check if the pointer is valid
     if (buff != NULL) {
@@ -39,7 +39,7 @@ int px_ring_buffer_init(px_ring_buff_t* buff, int size) {
     return status;
 }
 
-int px_ring_buffer_destroy(px_ring_buff_t* buff) {
+int ring_buffer_destroy(ring_buff_t* buff) {
     int status = 0;
     if (buff != NULL) {
         // Free our data buffer and set the struct to null
@@ -52,11 +52,11 @@ int px_ring_buffer_destroy(px_ring_buff_t* buff) {
     return status;
 }
 
-int px_ring_buffer_enqueue(px_ring_buff_t* buff, uint8_t byte) {
+int ring_buffer_enqueue(ring_buff_t* buff, uint8_t byte) {
     int status = 0;
     if (buff != NULL) {
         // Check if the buffer is full. If so, we can't enqueue.
-        if (px_ring_buffer_is_full(buff)) {
+        if (ring_buffer_is_full(buff)) {
             status = -1;
             errno = ENOBUFS;
         } else {
@@ -73,11 +73,11 @@ int px_ring_buffer_enqueue(px_ring_buff_t* buff, uint8_t byte) {
     return status;
 }
 
-int px_ring_buffer_dequeue(px_ring_buff_t* buff, uint8_t* data) {
+int ring_buffer_dequeue(ring_buff_t* buff, uint8_t* data) {
     int status = 0;
     if (buff != NULL) {
         // Check if the buffer is empty. If so, we can't dequeue
-        if (px_ring_buffer_is_empty(buff)) {
+        if (ring_buffer_is_empty(buff)) {
             status = -1;
             errno = EINVAL;
         } else {
@@ -94,11 +94,11 @@ int px_ring_buffer_dequeue(px_ring_buff_t* buff, uint8_t* data) {
     return status;
 }
 
-int px_ring_buffer_peek(px_ring_buff_t* buff, uint8_t* data) {
+int ring_buffer_peek(ring_buff_t* buff, uint8_t* data) {
     int status = 0;
     if (buff != NULL) {
         // Check if the buffer is empty. If so, we can't dequeue
-        if (px_ring_buffer_is_empty(buff)) {
+        if (ring_buffer_is_empty(buff)) {
             status = -1;
             errno = EINVAL;
         } else {
@@ -113,7 +113,7 @@ int px_ring_buffer_peek(px_ring_buff_t* buff, uint8_t* data) {
     return status;
 }
 
-bool px_ring_buffer_is_empty(px_ring_buff_t* buff) {
+bool ring_buffer_is_empty(ring_buff_t* buff) {
     if (buff != NULL) {
         return (buff->length == 0);
     } else {
@@ -122,7 +122,7 @@ bool px_ring_buffer_is_empty(px_ring_buff_t* buff) {
     }
 }
 
-bool px_ring_buffer_is_full(px_ring_buff_t* buff) {
+bool ring_buffer_is_full(ring_buff_t* buff) {
     if (buff != NULL) {
         return (buff->length == buff->size);
     } else {
@@ -131,7 +131,7 @@ bool px_ring_buffer_is_full(px_ring_buff_t* buff) {
     }
 }
 
-int px_ring_buffer_length(px_ring_buff_t* buff) {
+int ring_buffer_length(ring_buff_t* buff) {
     if (buff != NULL) {
         return buff->length;
     } else {
@@ -140,7 +140,7 @@ int px_ring_buffer_length(px_ring_buff_t* buff) {
     }
 }
 
-int px_ring_buffer_size(px_ring_buff_t* buff) {
+int ring_buffer_size(ring_buff_t* buff) {
     if (buff != NULL) {
         return buff->size;
     } else {

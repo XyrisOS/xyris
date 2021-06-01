@@ -18,7 +18,7 @@
 // Information about the Kernel from the linker
 extern uint32_t _KERNEL_START;
 extern uint32_t _KERNEL_END;
-extern "C" void px_invalidate_page(void *page_addr);
+extern "C" void invalidate_page(void *page_addr);
 
 // Thanks to Grant Hernandez for uOS and the absolutely amazing code
 // that he wrote. It helped us fix a lot of bugs and has provided a
@@ -40,13 +40,13 @@ extern "C" void px_invalidate_page(void *page_addr);
 #define PAGES_PER_KB(kb)    (PAGE_ALIGN_UP((kb) * 1024) / PAGE_SIZE)
 #define PAGES_PER_MB(mb)    (PAGE_ALIGN_UP((mb) * 1024 * 1024) / PAGE_SIZE)
 #define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
-#define VADDR(ADDR)         ((px_virtual_address_t){ .val = (ADDR) })
+#define VADDR(ADDR)         ((virtual_address_t){ .val = (ADDR) })
 
 /**
  * @brief Provides a structure for defining the necessary fields
  * which comprise a virtual address.
  */
-typedef union px_virtual_address
+typedef union virtual_address
 {
     struct {
         uint32_t page_offset       : 12;  // Page offset address
@@ -54,14 +54,14 @@ typedef union px_virtual_address
         uint32_t page_dir_index    : 10;  // Page directory entry
     };
     uint32_t val;
-} px_virtual_address_t;
+} virtual_address_t;
 
 /**
  * @brief Page table entry defined in accordance to the
  * Intel Developer Manual Vol. 3a p. 4-12
  *
  */
-typedef struct px_page_table_entry
+typedef struct page_table_entry
 {
     uint32_t present            : 1;  // Page present in memory
     uint32_t read_write         : 1;  // Read-only if clear, readwrite if set
@@ -74,24 +74,24 @@ typedef struct px_page_table_entry
     uint32_t global             : 1;  // Prevents the TLB from updating the address
     uint32_t unused             : 3;  // Amalgamation of unused and reserved bits
     uint32_t frame              : 20; // Frame address (shifted right 12 bits)
-} px_page_table_entry_t;
+} page_table_entry_t;
 
 /**
  * @brief Page table structure as defined in accordance to the
  * Intel Developer Manual Vol. 3a p. 4-12
  *
  */
-typedef struct px_page_table
+typedef struct page_table
 {
-   px_page_table_entry_t pages[1024];
-} px_page_table_t;
+   page_table_entry_t pages[1024];
+} page_table_t;
 
 /**
  * @brief Page directory entry structure as defined in accordance to the
  * Intel Developer Manual Vol. 3a p. 4-12
  *
  */
-typedef struct px_page_directory_entry
+typedef struct page_directory_entry
 {
     uint32_t present            : 1;  // Is the page present in physical memory?
     uint32_t read_write         : 1;  // Is the page read/write or read-only?
@@ -103,7 +103,7 @@ typedef struct px_page_directory_entry
     uint32_t page_size          : 1;  // Is the page 4 Mb (enabled) or 4 Kb (disabled)?
     uint32_t ignored_b          : 4;  // Ignored
     uint32_t table_addr         : 20; // Physical address of the table
-} px_page_directory_entry_t;
+} page_directory_entry_t;
 
 /**
  * @brief Page directory contains pointers to all of the virtual memory addresses for the
@@ -111,18 +111,18 @@ typedef struct px_page_directory_entry
  * Page table entry defined in accordance to the Intel Developer Manual Vol. 3a p. 4-12.
  *
  */
-typedef struct px_page_directory
+typedef struct page_directory
 {
-    px_page_table_t *tables[1024];                  // Pointers that Panix uses to access the pages in memory
-    px_page_directory_entry_t tablesPhysical[1024]; // Pointers that the Intel CPU uses to access pages in memory
+    page_table_t *tables[1024];                  // Pointers that Panix uses to access the pages in memory
+    page_directory_entry_t tablesPhysical[1024]; // Pointers that the Intel CPU uses to access pages in memory
     uint32_t physical_addr;                         // Physical address of this 4Kb aligned page table referenced by this entry
-} px_page_directory_t;
+} page_directory_t;
 
 /**
  * @brief Sets up the environment, page directories etc and enables paging.
  *
  */
-void px_paging_init(uint32_t num_pages);
+void paging_init(uint32_t num_pages);
 
 /**
  * @brief Returns a new page in memory for use.
@@ -130,30 +130,30 @@ void px_paging_init(uint32_t num_pages);
  * @param size Page size in bytes
  * @return void* Page memory address
  */
-void* px_get_new_page(uint32_t size);
+void* get_new_page(uint32_t size);
 
 /**
  * @brief Frees pages starting at a given page address.
- * 
+ *
  * @param page Starting location of page(s) to be freed
  * @param size Number of bytes to be freed
  */
-void  px_free_page(void *page, uint32_t size);
+void  free_page(void *page, uint32_t size);
 
 /**
  * @brief Checks whether an address is mapped into memory.
- * 
+ *
  * @param addr Address to be checked.
  * @return true The address is mapped in and valid.
  * @return false The address is not mapped into memory.
  */
-bool px_page_is_present(size_t addr);
+bool page_is_present(size_t addr);
 
 /**
  * @brief Gets the physical address of the current page directory.
- * 
+ *
  * @returns the physical address of the current page directory.
  */
-uint32_t px_get_phys_page_dir();
+uint32_t get_phys_page_dir();
 
-void px_map_kernel_page(px_virtual_address_t vaddr, uint32_t paddr);
+void map_kernel_page(virtual_address_t vaddr, uint32_t paddr);

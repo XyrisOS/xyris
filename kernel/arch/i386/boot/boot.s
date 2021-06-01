@@ -8,7 +8,7 @@
 # external reference to our global constructors and kernel main functions
 # which are defined in our main.cpp file. This allows assembly to call
 # function in C++ by telling the compiler they exist "somewhere"
-.extern px_kernel_main
+.extern kernel_main
 # minimal panic function that works in most situations
 .extern early_panic
 
@@ -154,7 +154,7 @@ _start.has_sse:
     pushl multiboot_info                # Multiboot info structure
 
     # Enter the high-level kernel.
-    call px_kernel_main
+    call kernel_main
 
     # Call global destructors
     call _fini

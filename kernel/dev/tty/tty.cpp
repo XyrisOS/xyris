@@ -6,7 +6,7 @@
  * functions expect a null-terminator at the end of the string, which
  * C++ seems to take care of *most* of the time. These functions do
  * NOT accept formatted strings like printf. That is available in
- * px_kprintf().
+ * kprintf().
  * @version 0.3
  * @date 2020-07-09
  *
@@ -21,13 +21,13 @@
 uint8_t tty_coords_x = 0;
 uint8_t tty_coords_y = 0;
 // VGA colors (defaults are white on black)
-px_tty_vga_color color_back = VGA_Black;
-px_tty_vga_color color_fore = VGA_White;
+tty_vga_color color_back = VGA_Black;
+tty_vga_color color_fore = VGA_White;
 // Default colors set by tty_clear()
-px_tty_vga_color reset_back = VGA_Black;
-px_tty_vga_color reset_fore = VGA_White;
+tty_vga_color reset_back = VGA_Black;
+tty_vga_color reset_fore = VGA_White;
 
-void px_shift_tty_up() {
+void shift_tty_up() {
     // start on the second row
     volatile uint16_t* where = x86_bios_vga_mem + X86_TTY_WIDTH;
     for (size_t row = 1; row < X86_TTY_HEIGHT; ++row) {
@@ -40,7 +40,7 @@ void px_shift_tty_up() {
     }
 }
 
-void px_tty_clear(px_tty_vga_color fore, px_tty_vga_color back) {
+void tty_clear(tty_vga_color fore, tty_vga_color back) {
     color_fore = fore;
     color_back = back;
     reset_fore = fore;
@@ -61,12 +61,12 @@ void px_tty_clear(px_tty_vga_color fore, px_tty_vga_color back) {
     tty_coords_y = 0;
 }
 
-void px_tty_reset_defaults() {
+void tty_reset_defaults() {
     color_back = VGA_DEFAULT_BACK;
     color_fore = VGA_DEFAULT_FORE;
 }
 
-void px_set_indicator(px_tty_vga_color color) {
+void set_indicator(tty_vga_color color) {
     volatile uint16_t* where;
     uint16_t attrib = (uint16_t)((color << 4) | (color & 0x0F));
     where = x86_bios_vga_mem + (X86_IND_Y * X86_TTY_WIDTH + X86_IND_X);
