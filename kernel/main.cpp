@@ -15,6 +15,8 @@
 #include <sys/tasks.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
+// Bootloader
+#include <boot/Handoff.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
