@@ -36,22 +36,14 @@ static void kernel_boot_tone();
 
 static void print_boot_info(void *boot_info, uint32_t magic)
 {
-    rs232_printf("Bootloader info at 0x%x\n", boot_info);
+    // Map in bootloader information
+    // TODO: Find a way to avoid this until after parsing
     if (boot_info != NULL) {
         uintptr_t page = (uintptr_t)boot_info & PAGE_ALIGN;
         map_kernel_page(VADDR(page), page);
     }
-    const char *boot_proto_name = "Unknown";
-    if (magic == 0x2BADB002) {
-        boot_proto_name = "Multiboot 1";
-    } else if (magic == 0x36d76289) {
-        boot_proto_name = "Multiboot 2";
-        parse_multiboot2(boot_info);
-    } else if (magic == *(uint32_t*)"stv2") {
-        boot_proto_name = "Stivale 2";
-        parse_stivale2(boot_info);
-    }
-    kprintf(DBG_INFO "Booted via %s\n", boot_proto_name);
+    // Parse the bootloader information into common format
+    Boot::Handoff handoff = Boot::Handoff(boot_info, magic);
 }
 
 /**

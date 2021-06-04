@@ -9,11 +9,15 @@
  * 
  */
 #include <boot/Handoff.hpp>
+// System library functions
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 #include <mem/paging.hpp>
+#include <sys/panic.hpp>
+// Generic devices
+#include <dev/tty/tty.hpp>
 #include <dev/serial/rs232.hpp>
-
+// Bootloaders
 #include <multiboot/multiboot2.h>
 #include <stivale/stivale2.h>
 
@@ -44,7 +48,7 @@ FramebufferInfo::FramebufferInfo()
     // Default constructor.
 }
 
-FramebufferInfo::FramebufferInfo(uint16_t width, uint16_t height, uint16_t depth, uint16_t pitch, void* addr)
+FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr)
     : _addr(addr)
     , _width(width)
     , _height(height)
@@ -61,8 +65,8 @@ FramebufferInfo::FramebufferInfo(uint16_t width, uint16_t height, uint16_t depth
     // Common parameters constructor
 }
 
-FramebufferInfo::FramebufferInfo(uint16_t width, uint16_t height,
-                                 uint16_t depth, uint16_t pitch,
+FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height,
+                                 uint16_t depth, uint32_t pitch,
                                  void* addr, FramebufferMemoryModel model,
                                  uint8_t redMaskSize, uint8_t redMaskShift,
                                  uint8_t greenMaskSize, uint8_t greenMaskShift,
@@ -95,14 +99,21 @@ Handoff::Handoff(void* handoff, uint32_t magic)
     : _handle(handoff)
     , _magic(magic)
 {
+    const char* bootProtoName;
     // Parse the handle based on the magic
+    rs232_printf("Bootloader info at 0x%X\n", handoff);
     if (magic == 0x36d76289) {
+        bootProtoName = "Multiboot2";
         _bootType = Multiboot2;
         parseMultiboot2(handoff);
     } else if (magic == *(uint32_t*)"stv2") {
+        bootProtoName = "Stivale2";
         _bootType = Stivale2;
         parseStivale2(handoff);
+    } else {
+        PANIC("Invalid bootloader information!");
     }
+    kprintf(DBG_INFO "Booted via %s\n", bootProtoName);
 }
 
 Handoff::~Handoff()
@@ -110,14 +121,20 @@ Handoff::~Handoff()
     // Nothing to deconstruct
 }
 
+/*
+ *  ___ _   _          _     ___
+ * / __| |_(_)_ ____ _| |___|_  )
+ * \__ \  _| \ V / _` | / -_)/ /
+ * |___/\__|_|\_/\__,_|_\___/___|
+ */
+
 void Handoff::parseStivale2(void* handoff)
 {
-    auto fixed = (struct stivale2_struct*)handoff;
+    struct stivale2_struct* fixed = (struct stivale2_struct*)handoff;
     // Walk the list of tags in the header
-    auto tag = (struct stivale2_tag*)(fixed->tags);
+    struct stivale2_tag* tag = (struct stivale2_tag*)(fixed->tags);
     while (tag)
     {
-        // Map in each tag since Stivale2 doesn't give us a total size like Multiboot does.
         // TODO: Find a way around this when the new memory manager code is done.
         uintptr_t page = ((uintptr_t)tag & PAGE_ALIGN);
         map_kernel_page(VADDR(page), page);
@@ -135,7 +152,7 @@ void Handoff::parseStivale2(void* handoff)
             {
                 auto framebuffer = (struct stivale2_struct_tag_framebuffer*)tag;
                 rs232_printf("Stivale2 framebuffer:\n");
-                rs232_printf("\tAddress: 0x%08X", framebuffer->framebuffer_addr);
+                rs232_printf("\tAddress: 0x%08X\n", framebuffer->framebuffer_addr);
                 rs232_printf("\tResolution: %ix%ix%i\n",
                     framebuffer->framebuffer_width,
                     framebuffer->framebuffer_height,
@@ -146,26 +163,20 @@ void Handoff::parseStivale2(void* handoff)
                     framebuffer->framebuffer_height,
                     framebuffer->framebuffer_bpp,
                     framebuffer->framebuffer_pitch,
-                    (void*)framebuffer->framebuffer_addr
+                    (void*)framebuffer->framebuffer_addr,
+                    (FramebufferMemoryModel)framebuffer->memory_model,
+                    framebuffer->red_mask_size,
+                    framebuffer->red_mask_shift,
+                    framebuffer->green_mask_size,
+                    framebuffer->green_mask_shift,
+                    framebuffer->blue_mask_size,
+                    framebuffer->blue_mask_shift
                 );
-                break;
-            }
-            case STIVALE2_STRUCT_TAG_EPOCH_ID:
-            {
-                auto epoch = (struct stivale2_struct_tag_epoch*)tag;
-                rs232_printf("Stivale2 epoch: %i\n", epoch->epoch);
-                break;
-            }
-            case STIVALE2_STRUCT_TAG_FIRMWARE_ID:
-            {
-                auto firmware = (struct stivale2_struct_tag_firmware*)tag;
-                rs232_printf("Stivale2 firmware flags: 0x%08X\n", firmware->flags);
-                rs232_printf("\tBooted using %s\n", (firmware->flags & 0x1 ? "BIOS" : "UEFI"));
                 break;
             }
             default:
             {
-                rs232_printf("Unknown Stivale2 tag: %d\n", tag->identifier);
+                //rs232_printf("Unknown Stivale2 tag: 0x%016X\n", tag->identifier);
                 break;
             }
         }
@@ -175,9 +186,74 @@ void Handoff::parseStivale2(void* handoff)
     rs232_printf("Done\n");
 }
 
+/*
+ *  __  __      _ _   _ _              _   ___
+ * |  \/  |_  _| | |_(_) |__  ___  ___| |_|_  )
+ * | |\/| | || | |  _| | '_ \/ _ \/ _ \  _|/ /
+ * |_|  |_|\_,_|_|\__|_|_.__/\___/\___/\__/___|
+ */
+
+struct multiboot_fixed
+{
+    uint32_t total_size;
+    uint32_t reserved;
+};
+
 void Handoff::parseMultiboot2(void* handoff)
 {
-    (void)handoff;
+    auto fixed = (struct multiboot_fixed *) handoff;
+    // TODO: Find a way around this when the new memory manager code is done.
+    for (uintptr_t page = ((uintptr_t)handoff & PAGE_ALIGN) + PAGE_SIZE;
+         page <= (((uintptr_t)handoff + fixed->total_size) & PAGE_ALIGN);
+         page += PAGE_SIZE) {
+        rs232_printf("Mapping bootinfo at 0x%08x\n", page);
+        map_kernel_page(VADDR(page), page);
+    }
+    struct multiboot_tag *tag = (struct multiboot_tag*)((uintptr_t)fixed + sizeof(struct multiboot_fixed));
+    while (tag->type != MULTIBOOT_TAG_TYPE_END) {
+        switch (tag->type)
+        {
+            case MULTIBOOT_TAG_TYPE_CMDLINE:
+            {
+                auto cmdline = (struct multiboot_tag_string *) tag;
+                rs232_printf("Multiboot2 cmdline: '%s'\n", cmdline->string);
+                break;
+            }
+            case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
+            {
+                auto framebuffer = (struct multiboot_tag_framebuffer *)tag;
+                rs232_printf("Multiboot2 framebuffer:\n");
+                rs232_printf("\tAddress: 0x%08X\n", framebuffer->common.framebuffer_addr);
+                rs232_printf("\tResolution: %ix%ix%i\n",
+                    framebuffer->common.framebuffer_width,
+                    framebuffer->common.framebuffer_height,
+                    (framebuffer->common.framebuffer_bpp * 8));
+                // Initialize the framebuffer information
+                _fbInfo = FramebufferInfo(
+                    framebuffer->common.framebuffer_width,
+                    framebuffer->common.framebuffer_height,
+                    framebuffer->common.framebuffer_bpp,
+                    framebuffer->common.framebuffer_pitch,
+                    (void*)framebuffer->common.framebuffer_addr,
+                    (FramebufferMemoryModel)framebuffer->common.framebuffer_type,
+                    framebuffer->framebuffer_red_mask_size,
+                    framebuffer->framebuffer_red_field_position,
+                    framebuffer->framebuffer_green_mask_size,
+                    framebuffer->framebuffer_green_field_position,
+                    framebuffer->framebuffer_blue_mask_size,
+                    framebuffer->framebuffer_blue_field_position
+                );
+                break;
+            }
+            default:
+            {
+                //rs232_printf("Unknown Multiboot2 tag: 0x%08X\n", tag->type);
+                break;
+            }
+        }
+        // move to the next tag, aligning if necessary
+        tag = (struct multiboot_tag*)(((uintptr_t)tag + tag->size + 7) & ~((uintptr_t)7));
+    }
 }
 
 };
