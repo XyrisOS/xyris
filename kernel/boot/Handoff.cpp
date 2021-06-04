@@ -50,26 +50,38 @@ FramebufferInfo::FramebufferInfo(uint16_t width, uint16_t height, uint16_t depth
     , _height(height)
     , _depth(depth)
     , _pitch(pitch)
+    , _redMaskSize(0)
+    , _redMaskShift(0)
+    , _greenMaskSize(0)
+    , _greenMaskShift(0)
+    , _blueMaskSize(0)
+    , _blueMaskShift(0)
+    , _memoryModel(Undefined_FBMM)
 {
-    // TODO: Can we call the default constructor or will that overwrite
-    // the values passed in the initialization list?
-    _redMaskSize = 0;
-    _redMaskShift = 0;
-    _greenMaskSize = 0;
-    _greenMaskShift = 0;
-    _blueMaskSize = 0;
-    _blueMaskShift = 0;
-    _memoryModel = Undefined_FBMM;
+    // Common parameters constructor
 }
 
-FramebufferInfo::~FramebufferInfo()
+FramebufferInfo::FramebufferInfo(uint16_t width, uint16_t height,
+                                 uint16_t depth, uint16_t pitch,
+                                 void* addr, FramebufferMemoryModel model,
+                                 uint8_t redMaskSize, uint8_t redMaskShift,
+                                 uint8_t greenMaskSize, uint8_t greenMaskShift,
+                                 uint8_t blueMaskSize, uint8_t blueMaskShift)
+    : _addr(addr)
+    , _width(width)
+    , _height(height)
+    , _depth(depth)
+    , _pitch(pitch)
+    , _redMaskSize(redMaskSize)
+    , _redMaskShift(redMaskShift)
+    , _greenMaskSize(greenMaskSize)
+    , _greenMaskShift(greenMaskShift)
+    , _blueMaskSize(blueMaskSize)
+    , _blueMaskShift(blueMaskShift)
+    , _memoryModel(model)
 {
-    // Nothing to deconstruct
+    // All parameters constructor
 }
-
-uint16_t FramebufferInfo::getWidth() { return _width; }
-uint16_t FramebufferInfo::getHeight() { return _height; }
-uint16_t FramebufferInfo::getDepth() { return _depth; }
 
 /*
  *  _  _              _      __  __
