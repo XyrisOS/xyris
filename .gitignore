@@ -36,3 +36,6 @@ tests/run_tests
 
 # Serial Output
 com1.txt
+
+# Doxygen output
+docs/**
