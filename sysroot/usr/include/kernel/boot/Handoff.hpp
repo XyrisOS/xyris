@@ -154,8 +154,8 @@ public:
     HandoffBootloaderType getBootType()     { return _bootType; }
 
 private:
-    void parseStivale2(void* handoff);
-    void parseMultiboot2(void* handoff);
+    static void parseStivale2(Handoff* that, void* handoff);
+    static void parseMultiboot2(Handoff* that, void* handoff);
 
     const void* _handle;
     const char* _cmdline;

@@ -1,6 +1,6 @@
 /**
  * @file Handoff.cpp
- * @author Keeton Feave (keetonfeavel@cedarville.edu)
+ * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief 
  * @version 0.1
  * @date 2021-06-02
@@ -105,11 +105,11 @@ Handoff::Handoff(void* handoff, uint32_t magic)
     if (magic == 0x36d76289) {
         bootProtoName = "Multiboot2";
         _bootType = Multiboot2;
-        parseMultiboot2(handoff);
+        parseMultiboot2(this, handoff);
     } else if (magic == *(uint32_t*)"stv2") {
         bootProtoName = "Stivale2";
         _bootType = Stivale2;
-        parseStivale2(handoff);
+        parseStivale2(this, handoff);
     } else {
         PANIC("Invalid bootloader information!");
     }
@@ -128,7 +128,7 @@ Handoff::~Handoff()
  * |___/\__|_|\_/\__,_|_\___/___|
  */
 
-void Handoff::parseStivale2(void* handoff)
+void Handoff::parseStivale2(Handoff* that, void* handoff)
 {
     struct stivale2_struct* fixed = (struct stivale2_struct*)handoff;
     // Walk the list of tags in the header
@@ -145,7 +145,7 @@ void Handoff::parseStivale2(void* handoff)
             {
                 auto cmdline = (struct stivale2_struct_tag_cmdline*)tag;
                 rs232_printf("Stivale2 cmdline: '%s'\n", (const char *)cmdline->cmdline);
-                _cmdline = (const char *)(cmdline->cmdline);
+                that->_cmdline = (const char *)(cmdline->cmdline);
                 break;
             }
             case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID:
@@ -158,7 +158,7 @@ void Handoff::parseStivale2(void* handoff)
                     framebuffer->framebuffer_height,
                     (framebuffer->framebuffer_bpp * 8));
                 // Initialize the framebuffer information
-                _fbInfo = FramebufferInfo(
+                that->_fbInfo = FramebufferInfo(
                     framebuffer->framebuffer_width,
                     framebuffer->framebuffer_height,
                     framebuffer->framebuffer_bpp,
@@ -199,7 +199,7 @@ struct multiboot_fixed
     uint32_t reserved;
 };
 
-void Handoff::parseMultiboot2(void* handoff)
+void Handoff::parseMultiboot2(Handoff* that, void* handoff)
 {
     auto fixed = (struct multiboot_fixed *) handoff;
     // TODO: Find a way around this when the new memory manager code is done.
@@ -217,6 +217,7 @@ void Handoff::parseMultiboot2(void* handoff)
             {
                 auto cmdline = (struct multiboot_tag_string *) tag;
                 rs232_printf("Multiboot2 cmdline: '%s'\n", cmdline->string);
+                that->_cmdline = (const char *)(cmdline->string);
                 break;
             }
             case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
@@ -229,7 +230,7 @@ void Handoff::parseMultiboot2(void* handoff)
                     framebuffer->common.framebuffer_height,
                     (framebuffer->common.framebuffer_bpp * 8));
                 // Initialize the framebuffer information
-                _fbInfo = FramebufferInfo(
+                that->_fbInfo = FramebufferInfo(
                     framebuffer->common.framebuffer_width,
                     framebuffer->common.framebuffer_height,
                     framebuffer->common.framebuffer_bpp,
