@@ -34,7 +34,7 @@
 static void kernel_print_splash();
 static void kernel_boot_tone();
 
-static void print_boot_info(void *boot_info, uint32_t magic)
+static void boot_init(void *boot_info, uint32_t magic)
 {
     // Map in bootloader information
     // TODO: Find a way to avoid this until after parsing
@@ -56,14 +56,17 @@ void kernel_main(void *boot_info, uint32_t magic) {
     kernel_print_splash();
     // Install the GDT
     interrupts_disable();
-    gdt_install();           // Initialize the Global Descriptor Table
-    isr_install();           // Initialize Interrupt Service Requests
-    rs232_init(RS_232_COM1); // RS232 Serial
-    paging_init(0);          // Initialize paging service (0 is placeholder)
-    print_boot_info(boot_info, magic);
-    kbd_init();              // Initialize PS/2 Keyboard
-    rtc_init();              // Initialize Real Time Clock
-    timer_init(1000);        // Programmable Interrupt Timer (1ms)
+    gdt_install();                  // Initialize the Global Descriptor Table
+    isr_install();                  // Initialize Interrupt Service Requests
+    rs232_init(RS_232_COM1);        // RS232 Serial
+    paging_init(0);                 // Initialize paging service (0 is placeholder)
+    boot_init(boot_info, magic);    // Initialize bootloader information
+                                    // TODO: Bootloader should be first but currently
+                                    //       requires paging, which should come after
+                                    //       boot information is parsed.
+    kbd_init();                     // Initialize PS/2 Keyboard
+    rtc_init();                     // Initialize Real Time Clock
+    timer_init(1000);               // Programmable Interrupt Timer (1ms)
     // Enable interrupts now that we're out of a critical area
     interrupts_enable();
     // Enable serial input
