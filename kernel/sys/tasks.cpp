@@ -13,15 +13,8 @@
 #include <sys/panic.hpp>
 #include <lib/stdio.hpp>
 #include <dev/serial/rs232.hpp>
-#include <stdint.h>    // Data type definitions
-// this is a literal hack to specifically circumvent validation checks
-// it seems to work fine for the specific intrinsic we need
-// we should probably investigate this further at some point...
-#define _X86INTRIN_H_INCLUDED
-#define __X86INTRIN_H
-#include <ia32intrin.h> // needed for __rdtsc
-#undef __X86INTRIN_H
-#undef _X86INTRIN_H_INCLUDED
+#include <stdint.h>         // Data type definitions
+#include <x86gprintrin.h>   // needed for __rdtsc
 
 #include <arch/arch.hpp>
 
