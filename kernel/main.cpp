@@ -89,10 +89,10 @@ void kernel_main(void *boot_info, uint32_t magic) {
     rs232_print("\n");
 
     tasks_init();
-    task_t compute, status;
-    tasks_new(task_find_primes, &compute, TASK_READY, "prime_compute");
-    tasks_new(task_show_primes, &status, TASK_READY, "prime_display");
-    //tasks_new(task_spinner, &status, TASK_READY, "spinner");
+    task_t compute, status, spinner;
+    tasks_new(apps::task_find_primes, &compute, TASK_READY, "prime_compute");
+    tasks_new(apps::task_show_primes, &status, TASK_READY, "prime_display");
+    tasks_new(apps::task_spinner, &spinner, TASK_READY, "spinner");
 
     // Now that we're done make a joyful noise
     kernel_boot_tone();

@@ -10,6 +10,8 @@
  */
 #pragma once
 
+namespace apps {
+
 /**
  * @brief Starts a task to find prime numbers.
  *
@@ -21,3 +23,5 @@ void task_find_primes(void);
  *
  */
 void task_show_primes(void);
+
+}

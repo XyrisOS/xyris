@@ -15,6 +15,8 @@
 #include <sys/tasks.hpp>
 #include <apps/primes.hpp>
 
+namespace apps {
+
 // this value can be tweaked based on memory constraints
 #define PRIME_MAX_SQRT 4000
 #define PRIME_MAX (PRIME_MAX_SQRT * PRIME_MAX_SQRT)
@@ -33,7 +35,6 @@ void task_find_primes(void)
         for (size_t j = prime_current * prime_current; j < PRIME_MAX; j += prime_current) {
             bitmap_clear_bit(primes, j);
         }
-        //tasks_nano_sleep(1000ULL * 1000 * 100);
     }
 }
 
@@ -50,4 +51,6 @@ void task_show_primes(void)
         count += bitmap_get_bit(primes, i);
     }
     kprintf("\e[s\e[23;0fFound %u primes between 2 and %u.\e[u", count, PRIME_MAX);
+}
+
 }

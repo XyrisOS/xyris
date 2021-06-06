@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <lib/stdio.hpp>
 
+namespace apps {
+
 void task_spinner(void) {
     kprintf("\n");
     int i = 0;
@@ -22,4 +24,6 @@ void task_spinner(void) {
         i = (i + 1) % sizeof(spinnay);
         asm volatile("hlt");
     }
+}
+
 }
