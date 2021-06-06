@@ -1,3 +1,13 @@
+/**
+ * @file primes.cpp
+ * @author Micah Switzer (mswitzer@cedarville.edu)
+ * @brief Prime computation tasks
+ * @version 0.1
+ * @date 2021-06-05
+ *
+ * @copyright Copyright the Panix Contributors (c) 2021
+ *
+ */
 #include <stddef.h>
 
 #include <lib/bitmap.hpp>
@@ -13,7 +23,7 @@ static bitmap_t primes[PRIMES_SIZE];
 
 static size_t prime_current;
 
-void find_primes(void)
+void task_find_primes(void)
 {
     for (size_t i = 0; i < PRIMES_SIZE; i++)
         primes[i] = SIZE_T_MAX_VALUE;
@@ -23,11 +33,11 @@ void find_primes(void)
         for (size_t j = prime_current * prime_current; j < PRIME_MAX; j += prime_current) {
             bitmap_clear_bit(primes, j);
         }
-        tasks_nano_sleep(1000ULL * 1000 * 100);
+        //tasks_nano_sleep(1000ULL * 1000 * 100);
     }
 }
 
-void show_primes(void)
+void task_show_primes(void)
 {
     do {
         tasks_nano_sleep(1000ULL * 1000 * 1000);
