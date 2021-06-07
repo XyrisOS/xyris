@@ -15,6 +15,8 @@
 #include <sys/tasks.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
+// Bootloader
+#include <boot/Handoff.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
@@ -32,24 +34,16 @@
 static void kernel_print_splash();
 static void kernel_boot_tone();
 
-static void print_boot_info(void *boot_info, uint32_t magic)
+static void boot_init(void *boot_info, uint32_t magic)
 {
-    rs232_printf("Bootloader info at 0x%x\n", boot_info);
+    // Map in bootloader information
+    // TODO: Find a way to avoid this until after parsing
     if (boot_info != NULL) {
         uintptr_t page = (uintptr_t)boot_info & PAGE_ALIGN;
         map_kernel_page(VADDR(page), page);
     }
-    const char *boot_proto_name = "Unknown";
-    if (magic == 0x2BADB002) {
-        boot_proto_name = "Multiboot 1";
-    } else if (magic == 0x36d76289) {
-        boot_proto_name = "Multiboot 2";
-        parse_multiboot2(boot_info);
-    } else if (magic == *(uint32_t*)"stv2") {
-        boot_proto_name = "Stivale 2";
-        parse_stivale2(boot_info);
-    }
-    kprintf(DBG_INFO "Booted via %s\n", boot_proto_name);
+    // Parse the bootloader information into common format
+    Boot::Handoff handoff = Boot::Handoff(boot_info, magic);
 }
 
 /**
@@ -62,14 +56,17 @@ void kernel_main(void *boot_info, uint32_t magic) {
     kernel_print_splash();
     // Install the GDT
     interrupts_disable();
-    gdt_install();           // Initialize the Global Descriptor Table
-    isr_install();           // Initialize Interrupt Service Requests
-    rs232_init(RS_232_COM1); // RS232 Serial
-    paging_init(0);          // Initialize paging service (0 is placeholder)
-    print_boot_info(boot_info, magic);
-    kbd_init();              // Initialize PS/2 Keyboard
-    rtc_init();              // Initialize Real Time Clock
-    timer_init(1000);        // Programmable Interrupt Timer (1ms)
+    gdt_install();                  // Initialize the Global Descriptor Table
+    isr_install();                  // Initialize Interrupt Service Requests
+    rs232_init(RS_232_COM1);        // RS232 Serial
+    paging_init(0);                 // Initialize paging service (0 is placeholder)
+    boot_init(boot_info, magic);    // Initialize bootloader information
+                                    // TODO: Bootloader should be first but currently
+                                    //       requires paging, which should come after
+                                    //       boot information is parsed.
+    kbd_init();                     // Initialize PS/2 Keyboard
+    rtc_init();                     // Initialize Real Time Clock
+    timer_init(1000);               // Programmable Interrupt Timer (1ms)
     // Enable interrupts now that we're out of a critical area
     interrupts_enable();
     // Enable serial input
