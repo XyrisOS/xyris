@@ -3,7 +3,7 @@
  * @author Micah Switzer (mswitzer@cedarville.edu)
  * @brief Prime computation tasks
  * @version 0.1
- * @date 2021-06-05
+ * @date 2020-12-30
  *
  * @copyright Copyright the Panix Contributors (c) 2021
  *
@@ -25,7 +25,7 @@ static bitmap_t primes[PRIMES_SIZE];
 
 static size_t prime_current;
 
-void task_find_primes(void)
+void find_primes(void)
 {
     for (size_t i = 0; i < PRIMES_SIZE; i++)
         primes[i] = SIZE_T_MAX_VALUE;
@@ -38,7 +38,7 @@ void task_find_primes(void)
     }
 }
 
-void task_show_primes(void)
+void show_primes(void)
 {
     do {
         tasks_nano_sleep(1000ULL * 1000 * 1000);

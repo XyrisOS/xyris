@@ -90,15 +90,15 @@ void kernel_main(void *boot_info, uint32_t magic) {
 
     tasks_init();
     task_t compute, status, spinner;
-    tasks_new(apps::task_find_primes, &compute, TASK_READY, "prime_compute");
-    tasks_new(apps::task_show_primes, &status, TASK_READY, "prime_display");
-    tasks_new(apps::task_spinner, &spinner, TASK_READY, "spinner");
+    tasks_new(apps::find_primes, &compute, TASK_READY, "prime_compute");
+    tasks_new(apps::show_primes, &status, TASK_READY, "prime_display");
+    tasks_new(apps::spinner, &spinner, TASK_READY, "spinner");
 
     // Now that we're done make a joyful noise
     kernel_boot_tone();
 
     // Keep the kernel task alive.
-    tasks_block_current(TASK_SLEEPING);
+    tasks_block_current(TASK_PAUSED);
     PANIC("Kernel terminated unexpectedly!");
 }
 

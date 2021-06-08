@@ -16,6 +16,6 @@ namespace apps {
  * @brief Starts a spinner in an infinite loop.
  *
  */
-void task_spinner(void);
+void spinner(void);
 
 }

@@ -14,7 +14,7 @@
 
 namespace apps {
 
-void task_spinner(void) {
+void spinner(void) {
     kprintf("\n");
     int i = 0;
     const char spinnay[] = { '|', '/', '-', '\\' };
