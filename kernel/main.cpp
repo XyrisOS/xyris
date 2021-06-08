@@ -30,6 +30,7 @@
 #include <dev/serial/rs232.hpp>
 // Apps
 #include <apps/primes.hpp>
+#include <apps/spinner.hpp>
 
 static void kernel_print_splash();
 static void kernel_boot_tone();
@@ -74,39 +75,27 @@ void kernel_main(void *boot_info, uint32_t magic) {
     // Print some info to show we did things right
     rtc_print();
     // Get the CPU vendor and model data to print
-    char *vendor = (char *)cpu_get_vendor();
-    char *model = (char *)cpu_get_model();
+    const char *vendor = cpu_get_vendor();
+    const char *model = cpu_get_model();
     kprintf(DBG_INFO "%s\n", vendor);
     kprintf(DBG_INFO "%s\n", model);
-    // Start the serial debugger
-    kprintf(DBG_INFO "Starting serial debugger...\n");
     // Print out the CPU vendor info
     rs232_print(vendor);
     rs232_print("\n");
     rs232_print(model);
     rs232_print("\n");
 
-    // Done
-    kprintf(DBG_OKAY "Done.\n");
-
     tasks_init();
-    task_t compute, status;
-    tasks_new(find_primes, &compute, TASK_READY, "prime_compute");
-    tasks_new(show_primes, &status, TASK_READY, "prime_display");
+    task_t compute, status, spinner;
+    tasks_new(apps::find_primes, &compute, TASK_READY, "prime_compute");
+    tasks_new(apps::show_primes, &status, TASK_READY, "prime_display");
+    tasks_new(apps::spinner, &spinner, TASK_READY, "spinner");
 
     // Now that we're done make a joyful noise
     kernel_boot_tone();
 
-    // Keep the kernel alive.
-    kprintf("\n");
-    int i = 0;
-    const char spinnay[] = { '|', '/', '-', '\\' };
-    while (true) {
-        // Display a spinner to know that we're still running.
-        kprintf("\e[s\e[24;0f%c\e[u", spinnay[i]);
-        i = (i + 1) % sizeof(spinnay);
-        asm volatile("hlt");
-    }
+    // Keep the kernel task alive.
+    tasks_block_current(TASK_PAUSED);
     PANIC("Kernel terminated unexpectedly!");
 }
 

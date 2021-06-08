@@ -60,7 +60,7 @@ void isr_install() {
     }
     // Load the IDT now that we've registered all of our IDT, IRQ, and ISR addresses
     load_idt();
-    kprintf(DBG_OKAY "Loaded the IDT.\n");
+    kprintf(DBG_OKAY "Loaded the ISR.\n");
 }
 
 extern "C" void register_interrupt_handler(uint8_t n, isr_t handler) {

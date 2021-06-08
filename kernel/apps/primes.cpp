@@ -1,9 +1,21 @@
+/**
+ * @file primes.cpp
+ * @author Micah Switzer (mswitzer@cedarville.edu)
+ * @brief Prime computation tasks
+ * @version 0.1
+ * @date 2020-12-30
+ *
+ * @copyright Copyright the Panix Contributors (c) 2021
+ *
+ */
 #include <stddef.h>
 
 #include <lib/bitmap.hpp>
 #include <lib/stdio.hpp>
 #include <sys/tasks.hpp>
 #include <apps/primes.hpp>
+
+namespace apps {
 
 // this value can be tweaked based on memory constraints
 #define PRIME_MAX_SQRT 4000
@@ -23,7 +35,6 @@ void find_primes(void)
         for (size_t j = prime_current * prime_current; j < PRIME_MAX; j += prime_current) {
             bitmap_clear_bit(primes, j);
         }
-        tasks_nano_sleep(1000ULL * 1000 * 100);
     }
 }
 
@@ -40,4 +51,6 @@ void show_primes(void)
         count += bitmap_get_bit(primes, i);
     }
     kprintf("\e[s\e[23;0fFound %u primes between 2 and %u.\e[u", count, PRIME_MAX);
+}
+
 }
