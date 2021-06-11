@@ -8,8 +8,11 @@
  * @copyright Copyright the Panix Contributors (c) 2021
  * 
  */
+#pragma once
 #include <stdint.h>
 #include <stdbool.h>
+// Generic devices
+#include <dev/vga/fb.hpp>
 
 namespace Boot {
 
@@ -80,63 +83,6 @@ private:
     uint64_t _cpuCount;
 };
 
-enum FramebufferMemoryModel {
-    Undefined_FBMM = 0,
-    RGB_FBMM = 1,
-};
-
-// TODO: Move this to the appropriate place when possible.
-class FramebufferInfo {
-public:
-    // Constructors
-    FramebufferInfo();
-    FramebufferInfo(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr);
-    FramebufferInfo(uint32_t width, uint32_t height,
-                    uint16_t depth, uint32_t pitch,
-                    void* addr, FramebufferMemoryModel model,
-                    uint8_t redMaskSize, uint8_t redMaskShift,
-                    uint8_t greenMaskSize, uint8_t greenMaskShift,
-                    uint8_t blueMaskSize, uint8_t blueMaskShift);
-    // Getters
-    uint32_t getWidth()                         { return _width; }
-    uint32_t getHeight()                        { return _height; }
-    uint16_t getDepth()                         { return _depth; }
-    uint32_t getPitch()                         { return _pitch; }
-    uint8_t getRedMaskSize()                    { return _redMaskSize; }
-    uint8_t getRedMaskShift()                   { return _redMaskShift; }
-    uint8_t getGreenMaskSize()                  { return _greenMaskSize; }
-    uint8_t getGreenMaskShift()                 { return _greenMaskShift; }
-    uint8_t getBlueMaskSize()                   { return _blueMaskSize; }
-    uint8_t getBlueMaskShift()                  { return _blueMaskShift; }
-    FramebufferMemoryModel getModel()           { return _memoryModel; }
-    // Setters
-    void setWidth(uint16_t val)                 { _width = val; }
-    void setHeight(uint16_t val)                { _height = val; }
-    void setDepth(uint16_t val)                 { _depth = val; }
-    void setPitch(uint16_t val)                 { _pitch = val; }
-    void setRedMaskSize(uint8_t val)            { _redMaskSize = val; }
-    void setRedMaskShift(uint8_t val)           { _redMaskShift = val; }
-    void setGreenMaskSize(uint8_t val)          { _greenMaskSize = val; }
-    void setGreenMaskShift(uint8_t val)         { _greenMaskShift = val; }
-    void setBlueMaskSize(uint8_t val)           { _blueMaskSize = val; }
-    void setBlueMaskShift(uint8_t val)          { _blueMaskShift = val; }
-    void setModel(FramebufferMemoryModel val)   { _memoryModel = val; }
-
-private:
-    void* _addr;
-    uint32_t _width;
-    uint32_t _height;
-    uint16_t _depth;
-    uint32_t _pitch;
-    uint8_t _redMaskSize;
-    uint8_t _redMaskShift;
-    uint8_t _greenMaskSize;
-    uint8_t _greenMaskShift;
-    uint8_t _blueMaskSize;
-    uint8_t _blueMaskShift;
-    FramebufferMemoryModel _memoryModel;
-};
-
 // TODO: Remaining information to be made obtainable
 //  * PXE IP address (once we have a nice IP struct)
 //  * Memory map layout (once we have new memory manager)
@@ -145,22 +91,23 @@ private:
 class Handoff {
 public:
     // Constructors
+    Handoff();
     Handoff(void* handoff, uint32_t magic);
     ~Handoff();
     // Getters
-    const char* getCmdLine()                { return _cmdline; }
-    const void* getHandle()                 { return _handle; }
-    FramebufferInfo getFramebufferInfo()    { return _fbInfo; }
-    HandoffBootloaderType getBootType()     { return _bootType; }
+    const char* getCmdLine()                    { return _cmdline; }
+    const void* getHandle()                     { return _handle; }
+    fb::FramebufferInfo getFramebufferInfo()    { return _fbInfo; }
+    HandoffBootloaderType getBootType()         { return _bootType; }
 
 private:
     static void parseStivale2(Handoff* that, void* handoff);
     static void parseMultiboot2(Handoff* that, void* handoff);
 
-    const void* _handle;
-    const char* _cmdline;
-    const uint32_t _magic;
-    FramebufferInfo _fbInfo;
+    void* _handle;
+    char* _cmdline;
+    uint32_t _magic;
+    fb::FramebufferInfo _fbInfo;
     HandoffBootloaderType _bootType;
 };
 

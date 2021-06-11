@@ -18,10 +18,10 @@ __stivale2_header:
     dd 0 ; stack, high bits
     dq 0 ; flags
     ; tags
-    dd 0 ; __stivale2_framebuffer
+    dd __stivale2_framebuffer
     dd 0
 
-%if 0
+%if 1
 section .early_data
 align 4
 __stivale2_framebuffer:
