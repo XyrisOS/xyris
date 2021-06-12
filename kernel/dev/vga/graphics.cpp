@@ -1,12 +1,12 @@
 /**
  * @file graphics.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2021-06-11
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2021
- * 
+ *
  */
 #include <dev/vga/graphics.hpp>
 #include <dev/vga/fb.hpp>
@@ -19,6 +19,7 @@
 // System library functions
 #include <sys/panic.hpp>
 #include <lib/assert.hpp>
+#include <lib/stdio.hpp>
 // Bootloader
 #include <boot/Handoff.hpp>
 // Debug
@@ -28,12 +29,12 @@ namespace fb {
 
 FramebufferInfo fbInfo;
 // Cached values
-static void* g_addr = NULL;
-static uint32_t g_width = 0;
-static uint32_t g_height = 0;
-static uint16_t g_bpp = 0;
-static uint32_t g_pitch = 0;
-static bool g_initialized = false;
+static void* addr = NULL;
+static uint32_t width = 0;
+static uint32_t height = 0;
+static uint16_t bpp = 0;
+static uint32_t pitch = 0;
+static bool initialized = false;
 
 void init(FramebufferInfo info)
 {
@@ -41,33 +42,34 @@ void init(FramebufferInfo info)
     // Ensure valid info is provided
     if (fbInfo.getAddress()) {
         // Cache commonly used values
-        g_addr = fbInfo.getAddress();
-        g_width = fbInfo.getWidth();
-        g_height = fbInfo.getHeight();
-        g_bpp = fbInfo.getBPP();
-        g_pitch = fbInfo.getPitch();
+        addr = fbInfo.getAddress();
+        width = fbInfo.getWidth();
+        height = fbInfo.getHeight();
+        bpp = fbInfo.getBPP();
+        pitch = fbInfo.getPitch();
         // Map in the framebuffer
         rs232_print("Mapping framebuffer...\n");
-        for (uintptr_t page = (uintptr_t)g_addr & PAGE_ALIGN;
-            page < g_pitch * g_height;
+        for (uintptr_t page = (uintptr_t)addr & PAGE_ALIGN;
+            page < ((uintptr_t)addr) + (pitch * height);
             page += PAGE_SIZE)
         {
             map_kernel_page(VADDR(page), page);
         }
 
-        g_initialized = true;
+        initialized = true;
     }
 }
 
-void put(uint32_t x, uint32_t y, uint32_t color)
+void pixel(uint32_t x, uint32_t y, uint32_t color)
 {
     // Ensure framebuffer information exists
-    if (!g_initialized) { return; }
+    if (!initialized) { return; }
     // Reference: SkiftOS (Graphics.cpp)
     // Special thanks to the SkiftOS contributors.
-    if ((x <= g_width) && (y <= g_height))
+    if ((x <= width) && (y <= height))
     {
-        uint8_t *pixel = ((uint8_t*)g_addr + (y * g_pitch) + (x * g_bpp));
+        uint8_t *pixel = ((uint8_t*)addr + (y * pitch) + (x * (bpp / 8)));
+        rs232_printf("pixel 0x%08X @ 0x%08X\n", color, pixel);
 
         pixel[0] = (color >> 0) & 0xff;
         pixel[1] = (color >> 8) & 0xff;
@@ -78,25 +80,19 @@ void put(uint32_t x, uint32_t y, uint32_t color)
 void putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color)
 {
     // Ensure framebuffer information exists
-    if (!g_initialized) { return; }
+    if (!initialized) { return; }
     // Reference: SkiftOS (Graphics.cpp)
     // Special thanks to the SkiftOS contributors.
-    if ((x <= g_width) && (y <= g_height))
+    if ((x <= width) && (y <= height))
     {
-        uint8_t *pixel = ((uint8_t*)g_addr + (y * g_pitch) + (x * g_bpp));
-
         for (uint32_t i = 0; i < w; i++)
         {
-            if (x + i > g_width || x + i < g_width) { continue; }
+            if (x + i > width || x + i < width) { continue; }
             for (uint32_t j = 0; j < h; j++)
             {
-                if (y + j > g_height || y + j < g_height) { continue; }
-                pixel[0] = (color >> 0) & 0xff;
-                pixel[1] = (color >> 8) & 0xff;
-                pixel[2] = (color >> 16) & 0xff;
+                // Slow, but good for debugging.
+                pixel(i, j, color);
             }
-            // Efficient skip
-            pixel += 3200;
         }
     }
 }

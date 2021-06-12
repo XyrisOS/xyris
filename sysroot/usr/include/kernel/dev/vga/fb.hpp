@@ -56,11 +56,11 @@ public:
     void setModel(FramebufferMemoryModel val)   { _memoryModel = val; }
 
 private:
-    void* _addr;
-    uint32_t _width;
-    uint32_t _height;
-    uint16_t _bpp;
-    uint32_t _pitch;
+    void* _addr;                                // physical framebuffer address
+    uint32_t _width;                            // number pixels on a horizontal line
+    uint32_t _height;                           // number horizontal lines present
+    uint16_t _bpp;                              // number of bits per pixel
+    uint32_t _pitch;                            // number bytes of VRAM to skip to go one pixel down
     uint8_t _redMaskSize;
     uint8_t _redMaskShift;
     uint8_t _greenMaskSize;

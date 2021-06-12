@@ -73,12 +73,14 @@ void kernel_main(void *boot_info, uint32_t magic) {
                                     //       requires paging, which should come after
                                     //       boot information is parsed.
     fb::init(handoff.getFramebufferInfo());
-    fb::put(0, 0, 0x0000FF);
     kbd_init();                     // Initialize PS/2 Keyboard
     rtc_init();                     // Initialize Real Time Clock
     timer_init(1000);               // Programmable Interrupt Timer (1ms)
     // Enable interrupts now that we're out of a critical area
     interrupts_enable();
+    // Draw
+    rs232_printf("Drawing test pixel...\n");
+    fb::pixel(0, 0, 0x0000FF);
     // Enable serial input
     rs232_init_buffer(1024);
     // Print some info to show we did things right
@@ -86,13 +88,9 @@ void kernel_main(void *boot_info, uint32_t magic) {
     // Get the CPU vendor and model data to print
     const char *vendor = cpu_get_vendor();
     const char *model = cpu_get_model();
-    kprintf(DBG_INFO "%s\n", vendor);
-    kprintf(DBG_INFO "%s\n", model);
+    kprintf(DBG_INFO "%s %s\n", vendor, model);
     // Print out the CPU vendor info
-    rs232_print(vendor);
-    rs232_print("\n");
-    rs232_print(model);
-    rs232_print("\n");
+    rs232_printf("%s\n%s\n", vendor, model);
 
     tasks_init();
     task_t compute, status, spinner;
