@@ -84,7 +84,6 @@ void pixel(uint32_t x, uint32_t y, uint32_t color)
     if ((x <= width) && (y <= height))
     {
         uint8_t *pixel = ((uint8_t*)addr + (y * pitch) + (x * pixelwidth));
-        rs232_printf("pixel 0x%08X @ 0x%08X\n", color, pixel);
         // Pixel information
         pixel[0] = (color >> b_shift) & 0xff;   // B
         pixel[1] = (color >> g_shift) & 0xff;   // G
@@ -98,18 +97,10 @@ void putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color)
 {
     // Ensure framebuffer information exists
     if (!initialized) { return; }
-    // Reference: SkiftOS (Graphics.cpp)
-    // Special thanks to the SkiftOS contributors.
-    if ((x <= width) && (y <= height))
-    {
-        for (uint32_t i = 0; i < w; i++)
-        {
-            if (x + i > width || x + i < width) { continue; }
-            for (uint32_t j = 0; j < h; j++)
-            {
-                // Slow, but good for debugging.
-                pixel(i, j, color);
-            }
+    for (uint32_t curr_x = x; curr_x <= x + w; curr_x++) {
+        for (uint32_t curr_y = y; curr_y <= y + h; curr_y++) {
+            // Extremely slow but good for debugging
+            pixel(curr_x, curr_y, color);
         }
     }
 }
