@@ -78,9 +78,6 @@ void kernel_main(void *boot_info, uint32_t magic) {
     timer_init(1000);               // Programmable Interrupt Timer (1ms)
     // Enable interrupts now that we're out of a critical area
     interrupts_enable();
-    // Draw
-    rs232_printf("Drawing test pixel...\n");
-    fb::pixel(0, 0, 0x0000FF);
     // Enable serial input
     rs232_init_buffer(1024);
     // Print some info to show we did things right
