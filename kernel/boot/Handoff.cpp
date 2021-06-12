@@ -184,7 +184,20 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
                 rs232_printf("\tResolution: %ix%ix%i\n",
                     framebuffer->common.framebuffer_width,
                     framebuffer->common.framebuffer_height,
-                    (framebuffer->common.framebuffer_bpp * 8));
+                    (framebuffer->common.framebuffer_bpp));
+                rs232_printf("\tPixel format:\n"
+                             "\t\tRed size:    %u\n"
+                             "\t\tRed shift:   %u\n"
+                             "\t\tGreen size:  %u\n"
+                             "\t\tGreen shift: %u\n"
+                             "\t\tBlue size:   %u\n"
+                             "\t\tBlue shift:  %u\n",
+                             framebuffer->framebuffer_red_mask_size,
+                             framebuffer->framebuffer_red_field_position,
+                             framebuffer->framebuffer_green_mask_size,
+                             framebuffer->framebuffer_green_field_position,
+                             framebuffer->framebuffer_blue_mask_size,
+                             framebuffer->framebuffer_blue_field_position);
                 // Initialize the framebuffer information
                 that->_fbInfo = fb::FramebufferInfo(
                     framebuffer->common.framebuffer_width,

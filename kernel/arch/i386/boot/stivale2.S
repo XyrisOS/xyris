@@ -27,7 +27,7 @@ align 4
 __stivale2_framebuffer:
     dq 0x3ecc1bc43d0f7971
     dq 0
-    dw 1280
-    dw 720
-    dw 32
+    dw 0
+    dw 0
+    dw 0
 %endif
