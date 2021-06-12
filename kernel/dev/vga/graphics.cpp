@@ -43,6 +43,8 @@ static uint8_t b_size = 0;
 static uint8_t b_shift = 0;
 static bool initialized = false;
 
+bool isInitialized() { return initialized; }
+
 void init(FramebufferInfo info)
 {
     fbInfo = info;
