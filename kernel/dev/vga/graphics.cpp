@@ -34,7 +34,13 @@ static uint32_t width = 0;
 static uint32_t height = 0;
 static uint16_t depth = 0;
 static uint32_t pitch = 0;
-static uint32_t pixelwidth;
+static uint32_t pixelwidth = 0;
+static uint8_t r_size = 0;
+static uint8_t r_shift = 0;
+static uint8_t g_size = 0;
+static uint8_t g_shift = 0;
+static uint8_t b_size = 0;
+static uint8_t b_shift = 0;
 static bool initialized = false;
 
 void init(FramebufferInfo info)
@@ -42,13 +48,20 @@ void init(FramebufferInfo info)
     fbInfo = info;
     // Ensure valid info is provided
     if (fbInfo.getAddress()) {
-        // Cache commonly used values
+        // Cache framebuffer values in order to avoid
+        // function calls when plotting pixels.
         addr = fbInfo.getAddress();
         width = fbInfo.getWidth();
         height = fbInfo.getHeight();
         depth = fbInfo.getDepth();
-        pixelwidth = (depth / 8);
         pitch = fbInfo.getPitch();
+        r_size = fbInfo.getRedMaskSize();
+        r_shift = fbInfo.getRedMaskShift();
+        g_size = fbInfo.getGreenMaskSize();
+        g_shift = fbInfo.getGreenMaskShift();
+        b_size = fbInfo.getBlueMaskSize();
+        b_shift = fbInfo.getBlueMaskShift();
+        pixelwidth = (depth / 8);
         // Map in the framebuffer
         rs232_print("Mapping framebuffer...\n");
         for (uintptr_t page = (uintptr_t)addr & PAGE_ALIGN;
@@ -72,10 +85,12 @@ void pixel(uint32_t x, uint32_t y, uint32_t color)
     {
         uint8_t *pixel = ((uint8_t*)addr + (y * pitch) + (x * pixelwidth));
         rs232_printf("pixel 0x%08X @ 0x%08X\n", color, pixel);
-
-        pixel[0] = (color >> 0) & 0xff;
-        pixel[1] = (color >> 8) & 0xff;
-        pixel[2] = (color >> 16) & 0xff;
+        // Pixel information
+        pixel[0] = (color >> b_shift) & 0xff;   // B
+        pixel[1] = (color >> g_shift) & 0xff;   // G
+        pixel[2] = (color >> r_shift) & 0xff;   // R
+        // Additional pixel information
+        if (pixelwidth == 4) { pixel[3] = 0x00; }
     }
 }
 

@@ -100,6 +100,19 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                     framebuffer->framebuffer_width,
                     framebuffer->framebuffer_height,
                     (framebuffer->framebuffer_bpp));
+                rs232_printf("\tPixel format:\n"
+                             "\t\tRed size:    %u\n"
+                             "\t\tRed shift:   %u\n"
+                             "\t\tGreen size:  %u\n"
+                             "\t\tGreen shift: %u\n"
+                             "\t\tBlue size:   %u\n"
+                             "\t\tBlue shift:  %u\n",
+                             framebuffer->red_mask_size,
+                             framebuffer->red_mask_shift,
+                             framebuffer->green_mask_size,
+                             framebuffer->green_mask_shift,
+                             framebuffer->blue_mask_size,
+                             framebuffer->blue_mask_shift);
                 // Initialize the framebuffer information
                 that->_fbInfo = fb::FramebufferInfo(
                     framebuffer->framebuffer_width,
