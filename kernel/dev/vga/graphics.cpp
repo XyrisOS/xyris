@@ -32,8 +32,9 @@ FramebufferInfo fbInfo;
 static void* addr = NULL;
 static uint32_t width = 0;
 static uint32_t height = 0;
-static uint16_t bpp = 0;
+static uint16_t depth = 0;
 static uint32_t pitch = 0;
+static uint32_t pixelwidth;
 static bool initialized = false;
 
 void init(FramebufferInfo info)
@@ -45,7 +46,8 @@ void init(FramebufferInfo info)
         addr = fbInfo.getAddress();
         width = fbInfo.getWidth();
         height = fbInfo.getHeight();
-        bpp = fbInfo.getBPP();
+        depth = fbInfo.getDepth();
+        pixelwidth = (depth / 8);
         pitch = fbInfo.getPitch();
         // Map in the framebuffer
         rs232_print("Mapping framebuffer...\n");
@@ -68,7 +70,7 @@ void pixel(uint32_t x, uint32_t y, uint32_t color)
     // Special thanks to the SkiftOS contributors.
     if ((x <= width) && (y <= height))
     {
-        uint8_t *pixel = ((uint8_t*)addr + (y * pitch) + (x * (bpp / 8)));
+        uint8_t *pixel = ((uint8_t*)addr + (y * pitch) + (x * pixelwidth));
         rs232_printf("pixel 0x%08X @ 0x%08X\n", color, pixel);
 
         pixel[0] = (color >> 0) & 0xff;

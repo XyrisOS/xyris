@@ -99,9 +99,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 rs232_printf("\tResolution: %ix%ix%i\n",
                     framebuffer->framebuffer_width,
                     framebuffer->framebuffer_height,
-                    (framebuffer->framebuffer_bpp * 8));
-                rs232_printf("\tBPP: %i\n",
-                    framebuffer->framebuffer_bpp);
+                    (framebuffer->framebuffer_bpp));
                 // Initialize the framebuffer information
                 that->_fbInfo = fb::FramebufferInfo(
                     framebuffer->framebuffer_width,
