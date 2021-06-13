@@ -46,7 +46,6 @@ void parse_stivale2(void* info);
 #include <arch/i386/idt.hpp>
 #include <arch/i386/isr.hpp>
 #include <arch/i386/timer.hpp>
-#include <arch/i386/ports.hpp>
 
 /**
  * @brief x86 BIOS based VGA pointers and data.

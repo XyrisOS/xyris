@@ -8,8 +8,8 @@
  * @copyright Copyright the Panix Contributors (c) 2019
  *
  */
-
 #include <arch/arch.hpp>
+#include <arch/i386/ports.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 #include <dev/tty/tty.hpp>

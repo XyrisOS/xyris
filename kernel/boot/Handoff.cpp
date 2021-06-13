@@ -42,21 +42,17 @@ Handoff::Handoff(void* handoff, uint32_t magic)
     : _handle(handoff)
     , _magic(magic)
 {
-    const char* bootProtoName;
     // Parse the handle based on the magic
     rs232::printf("Bootloader info at 0x%X\n", handoff);
     if (magic == 0x36d76289) {
-        bootProtoName = "Multiboot2";
         _bootType = Multiboot2;
         parseMultiboot2(this, handoff);
     } else if (magic == *(uint32_t*)"stv2") {
-        bootProtoName = "Stivale2";
         _bootType = Stivale2;
         parseStivale2(this, handoff);
     } else {
         PANIC("Invalid bootloader information!");
     }
-    kprintf(DBG_INFO "Booted via %s\n", bootProtoName);
 }
 
 Handoff::~Handoff()
