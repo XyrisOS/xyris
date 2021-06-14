@@ -45,6 +45,31 @@ static bool initialized = false;
 
 bool isInitialized() { return initialized; }
 
+static void testPattern() {
+    const uint32_t BAR_COLOUR[8] =
+    {
+        0xFFFFFF,  // 100% White
+        0xFFFF00,  // Yellow
+        0x00FFFF,  // Cyan
+        0x00FF00,  // Green
+        0xFF00FF,  // Magenta
+        0xFF0000,  // Red
+        0x0000FF,  // Blue
+        0x000000,  // Black
+    };
+
+    // Generate complete frame
+    unsigned    columnWidth = width / 8;
+    for (unsigned y = 0; y < height; y++)
+    {
+        for (unsigned x = 0; x < width; x++)
+        {
+            unsigned col_idx = x / columnWidth;
+            pixel(x, y, BAR_COLOUR[col_idx]);
+        }
+    }
+}
+
 void init(FramebufferInfo info)
 {
     fbInfo = info;
@@ -74,6 +99,7 @@ void init(FramebufferInfo info)
         }
 
         initialized = true;
+        testPattern();
     }
 }
 
