@@ -46,7 +46,7 @@ static bool initialized = false;
 bool isInitialized() { return initialized; }
 
 static void testPattern() {
-    const uint32_t BAR_COLOUR[8] =
+    const uint32_t BAR_COLOR[8] =
     {
         0xFFFFFF,  // 100% White
         0xFFFF00,  // Yellow
@@ -59,13 +59,13 @@ static void testPattern() {
     };
 
     // Generate complete frame
-    unsigned    columnWidth = width / 8;
+    unsigned columnWidth = width / 8;
     for (unsigned y = 0; y < height; y++)
     {
         for (unsigned x = 0; x < width; x++)
         {
             unsigned col_idx = x / columnWidth;
-            pixel(x, y, BAR_COLOUR[col_idx]);
+            pixel(x, y, BAR_COLOR[col_idx]);
         }
     }
 }
@@ -74,33 +74,32 @@ void init(FramebufferInfo info)
 {
     fbInfo = info;
     // Ensure valid info is provided
-    if (fbInfo.getAddress()) {
-        // Cache framebuffer values in order to avoid
-        // function calls when plotting pixels.
-        addr = fbInfo.getAddress();
-        width = fbInfo.getWidth();
-        height = fbInfo.getHeight();
-        depth = fbInfo.getDepth();
-        pitch = fbInfo.getPitch();
-        r_size = fbInfo.getRedMaskSize();
-        r_shift = fbInfo.getRedMaskShift();
-        g_size = fbInfo.getGreenMaskSize();
-        g_shift = fbInfo.getGreenMaskShift();
-        b_size = fbInfo.getBlueMaskSize();
-        b_shift = fbInfo.getBlueMaskShift();
-        pixelwidth = (depth / 8);
-        // Map in the framebuffer
-        rs232_print("Mapping framebuffer...\n");
-        for (uintptr_t page = (uintptr_t)addr & PAGE_ALIGN;
-            page < ((uintptr_t)addr) + (pitch * height);
-            page += PAGE_SIZE)
-        {
-            map_kernel_page(VADDR(page), page);
-        }
-
-        initialized = true;
-        testPattern();
+    if (fbInfo.getAddress() == NULL) { return; }
+    // Cache framebuffer values in order to avoid
+    // function calls when plotting pixels.
+    addr = fbInfo.getAddress();
+    width = fbInfo.getWidth();
+    height = fbInfo.getHeight();
+    depth = fbInfo.getDepth();
+    pitch = fbInfo.getPitch();
+    r_size = fbInfo.getRedMaskSize();
+    r_shift = fbInfo.getRedMaskShift();
+    g_size = fbInfo.getGreenMaskSize();
+    g_shift = fbInfo.getGreenMaskShift();
+    b_size = fbInfo.getBlueMaskSize();
+    b_shift = fbInfo.getBlueMaskShift();
+    pixelwidth = (depth / 8);
+    // Map in the framebuffer
+    rs232_print("Mapping framebuffer...\n");
+    for (uintptr_t page = (uintptr_t)addr & PAGE_ALIGN;
+        page < (uintptr_t)addr + (pitch * height);
+        page += PAGE_SIZE)
+    {
+        map_kernel_page(VADDR(page), page);
     }
+
+    initialized = true;
+    testPattern();
 }
 
 void pixel(uint32_t x, uint32_t y, uint32_t color)
@@ -111,20 +110,20 @@ void pixel(uint32_t x, uint32_t y, uint32_t color)
     // Special thanks to the SkiftOS contributors.
     if ((x <= width) && (y <= height))
     {
-        uint8_t *pixel = ((uint8_t*)addr + (y * pitch) + (x * pixelwidth));
+        uint8_t *pixel = (uint8_t*)addr + (y * pitch) + (x * pixelwidth);
         // Pixel information
         pixel[0] = (color >> b_shift) & 0xff;   // B
         pixel[1] = (color >> g_shift) & 0xff;   // G
         pixel[2] = (color >> r_shift) & 0xff;   // R
         // Additional pixel information
-        if (pixelwidth == 4) { pixel[3] = 0x00; }
+        if (pixelwidth == 4) pixel[3] = 0x00;
     }
 }
 
 void putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color)
 {
     // Ensure framebuffer information exists
-    if (!initialized) { return; }
+    if (!initialized) return;
     for (uint32_t curr_x = x; curr_x <= x + w; curr_x++) {
         for (uint32_t curr_y = y; curr_y <= y + h; curr_y++) {
             // Extremely slow but good for debugging

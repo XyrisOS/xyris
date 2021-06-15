@@ -21,13 +21,11 @@ __stivale2_header:
     dd __stivale2_framebuffer
     dd 0
 
-%if 1
 section .early_data
 align 4
 __stivale2_framebuffer:
     dq 0x3ecc1bc43d0f7971
     dq 0
-    dw 0
-    dw 0
-    dw 0
-%endif
+    dw 0 ; Width (0 = Best)
+    dw 0 ; Height (0 = Best)
+    dw 0 ; Color depth (0 = Best)

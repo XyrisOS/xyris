@@ -99,7 +99,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 rs232_printf("\tResolution: %ix%ix%i\n",
                     framebuffer->framebuffer_width,
                     framebuffer->framebuffer_height,
-                    (framebuffer->framebuffer_bpp));
+                    framebuffer->framebuffer_bpp);
                 rs232_printf("\tPixel format:\n"
                              "\t\tRed size:    %u\n"
                              "\t\tRed shift:   %u\n"
@@ -119,8 +119,8 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                     framebuffer->framebuffer_height,
                     framebuffer->framebuffer_bpp,
                     framebuffer->framebuffer_pitch,
-                    (void*)framebuffer->framebuffer_addr,
-                    (fb::FramebufferMemoryModel)framebuffer->memory_model,
+                    reinterpret_cast<void*>(framebuffer->framebuffer_addr),
+                    static_cast<fb::FramebufferMemoryModel>(framebuffer->memory_model),
                     framebuffer->red_mask_size,
                     framebuffer->red_mask_shift,
                     framebuffer->green_mask_size,
