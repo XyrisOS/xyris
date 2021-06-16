@@ -23,6 +23,8 @@
 // Architecture specific code
 #include <arch/arch.hpp>
 // Generic devices
+#include <dev/vga/fb.hpp>
+#include <dev/vga/graphics.hpp>
 #include <dev/tty/tty.hpp>
 #include <dev/kbd/kbd.hpp>
 #include <dev/rtc/rtc.hpp>
@@ -31,6 +33,10 @@
 // Apps
 #include <apps/primes.hpp>
 #include <apps/spinner.hpp>
+// Debug
+#include <lib/assert.hpp>
+
+static Boot::Handoff handoff;
 
 static void kernel_print_splash();
 static void kernel_boot_tone();
@@ -44,7 +50,9 @@ static void boot_init(void *boot_info, uint32_t magic)
         map_kernel_page(VADDR(page), page);
     }
     // Parse the bootloader information into common format
-    Boot::Handoff handoff = Boot::Handoff(boot_info, magic);
+    handoff = Boot::Handoff(boot_info, magic);
+    // Ensure handoff is no longer default initialized
+    assert(handoff.getHandle());
 }
 
 /**
@@ -52,7 +60,6 @@ static void boot_init(void *boot_info, uint32_t magic)
  * assembly written in boot.S located in arch/i386/boot.S.
  */
 void kernel_main(void *boot_info, uint32_t magic) {
-    (void)boot_info;
     // Print the splash screen to show we've booted into the kernel properly.
     kernel_print_splash();
     // Install the GDT
@@ -65,6 +72,7 @@ void kernel_main(void *boot_info, uint32_t magic) {
                                     // TODO: Bootloader should be first but currently
                                     //       requires paging, which should come after
                                     //       boot information is parsed.
+    fb::init(handoff.getFramebufferInfo());
     kbd_init();                     // Initialize PS/2 Keyboard
     rtc_init();                     // Initialize Real Time Clock
     timer_init(1000);               // Programmable Interrupt Timer (1ms)
@@ -77,13 +85,9 @@ void kernel_main(void *boot_info, uint32_t magic) {
     // Get the CPU vendor and model data to print
     const char *vendor = cpu_get_vendor();
     const char *model = cpu_get_model();
-    kprintf(DBG_INFO "%s\n", vendor);
-    kprintf(DBG_INFO "%s\n", model);
+    kprintf(DBG_INFO "%s %s\n", vendor, model);
     // Print out the CPU vendor info
-    rs232_print(vendor);
-    rs232_print("\n");
-    rs232_print(model);
-    rs232_print("\n");
+    rs232_printf("%s\n%s\n", vendor, model);
 
     tasks_init();
     task_t compute, status, spinner;

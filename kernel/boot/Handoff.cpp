@@ -24,76 +24,19 @@
 namespace Boot {
 
 /*
- *  ___                   _          __  __
- * | __| _ __ _ _ __  ___| |__ _  _ / _|/ _|___ _ _
- * | _| '_/ _` | '  \/ -_) '_ \ || |  _|  _/ -_) '_|
- * |_||_| \__,_|_|_|_\___|_.__/\_,_|_| |_| \___|_|
- *
- */
-
-FramebufferInfo::FramebufferInfo()
-    : _addr(NULL)
-    , _width(0)
-    , _height(0)
-    , _depth(0)
-    , _pitch(0)
-    , _redMaskSize(0)
-    , _redMaskShift(0)
-    , _greenMaskSize(0)
-    , _greenMaskShift(0)
-    , _blueMaskSize(0)
-    , _blueMaskShift(0)
-    , _memoryModel(Undefined_FBMM)
-{
-    // Default constructor.
-}
-
-FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr)
-    : _addr(addr)
-    , _width(width)
-    , _height(height)
-    , _depth(depth)
-    , _pitch(pitch)
-    , _redMaskSize(0)
-    , _redMaskShift(0)
-    , _greenMaskSize(0)
-    , _greenMaskShift(0)
-    , _blueMaskSize(0)
-    , _blueMaskShift(0)
-    , _memoryModel(Undefined_FBMM)
-{
-    // Common parameters constructor
-}
-
-FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height,
-                                 uint16_t depth, uint32_t pitch,
-                                 void* addr, FramebufferMemoryModel model,
-                                 uint8_t redMaskSize, uint8_t redMaskShift,
-                                 uint8_t greenMaskSize, uint8_t greenMaskShift,
-                                 uint8_t blueMaskSize, uint8_t blueMaskShift)
-    : _addr(addr)
-    , _width(width)
-    , _height(height)
-    , _depth(depth)
-    , _pitch(pitch)
-    , _redMaskSize(redMaskSize)
-    , _redMaskShift(redMaskShift)
-    , _greenMaskSize(greenMaskSize)
-    , _greenMaskShift(greenMaskShift)
-    , _blueMaskSize(blueMaskSize)
-    , _blueMaskShift(blueMaskShift)
-    , _memoryModel(model)
-{
-    // All parameters constructor
-}
-
-/*
  *  _  _              _      __  __
  * | || |__ _ _ _  __| |___ / _|/ _|
  * | __ / _` | ' \/ _` / _ \  _|  _|
  * |_||_\__,_|_||_\__,_\___/_| |_|
  *
  */
+
+Handoff::Handoff()
+    : _handle(NULL)
+    , _magic(0)
+{
+    // Initialize nothing.
+}
 
 Handoff::Handoff(void* handoff, uint32_t magic)
     : _handle(handoff)
@@ -145,7 +88,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
             {
                 auto cmdline = (struct stivale2_struct_tag_cmdline*)tag;
                 rs232_printf("Stivale2 cmdline: '%s'\n", (const char *)cmdline->cmdline);
-                that->_cmdline = (const char *)(cmdline->cmdline);
+                that->_cmdline = (char *)(cmdline->cmdline);
                 break;
             }
             case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID:
@@ -156,15 +99,28 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 rs232_printf("\tResolution: %ix%ix%i\n",
                     framebuffer->framebuffer_width,
                     framebuffer->framebuffer_height,
-                    (framebuffer->framebuffer_bpp * 8));
+                    framebuffer->framebuffer_bpp);
+                rs232_printf("\tPixel format:\n"
+                             "\t\tRed size:    %u\n"
+                             "\t\tRed shift:   %u\n"
+                             "\t\tGreen size:  %u\n"
+                             "\t\tGreen shift: %u\n"
+                             "\t\tBlue size:   %u\n"
+                             "\t\tBlue shift:  %u\n",
+                             framebuffer->red_mask_size,
+                             framebuffer->red_mask_shift,
+                             framebuffer->green_mask_size,
+                             framebuffer->green_mask_shift,
+                             framebuffer->blue_mask_size,
+                             framebuffer->blue_mask_shift);
                 // Initialize the framebuffer information
-                that->_fbInfo = FramebufferInfo(
+                that->_fbInfo = fb::FramebufferInfo(
                     framebuffer->framebuffer_width,
                     framebuffer->framebuffer_height,
                     framebuffer->framebuffer_bpp,
                     framebuffer->framebuffer_pitch,
-                    (void*)framebuffer->framebuffer_addr,
-                    (FramebufferMemoryModel)framebuffer->memory_model,
+                    reinterpret_cast<void*>(framebuffer->framebuffer_addr),
+                    static_cast<fb::FramebufferMemoryModel>(framebuffer->memory_model),
                     framebuffer->red_mask_size,
                     framebuffer->red_mask_shift,
                     framebuffer->green_mask_size,
@@ -217,7 +173,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
             {
                 auto cmdline = (struct multiboot_tag_string *) tag;
                 rs232_printf("Multiboot2 cmdline: '%s'\n", cmdline->string);
-                that->_cmdline = (const char *)(cmdline->string);
+                that->_cmdline = (char *)(cmdline->string);
                 break;
             }
             case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
@@ -228,15 +184,28 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
                 rs232_printf("\tResolution: %ix%ix%i\n",
                     framebuffer->common.framebuffer_width,
                     framebuffer->common.framebuffer_height,
-                    (framebuffer->common.framebuffer_bpp * 8));
+                    (framebuffer->common.framebuffer_bpp));
+                rs232_printf("\tPixel format:\n"
+                             "\t\tRed size:    %u\n"
+                             "\t\tRed shift:   %u\n"
+                             "\t\tGreen size:  %u\n"
+                             "\t\tGreen shift: %u\n"
+                             "\t\tBlue size:   %u\n"
+                             "\t\tBlue shift:  %u\n",
+                             framebuffer->framebuffer_red_mask_size,
+                             framebuffer->framebuffer_red_field_position,
+                             framebuffer->framebuffer_green_mask_size,
+                             framebuffer->framebuffer_green_field_position,
+                             framebuffer->framebuffer_blue_mask_size,
+                             framebuffer->framebuffer_blue_field_position);
                 // Initialize the framebuffer information
-                that->_fbInfo = FramebufferInfo(
+                that->_fbInfo = fb::FramebufferInfo(
                     framebuffer->common.framebuffer_width,
                     framebuffer->common.framebuffer_height,
                     framebuffer->common.framebuffer_bpp,
                     framebuffer->common.framebuffer_pitch,
                     (void*)framebuffer->common.framebuffer_addr,
-                    (FramebufferMemoryModel)framebuffer->common.framebuffer_type,
+                    (fb::FramebufferMemoryModel)framebuffer->common.framebuffer_type,
                     framebuffer->framebuffer_red_mask_size,
                     framebuffer->framebuffer_red_field_position,
                     framebuffer->framebuffer_green_mask_size,

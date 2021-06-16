@@ -3,7 +3,9 @@ MULTIBOOT_ARCH      equ 0
 MULTIBOOT_LENGTH    equ (__multiboot_header_end - __multiboot2_header_start)
 MULTIBOOT_CHECKSUM  equ -(MULTIBOOT_MAGIC + MULTIBOOT_ARCH + MULTIBOOT_LENGTH)
 
+MULTIBOOT_TAG_OPTIONAL equ 1
 MULTIBOOT_TAG_ENTRY equ 3
+MULTIBOOT_TAG_FRAMEBUFFER equ 5
 MULTIBOOT_TAG_LAST  equ 0
 
 extern _start:code
@@ -32,6 +34,15 @@ __multiboot2_header_start:
 __multiboot2_entry_tag:
     tag_begin MULTIBOOT_TAG_ENTRY, 1
     dd  MULTIBOOT_ENTRY
+    tag_end
+
+__multiboot2_framebuffer_tag:
+    tag_begin MULTIBOOT_TAG_FRAMEBUFFER
+    dw MULTIBOOT_TAG_OPTIONAL
+    dd 20
+    dd 0
+    dd 0
+    dd 32
     tag_end
 
 __multiboot2_last_tag:
