@@ -48,7 +48,7 @@ void printPanicScreen(int exception) {
     rs232_print(cow);
 }
 
-void panic(const char* msg, const char *file, uint32_t line, const char *func) {
+NORET void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     asm volatile ("cli");
     // Print the panic cow
     printPanicScreen(0);
@@ -62,10 +62,10 @@ void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     panic_print_file(file, line, func);
     stack_trace(16);
     // Halt the CPU
-    asm("hlt");
+    while (true) { asm("hlt"); }
 }
 
-void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
+NORET void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
     asm volatile ("cli");
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
@@ -127,7 +127,7 @@ void panic(registers_t *regs, const char *file, uint32_t line, const char *func)
     panic_print_file(file, line, func);
     stack_trace(16);
     // Halt the CPU
-    asm("hlt");
+    while (true) { asm("hlt"); }
 }
 
 void panic_print_file(const char *file, uint32_t line, const char *func) {

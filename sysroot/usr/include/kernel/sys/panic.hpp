@@ -10,8 +10,9 @@
  */
 #pragma once
 
-#include <stdint.h>    // Data type definitions
-#include <arch/arch.hpp>    // Architecture specific features
+#include <stdint.h>             // Data type definitions
+#include <arch/arch.hpp>        // Architecture specific features
+#include <meta/compiler.hpp>    // Compiler hints
 
 // Macros for panic and assert
 #define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)
@@ -26,7 +27,7 @@ extern const char* exception_descriptions[];
  * @param line Line with the error
  * @param func Function containing error
  */
-void panic(const char* msg, const char *file, uint32_t line, const char *func);
+NORET void panic(const char* msg, const char *file, uint32_t line, const char *func);
 /**
  * @brief Halts kernel execution and prints register info.
  *
@@ -35,4 +36,4 @@ void panic(const char* msg, const char *file, uint32_t line, const char *func);
  * @param line Line with the error
  * @param func Function containing error
  */
-void panic(registers_t *regs, const char *file, uint32_t line, const char *func);
+NORET void panic(registers_t *regs, const char *file, uint32_t line, const char *func);

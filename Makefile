@@ -35,12 +35,13 @@ export COLOR_NONE = \033[m
 # *******************
 
 # Compilers/Assemblers/Linkers
+# CXX is also used as linker per
+# the OSDev wiki recommendations
 export NASM    := $(shell command -v nasm)
 export AS      := $(shell command -v i686-elf-as)
 export AR      := $(shell command -v i686-elf-ar)
 export CC      := $(shell command -v i686-elf-gcc)
 export CXX     := $(shell command -v i686-elf-g++)
-export LD      := $(shell command -v i686-elf-ld)
 export OBJCP   := $(shell command -v i686-elf-objcopy)
 export MKGRUB  := $(shell command -v grub-mkrescue)
 
@@ -62,13 +63,7 @@ IMGTYPE ?= img
 RUNIMG  := $(PROJ_NAME).$(IMGTYPE)
 
 # Libraries
-# Okay, time to rant. For *whatever* reason, when I compile and install my
-# i686-elf cross compiler, libgcc can never be found. It doesn't matter if
-# I'm running macOS, Arch, etc. It always has this issue, so, I decided to
-# solve it by just having GCC tell me where it is and then linking against
-# that absolute path directly. That way I never have to deal with it again
 export LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
-export LIB_GCC  := $(shell $(CC) -print-libgcc-file-name)
 
 # *******************
 # * Toolchain Flags *
@@ -105,7 +100,6 @@ export CWARNINGS :=         \
 	-Wmissing-prototypes    \
 # C flags (include directory)
 export CFLAGS :=            \
-	-m32                    \
 	-nostdlib               \
 	-nodefaultlibs          \
 	-ffreestanding          \
@@ -116,6 +110,7 @@ export CFLAGS :=            \
 	${WARNINGS}
 # C++ flags
 export CXXFLAGS :=          \
+	-fanalyzer              \
 	-fpermissive            \
 	-fno-rtti               \
 	-fno-exceptions         \
@@ -131,14 +126,13 @@ export CPPFLAGS :=                \
 	-D VER_PATCH=\"$(VER_PATCH)\" \
 	-D VER_NAME=\"$(VER_NAME)\"
 # Assembler flags
-export ASFLAGS :=           \
-	${PANIX_ASFLAGS}        \
-	--32
+export ASFLAGS :=       \
+	${PANIX_ASFLAGS}
 # Linker flags
-export LDFLAGS :=           \
-	${PANIX_LDFLAGS}        \
-	$(LIB_GCC)              \
-	-m elf_i386             \
+export LDFLAGS :=       \
+	${PANIX_LDFLAGS}    \
+	-nostdlib           \
+	-lgcc               \
 	-L.
 
 # ************************
