@@ -42,7 +42,7 @@ Handoff::Handoff(void* handoff, uint32_t magic)
     : _handle(handoff)
     , _magic(magic)
 {
-    const char* bootProtoName;
+    const char* bootProtoName = "Invalid";
     // Parse the handle based on the magic
     rs232_printf("Bootloader info at 0x%X\n", handoff);
     if (magic == 0x36d76289) {
