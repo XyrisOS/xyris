@@ -104,6 +104,6 @@ $(KERNEL): $(PRODUCT)/$(KERNEL)
 $(PRODUCT)/$(KERNEL): $(OBJ)
 	@mkdir -p $(PRODUCT)
 	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$@\n"
-	@$(LD) -o $@ $(OBJ) $(LDFLAGS)
+	@$(CXX) -o $@ $(OBJ) $(LDFLAGS)
 	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$@\n"
 	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
