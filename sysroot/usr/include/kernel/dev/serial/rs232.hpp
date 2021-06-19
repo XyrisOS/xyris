@@ -13,7 +13,6 @@
 
 #include <stdarg.h>
 #include <stdint.h>
-#include <lib/ring_buffer.hpp>
 
 #define RS_232_COM1 0x3F8
 #define RS_232_COM2 0x2F8
@@ -33,8 +32,6 @@
 #define RS_232_LINE_STATUS_REG 0x5
 #define RS_232_MODEM_STATUS_REG 0x6
 #define RS_232_SCRATCH_REG 0x7
-
-#define RS_232_BUF_SIZE 64
 
 /**
  * @brief Activates the RS232 serial driver

@@ -12,13 +12,14 @@
  *
  */
 
+#include <stdarg.h>
 #include <arch/arch.hpp>
 #include <dev/serial/rs232.hpp>
 #include <mem/heap.hpp>
+#include <lib/stdio.hpp>
 #include <lib/mutex.hpp>
 #include <lib/string.hpp>
-#include <stdarg.h>
-#include <lib/stdio.hpp>
+#include <lib/ring_buffer.hpp>
 
 static uint8_t rs_232_data[1024];
 static uint16_t rs_232_port_base;
@@ -144,7 +145,7 @@ int rs232_get_str(char* str, int max) {
     // Keep reading until the buffer is empty or
     // a newline is read.
     while (!ring.IsEmpty()) {
-        uint8_t byte;
+        uint8_t byte = 0;
         ring.Dequeue(&byte);
         str[idx] = (char)byte;
         ++idx;
