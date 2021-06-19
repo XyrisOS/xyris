@@ -51,8 +51,8 @@ public:
         return status;
     }
     /**
-     * @brief Removes a bytes from the circular buffer and writes
-     * the value of the byte to the data pointer.
+     * @brief Dequeues from the circular buffer and writes
+     * the value to the data pointer.
      *
      * @param buf Buffer to contain the data
      * @return int Returns 0 on success and -1 on error.
@@ -72,6 +72,18 @@ public:
         }
         // Return the status code
         return status;
+    }
+    /**
+     * @brief Dequeues from the circular buffer and returns
+     * the data.
+     *
+     * @return T Returns dequeued data.
+     */
+    T Dequeue()
+    {
+        T val = 0;
+        Dequeue(&val);
+        return val;
     }
     /**
      * @brief Grab the latest bytes of data from the buffer without
@@ -102,7 +114,7 @@ public:
      */
     bool IsEmpty()
     {
-        return (this->length == 0);
+        return this->length == 0;
     }
     /**
      * @brief Query whether the circular buffer is full.
@@ -112,7 +124,7 @@ public:
      */
     bool IsFull()
     {
-        return (this->length == S);
+        return this->length == S;
     }
     /**
      * @brief Returns the number of items (bytes) in the buffer.

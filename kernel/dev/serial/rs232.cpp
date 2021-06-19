@@ -22,7 +22,7 @@
 #include <lib/ring_buffer.hpp>
 
 static uint16_t rs_232_port_base;
-static RingBuffer<uint8_t, 1024> ring;
+static RingBuffer<char, 1024> ring;
 static mutex_t mutex_rs232("rs232");
 
 static int rs232_received();
@@ -95,12 +95,10 @@ static void rs232_callback(registers_t *regs) {
     char str[2] = {in, '\0'};
     rs232_print(str);
     // Add the character to the circular buffer
-    ring.Enqueue((uint8_t)in);
+    ring.Enqueue(in);
 }
 
-// FIXME: This should take a buffer as an argument so that
-// COM1 & COM2 can have different buffers, or find a way
-// to keep them separate.
+// FIXME: Use separate ring buffers for COM1 & COM2
 void rs232_init(uint16_t com_id) {
     // Register the IRQ callback
     rs_232_port_base = com_id;
@@ -132,10 +130,9 @@ void rs232_init(uint16_t com_id) {
 char rs232_get_char() {
     mutex_lock(&mutex_rs232);
     // Grab the last byte and convert to a char
-    uint8_t data = 0;
-    ring.Dequeue(&data);
+    char data = ring.Dequeue();
     mutex_unlock(&mutex_rs232);
-    return (char)data;
+    return data;
 }
 
 int rs232_get_str(char* str, int max) {
@@ -144,12 +141,11 @@ int rs232_get_str(char* str, int max) {
     // Keep reading until the buffer is empty or
     // a newline is read.
     while (!ring.IsEmpty()) {
-        uint8_t byte = 0;
-        ring.Dequeue(&byte);
-        str[idx] = (char)byte;
+        char byte = ring.Dequeue();
+        str[idx] = byte;
         ++idx;
         // Break if it's a newline or null
-        if ((char)byte == '\n'
+        if (byte == '\n'
         || byte == 0
         || idx == (max - 1))
         {
