@@ -1,0 +1,4 @@
+# Repo Ranger Configuration
+merges:
+  # Delete branch on merge
+  - action: delete_branch
