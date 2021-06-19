@@ -15,26 +15,19 @@
 #include <stdint.h>
 #include <lib/errno.h>
 
-template <typename T> class RingBuffer {
+template <typename T, size_t S>
+class RingBuffer {
 public:
     /**
      * @brief Initializes the circular buffer and allocates
      * the data memory.
-     *
-     * @param size Maximum buffer capacity (in bytes)
-     * @param buf Data buffer to be used. If NULL, a buffer of
-     * size will be allocated and internally managed. If a buffer
-     * is provided, the caller is responsible for memory management
-     * of the provided buffer.
-     * @return int Returns 0 on success and -1 on error.
      */
-    explicit RingBuffer(int size, T* buf)
+    explicit RingBuffer()
         : head(0)
         , tail(0)
         , length(0)
-        , capacity(size)
     {
-        this->data = buf;
+        // Default constructor
     }
     /**
      * @brief Writes a byte into the circular buffer.
@@ -51,7 +44,7 @@ public:
         } else {
             // Write the data at the write index
             this->data[this->head] = val;
-            this->head = ((this->head + 1) % this->capacity);
+            this->head = ((this->head + 1) % S);
             ++this->length;
         }
         // Return the status code
@@ -74,7 +67,7 @@ public:
         } else {
             // Read out the data and decrement the position
             *buf = this->data[this->tail];
-            this->tail = ((this->tail + 1) % this->capacity);
+            this->tail = ((this->tail + 1) % S);
             --this->length;
         }
         // Return the status code
@@ -119,7 +112,7 @@ public:
      */
     bool IsFull()
     {
-        return (this->length == this->capacity);
+        return (this->length == S);
     }
     /**
      * @brief Returns the number of items (bytes) in the buffer.
@@ -137,13 +130,12 @@ public:
      */
     int Capacity()
     {
-        return this->capacity;
+        return S;
     }
 
 private:
-    T* data;
+    T data[S];
     int head;
     int tail;
     int length;
-    int capacity;
 };

@@ -21,9 +21,8 @@
 #include <lib/string.hpp>
 #include <lib/ring_buffer.hpp>
 
-static uint8_t rs_232_data[1024];
 static uint16_t rs_232_port_base;
-static RingBuffer ring(sizeof(rs_232_data), rs_232_data);
+static RingBuffer<uint8_t, 1024> ring;
 static mutex_t mutex_rs232("rs232");
 
 static int rs232_received();
@@ -166,7 +165,5 @@ int rs232_get_str(char* str, int max) {
 }
 
 int rs232_close() {
-    // Clear data buffer in case reopened.
-    memset(rs_232_data, 0, sizeof(rs_232_data));
     return 0;
 }
