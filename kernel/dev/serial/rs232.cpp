@@ -16,14 +16,14 @@
 #include <dev/serial/rs232.hpp>
 #include <mem/heap.hpp>
 #include <lib/mutex.hpp>
+#include <lib/string.hpp>
 #include <stdarg.h>
 #include <lib/stdio.hpp>
 
-static ring_buff_t read_buffer;
-uint8_t rs_232_data[1024];
-uint8_t rs_232_line_index;
-uint16_t rs_232_port_base;
-mutex_t mutex_rs232("rs232");
+static uint8_t rs_232_data[1024];
+static uint16_t rs_232_port_base;
+static RingBuffer ring(sizeof(rs_232_data), rs_232_data);
+static mutex_t mutex_rs232("rs232");
 
 static int rs232_received();
 static int rs232_is_transmit_empty();
@@ -95,7 +95,7 @@ static void rs232_callback(registers_t *regs) {
     char str[2] = {in, '\0'};
     rs232_print(str);
     // Add the character to the circular buffer
-    ring_buffer_enqueue(&read_buffer, (uint8_t)in);
+    ring.Enqueue((uint8_t)in);
 }
 
 // FIXME: This should take a buffer as an argument so that
@@ -133,7 +133,7 @@ char rs232_get_char() {
     mutex_lock(&mutex_rs232);
     // Grab the last byte and convert to a char
     uint8_t data = 0;
-    ring_buffer_dequeue(&read_buffer, &data);
+    ring.Dequeue(&data);
     mutex_unlock(&mutex_rs232);
     return (char)data;
 }
@@ -143,9 +143,9 @@ int rs232_get_str(char* str, int max) {
     int idx = 0;
     // Keep reading until the buffer is empty or
     // a newline is read.
-    while (!ring_buffer_is_empty(&read_buffer)) {
+    while (!ring.IsEmpty()) {
         uint8_t byte;
-        ring_buffer_dequeue(&read_buffer, &byte);
+        ring.Dequeue(&byte);
         str[idx] = (char)byte;
         ++idx;
         // Break if it's a newline or null
@@ -165,9 +165,7 @@ int rs232_get_str(char* str, int max) {
 }
 
 int rs232_close() {
-    int ret = -1;
-    mutex_lock(&mutex_rs232);
-    ret = ring_buffer_destroy(&read_buffer);
-    mutex_unlock(&mutex_rs232);
-    return ret;
+    // Clear data buffer in case reopened.
+    memset(rs_232_data, 0, sizeof(rs_232_data));
+    return 0;
 }

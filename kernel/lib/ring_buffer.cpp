@@ -15,146 +15,93 @@
 #include <mem/heap.hpp>
 #include <lib/errno.h>
 
-int ring_buffer_init(ring_buff_t* buff, int size, uint8_t* data) {
-    int status = 0;
-    // Check if the pointer is valid
-    if (buff != NULL) {
-        // Set the struct variables (set locations and size)
-        buff->size = size;
-        buff->head = 0;
-        buff->tail = 0;
-        buff->length = 0;
-        // Should we use provided buffer?
-        if (data != NULL) {
-            buff->data = data;
-            buff->external = true;
-        } else {
-            // Allocate the memory for our buffer
-            buff->data = (uint8_t *)malloc(sizeof(uint8_t) * size);
-            buff->external = false;
-            // Did we actually allocate the data?
-            if (buff->data == NULL) {
-                status = -1;
-                errno = ENOMEM;
-            }
-        }
+RingBuffer::RingBuffer(int size, uint8_t* buf)
+    : head(0)
+    , tail(0)
+    , length(0)
+    , capacity(size)
+{
+    // Should we use provided buffer?
+    if (buf != NULL) {
+        this->data = buf;
+        this->external = true;
     } else {
-        status = -1;
-        errno = EINVAL;
+        // Allocate the memory for our buffer
+        this->data = (uint8_t *)malloc(sizeof(uint8_t) * capacity);
+        this->external = false;
+        // Did we actually allocate the data?
+        if (this->data == NULL) {
+            errno = ENOMEM;
+        }
     }
-    // Return our status code
-    return status;
 }
 
-int ring_buffer_destroy(ring_buff_t* buff) {
-    int status = 0;
-    if (buff != NULL) {
-        // Free the data buffer if self managed
-        if (buff->external == false) {
-            // Free our data buffer and set the struct to null
-            free(buff->data);
-        }
-        buff = NULL;
-    } else {
-        status = -1;
-        errno = EINVAL;
+RingBuffer::~RingBuffer() {
+    // Free the data buffer if self managed
+    if (this->external == false) {
+        // Free our data buffer and set the struct to null
+        free(this->data);
     }
-    return status;
 }
 
-int ring_buffer_enqueue(ring_buff_t* buff, uint8_t byte) {
+int RingBuffer::Enqueue(uint8_t byte) {
     int status = 0;
-    if (buff != NULL) {
-        // Check if the buffer is full. If so, we can't enqueue.
-        if (ring_buffer_is_full(buff)) {
-            status = -1;
-            errno = ENOBUFS;
-        } else {
-            // Write the data at the write index
-            buff->data[buff->head] = byte;
-            buff->head = ((buff->head + 1) % buff->size);
-            ++buff->length;
-        }
-    } else {
+    // Check if the buffer is full. If so, we can't enqueue.
+    if (IsFull()) {
         status = -1;
-        errno = EINVAL;
+        errno = ENOBUFS;
+    } else {
+        // Write the data at the write index
+        this->data[this->head] = byte;
+        this->head = ((this->head + 1) % this->capacity);
+        ++this->length;
     }
     // Return the status code
     return status;
 }
 
-int ring_buffer_dequeue(ring_buff_t* buff, uint8_t* data) {
+int RingBuffer::Dequeue(uint8_t* buf) {
     int status = 0;
-    if (buff != NULL) {
-        // Check if the buffer is empty. If so, we can't dequeue
-        if (ring_buffer_is_empty(buff)) {
-            status = -1;
-            errno = EINVAL;
-        } else {
-            // Read out the data and decrement the position
-            *data = buff->data[buff->tail];
-            buff->tail = ((buff->tail + 1) % buff->size);
-            --buff->length;
-        }
-    } else {
+    // Check if the buffer is empty. If so, we can't dequeue
+    if (IsEmpty()) {
         status = -1;
         errno = EINVAL;
+    } else {
+        // Read out the data and decrement the position
+        *buf = this->data[this->tail];
+        this->tail = ((this->tail + 1) % this->capacity);
+        --this->length;
     }
     // Return the status code
     return status;
 }
 
-int ring_buffer_peek(ring_buff_t* buff, uint8_t* data) {
+int RingBuffer::Peek(uint8_t* buf) {
     int status = 0;
-    if (buff != NULL) {
-        // Check if the buffer is empty. If so, we can't dequeue
-        if (ring_buffer_is_empty(buff)) {
-            status = -1;
-            errno = EINVAL;
-        } else {
-            // Read out the data and don't decrement the position
-            *data = buff->data[buff->tail];
-        }
-    } else {
+    // Check if the buffer is empty. If so, we can't dequeue
+    if (IsEmpty()) {
         status = -1;
         errno = EINVAL;
+    } else {
+        // Read out the data and don't decrement the position
+        *buf = this->data[this->tail];
     }
     // Return the status code
     return status;
 }
 
-bool ring_buffer_is_empty(ring_buff_t* buff) {
-    if (buff != NULL) {
-        return (buff->length == 0);
-    } else {
-        errno = EINVAL;
-        return false;
-    }
+bool RingBuffer::IsEmpty() {
+    return (this->length == 0);
 }
 
-bool ring_buffer_is_full(ring_buff_t* buff) {
-    if (buff != NULL) {
-        return (buff->length == buff->size);
-    } else {
-        errno = EINVAL;
-        return false;
-    }
+bool RingBuffer::IsFull() {
+    return (this->length == this->capacity);
 }
 
-int ring_buffer_length(ring_buff_t* buff) {
-    if (buff != NULL) {
-        return buff->length;
-    } else {
-        errno = EINVAL;
-        return false;
-    }
+int RingBuffer::Length() {
+    return this->length;
 }
 
-int ring_buffer_size(ring_buff_t* buff) {
-    if (buff != NULL) {
-        return buff->size;
-    } else {
-        errno = EINVAL;
-        return false;
-    }
+int RingBuffer::Capacity() {
+    return this->capacity;
 }
