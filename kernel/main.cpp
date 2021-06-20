@@ -66,7 +66,7 @@ void kernel_main(void *boot_info, uint32_t magic) {
     interrupts_disable();
     gdt_install();                  // Initialize the Global Descriptor Table
     isr_install();                  // Initialize Interrupt Service Requests
-    rs232_init(RS_232_COM1);        // RS232 Serial
+    rs232::init(RS_232_COM1);        // RS232 Serial
     paging_init(0);                 // Initialize paging service (0 is placeholder)
     boot_init(boot_info, magic);    // Initialize bootloader information
                                     // TODO: Bootloader should be first but currently
@@ -85,7 +85,7 @@ void kernel_main(void *boot_info, uint32_t magic) {
     const char *model = cpu_get_model();
     kprintf(DBG_INFO "%s %s\n", vendor, model);
     // Print out the CPU vendor info
-    rs232_printf("%s\n%s\n", vendor, model);
+    rs232::printf("%s\n%s\n", vendor, model);
 
     tasks_init();
     task_t compute, status, spinner;

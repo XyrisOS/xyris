@@ -90,7 +90,7 @@ void init(FramebufferInfo info)
     b_shift = fbInfo.getBlueMaskShift();
     pixelwidth = (depth / 8);
     // Map in the framebuffer
-    rs232_print("Mapping framebuffer...\n");
+    rs232::printf("Mapping framebuffer...\n");
     for (uintptr_t page = (uintptr_t)addr & PAGE_ALIGN;
         page < (uintptr_t)addr + (pitch * height);
         page += PAGE_SIZE)
