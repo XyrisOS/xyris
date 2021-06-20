@@ -47,22 +47,22 @@ void rs232_init(uint16_t com_id);
 void rs232_print(const char* str);
 
 /**
- * @brief Returns the most recently received byte
- * from the serial input.
- * @return char Character representation of latest
- * buffer byte.
+ * @brief Reads bytes from the serial buffer
+ *
+ * @param buf Buffer to hold the serial input
+ * @param count Number of bytes to read
+ * @return char* Returns the number of bytes read.
  */
-char rs232_get_char();
+size_t rs232_read(char* buf, size_t count);
 
 /**
- * @brief Returns all of the characters within the
- * input buffer up until a newline or a null terminator.
+ * @brief Write bytes to the serial device
  *
- * @param str Character buffer to hold the serial input
- * @param max Max number of characters to read in
- * @return char* Returns the number of characters read.
+ * @param buf Buffer containing bytes to write
+ * @param count Number of bytes to write
+ * @return size_t Returns number of bytes written
  */
-int rs232_get_str(char* str, int max);
+size_t rs232_write(const char* buf, size_t count);
 
 /**
  * @brief Closes the serial input buffer and frees all of

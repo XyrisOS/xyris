@@ -27,8 +27,7 @@ static mutex_t mutex_rs232("rs232");
 
 static int rs232_received();
 static int rs232_is_transmit_empty();
-static char rs232_read_char();
-static void rs232_write_char(char c);
+static char rs232_read_byte();
 static void rs232_callback(registers_t *regs);
 
 static int rs232_received() {
@@ -39,22 +38,19 @@ static int rs232_is_transmit_empty() {
     return readByte(rs_232_port_base + RS_232_LINE_STATUS_REG) & 0x20;
 }
 
-static char rs232_read_char() {
+static char rs232_read_byte() {
     mutex_lock(&mutex_rs232);
     while (rs232_received() == 0);
     mutex_unlock(&mutex_rs232);
     return readByte(rs_232_port_base + RS_232_DATA_REG);
 }
 
-static inline void rs232_write_char(char c) {
-    while (rs232_is_transmit_empty() == 0);
-    writeByte(rs_232_port_base + RS_232_DATA_REG, c);
-}
-
 static int vprintf_helper(unsigned c, void **ptr)
 {
-    (void) ptr;
-    rs232_write_char((char)c);
+    // Unfortunately very hacky...
+    (void)ptr;
+    char buf = (char)c;
+    rs232_write(&buf, 1);
     return 0;
 }
 
@@ -77,15 +73,14 @@ int rs232_printf(const char *format, ...)
 }
 
 void rs232_print(const char* str) {
-    for (int i = 0; str[i] != 0; i++) {
-        rs232_write_char(str[i]);
-    }
+    // Write string and null terminator
+    rs232_write(str, strlen(str) + 1);
 }
 
 static void rs232_callback(registers_t *regs) {
     (void)regs;
     // Grab the input character
-    char in = rs232_read_char();
+    char in = rs232_read_byte();
     // Change carriage returns to newlines
     if (in == '\r') {
         in = '\n';
@@ -127,37 +122,27 @@ void rs232_init(uint16_t com_id) {
     );
 }
 
-char rs232_get_char() {
+size_t rs232_read(char* buf, size_t count) {
+    size_t bytes = 0;
     mutex_lock(&mutex_rs232);
-    // Grab the last byte and convert to a char
-    char data = ring.Dequeue();
-    mutex_unlock(&mutex_rs232);
-    return data;
-}
-
-int rs232_get_str(char* str, int max) {
-    mutex_lock(&mutex_rs232);
-    int idx = 0;
-    // Keep reading until the buffer is empty or
-    // a newline is read.
-    while (!ring.IsEmpty()) {
-        char byte = ring.Dequeue();
-        str[idx] = byte;
-        ++idx;
-        // Break if it's a newline or null
-        if (byte == '\n'
-        || byte == 0
-        || idx == (max - 1))
-        {
-            // Add the null terminator
-            str[idx] = '\0';
-            ++idx;
-            break;
-        }
+    for (size_t idx = 0; idx < count && !ring.IsEmpty(); idx++)
+    {
+        buf[idx] = ring.Dequeue();
+        bytes++;
     }
     mutex_unlock(&mutex_rs232);
-    // Return the string
-    return idx;
+    return bytes;
+}
+
+size_t rs232_write(const char* buf, size_t count) {
+    // Wait for previous transfer to complete
+    while (rs232_is_transmit_empty() == 0);
+    size_t bytes = 0;
+    for (size_t idx = 0; idx < count; idx++) {
+        writeByte(rs_232_port_base + RS_232_DATA_REG, buf[idx]);
+        bytes++;
+    }
+    return bytes;
 }
 
 int rs232_close() {

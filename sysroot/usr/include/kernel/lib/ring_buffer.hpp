@@ -26,6 +26,7 @@ public:
         : head(0)
         , tail(0)
         , length(0)
+        , error(0)
     {
         // Default constructor
     }
@@ -40,7 +41,7 @@ public:
         // Check if the buffer is full. If so, we can't enqueue.
         if (IsFull()) {
             status = -1;
-            errno = ENOBUFS;
+            error = ENOBUFS;
         } else {
             // Write the data at the write index
             this->data[this->head] = val;
@@ -63,7 +64,7 @@ public:
         // Check if the buffer is empty. If so, we can't dequeue
         if (IsEmpty()) {
             status = -1;
-            errno = EINVAL;
+            error = EINVAL;
         } else {
             // Read out the data and decrement the position
             *buf = this->data[this->tail];
@@ -82,7 +83,16 @@ public:
     T Dequeue()
     {
         T val = 0;
-        Dequeue(&val);
+        // Check if the buffer is empty. If so, we can't dequeue
+        if (IsEmpty()) {
+            error = EINVAL;
+        } else {
+            // Read out the data and decrement the position
+            val = this->data[this->tail];
+            this->tail = ((this->tail + 1) % S);
+            --this->length;
+        }
+        // Return the status code
         return val;
     }
     /**
@@ -98,7 +108,7 @@ public:
         // Check if the buffer is empty. If so, we can't dequeue
         if (IsEmpty()) {
             status = -1;
-            errno = EINVAL;
+            error = EINVAL;
         } else {
             // Read out the data and don't decrement the position
             *buf = this->data[this->tail];
@@ -144,10 +154,20 @@ public:
     {
         return S;
     }
+    /**
+     * @brief Returns the ring buffer error code.
+     *
+     * @return int Error code
+     */
+    int Error()
+    {
+        return error;
+    }
 
 private:
     T data[S];
     int head;
     int tail;
     int length;
+    int error;
 };
