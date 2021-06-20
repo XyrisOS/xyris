@@ -117,7 +117,7 @@ static void _print_task(const task_t *task)
 }
 
 #ifdef DEBUG
-#define TASK_ACTION(action, task) do { rs232::rs232_print(action " "); _print_task(task); } while(0)
+#define TASK_ACTION(action, task) do { rs232::printf("%s ", action); _print_task(task); } while(0)
 #else
 #define TASK_ACTION(action, task)
 #endif
@@ -393,7 +393,7 @@ static void _schedule()
     // reset the time slice because a new task is being scheduled
     _time_slice_remaining = TIME_SLICE_SIZE;
 #ifdef DEBUG
-    rs232::rs232_print("switching to ");
+    rs232::printf("switching to ");
     _print_task(task);
 #endif
     // reset the last "timer time" since the time slice was reset
@@ -458,7 +458,7 @@ static void _on_timer()
     while (task != NULL) {
         next = task->next;
         if (time >= task->wakeup_time) {
-            //rs232::rs232_print("timer: waking sleeping task\n");
+            //rs232::printf("timer: waking sleeping task\n");
             _remove_task(&tasks_sleeping, task, pre);
             _wakeup(task);
             task->next = NULL;
@@ -475,7 +475,7 @@ static void _on_timer()
         if (time_delta >= _time_slice_remaining) {
             // schedule (and maybe pre-empt)
             // the schedule function will reset the time slice
-            //rs232::rs232_print("timer: time slice expired\n");
+            //rs232::printf("timer: time slice expired\n");
             need_schedule = true;
         } else {
             // decrement the time slice counter
