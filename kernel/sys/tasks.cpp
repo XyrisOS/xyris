@@ -113,11 +113,11 @@ static inline uint64_t _get_cpu_time_ns()
 
 static void _print_task(const task_t *task)
 {
-    rs232_printf("%s is %s\n", task->name, _state_names[task->state]);
+    rs232::printf("%s is %s\n", task->name, _state_names[task->state]);
 }
 
 #ifdef DEBUG
-#define TASK_ACTION(action, task) do { rs232_print(action " "); _print_task(task); } while(0)
+#define TASK_ACTION(action, task) do { rs232::rs232_print(action " "); _print_task(task); } while(0)
 #else
 #define TASK_ACTION(action, task)
 #endif
@@ -125,7 +125,7 @@ static void _print_task(const task_t *task)
 static void _print_tasklist(const char *name, const tasklist_t *list)
 {
     task_t *task = list->head;
-    rs232_printf("%s:\n", name);
+    rs232::printf("%s:\n", name);
     while (task != NULL) {
         _print_task(task);
         task = task->next;
@@ -137,7 +137,7 @@ static void _print_tasklist(const task_t *task)
     const tasklist_t *list = _state_lists[task->state];
     const char *state_name = _state_names[task->state];
     if (list == NULL) {
-        rs232_printf("no tasklist available for %s tasks.\n", state_name);
+        rs232::printf("no tasklist available for %s tasks.\n", state_name);
         return;
     }
 
@@ -393,7 +393,7 @@ static void _schedule()
     // reset the time slice because a new task is being scheduled
     _time_slice_remaining = TIME_SLICE_SIZE;
 #ifdef DEBUG
-    rs232_print("switching to ");
+    rs232::rs232_print("switching to ");
     _print_task(task);
 #endif
     // reset the last "timer time" since the time slice was reset
@@ -458,7 +458,7 @@ static void _on_timer()
     while (task != NULL) {
         next = task->next;
         if (time >= task->wakeup_time) {
-            //rs232_print("timer: waking sleeping task\n");
+            //rs232::rs232_print("timer: waking sleeping task\n");
             _remove_task(&tasks_sleeping, task, pre);
             _wakeup(task);
             task->next = NULL;
@@ -475,7 +475,7 @@ static void _on_timer()
         if (time_delta >= _time_slice_remaining) {
             // schedule (and maybe pre-empt)
             // the schedule function will reset the time slice
-            //rs232_print("timer: time slice expired\n");
+            //rs232::rs232_print("timer: time slice expired\n");
             need_schedule = true;
         } else {
             // decrement the time slice counter
@@ -510,7 +510,7 @@ void tasks_nano_sleep(uint64_t time)
 void tasks_exit()
 {
     // userspace cleanup can happen here
-    rs232_printf("task \"%s\" (0x%08x) exiting\n", current_task->name, (uint32_t)current_task);
+    rs232::printf("task \"%s\" (0x%08x) exiting\n", current_task->name, (uint32_t)current_task);
 
     _aquire_scheduler_lock();
     // all scheduling-specific operations must happen here
@@ -543,7 +543,7 @@ static void _cleaner_task_impl()
 
         while (tasks_stopped.head != NULL) {
             task = _dequeue_stopped();
-            rs232_printf("cleaning up task %s (0x%08x)\n", task->name ? task->name : "N/A", (uint32_t)task);
+            rs232::printf("cleaning up task %s (0x%08x)\n", task->name ? task->name : "N/A", (uint32_t)task);
             _clean_stopped_task(task);
         }
 
@@ -560,7 +560,7 @@ void tasks_sync_block(tasks_sync_t *ts)
     _aquire_scheduler_lock();
 #ifdef DEBUG
     if (ts->dbg_name != NULL) {
-        rs232_printf("blocking %s\n", ts->dbg_name);
+        rs232::printf("blocking %s\n", ts->dbg_name);
     }
 #endif
     // push the current task to the waiting queue
@@ -575,7 +575,7 @@ void tasks_sync_unblock(tasks_sync_t *ts)
     _aquire_scheduler_lock();
 #ifdef DEBUG
     if (ts->dbg_name != NULL) {
-        rs232_printf("unblocking %s\n", ts->dbg_name);
+        rs232::printf("unblocking %s\n", ts->dbg_name);
     }
 #endif
     // iterate all tasks that were blocked and unblock them
