@@ -165,15 +165,6 @@ $(KERNEL):
 
 $(PRODUCT)/$(KERNEL): $(KERNEL)
 
-# **********************
-# * Bootloader Targets *
-# **********************
-
-$(LIMINE)/limine-install:
-	@printf "$(COLOR_INFO)Making Limine Bootloader$(COLOR_NONE)\n"
-	@$(MAKE) -C $(LIMINE) limine-install
-	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
-
 # *********************
 # * Kernel Unit Tests *
 # *********************
@@ -199,18 +190,18 @@ $(PRODUCT)/$(ISOIMG): $(PRODUCT)/$(KERNEL)
 	@rm -rf iso
 
 # Create a bootable IMG
-$(PRODUCT)/$(IMGIMG): $(PRODUCT)/$(KERNEL) $(LIMINE)/limine-install
+$(PRODUCT)/$(IMGIMG): $(PRODUCT)/$(KERNEL) $(LIMINE)/limine-install-linux-x86_32 $(LIMINE)/limine.sys
 	@printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
 	@rm -f $@
 	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
 	@parted -s $@ mklabel msdos
 	@parted -s $@ mkpart primary 1 100%
-	@parted -s $@ set 1 boot on # Workaround for buggy BIOSes
+	@parted -s $@ set 1 boot on
 	@echfs-utils -m -p0 $@ quick-format 32768
 	@echfs-utils -m -p0 $@ import boot/limine.cfg limine.cfg
+	@echfs-utils -m -p0 $@ import $(LIMINE)/limine.sys limine.sys
 	@echfs-utils -m -p0 $@ import $< kernel
-	#@echfs-utils -m -p0 $@ import boot/bg.bmp bg.bmp
-	@$(LIMINE)/limine-install $(LIMINE)/limine.bin $@
+	@$(LIMINE)/limine-install-linux-x86_32 $@
 
 # Create a bootable image (either img or iso)
 .PHONY: $(PRODUCT)
@@ -301,8 +292,6 @@ clean:
 	    printf " -   " &&       \
         $(MAKE) -C $$dir clean; \
     done
-	@printf "$(COLOR_OK)Cleaning bootloader...$(COLOR_NONE)\n"
-	@$(MAKE) -C $(LIMINE) clean
 	@printf "$(COLOR_OK)Cleaning complete.$(COLOR_NONE)\n"
 
 .PHONY: clean-tests
