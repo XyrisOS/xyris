@@ -166,8 +166,8 @@ public:
 
 private:
     T data[S];
-    int head;
-    int tail;
-    int length;
+    size_t head;
+    size_t tail;
+    size_t length;
     int error;
 };
