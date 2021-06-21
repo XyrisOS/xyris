@@ -1,5 +1,5 @@
 /**
- * @file ring_buffer.hpp
+ * @file RingBuffer.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief A ring buffer is a buffer method where the same
  * memory used to contain data is reused. Inserting and removing
