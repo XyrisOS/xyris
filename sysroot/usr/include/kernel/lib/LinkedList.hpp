@@ -47,7 +47,7 @@ public:
      * @param p Previous node in the list
      * @param v Value to be stored
      */
-    LinkedListNode(LinkedListNode* n, LinkedListNode* p, T v)
+    LinkedListNode(T v, LinkedListNode* n, LinkedListNode* p)
     : data(v)
     , next(n)
     , prev(p)
@@ -59,7 +59,7 @@ public:
      *
      * @return T Stored data
      */
-    T GetData()
+    T Data()
     {
         return data;
     }
@@ -68,7 +68,7 @@ public:
      *
      * @return LinkedListNode* Pointer to next node
      */
-    LinkedListNode* GetNext()
+    LinkedListNode* Next()
     {
         return next;
     }
@@ -77,7 +77,7 @@ public:
      *
      * @return LinkedListNode* Pointer to the previous node
      */
-    LinkedListNode* GetPrevious()
+    LinkedListNode* Previous()
     {
         return prev;
     }
@@ -85,9 +85,9 @@ public:
      * @brief Set the node's data
      *
      */
-    void SetData()
+    void SetData(T v)
     {
-        return data;
+        data = v;
     }
     /**
      * @brief Set the node's next pointer
@@ -112,7 +112,7 @@ private:
     T data;
     LinkedListNode* next;
     LinkedListNode* prev;
-    // TODO: Add a size_t index value;
+    // TODO: Add a size_t index value?
 };
 
 template <typename T>
@@ -125,45 +125,45 @@ public:
     void PushFront(T val)
     {
         LinkedListNode<T> next = head;
-        LinkedListNode<T> newHead = new LinkedListNode<T>(next, NULL, val);
+        LinkedListNode<T> newHead = new LinkedListNode<T>(val, next, NULL);
         head = newHead;
         ++count;
     }
     void PushBack(T val)
     {
-        LinkedListNode<T>* newTail = new LinkedListNode<T>(NULL, tail, val);
+        LinkedListNode<T>* newTail = new LinkedListNode<T>(val, NULL, tail);
         tail->SetNext(newTail);
         tail = newTail;
         ++count;
     }
-    // TODO: Convert v into type T and make new node for the user
-    void PushBefore(LinkedListNode<T>* n, LinkedListNode<T>* v)
+    void PushBefore(LinkedListNode<T>* n, T v)
     {
+        LinkedListNode<T>* x = new LinkedListNode<T>(v);
         // Get pointer to previous in line from n
-        LinkedListNode<T>* prev = n->GetPrevious();
+        LinkedListNode<T>* prev = n->Previous();
         // Set n's previous to be the new node
-        n->SetPrevious(v);
-        // Set v's previous pointer to be the former previous
-        v->SetPrevious(prev);
+        n->SetPrevious(x);
+        x->SetNext(n);
+        x->SetPrevious(prev);
         // Update the counter
         ++count;
     }
-    // TODO: Convert v into type T and make new node for the user
-    void PushAfter(LinkedListNode<T>* n, LinkedListNode<T>* v)
+    void PushAfter(LinkedListNode<T>* n, T v)
     {
+        LinkedListNode<T>* x = new LinkedListNode<T>(v);
         // Get pointer to the next in line from n
-        LinkedListNode<T>* next = n->GetNext();
+        LinkedListNode<T>* next = n->Next();
         // Set n's next to be the new node (v)
-        n->SetNext(v);
-        // Set v's next pointer to be the former next
-        v->SetNext(next);
+        n->SetNext(x);
+        x->SetPrevious(n);
+        x->SetNext(next);
         // Insert node
         ++count;
     }
     LinkedListNode<T>* PopFront()
     {
         // Get pointer to the next in line
-        LinkedListNode<T>* newHead = head.GetNext();
+        LinkedListNode<T>* newHead = head->Next();
         // Copy the current head
         LinkedListNode<T>* currHead = head;
         // Reassign the pointer to the next in line
@@ -176,7 +176,7 @@ public:
     LinkedListNode<T>* PopBack()
     {
         // Get pointer to the next in line
-        LinkedListNode<T>* newTail = tail->GetPrevious();
+        LinkedListNode<T>* newTail = tail->Previous();
         // Copy the current head
         LinkedListNode<T> currTail = tail;
         // Reassign the pointer to the next in line
@@ -202,9 +202,9 @@ public:
     LinkedListNode<T>* PopAfter(LinkedListNode<T>* n)
     {
         // Grab the next node (after n)
-        LinkedListNode<T>* after = n->GetNext();
+        LinkedListNode<T>* after = n->Next();
         // Grab the node following the next node (after's next)
-        LinkedListNode<T>* afterAfter = after->GetNext();
+        LinkedListNode<T>* afterAfter = after->Next();
         // Set n's next to after's next (skipping after)
         n->SetNext(afterAfter);
         afterAfter->SetPrevious(n);
