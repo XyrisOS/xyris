@@ -59,9 +59,9 @@ public:
      *
      * @return T Stored data
      */
-    T Data()
+    T* Data()
     {
-        return data;
+        return &data;
     }
     /**
      * @brief Get the next node in the linked list
