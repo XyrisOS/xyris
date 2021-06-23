@@ -19,10 +19,27 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: true
-    - name: Build
+    # Debug
+    - name: 'Build Kernel (Debug)'
+      run: make debug
+    - name: 'Build Image (Debug)'
       run: make dist/panix.img
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
-        name: os-image
+        name: os-image-debug
+        path: dist/panix.img
+    # Need to clean in between debug and
+    # release for Make to rebuild properly.
+    - name: 'Clean'
+      run: make clean
+    # Release
+    - name: 'Build Kernel (Release)'
+      run: make release
+    - name: 'Build Image (Release)'
+      run: make dist/panix.img
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: os-image-release
         path: dist/panix.img
