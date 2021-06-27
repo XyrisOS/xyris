@@ -1,17 +1,69 @@
 #include <lib/bitmap.hpp>
+#include <sys/panic.hpp>
+#include <stdint.h>
 
-#ifdef TESTING
-#include <stdio.h>
-#endif
+Bitmap::Bitmap(void* buf, size_t size)
+    : map((bitmap_t*)buf)
+    , mapSize(size)
+{
+    // Ensure pointer alignment
+    if ((uintptr_t)buf % alignof(bitmap_t) != 0) {
+        PANIC("Unaligned bitmap pointer");
+    }
+}
 
-size_t bitmap_find_first_range_clear(bitmap_t *bitmap, size_t size, size_t count) {
+inline size_t Bitmap::Size()
+{
+    return mapSize;
+}
+
+inline size_t Bitmap::TypeSize()
+{
+    return sizeof(bitmap_t) * CHAR_BIT;
+}
+
+inline size_t Bitmap::Index(size_t bit)
+{
+    return bit / TypeSize();
+}
+
+inline size_t Bitmap::Offset(size_t bit)
+{
+    return bit % TypeSize();
+}
+
+void Bitmap::Set(size_t addr)
+{
+    map[Index(addr)] |= 1UL << Offset(addr);
+}
+
+bool Bitmap::Get(size_t addr)
+{
+    return map[Index(addr)] >> Offset(addr) & 1;
+}
+
+void Bitmap::Clear(size_t addr)
+{
+    map[Index(addr)] |= ~(1UL << Offset(addr));
+}
+
+size_t Bitmap::FindFirstBitClear()
+{
+    for (size_t i = 0; i < mapSize; i++) {
+        if (!((map[Index(i)] >> Offset(i)) & 1)) return i;
+    }
+    return SIZE_MAX;
+}
+
+size_t Bitmap::FindFirstRangeClear(size_t count)
+{
     size_t check_lo, check_hi, check, idx, ofst;
     size_t mask = ((size_t)1 << count) - (size_t)1;
-    for (size_t i = 0UL; i < size - count; i++) {
-        idx = INDEX_FROM_BIT(i);
-        ofst = OFFSET_FROM_BIT(i);
-        check_lo = bitmap[idx] >> ofst;
-        check_hi = ofst ? bitmap[idx + 1] << (BITS_PER_BITMAP_T - ofst) : 0;
+    for (size_t i = 0UL; i < mapSize - count; i++) {
+        idx = Index(i);
+        ofst = Offset(i);
+        check_lo = map[idx] >> ofst;
+        check_hi = ofst ? map[idx + 1] << (TypeSize() - ofst) : 0;
         check = check_lo | check_hi;
 #ifdef TESTING
         size_t masked = check & mask;
@@ -21,13 +73,5 @@ size_t bitmap_find_first_range_clear(bitmap_t *bitmap, size_t size, size_t count
 #endif
         if (!(check & mask)) return i;
     }
-    return SIZE_T_MAX_VALUE;
+    return SIZE_MAX;
 }
-
-size_t bitmap_find_first_bit_clear(bitmap_t *bitmap, size_t size) {
-    for (size_t i = 0; i < size; i++) {
-        if (!((bitmap[INDEX_FROM_BIT(i)] >> OFFSET_FROM_BIT(i)) & 1)) return i;
-    }
-    return SIZE_T_MAX_VALUE;
-}
-
