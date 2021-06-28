@@ -12,6 +12,7 @@
 # minimal panic function that works in most situations
 .extern early_panic
 
+.extern _KERNEL_BASE
 .extern _KERNEL_START
 .extern _KERNEL_END
 .extern _BSS_START
@@ -22,7 +23,6 @@
 .extern _EARLY_BSS_START
 .extern _EARLY_BSS_SIZE
 
-.equ KERNEL_BASE, 0xC0000000
 .equ LOWMEM_END, _EARLY_KERNEL_END        # lowmem ends at the 1st MB
 .equ PAGE_SIZE, 4096
 .equ PAGE_SHIFT, 12                 # 2^12 = 4096 = PAGE_SIZE
@@ -94,7 +94,7 @@ _start.higher:
     andl $0x3ff, %ecx # generate kernel PTE index
 
     movl %eax, %ebx
-    subl $KERNEL_BASE, %ebx # convert virt->physical
+    subl $_KERNEL_BASE, %ebx # convert virt->physical
     movl %ebx, kernel_pt(%edx,%ecx,4)
     orl $PAGE_PERM, kernel_pt(%edx,%ecx,4)
 
