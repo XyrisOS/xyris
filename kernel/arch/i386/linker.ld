@@ -1,5 +1,13 @@
-/* Tell our linker that our entry point is the boot_loader function
- * which we defined in the boot.s file.
+/**
+ * @file linker.ld
+ * @author Micah Switzer (mswitzer@cedarville.edu)
+ *         Keeton Feavel (keetonfeavel@cedarville.edu)
+ * @brief i386 kernel linker script
+ * @version 0.1
+ * @date 2021-06-27
+ *
+ * @copyright Copyright the Panix Contributors (c) 2021
+ *
  */
 ENTRY(_start)
 OUTPUT_FORMAT(elf32-i386)
@@ -25,13 +33,14 @@ SECTIONS
     _EARLY_KERNEL_END = .;
 
     /* Higher half kernel, linked at 3GB */
+    _KERNEL_BASE = 0xC0000000;
     . += 0xC0000000;
 
     _KERNEL_START = .;
 
-    .text ALIGN (4K) : AT(ADDR(.text) - 0xC0000000) { *(.text) }
-    .rodata ALIGN (4K) : AT(ADDR(.rodata) - 0xC0000000) { *(.rodata*) }
-    .data ALIGN (4K) : AT(ADDR(.data) - 0xC0000000)
+    .text ALIGN (4K) : AT(ADDR(.text) - _KERNEL_BASE) { *(.text) }
+    .rodata ALIGN (4K) : AT(ADDR(.rodata) - _KERNEL_BASE) { *(.rodata*) }
+    .data ALIGN (4K) : AT(ADDR(.data) - _KERNEL_BASE)
     {
         _CTORS_START = .;
         KEEP(*(.init_array));
@@ -39,14 +48,14 @@ SECTIONS
         _CTORS_END = .;
         *(.data)
     }
-    .bss ALIGN (4K) : AT(ADDR(.bss) - 0xC0000000)
+    .bss ALIGN (4K) : AT(ADDR(.bss) - _KERNEL_BASE)
     {
         _BSS_START = .;
         *(.bss)
         *(COMMON)
         _BSS_END = .;
     }
-    .page_tables ALIGN (4K) : AT(ADDR(.page_tables) - 0xC0000000)
+    .page_tables ALIGN (4K) : AT(ADDR(.page_tables) - _KERNEL_BASE)
     {
         *(.page_tables)
     }
