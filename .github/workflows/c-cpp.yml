@@ -23,7 +23,7 @@ jobs:
     - name: 'Build Kernel (Debug)'
       run: make debug
     - name: 'Build Image (Debug)'
-      run: make dist/panix.img
+      run: make dist
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
@@ -37,7 +37,7 @@ jobs:
     - name: 'Build Kernel (Release)'
       run: make release
     - name: 'Build Image (Release)'
-      run: make dist/panix.img
+      run: make dist
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
