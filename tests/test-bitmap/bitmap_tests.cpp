@@ -1,7 +1,7 @@
 #include <cstdio>
-#include <lib/bitmap.hpp>
+#include <lib/bitmap.cpp>
 
-#define TEST_BITMAP_BITS 128
+#define TEST_BITMAP_BITS 192
 #define NEW_BITMAP(NAME, SIZE) bitmap_t NAME[BITMAP_SIZE((SIZE))] = { 0 }
 
 typedef bool(*test_func)(void) ;
@@ -36,7 +36,7 @@ static inline bool assert_eq_b(size_t value, size_t expected)
 static inline bool assert_eq(size_t value, size_t expected)
 {
     if (value == expected) return true;
-    printf("expected %u, got %u...", expected, value);
+    printf("expected %zu, got %zu...", expected, value);
     return false;
 }
 
@@ -105,11 +105,10 @@ int main()
         TEST(test_bitmap_find_first_bit),
         TEST(test_bitmap_find_first_range)
     };
-    int idx, passed = 0, failed = 0;
+    size_t idx, passed = 0, failed = 0;
 
     printf("beginning bitmap tests...\n");
-
-    printf("BYTE_SIZE = %u\nSIZE_T_MAX_VALUE = %u\nBITS_PER_BITMAP_T = %u\n",
+    printf("BYTE_SIZE = %u\nSIZE_T_MAX_VALUE = %zu\nBITS_PER_BITMAP_T = %zu\n",
                 BYTE_SIZE, SIZE_T_MAX_VALUE, BITS_PER_BITMAP_T);
 
     for (idx = 0; idx < sizeof(tests) / sizeof(test_t); idx++) {
@@ -124,8 +123,8 @@ int main()
         }
     }
 
-    printf("%d tests ran, %d passed, %d failed\n", idx, passed, failed);
-
+    printf("%zu tests ran, %zu passed, %zu failed\n", idx, passed, failed);
     printf("finished bitmap tests\n");
+    return 0;
 }
 

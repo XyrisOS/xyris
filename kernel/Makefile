@@ -14,13 +14,7 @@
 # *****************************
 
 # Directories & files
-BUILD   = ../obj
-KERNEL  = kernel
-SYMBOLS = $(KERNEL).sym
-PRODUCT = ../dist
-LIBRARY = ../libs
-SYSROOT	= ../sysroot
-INCLUDE = $(SYSROOT)/usr/include
+INCLUDE  = $(SYSROOT_DIR)/usr/include
 
 # The `| sed "s|^\./||"` command is included to remove the leading
 # ./ from all of the paths so that the objects are generated
@@ -37,20 +31,29 @@ C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h" | sed "s|^\./||")
 CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp" | sed "s|^\./||")
 HEADERS  = $(CPP_HDR) $(C_HDR)
 #Libraries
-LIBS_A   = $(shell find $(LIBRARY) -type f -name "*.a")
+LIBS_A   = $(shell find $(LIBRARY_DIR) -type f -name "*.a" -printf "%f\n")
 LIBS     = $(addprefix -l:, $(LIBS_A))
 
 # *******************
 # * Toolchain Flags *
 # *******************
 
-CPPFLAGS +=               \
-	-I ${INCLUDE}/kernel/ \
-	-I ${INCLUDE}/boot/   \
-	-I ../thirdparty/
+CPPFLAGS +=                \
+	-I ${INCLUDE}/kernel/  \
+	-I ${INCLUDE}/boot/    \
+	-I $(THIRDPARTY_DIR)
+
+# Add compiler analysis to the kernel compilation
+# Added here instead of in the root-level makefile
+# since this option isn't recognized by Clang, which
+# may be the host's compiler, thus making unit tests
+# not compiler properly.
+CXXFLAGS +=                \
+	-fanalyzer             \
 
 LDFLAGS +=                 \
 	-T arch/i386/linker.ld \
+	-L $(LIBRARY_DIR)/**   \
 	$(LIBS)                \
 
 # *************************
@@ -60,16 +63,16 @@ LDFLAGS +=                 \
 # All objects
 OBJ_CRTBEGIN := $(shell $(CC) -print-file-name=crtbegin.o)
 OBJ_CRTEND   := $(shell $(CC) -print-file-name=crtend.o)
-OBJ_CRTI     := $(BUILD)/arch/i386/crti.o # hard-coded for now
-OBJ_CRTN     := $(BUILD)/arch/i386/crtn.o # hard-coded for now
-OBJ_C        := $(patsubst %.c,   $(BUILD)/%.o, $(C_SRC))
-OBJ_CPP      := $(patsubst %.cpp, $(BUILD)/%.o, $(CPP_SRC))
-OBJ_ASM_ALL  := $(patsubst %.s,   $(BUILD)/%.o, $(ATT_SRC)) \
-                $(patsubst %.S,   $(BUILD)/%.o, $(NASM_SRC))
+OBJ_CRTI     := $(BUILD_DIR)/arch/i386/crti.o # hard-coded for now
+OBJ_CRTN     := $(BUILD_DIR)/arch/i386/crtn.o # hard-coded for now
+OBJ_C        := $(patsubst %.c,   $(BUILD_DIR)/%.o, $(C_SRC))
+OBJ_CPP      := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(CPP_SRC))
+OBJ_ASM_ALL  := $(patsubst %.s,   $(BUILD_DIR)/%.o, $(ATT_SRC)) \
+                $(patsubst %.S,   $(BUILD_DIR)/%.o, $(NASM_SRC))
 OBJ_ASM      := $(filter-out $(OBJ_CRTI) $(OBJ_CRTN),$(OBJ_ASM_ALL))
 OBJ          := $(OBJ_CRTI) $(OBJ_CRTBEGIN) $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM) $(OBJ_CRTEND) $(OBJ_CRTN)
 # Object directories, mirroring source
-OBJ_DIRS = $(addprefix $(BUILD), $(shell find . -type d | sed "s|^\.||"))
+OBJ_DIRS = $(addprefix $(BUILD_DIR), $(shell find . -type d | sed "s|^\.||"))
 # Create object file directories
 OBJ_DIRS_MAKE := mkdir -p $(OBJ_DIRS)
 # Dependency files
@@ -80,30 +83,30 @@ ALLFILES = $(ATT_SRC) $(NASM_SRC) $(C_SRC) $(CPP_SRC) $(HEADERS)
 -include $(DEP)
 
 # C source -> object
-$(BUILD)/%.o: %.c $(HEADERS)
+$(BUILD_DIR)/%.o: %.c $(HEADERS)
 	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$@\n"
+	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(CWARNINGS) -std=c17 -MMD -c -o $@ $<
 # C++ source -> object
-$(BUILD)/%.o: %.cpp $(HEADERS)
+$(BUILD_DIR)/%.o: %.cpp $(HEADERS)
 	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$@\n"
-	@$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -MMD -c -o $@ $<
+	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$(shell basename $@)\n"
+	@$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -std=c++17 -MMD -c -o $@ $<
 # GAS assembly -> object
-$(BUILD)/%.o: %.s
+$(BUILD_DIR)/%.o: %.s
 	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(AS)$(COLOR_NONE)\t$@\n"
+	@printf "$(COLOR_COM)(AS)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(AS) $(ASFLAGS) -o $@ $<
 # NASM assembly -> object
-$(BUILD)/%.o: %.S
+$(BUILD_DIR)/%.o: %.S
 	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$@\n"
+	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(NASM) -f elf32 -o $@ $<
 # Kernel object
-$(KERNEL): $(PRODUCT)/$(KERNEL)
-$(PRODUCT)/$(KERNEL): $(OBJ)
-	@mkdir -p $(PRODUCT)
-	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$@\n"
+$(KERNEL): $(PRODUCTS_DIR)/$(KERNEL)
+$(PRODUCTS_DIR)/$(KERNEL): $(OBJ)
+	@mkdir -p $(PRODUCTS_DIR)
+	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(CXX) -o $@ $(OBJ) $(LDFLAGS)
-	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$@\n"
-	@$(OBJCP) --only-keep-debug $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS)
+	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$(shell basename $@)\n"
+	@$(OBJCP) --only-keep-debug $(PRODUCTS_DIR)/$(KERNEL) $(PRODUCTS_DIR)/$(SYMBOLS)

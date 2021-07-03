@@ -16,19 +16,19 @@ export PROJ_NAME = panix
 export MAKEFLAGS   += --no-print-directory
 # Panix Version
 export GIT_COMMIT := "$(shell git describe --abbrev=8 --dirty --always --tags)"
-export VER_MAJOR := "0"
-export VER_MINOR := "4"
-export VER_PATCH := "0"
-export VER_NAME := "Phoenix"
+export VER_MAJOR  := "0"
+export VER_MINOR  := "4"
+export VER_PATCH  := "0"
+export VER_NAME   := "Phoenix"
 
 # ******************************
 # * Compiler Output Formatting *
 # ******************************
 
-export COLOR_COM  = \033[0;34m
-export COLOR_OK   = \033[0;32m
-export COLOR_INFO = \033[0;93m
-export COLOR_NONE = \033[m
+export COLOR_COM  := \033[0;34m
+export COLOR_OK   := \033[0;32m
+export COLOR_INFO := \033[0;93m
+export COLOR_NONE := \033[m
 
 # *******************
 # * i686 Toolchains *
@@ -50,20 +50,22 @@ export MKGRUB  := $(shell command -v grub-mkrescue)
 # *****************************
 
 # Directories & files
-BUILD   = obj
-LIBRARY = libs
-KERNEL  = kernel
-LIMINE  = ./thirdparty/limine
-ISOIMG  = $(PROJ_NAME).iso
-IMGIMG  = $(PROJ_NAME).img
-SYMBOLS = $(KERNEL).sym
-PRODUCT = dist
-TESTS   = tests
-IMGTYPE ?= img
-RUNIMG  := $(PROJ_NAME).$(IMGTYPE)
+export KERNEL         := kernel
+export ROOT           := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+export BUILD_DIR      := $(ROOT)/obj
+export LIBRARY_DIR    := $(ROOT)/libs
+export TESTS_DIR      := $(ROOT)/tests
+export PRODUCTS_DIR   := $(ROOT)/dist
+export SYSROOT_DIR    := $(ROOT)/sysroot
+export THIRDPARTY_DIR := $(ROOT)/thirdparty
+export ISOIMG         := $(PROJ_NAME).iso
+export IMGIMG         := $(PROJ_NAME).img
+export SYMBOLS        := $(KERNEL).sym
+export IMGTYPE        ?= img
+export RUNIMG         := $(PROJ_NAME).$(IMGTYPE)
 
 # Libraries
-export LIB_DIRS := $(shell find $(LIBRARY) -mindepth 1 -maxdepth 1 -type d)
+export LIB_DIRS := $(shell find $(LIBRARY_DIR) -mindepth 1 -maxdepth 1 -type d)
 
 # *******************
 # * Toolchain Flags *
@@ -110,12 +112,10 @@ export CFLAGS :=            \
 	${WARNINGS}
 # C++ flags
 export CXXFLAGS :=          \
-	-fanalyzer              \
 	-fpermissive            \
 	-fno-rtti               \
 	-fno-exceptions         \
 	-fno-use-cxa-atexit     \
-	-std=c++17              \
 	${PANIX_CXXFLAGS}       \
 # C / C++ pre-processor flags
 export CPPFLAGS :=                \
@@ -163,49 +163,44 @@ $(KERNEL):
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
 
-$(PRODUCT)/$(KERNEL): $(KERNEL)
+$(PRODUCTS_DIR)/$(KERNEL): $(KERNEL)
 
 # *********************
 # * Kernel Unit Tests *
 # *********************
 
-.PHONY: $(TESTS)
-$(TESTS):
-	@$(MAKE) -C $(TESTS)
-
-.PHONY: test
-test:
-	@$(MAKE) -C $(TESTS) test
+.PHONY: unit-test
+unit-test:
+	@$(MAKE) -C $(TESTS_DIR)
 
 # ********************************
 # * Kernel Distribution Creation *
 # ********************************
 
 # Create bootable ISO
-$(PRODUCT)/$(ISOIMG): $(PRODUCT)/$(KERNEL)
+$(PRODUCTS_DIR)/$(ISOIMG): $(PRODUCTS_DIR)/$(KERNEL)
 	@mkdir -p iso/boot/grub
-	@cp $(PRODUCT)/$(KERNEL) iso/boot/
+	@cp $(PRODUCTS_DIR)/$(KERNEL) iso/boot/
 	@cp boot/grub.cfg iso/boot/grub/grub.cfg
 	@$(MKGRUB) -o $@ iso
 	@rm -rf iso
 
 # Create a bootable IMG
-$(PRODUCT)/$(IMGIMG): $(PRODUCT)/$(KERNEL) $(LIMINE)/limine-install-linux-x86_32 $(LIMINE)/limine.sys
-	@printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
-	@rm -f $@
-	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
-	@parted -s $@ mklabel msdos
-	@parted -s $@ mkpart primary 1 100%
-	@parted -s $@ set 1 boot on
-	@echfs-utils -m -p0 $@ quick-format 32768
-	@echfs-utils -m -p0 $@ import boot/limine.cfg limine.cfg
-	@echfs-utils -m -p0 $@ import $(LIMINE)/limine.sys limine.sys
-	@echfs-utils -m -p0 $@ import $< kernel
-	@$(LIMINE)/limine-install-linux-x86_32 $@
+$(PRODUCTS_DIR)/$(IMGIMG): $(PRODUCTS_DIR)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
+	printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
+	rm -f $@
+	dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
+	parted -s $@ mklabel msdos
+	parted -s $@ mkpart primary 1 100%
+	parted -s $@ set 1 boot on
+	echfs-utils -m -p0 $@ quick-format 32768
+	echfs-utils -m -p0 $@ import boot/limine.cfg limine.cfg
+	echfs-utils -m -p0 $@ import $(THIRDPARTY_DIR)/limine/limine.sys limine.sys
+	echfs-utils -m -p0 $@ import $< kernel
+	$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
 
 # Create a bootable image (either img or iso)
-.PHONY: $(PRODUCT)
-$(PRODUCT): $(PRODUCT)/$(RUNIMG)
+dist: $(PRODUCTS_DIR)/$(RUNIMG)
 
 # *************************
 # * Virtual Machine Flags *
@@ -220,7 +215,7 @@ QEMU_FLAGS =        \
 QEMU_ARCH = i386
 # Virtualbox flags
 VM_NAME = $(PROJ_NAME)-box
-VBOX_VM_FILE = $(PRODUCT)/$(VM_NAME)/$(VM_NAME).vbox
+VBOX_VM_FILE = $(PRODUCTS_DIR)/$(VM_NAME)/$(VM_NAME).vbox
 # VM executable locations
 VBOX = $(shell command -v VBoxManage)
 QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
@@ -231,14 +226,14 @@ QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: $(PRODUCT)/$(RUNIMG)
+run: $(PRODUCTS_DIR)/$(RUNIMG)
 	$(QEMU)                           \
 	-drive file=$<,index=0,media=disk,format=raw \
 	$(QEMU_FLAGS)
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: run-debug
-run-debug: $(PRODUCT)/$(RUNIMG)
+run-debug: $(PRODUCTS_DIR)/$(RUNIMG)
 	# Start QEMU with debugger
 	($(QEMU)   \
 	-S -s      \
@@ -249,15 +244,15 @@ run-debug: $(PRODUCT)/$(RUNIMG)
 
 # Create Virtualbox VM
 .PHONY: vbox-create
-vbox-create: $(PRODUCT)/$(ISOIMG)
-	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCT)
+vbox-create: $(PRODUCTS_DIR)/$(ISOIMG)
+	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCTS_DIR)
 	$(VBOX) modifyvm $(VM_NAME)                 \
 	--memory 256 --ioapic on --cpus 2 --vram 16 \
 	--graphicscontroller vboxvga --boot1 disk   \
 	--audiocontroller sb16 --uart1 0x3f8 4      \
 	--uartmode1 file $(shell pwd)/com1.txt
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCT)/$(ISOIMG)
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCTS_DIR)/$(ISOIMG)
 
 .PHONY: vbox-create
 vbox: vbox-create
@@ -284,9 +279,9 @@ todo:
 .PHONY: clean
 clean:
 	@printf "$(COLOR_OK)Cleaning objects...$(COLOR_NONE)\n"
-	$(RM) -r $(PRODUCT)/$(KERNEL) $(PRODUCT)/$(SYMBOLS) $(PRODUCT)/$(ISOIMG)
+	$(RM) -r $(PRODUCTS_DIR)/$(KERNEL) $(PRODUCTS_DIR)/$(SYMBOLS) $(PRODUCTS_DIR)/$(ISOIMG)
 	@printf "$(COLOR_OK)Cleaning directories...$(COLOR_NONE)\n"
-	$(RM) -r $(BUILD)
+	$(RM) -r $(BUILD_DIR)
 	@printf "$(COLOR_OK)Cleaning libraries...$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do \
 	    printf " -   " &&       \

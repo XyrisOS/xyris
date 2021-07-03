@@ -15,8 +15,8 @@ size_t bitmap_find_first_range_clear(bitmap_t *bitmap, size_t size, size_t count
         check = check_lo | check_hi;
 #ifdef TESTING
         size_t masked = check & mask;
-        printf("i = %d, idx = 0x%08x, ofst = 0x%08x, check_lo = 0x%08x, "
-               "check_hi = 0x%08x, check = 0x%08x, masked = 0x%08x\n",
+        printf("i = %zd, idx = 0x%08zx, ofst = 0x%08zx, check_lo = 0x%08zx, "
+               "check_hi = 0x%08zx, check = 0x%08zx, masked = 0x%08zx\n",
                 i, idx, ofst, check_lo, check_hi, check, masked);
 #endif
         if (!(check & mask)) return i;
