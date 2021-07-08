@@ -39,3 +39,7 @@ com1.txt
 
 # Doxygen output
 docs/**
+
+# Unit testing
+tests/report.xml
+thirdparty/catch2
