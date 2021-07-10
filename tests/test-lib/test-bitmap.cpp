@@ -1,0 +1,20 @@
+/**
+ * @file test-bitmap.cpp
+ * @author Keeton Feavel (keetonfeavel@cedarville.edu)
+ * @brief Bitmap library unit tests
+ * @version 0.1
+ * @date 2021-07-09
+ * 
+ * @copyright Copyright the Panix Contributors (c) 2021
+ * 
+ */
+#include <catch2/catch.hpp>
+#include <lib/bitmap.cpp>
+
+#define TEST_BITMAP_SIZE 4096 / (sizeof(size_t) * CHAR_BIT)
+static size_t bitmapArray[TEST_BITMAP_SIZE];
+
+TEST_CASE( "Set", "[bitmap]" ) {
+    Bitmap map = Bitmap(bitmapArray, sizeof(bitmapArray));
+    (void)map;
+}
