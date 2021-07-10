@@ -4,7 +4,11 @@
 # |  __/ (_| | | | | |>  <    | |  __/\__ \ |_\__ \.
 # |_|   \__,_|_| |_|_/_/\_\   |_|\___||___/\__|___/
 #
-# Compiles the kernel source code located in the kernel folder.
+# Compiles the unit test source code located in the tests folder.
+# TODO: This makefile does not properly account for main.cpp not
+#       being located in a subdirectory. Same thing happens with
+#       the kernel makefile, but it doesn't seem as affected for
+#       some reason. We should figure out how to fix that.
 
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
@@ -17,63 +21,88 @@
 OUTPUT      := unit-test
 INCLUDE     := $(SYSROOT_DIR)/usr/include
 KERNEL_SRC  := $(ROOT)/$(KERNEL)
+BUILD_DIR   := $(BUILD_DIR)/$(OUTPUT)
+CATCH2_DIR  := $(THIRDPARTY_DIR)/catch2
+CATCH2_HDR  := $(CATCH2_DIR)/catch.hpp
+CATCH2_URL  := "https://api.github.com/repos/catchorg/Catch2/releases/latest"
 
 # Use the host's copy of GCC instead of the i686 cross compiler
 # since it does not have a standard library (if compiled properly)
 CXX := $(shell command -v gcc)
 
-# C / C++
-C_SRC    = $(shell find . -type f -name "*.c" | sed "s|^\./||")
-CPP_SRC  = $(shell find . -type f -name "*.cpp" | sed "s|^\./||")
-# Headers
-C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h" | sed "s|^\./||")
-CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp" | sed "s|^\./||")
-HEADERS  = $(CPP_HDR) $(C_HDR)
-
 # *******************
 # * Toolchain Flags *
 # *******************
 
-CXXFLAGS =                   \
-	-Wno-write-strings
+CXXFLAGS =                  \
+	-fprofile-arcs          \
+	-ftest-coverage
 
-LDFLAGS =                    \
-	-lgcc
+# For some reason we have to specifically link
+# against libstdc++ and libm. Not sure why, but
+# it works so I won't ask questions.
+LDFLAGS =                   \
+	--coverage              \
+	-lstdc++                \
+	-lgcov                  \
+	-lgcc                   \
+	-lm
 
-CPPFLAGS +=                  \
-	-I$(KERNEL_SRC)          \
-	-I$(INCLUDE)/kernel/     \
+CPPFLAGS +=                 \
+	-I$(ROOT)/tests/        \
+	-I$(THIRDPARTY_DIR)     \
+	-I$(KERNEL_SRC)         \
+	-I$(INCLUDE)/kernel/    \
 	-DTESTING
+
+# *******************
+# * Catch2 Download *
+# *******************
+
+.PHONY: $(CATCH2_HDR)
+$(CATCH2_HDR):
+# Check if header has been downloaded
+ifeq (,$(wildcard $(CATCH2_HDR)))
+# Make directory, cd into it, and download
+	@printf "$(COLOR_COM)(GET)$(COLOR_NONE)\t$(CATCH2_HDR)\n"
+	@mkdir -p $(CATCH2_DIR)
+	@curl -s $(CATCH2_URL) \
+	| grep "catch.hpp" \
+	| cut -d : -f 2,3 \
+	| tr -d \" \
+	| wget -P $(CATCH2_DIR) -qi - \
+	|| true
+endif
 
 # *************************
 # * Kernel Source Objects *
 # *************************
 
+# Source
+CPP_SRC  = $(shell find . -type f -name "*.cpp" | sed "s|^\./||")
+# Headers
+CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp" | sed "s|^\./||")
+HEADERS  = $(CPP_HDR) $(CATCH2_HDR)
+
 # All objects
-OBJ_C        := $(patsubst %.c,   $(BUILD_DIR)/%.o, $(C_SRC))
 OBJ_CPP      := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(CPP_SRC))
-OBJ          := $(OBJ_CPP) $(OBJ_C)
+OBJ          := $(OBJ_CPP)
 # Object directories, mirroring source
 OBJ_DIRS = $(addprefix $(BUILD_DIR), $(shell find . -type d | sed "s|^\.||"))
 # Create object file directories
 OBJ_DIRS_MAKE := mkdir -p $(OBJ_DIRS)
 # Dependency files
-DEP = $(OBJ_CPP:%.o=%.d) $(OBJ_C:%.o=%.d)
+DEP = $(OBJ_CPP:%.o=%.d)
 # All files (source, header, etc.)
-ALLFILES = $(C_SRC) $(CPP_SRC) $(HEADERS)
+ALLFILES = $(CPP_SRC) $(HEADERS)
 # Include all .d files
 -include $(DEP)
 
-# C source -> object
-$(BUILD_DIR)/%.o: %.c $(HEADERS)
-	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$(shell basename $@)\n"
-	@$(CC) $(CPPFLAGS) $(WARNINGS) $(CWARNINGS) -std=c17 -MMD -c -o $@ $<
 # C++ source -> object
 $(BUILD_DIR)/%.o: %.cpp $(HEADERS)
 	@$(OBJ_DIRS_MAKE)
 	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$(shell basename $@)\n"
-	@$(CXX) $(CPPFLAGS) $(WARNINGS) $(CXXFLAGS) -std=c++17 -MMD -c -o $@ $<
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(WARNINGS) -std=c++17 -MMD -c -o $@ $<
 # Compile tests and run
 $(OUTPUT): $(PRODUCTS_DIR)/$(OUTPUT)
 $(PRODUCTS_DIR)/$(OUTPUT): $(OBJ)
@@ -81,4 +110,3 @@ $(PRODUCTS_DIR)/$(OUTPUT): $(OBJ)
 	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(CXX) -o $@ $(OBJ) $(LDFLAGS)
 	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$(shell basename $@)\n"
-	@$(PRODUCTS_DIR)/$(OUTPUT)

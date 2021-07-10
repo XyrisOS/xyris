@@ -171,7 +171,10 @@ $(PRODUCTS_DIR)/$(KERNEL): $(KERNEL)
 
 .PHONY: unit-test
 unit-test:
-	@$(MAKE) -C $(TESTS_DIR)
+	@$(MAKE) -C $(TESTS_DIR) $@
+	@$(RM) -r $(BUILD_DIR)/$@
+	@$(RM) $(TESTS_DIR)/report.xml
+	@$(PRODUCTS_DIR)/$@ -r junit --out $(TESTS_DIR)/report.xml
 
 # ********************************
 # * Kernel Distribution Creation *
@@ -279,9 +282,9 @@ todo:
 .PHONY: clean
 clean:
 	@printf "$(COLOR_OK)Cleaning objects...$(COLOR_NONE)\n"
-	$(RM) -r $(PRODUCTS_DIR)/$(KERNEL) $(PRODUCTS_DIR)/$(SYMBOLS) $(PRODUCTS_DIR)/$(ISOIMG)
+	@$(RM) -r $(PRODUCTS_DIR)/$(KERNEL) $(PRODUCTS_DIR)/$(SYMBOLS) $(PRODUCTS_DIR)/$(ISOIMG)
 	@printf "$(COLOR_OK)Cleaning directories...$(COLOR_NONE)\n"
-	$(RM) -r $(BUILD_DIR)
+	@$(RM) -r $(BUILD_DIR)
 	@printf "$(COLOR_OK)Cleaning libraries...$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do \
 	    printf " -   " &&       \

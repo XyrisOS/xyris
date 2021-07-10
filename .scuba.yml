@@ -8,4 +8,4 @@ aliases:
     image: make -j$(nproc) dist
     img: make -j$(nproc) dist IMGTYPE=img
     iso: make -j$(nproc) dist IMGTYPE=iso
-
+    test: make -j$(nproc) unit-test
