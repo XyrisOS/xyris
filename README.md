@@ -1,7 +1,7 @@
 ![Logo](https://github.com/panix-os/panix-os.github.io/blob/master/img/logo.png?raw=true)
 
 <div style="text-align:center">
-    <a href="https://www.codefactor.io/repository/github/panix-os/panix"><img src="https://www.codefactor.io/repository/github/panix-os/panix/badge" alt="CodeFactor" /></a>
+    <a href="https://github.com/panix-os/Panix/actions/workflows/c-cpp.yml"><img alt="C/C++ CI" src="https://github.com/panix-os/Panix/actions/workflows/c-cpp.yml/badge.svg"></a>
     <a href="https://github.com/panix-os/Panix/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/panix-os/Panix"></a>
     <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/panix-os/Panix">
     <a href="https://discord.gg/FNbZMr7p9d"><img alt="Discord" src="https://img.shields.io/discord/732032083647660123"></a>
