@@ -12,6 +12,7 @@
 
 // Function attributes
 #define NORET __attribute__((noreturn))
+#define ALWAYS_INLINE __attribute__((always_inline))
 
 // Branch prediction
 #define likely(x)   __builtin_expect(!!(x), 1)

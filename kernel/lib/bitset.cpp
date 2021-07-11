@@ -12,41 +12,6 @@ Bitset::Bitset(void* buf, size_t size)
     }
 }
 
-inline size_t Bitset::Size()
-{
-    return mapSize;
-}
-
-inline size_t Bitset::TypeSize()
-{
-    return sizeof(bitmap_t) * CHAR_BIT;
-}
-
-inline size_t Bitset::Index(size_t bit)
-{
-    return bit / TypeSize();
-}
-
-inline size_t Bitset::Offset(size_t bit)
-{
-    return bit % TypeSize();
-}
-
-void Bitset::Set(size_t addr)
-{
-    map[Index(addr)] |= 1UL << Offset(addr);
-}
-
-bool Bitset::Get(size_t addr)
-{
-    return map[Index(addr)] >> Offset(addr) & 1;
-}
-
-void Bitset::Clear(size_t addr)
-{
-    map[Index(addr)] |= ~(1UL << Offset(addr));
-}
-
 size_t Bitset::FindFirstBitClear()
 {
     for (size_t i = 0; i < mapSize; i++) {
