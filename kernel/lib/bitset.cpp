@@ -1,8 +1,8 @@
-#include <lib/bitmap.hpp>
+#include <lib/bitset.hpp>
 #include <sys/panic.hpp>
 #include <stdint.h>
 
-Bitmap::Bitmap(void* buf, size_t size)
+Bitset::Bitset(void* buf, size_t size)
     : map((bitmap_t*)buf)
     , mapSize(size)
 {
@@ -12,42 +12,42 @@ Bitmap::Bitmap(void* buf, size_t size)
     }
 }
 
-inline size_t Bitmap::Size()
+inline size_t Bitset::Size()
 {
     return mapSize;
 }
 
-inline size_t Bitmap::TypeSize()
+inline size_t Bitset::TypeSize()
 {
     return sizeof(bitmap_t) * CHAR_BIT;
 }
 
-inline size_t Bitmap::Index(size_t bit)
+inline size_t Bitset::Index(size_t bit)
 {
     return bit / TypeSize();
 }
 
-inline size_t Bitmap::Offset(size_t bit)
+inline size_t Bitset::Offset(size_t bit)
 {
     return bit % TypeSize();
 }
 
-void Bitmap::Set(size_t addr)
+void Bitset::Set(size_t addr)
 {
     map[Index(addr)] |= 1UL << Offset(addr);
 }
 
-bool Bitmap::Get(size_t addr)
+bool Bitset::Get(size_t addr)
 {
     return map[Index(addr)] >> Offset(addr) & 1;
 }
 
-void Bitmap::Clear(size_t addr)
+void Bitset::Clear(size_t addr)
 {
     map[Index(addr)] |= ~(1UL << Offset(addr));
 }
 
-size_t Bitmap::FindFirstBitClear()
+size_t Bitset::FindFirstBitClear()
 {
     for (size_t i = 0; i < mapSize; i++) {
         if (!((map[Index(i)] >> Offset(i)) & 1)) return i;
@@ -55,7 +55,7 @@ size_t Bitmap::FindFirstBitClear()
     return SIZE_MAX;
 }
 
-size_t Bitmap::FindFirstRangeClear(size_t count)
+size_t Bitset::FindFirstRangeClear(size_t count)
 {
     size_t check_lo, check_hi, check, idx, ofst;
     size_t mask = ((size_t)1 << count) - (size_t)1;

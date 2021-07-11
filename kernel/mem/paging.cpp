@@ -12,7 +12,7 @@
 
 #include <sys/panic.hpp>
 #include <mem/paging.hpp>
-#include <lib/bitmap.hpp>
+#include <lib/bitset.hpp>
 #include <lib/stdio.hpp>
 #include <lib/mutex.hpp>
 #include <dev/serial/rs232.hpp>
@@ -28,8 +28,8 @@ static mutex_t mutex_paging("paging");
 /* one bit for every page */
 static size_t mem_map[MEM_BITMAP_SIZE] = { 0 };
 static size_t page_map[MEM_BITMAP_SIZE] = { 0 };
-static Bitmap mapped_mem = Bitmap(mem_map, MEM_BITMAP_SIZE);
-static Bitmap mapped_pages = Bitmap(page_map, MEM_BITMAP_SIZE);
+static Bitset mapped_mem = Bitset(mem_map, MEM_BITMAP_SIZE);
+static Bitset mapped_pages = Bitset(page_map, MEM_BITMAP_SIZE);
 
 static uint32_t         page_dir_addr;
 static page_table_t*    page_dir_virt[PAGE_ENTRIES];

@@ -10,7 +10,7 @@
  */
 #include <stddef.h>
 
-#include <lib/bitmap.hpp>
+#include <lib/bitset.hpp>
 #include <lib/stdio.hpp>
 #include <sys/tasks.hpp>
 #include <apps/primes.hpp>
@@ -22,7 +22,7 @@ namespace apps {
 #define PRIME_MAX (PRIME_MAX_SQRT * PRIME_MAX_SQRT)
 #define PRIMES_SIZE (PRIME_MAX / (sizeof(size_t) * CHAR_BIT))
 static size_t primes[PRIMES_SIZE];
-static Bitmap map = Bitmap(primes, sizeof(primes));
+static Bitset map = Bitset(primes, sizeof(primes));
 
 static size_t prime_current;
 
