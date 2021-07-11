@@ -10,7 +10,7 @@
  */
 #include <stddef.h>
 
-#include <lib/bitmap.hpp>
+#include <lib/bitset.hpp>
 #include <lib/stdio.hpp>
 #include <sys/tasks.hpp>
 #include <apps/primes.hpp>
@@ -20,20 +20,21 @@ namespace apps {
 // this value can be tweaked based on memory constraints
 #define PRIME_MAX_SQRT 4000
 #define PRIME_MAX (PRIME_MAX_SQRT * PRIME_MAX_SQRT)
-#define PRIMES_SIZE BITMAP_SIZE(PRIME_MAX)
-static bitmap_t primes[PRIMES_SIZE];
+#define PRIMES_SIZE (PRIME_MAX / (sizeof(size_t) * CHAR_BIT))
+static size_t primes[PRIMES_SIZE];
+static Bitset map = Bitset(primes, sizeof(primes));
 
 static size_t prime_current;
 
 void find_primes(void)
 {
     for (size_t i = 0; i < PRIMES_SIZE; i++)
-        primes[i] = SIZE_T_MAX_VALUE;
+        primes[i] = SIZE_MAX;
 
     for (prime_current = 2; prime_current < PRIME_MAX_SQRT; prime_current++) {
-        if (!bitmap_get_bit(primes, prime_current)) continue;
+        if (!map.Get(prime_current)) continue;
         for (size_t j = prime_current * prime_current; j < PRIME_MAX; j += prime_current) {
-            bitmap_clear_bit(primes, j);
+            map.Clear(j);
         }
     }
 }
@@ -48,7 +49,7 @@ void show_primes(void)
 
     size_t count = 0;
     for (size_t i = 2; i < PRIME_MAX; i++) {
-        count += bitmap_get_bit(primes, i);
+        count += map.Get(i);
     }
     kprintf("\e[s\e[23;0fFound %u primes between 2 and %u.\e[u", count, PRIME_MAX);
 }

@@ -12,7 +12,7 @@
 
 #include <sys/panic.hpp>
 #include <mem/paging.hpp>
-#include <lib/bitmap.hpp>
+#include <lib/bitset.hpp>
 #include <lib/stdio.hpp>
 #include <lib/mutex.hpp>
 #include <dev/serial/rs232.hpp>
@@ -23,14 +23,16 @@
 static uint32_t machine_page_count;
 static mutex_t mutex_paging("paging");
 
-#define MEM_BITMAP_SIZE BITMAP_SIZE(ADDRESS_SPACE_SIZE / PAGE_SIZE)
+#define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
 
 /* one bit for every page */
-static bitmap_t mapped_mem[MEM_BITMAP_SIZE] = { 0 };
-static bitmap_t mapped_pages[MEM_BITMAP_SIZE] = { 0 };
+static size_t mem_map[MEM_BITMAP_SIZE] = { 0 };
+static size_t page_map[MEM_BITMAP_SIZE] = { 0 };
+static Bitset mapped_mem = Bitset(mem_map, MEM_BITMAP_SIZE);
+static Bitset mapped_pages = Bitset(page_map, MEM_BITMAP_SIZE);
 
-static uint32_t                  page_dir_addr;
-static page_table_t *         page_dir_virt[PAGE_ENTRIES];
+static uint32_t         page_dir_addr;
+static page_table_t*    page_dir_virt[PAGE_ENTRIES];
 
 /* both of these must be page aligned for anything to work right at all */
 static page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((section (".page_tables,\"aw\", @nobits#")));
@@ -101,7 +103,7 @@ static void paging_init_dir() {
     // recursively map the last page table to the page directory
     map_kernel_page_table(PAGE_ENTRIES - 1, (page_table_t*)&page_dir_phys[0]);
     for (uint32_t i = PAGE_ENTRIES * (PAGE_ENTRIES - 1); i < PAGE_ENTRIES * PAGE_ENTRIES; i++) {
-        bitmap_set_bit(mapped_pages, i);
+        mapped_pages.Set(i);
     }
     // store the physical address of the page directory for quick access
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
@@ -124,6 +126,7 @@ void map_kernel_page(virtual_address_t vaddr, uint32_t paddr) {
             // this page was already mapped the same way
             return;
         }
+/*
 #ifdef DEBUG
         size_t bit_idx = INDEX_FROM_BIT(vaddr.val >> 12);
 #endif
@@ -136,6 +139,7 @@ void map_kernel_page(virtual_address_t vaddr, uint32_t paddr) {
             entry->cache_disable, entry->accessed, entry->dirty, entry->page_att_table,
             entry->global, entry->frame, mapped_pages[bit_idx - 1],
             mapped_pages[bit_idx], mapped_pages[bit_idx + 1]);
+*/
         PANIC("Attempted to map already mapped page.\n");
     }
     // Set the page information
@@ -153,8 +157,8 @@ void map_kernel_page(virtual_address_t vaddr, uint32_t paddr) {
         .frame = paddr >> 12    // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
-    bitmap_set_bit(mapped_mem, paddr >> 12);
-    bitmap_set_bit(mapped_pages, vaddr.val >> 12);
+    mapped_mem.Set(paddr >> 12);
+    mapped_pages.Set(vaddr.val >> 12);
 }
 
 static void paging_map_early_mem() {
@@ -206,11 +210,11 @@ static inline void paging_disable() {
  * @param seq the number of sequential pages to get
  */
 static uint32_t find_next_free_virt_addr(int seq) {
-    return bitmap_find_first_range_clear(mapped_pages, ADDRESS_SPACE_SIZE / PAGE_SIZE, seq);
+    return mapped_pages.FindFirstRangeClear(seq);
 }
 
 static uint32_t find_next_free_phys_page() {
-    return bitmap_find_first_bit_clear(mapped_mem, ADDRESS_SPACE_SIZE / PAGE_SIZE);
+    return mapped_mem.FindFirstBitClear();
 }
 
 /**
@@ -220,10 +224,10 @@ void* get_new_page(uint32_t size) {
     mutex_lock(&mutex_paging);
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t free_idx = find_next_free_virt_addr(page_count);
-    if (free_idx == SIZE_T_MAX_VALUE) return NULL;
+    if (free_idx == SIZE_MAX) return NULL;
     for (uint32_t i = free_idx; i < free_idx + page_count; i++) {
         uint32_t phys_page_idx = find_next_free_phys_page();
-        if (phys_page_idx == SIZE_T_MAX_VALUE) return NULL;
+        if (phys_page_idx == SIZE_MAX) return NULL;
         map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
     }
     mutex_unlock(&mutex_paging);
@@ -236,14 +240,14 @@ void free_page(void *page, uint32_t size) {
     uint32_t page_index = (uint32_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
         // TODO: need locking here (maybe make a paging lock)
-        bitmap_clear_bit(mapped_pages, i);
+        mapped_pages.Clear(i);
         // how much more UN-readable can we make this?? (pls, i need to know...)
         //*(uint32_t*)((uint32_t)page_tables + i * 4) = 0;
         // this is the same as the line above
         page_table_entry_t *pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
         // the frame field is actually the page frame's index
         // basically it's frame 0, 1...(2^21-1)
-        bitmap_clear_bit(mapped_mem, pte->frame);
+        mapped_mem.Clear(pte->frame);
         // zero it out to unmap it
         *pte = { /* Zero */ };
         // clear that tlb
@@ -255,7 +259,7 @@ void free_page(void *page, uint32_t size) {
 bool page_is_present(size_t addr) {
     // Convert the address into an index and
     // check whether the page is in the bitmap
-    return bitmap_get_bit(mapped_pages, (addr >> 12));
+    return mapped_pages.Get(addr >> 12);
 }
 
 // TODO: maybe enforce access control here in the future
