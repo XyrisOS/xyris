@@ -118,21 +118,38 @@ private:
 template <typename T>
 class LinkedList {
 public:
+    LinkedList()
+    : head(NULL)
+    , tail(head)
+    , count(0)
+    {
+        // Default constructor
+    }
     LinkedList(T val)
     {
-        head = LinkedListNode<T>(val);
+        LinkedList();
+        PushFront(val);
+    }
+    ~LinkedList()
+    {
+        LinkedListNode<T>* back;
+        while ((back = PopBack()) != NULL) {
+            delete back;
+        }
     }
     void PushFront(T val)
     {
-        LinkedListNode<T> next = head;
-        LinkedListNode<T> newHead = new LinkedListNode<T>(val, next, NULL);
+        LinkedListNode<T>* next = head;
+        LinkedListNode<T>* newHead = new LinkedListNode<T>(val, next, NULL);
         head = newHead;
         ++count;
     }
     void PushBack(T val)
     {
         LinkedListNode<T>* newTail = new LinkedListNode<T>(val, NULL, tail);
-        tail->SetNext(newTail);
+        if (tail) {
+            tail->SetNext(newTail);
+        }
         tail = newTail;
         ++count;
     }
@@ -162,26 +179,34 @@ public:
     }
     LinkedListNode<T>* PopFront()
     {
+        if (!head) return NULL;
         // Get pointer to the next in line
         LinkedListNode<T>* newHead = head->Next();
         // Copy the current head
         LinkedListNode<T>* currHead = head;
         // Reassign the pointer to the next in line
         head = newHead;
-        newHead->SetPrevious(NULL);
+        // If we're the head and tail, there is no prev
+        if (head) {
+            newHead->SetPrevious(NULL);
+        }
         // Return copied (old) head
         --count;
         return currHead;
     }
     LinkedListNode<T>* PopBack()
     {
+        if (!tail) return NULL;
         // Get pointer to the next in line
         LinkedListNode<T>* newTail = tail->Previous();
         // Copy the current head
-        LinkedListNode<T> currTail = tail;
+        LinkedListNode<T>* currTail = tail;
         // Reassign the pointer to the next in line
         tail = newTail;
-        tail->SetNext(NULL);
+        // If we're the head and tail, there is no next
+        if (tail) {
+            tail->SetNext(NULL);
+        }
         // Return copied (old) head
         --count;
         return currTail;
@@ -217,7 +242,7 @@ public:
      *
      * @return LinkedListNode* Pointer to head node
      */
-    LinkedListNode<T>* GetHead()
+    LinkedListNode<T>* Head()
     {
         return head;
     }
@@ -226,7 +251,7 @@ public:
      *
      * @return LinkedListNode* Pointer to tail node
      */
-    LinkedListNode<T>* GetTail()
+    LinkedListNode<T>* Tail()
     {
         return tail;
     }
@@ -235,7 +260,7 @@ public:
      *
      * @return size_t Number of items in the linked list
      */
-    size_t GetCount()
+    size_t Count()
     {
         return count;
     }
