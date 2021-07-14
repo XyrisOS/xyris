@@ -12,12 +12,12 @@
 // Linked list is header-only template
 #include <lib/LinkedList.hpp>
 
-TEST_CASE("linked list can insert", "[linkedlist]") {
+TEST_CASE("linked list operations", "[linkedlist]") {
     LinkedList::LinkedList<uint8_t> list;
     // Ensure the constructor sets the head properly
     SECTION("constructor") {
-        list = LinkedList::LinkedList<uint8_t>(0);
-        auto node = list.Head();
+        LinkedList::LinkedList<uint8_t> list2 = LinkedList::LinkedList<uint8_t>(0);
+        auto node = list2.Head();
         REQUIRE(*(node->Data()) == 0);
     }
     // Ensure the linked list insert data properly
@@ -25,7 +25,7 @@ TEST_CASE("linked list can insert", "[linkedlist]") {
         for (int i = 0; i < UINT8_MAX; i++) {
             list.InsertBack(i);
         }
-        // 0 -> 255 == 256 entries
+        // 0 -> 254 == 255 entries
         REQUIRE(list.Count() == UINT8_MAX);
     }
     // Ensure the linked list can remove data properly
@@ -34,12 +34,13 @@ TEST_CASE("linked list can insert", "[linkedlist]") {
         for (int i = 0; i < UINT8_MAX; i++) {
             list.InsertBack(i);
         }
-        // 0 -> 255 == 256 entries
+        // 0 -> 254 == 255 entries
         REQUIRE(list.Count() == UINT8_MAX);
         // Remove all data
         for (int i = UINT8_MAX; i > 0; i--) {
             auto node = list.RemoveBack();
             REQUIRE(*(node->Data()) == (i - 1));
+            delete node;
         }
         REQUIRE(list.Count() == 0);
     }
@@ -49,12 +50,13 @@ TEST_CASE("linked list can insert", "[linkedlist]") {
         for (int i = 0; i < UINT8_MAX; i++) {
             list.InsertBack(i);
         }
-        // 0 -> 255 == 256 entries
+        // 0 -> 254 == 255 entries
         REQUIRE(list.Count() == UINT8_MAX);
         // Remove all data
         for (int i = 0; i < UINT8_MAX; i++) {
             auto node = list.RemoveFront();
             REQUIRE(*(node->Data()) == i);
+            delete node;
         }
         REQUIRE(list.Count() == 0);
     }

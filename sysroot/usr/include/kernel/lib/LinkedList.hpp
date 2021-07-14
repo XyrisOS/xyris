@@ -119,42 +119,44 @@ class LinkedList {
 public:
     LinkedList()
         : head(NULL)
-        , tail(head)
+        , tail(NULL)
         , count(0)
     {
         // Default constructor
     }
     LinkedList(T val)
+        : LinkedList()
     {
-        LinkedList();
         InsertFront(val);
     }
     ~LinkedList()
     {
         LinkedListNode<T>* back;
-        while ((back = RemoveBack()) != NULL) {
+        while ((back = RemoveBack())) {
             delete back;
         }
     }
     void InsertFront(T val)
     {
         if (head) {
-            printf("Inserting before head\n");
             InsertBefore(head, val);
         } else {
-            printf("Inserting new head\n");
             head = new LinkedListNode<T>(val);
+            ++count;
         }
+        if (!tail)
+            tail = head;
     }
     void InsertBack(T val)
     {
         if (tail) {
-            printf("Inserting after tail\n");
             InsertAfter(tail, val);
         } else {
-            printf("Inserting new tail\n");
             tail = new LinkedListNode<T>(val);
+            ++count;
         }
+        if (!head)
+            head = tail;
     }
     void InsertBefore(LinkedListNode<T>* next, T val)
     {
@@ -190,6 +192,8 @@ public:
     {
         if (del == head)
             head = del->Next();
+        if (del == tail)
+            tail = del->Previous();
         if (del->Next())
             del->Next()->SetPrevious(del->Previous());
         if (del->Previous())
