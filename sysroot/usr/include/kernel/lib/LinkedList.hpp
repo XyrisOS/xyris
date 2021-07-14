@@ -9,12 +9,12 @@
  */
 #pragma once
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 namespace LinkedList {
 
-template <typename T>
+template<typename T>
 class LinkedListNode {
 public:
     /**
@@ -22,9 +22,9 @@ public:
      *
      */
     LinkedListNode()
-    : data(0)
-    , next(NULL)
-    , prev(NULL)
+        : data(0)
+        , next(NULL)
+        , prev(NULL)
     {
         // Default constructor
     }
@@ -34,9 +34,9 @@ public:
      * @param v Value to be stored
      */
     LinkedListNode(T v)
-    : data(v)
-    , next(NULL)
-    , prev(NULL)
+        : data(v)
+        , next(NULL)
+        , prev(NULL)
     {
         // Value constructor
     }
@@ -48,9 +48,9 @@ public:
      * @param v Value to be stored
      */
     LinkedListNode(T v, LinkedListNode* n, LinkedListNode* p)
-    : data(v)
-    , next(n)
-    , prev(p)
+        : data(v)
+        , next(n)
+        , prev(p)
     {
         // Complete constructor
     }
@@ -112,129 +112,120 @@ private:
     T data;
     LinkedListNode* next;
     LinkedListNode* prev;
-    // TODO: Add a size_t index value?
 };
 
-template <typename T>
+template<typename T>
 class LinkedList {
 public:
     LinkedList()
-    : head(NULL)
-    , tail(head)
-    , count(0)
+        : head(NULL)
+        , tail(head)
+        , count(0)
     {
         // Default constructor
     }
     LinkedList(T val)
     {
         LinkedList();
-        PushFront(val);
+        InsertFront(val);
     }
     ~LinkedList()
     {
         LinkedListNode<T>* back;
-        while ((back = PopBack()) != NULL) {
+        while ((back = RemoveBack()) != NULL) {
             delete back;
         }
     }
-    void PushFront(T val)
+    void InsertFront(T val)
     {
-        LinkedListNode<T>* next = head;
-        LinkedListNode<T>* newHead = new LinkedListNode<T>(val, next, NULL);
-        head = newHead;
-        ++count;
-    }
-    void PushBack(T val)
-    {
-        LinkedListNode<T>* newTail = new LinkedListNode<T>(val, NULL, tail);
-        if (tail) {
-            tail->SetNext(newTail);
-        }
-        tail = newTail;
-        ++count;
-    }
-    void PushBefore(LinkedListNode<T>* n, T v)
-    {
-        LinkedListNode<T>* x = new LinkedListNode<T>(v);
-        // Get pointer to previous in line from n
-        LinkedListNode<T>* prev = n->Previous();
-        // Set n's previous to be the new node
-        n->SetPrevious(x);
-        x->SetNext(n);
-        x->SetPrevious(prev);
-        // Update the counter
-        ++count;
-    }
-    void PushAfter(LinkedListNode<T>* n, T v)
-    {
-        LinkedListNode<T>* x = new LinkedListNode<T>(v);
-        // Get pointer to the next in line from n
-        LinkedListNode<T>* next = n->Next();
-        // Set n's next to be the new node (v)
-        n->SetNext(x);
-        x->SetPrevious(n);
-        x->SetNext(next);
-        // Insert node
-        ++count;
-    }
-    LinkedListNode<T>* PopFront()
-    {
-        if (!head) return NULL;
-        // Get pointer to the next in line
-        LinkedListNode<T>* newHead = head->Next();
-        // Copy the current head
-        LinkedListNode<T>* currHead = head;
-        // Reassign the pointer to the next in line
-        head = newHead;
-        // If we're the head and tail, there is no prev
         if (head) {
-            newHead->SetPrevious(NULL);
+            printf("Inserting before head\n");
+            InsertBefore(head, val);
+        } else {
+            printf("Inserting new head\n");
+            head = new LinkedListNode<T>(val);
         }
-        // Return copied (old) head
-        --count;
+    }
+    void InsertBack(T val)
+    {
+        if (tail) {
+            printf("Inserting after tail\n");
+            InsertAfter(tail, val);
+        } else {
+            printf("Inserting new tail\n");
+            tail = new LinkedListNode<T>(val);
+        }
+    }
+    void InsertBefore(LinkedListNode<T>* next, T val)
+    {
+        if (!next)
+            return;
+        LinkedListNode<T>* newNode = new LinkedListNode<T>(val);
+        newNode->SetPrevious(next->Previous());
+        next->SetPrevious(newNode);
+        newNode->SetNext(next);
+        if (newNode->Previous()) {
+            newNode->Previous()->SetNext(newNode);
+        } else {
+            head = newNode;
+        }
+        ++count;
+    }
+    void InsertAfter(LinkedListNode<T>* prev, T val)
+    {
+        if (!prev)
+            return;
+        LinkedListNode<T>* newNode = new LinkedListNode<T>(val);
+        newNode->SetNext(prev->Next());
+        prev->SetNext(newNode);
+        newNode->SetPrevious(prev);
+        if (newNode->Next()) {
+            newNode->Next()->SetPrevious(newNode);
+        } else {
+            tail = newNode;
+        }
+        ++count;
+    }
+    void Remove(LinkedListNode<T>* del)
+    {
+        if (del == head)
+            head = del->Next();
+        if (del->Next())
+            del->Next()->SetPrevious(del->Previous());
+        if (del->Previous())
+            del->Previous()->SetNext(del->Next());
+        count--;
+    }
+    LinkedListNode<T>* RemoveFront()
+    {
+        if (!head)
+            return NULL;
+        LinkedListNode<T>* currHead = head;
+        Remove(currHead);
         return currHead;
     }
-    LinkedListNode<T>* PopBack()
+    LinkedListNode<T>* RemoveBack()
     {
-        if (!tail) return NULL;
-        // Get pointer to the next in line
-        LinkedListNode<T>* newTail = tail->Previous();
-        // Copy the current head
+        if (!tail)
+            return NULL;
         LinkedListNode<T>* currTail = tail;
-        // Reassign the pointer to the next in line
-        tail = newTail;
-        // If we're the head and tail, there is no next
-        if (tail) {
-            tail->SetNext(NULL);
-        }
-        // Return copied (old) head
-        --count;
+        Remove(currTail);
         return currTail;
     }
-    LinkedListNode<T>* PopBefore(LinkedListNode<T>* n)
+    LinkedListNode<T>* RemoveBefore(LinkedListNode<T>* node)
     {
-        // Grab the node before to n
-        LinkedListNode<T>* before = n->SetPrevious();
-        // Grab the node before the previous node (before's previous)
-        LinkedListNode<T>* beforeBefore = before->SetPrevious();
-        // Set n's previous to before's previous (skipping before)
-        n->SetPrevious(beforeBefore);
-        beforeBefore->SetNext(n);
-        // Return before
-        --count;
+        if (!node)
+            return NULL;
+        LinkedListNode<T>* before = node->Previous();
+        Remove(before);
         return before;
     }
-    LinkedListNode<T>* PopAfter(LinkedListNode<T>* n)
+    LinkedListNode<T>* RemoveAfter(LinkedListNode<T>* node)
     {
-        // Grab the next node (after n)
-        LinkedListNode<T>* after = n->Next();
-        // Grab the node following the next node (after's next)
-        LinkedListNode<T>* afterAfter = after->Next();
-        // Set n's next to after's next (skipping after)
-        n->SetNext(afterAfter);
-        afterAfter->SetPrevious(n);
-        // Return after
-        --count;
+        if (!node)
+            return NULL;
+        LinkedListNode<T>* after = node->Next();
+        Remove(after);
         return after;
     }
     /**
@@ -271,4 +262,4 @@ private:
     size_t count;
 };
 
-};
+}
