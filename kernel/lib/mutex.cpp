@@ -18,7 +18,7 @@
 // Reference:
 // https://gcc.gnu.org/onlinedocs/gcc-8.3.0/gcc/_005f_005fatomic-Builtins.html
 
-#include <lib/Mutex.hpp>
+#include <lib/mutex.hpp>
 #include <lib/errno.h>
 #include <mem/heap.hpp>
 #include <stddef.h>
