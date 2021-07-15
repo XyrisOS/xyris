@@ -30,8 +30,8 @@ CPP_SRC  = $(shell find . -type f -name "*.cpp" | sed "s|^\./||")
 C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h" | sed "s|^\./||")
 CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp" | sed "s|^\./||")
 HEADERS  = $(CPP_HDR) $(C_HDR)
-#Libraries
-LIBS_A   = $(shell find $(LIBRARY_DIR) -type f -name "*.a" -printf "%f\n")
+# Libraries
+LIBS_A   = $(shell find $(LIBRARY_DIR) -type f -name "*.a" -exec basename {} \;)
 LIBS     = $(addprefix -l:, $(LIBS_A))
 
 # *******************
@@ -77,8 +77,6 @@ OBJ_DIRS = $(addprefix $(BUILD_DIR), $(shell find . -type d | sed "s|^\.||"))
 OBJ_DIRS_MAKE := mkdir -p $(OBJ_DIRS)
 # Dependency files
 DEP = $(OBJ_CPP:%.o=%.d) $(OBJ_C:%.o=%.d)
-# All files (source, header, etc.)
-ALLFILES = $(ATT_SRC) $(NASM_SRC) $(C_SRC) $(CPP_SRC) $(HEADERS)
 # Include all .d files
 -include $(DEP)
 
