@@ -142,10 +142,9 @@ public:
             InsertBefore(head, val);
         } else {
             head = new LinkedListNode<T>(val);
+            tail = head;
             ++count;
         }
-        if (!tail)
-            tail = head;
     }
     void InsertBack(T val)
     {
@@ -153,10 +152,9 @@ public:
             InsertAfter(tail, val);
         } else {
             tail = new LinkedListNode<T>(val);
+            head = tail;
             ++count;
         }
-        if (!head)
-            head = tail;
     }
     void InsertBefore(LinkedListNode<T>* next, T val)
     {

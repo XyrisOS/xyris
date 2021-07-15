@@ -31,7 +31,6 @@ TEST_CASE("linked list operations", "[linkedlist]") {
     }
     // Ensure the linked list can remove data properly
     SECTION("Insert (Back) : Removal (Back)") {
-        // Account for the zero already in place
         for (int i = 0; i < UINT8_MAX; i++) {
             list.InsertBack(i);
         }
@@ -48,7 +47,6 @@ TEST_CASE("linked list operations", "[linkedlist]") {
     }
     // Ensure the linked list can remove data properly
     SECTION("Insert (Back) : Removal (Front)") {
-        // Account for the zero already in place
         for (int i = 0; i < UINT8_MAX; i++) {
             list.InsertBack(i);
         }
@@ -65,7 +63,6 @@ TEST_CASE("linked list operations", "[linkedlist]") {
     }
     // Ensure the linked list can remove data properly
     SECTION("Insert (Front) : Removal (Back)") {
-        // Account for the zero already in place
         for (int i = 0; i < UINT8_MAX; i++) {
             list.InsertFront(i);
         }
@@ -82,17 +79,16 @@ TEST_CASE("linked list operations", "[linkedlist]") {
     }
     // Ensure the linked list can remove data properly
     SECTION("Insert (Front) : Removal (Front)") {
-        // Account for the zero already in place
         for (int i = 0; i < UINT8_MAX; i++) {
             list.InsertFront(i);
         }
         // 0 -> 254 == 255 entries
         REQUIRE(list.Count() == UINT8_MAX);
         // Remove all data
-        for (int i = 0; i < UINT8_MAX; i++) {
+        for (int i = UINT8_MAX; i > 0 ; i--) {
             auto node = list.RemoveFront();
             REQUIRE(node != NULL);
-            REQUIRE(node->Data() == ((UINT8_MAX - 1) - i));
+            REQUIRE(node->Data() == (i - 1));
             delete node;
         }
         REQUIRE(list.Count() == 0);
