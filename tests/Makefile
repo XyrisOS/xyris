@@ -19,8 +19,6 @@
 
 # Directories & files
 OUTPUT      := unit-test
-INCLUDE     := $(SYSROOT_DIR)/usr/include
-KERNEL_SRC  := $(ROOT)/$(KERNEL)
 BUILD_DIR   := $(BUILD_DIR)/$(OUTPUT)
 CATCH2_DIR  := $(THIRDPARTY_DIR)/catch2
 CATCH2_HDR  := $(CATCH2_DIR)/catch.hpp
@@ -51,8 +49,7 @@ LDFLAGS =                   \
 CPPFLAGS +=                 \
 	-I$(ROOT)/tests/        \
 	-I$(THIRDPARTY_DIR)     \
-	-I$(KERNEL_SRC)         \
-	-I$(INCLUDE)/kernel/    \
+	-I$(KERNEL_DIR)         \
 	-DTESTING
 
 # *******************
@@ -81,7 +78,7 @@ endif
 # Source
 CPP_SRC  = $(shell find . -type f -name "*.cpp" | sed "s|^\./||")
 # Headers
-CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp" | sed "s|^\./||")
+CPP_HDR  = $(shell find $(KERNEL_DIR) -type f -name "*.hpp" | sed "s|^\./||")
 HEADERS  = $(CPP_HDR) $(CATCH2_HDR)
 
 # All objects
