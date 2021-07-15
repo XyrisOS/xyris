@@ -19,7 +19,7 @@
 #include <lib/stdio.hpp>
 #include <lib/mutex.hpp>
 #include <lib/string.hpp>
-#include <lib/ring_buffer.hpp>
+#include <lib/RingBuffer.hpp>
 
 #define RS_232_COM1_IRQ 0x04
 #define RS_232_COM3_IRQ 0x04

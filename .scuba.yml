@@ -1,11 +1,16 @@
 image: docker.pkg.github.com/panix-os/panixbuild/panixbuild:3.1.0
 
 aliases:
+    # Building
     build: make -j$(nproc)
     clean: make clean
     debug: make -j$(nproc) debug
     release: make -j$(nproc) release
+    # Distribution
     image: make -j$(nproc) dist
     img: make -j$(nproc) dist IMGTYPE=img
     iso: make -j$(nproc) dist IMGTYPE=iso
+    # Testing
     test: make -j$(nproc) unit-test
+    # Provide a way to compile & run the unit test w/ stdout
+    test-verbose: make -j$(nproc) unit-test && ./dist/unit-test
