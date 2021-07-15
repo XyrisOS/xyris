@@ -28,7 +28,7 @@ CATCH2_URL  := "https://api.github.com/repos/catchorg/Catch2/releases/latest"
 
 # Use the host's copy of GCC instead of the i686 cross compiler
 # since it does not have a standard library (if compiled properly)
-CXX := $(shell command -v gcc)
+CXX := $(shell which gcc)
 
 # *******************
 # * Toolchain Flags *

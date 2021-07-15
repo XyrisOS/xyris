@@ -37,13 +37,13 @@ export COLOR_NONE := \033[m
 # Compilers/Assemblers/Linkers
 # CXX is also used as linker per
 # the OSDev wiki recommendations
-export NASM    := $(shell command -v nasm)
-export AS      := $(shell command -v i686-elf-as)
-export AR      := $(shell command -v i686-elf-ar)
-export CC      := $(shell command -v i686-elf-gcc)
-export CXX     := $(shell command -v i686-elf-g++)
-export OBJCP   := $(shell command -v i686-elf-objcopy)
-export MKGRUB  := $(shell command -v grub-mkrescue)
+export NASM    := $(shell which nasm)
+export AS      := $(shell which i686-elf-as)
+export AR      := $(shell which i686-elf-ar)
+export CC      := $(shell which i686-elf-gcc)
+export CXX     := $(shell which i686-elf-g++)
+export OBJCP   := $(shell which i686-elf-objcopy)
+export MKGRUB  := $(shell which grub-mkrescue)
 
 # *****************************
 # * Source Code & Directories *
@@ -139,6 +139,8 @@ export LDFLAGS :=       \
 # * Kernel Build Targets *
 # ************************
 
+all: debug release
+
 # Debug build
 debug: CPPFLAGS += -DDEBUG
 debug: CXXFLAGS += -ggdb3
@@ -190,16 +192,16 @@ $(PRODUCTS_DIR)/$(ISOIMG): $(PRODUCTS_DIR)/$(KERNEL)
 
 # Create a bootable IMG
 $(PRODUCTS_DIR)/$(IMGIMG): $(PRODUCTS_DIR)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
-	printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
-	rm -f $@
-	dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
-	parted -s $@ mklabel msdos
-	parted -s $@ mkpart primary 1 100%
-	parted -s $@ set 1 boot on
-	echfs-utils -m -p0 $@ quick-format 32768
-	echfs-utils -m -p0 $@ import boot/limine.cfg limine.cfg
-	echfs-utils -m -p0 $@ import $(THIRDPARTY_DIR)/limine/limine.sys limine.sys
-	echfs-utils -m -p0 $@ import $< kernel
+	@printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
+	@rm -f $@
+	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
+	@parted -s $@ mklabel msdos
+	@parted -s $@ mkpart primary 1 100%
+	@parted -s $@ set 1 boot on
+	@echfs-utils -m -p0 $@ quick-format 32768
+	@echfs-utils -m -p0 $@ import boot/limine.cfg limine.cfg
+	@echfs-utils -m -p0 $@ import $(THIRDPARTY_DIR)/limine/limine.sys limine.sys
+	@echfs-utils -m -p0 $@ import $< kernel
 	$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
 
 # Create a bootable image (either img or iso)
@@ -220,8 +222,8 @@ QEMU_ARCH = i386
 VM_NAME = $(PROJ_NAME)-box
 VBOX_VM_FILE = $(PRODUCTS_DIR)/$(VM_NAME)/$(VM_NAME).vbox
 # VM executable locations
-VBOX = $(shell command -v VBoxManage)
-QEMU = $(shell command -v qemu-system-$(QEMU_ARCH))
+VBOX = $(shell which VBoxManage)
+QEMU = $(shell which qemu-system-$(QEMU_ARCH))
 
 # ***************************
 # * Virtual Machine Testing *
