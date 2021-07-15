@@ -42,17 +42,17 @@ uint16_t ansi_vga_table[16] = {
     VGA_LightCyan, VGA_White
 };
 // Printing mutual exclusion
-mutex_t put_mutex;
+Mutex put_mutex;
 
 int putchar(char c)
 {
     int retval;
     // must lock when writing to the screen
-    mutex_lock(&put_mutex);
+    put_mutex.Lock();
     // call the unlocked implementation of putchar
     retval = putchar_unlocked(c);
     // release the screen to be used by other tasks
-    mutex_unlock(&put_mutex);
+    put_mutex.Unlock();
     return retval;
 }
 
