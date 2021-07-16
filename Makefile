@@ -52,11 +52,11 @@ export MKGRUB  := $(shell which grub-mkrescue)
 # Directories & files
 export KERNEL         := kernel
 export ROOT           := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+export KERNEL_DIR     := $(ROOT)/kernel
 export BUILD_DIR      := $(ROOT)/obj
 export LIBRARY_DIR    := $(ROOT)/libs
 export TESTS_DIR      := $(ROOT)/tests
 export PRODUCTS_DIR   := $(ROOT)/dist
-export SYSROOT_DIR    := $(ROOT)/sysroot
 export THIRDPARTY_DIR := $(ROOT)/thirdparty
 export ISOIMG         := $(PROJ_NAME).iso
 export IMGIMG         := $(PROJ_NAME).img

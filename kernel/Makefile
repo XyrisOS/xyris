@@ -13,9 +13,6 @@
 # * Source Code & Directories *
 # *****************************
 
-# Directories & files
-INCLUDE  = $(SYSROOT_DIR)/usr/include
-
 # The `| sed "s|^\./||"` command is included to remove the leading
 # ./ from all of the paths so that the objects are generated
 # properly. Otherwise the object directory is "obj." and not "obj"
@@ -27,8 +24,8 @@ NASM_SRC = $(shell find . -type f -name "*.S" | sed "s|^\./||")
 C_SRC    = $(shell find . -type f -name "*.c" | sed "s|^\./||")
 CPP_SRC  = $(shell find . -type f -name "*.cpp" | sed "s|^\./||")
 # Headers
-C_HDR    = $(shell find $(INCLUDE) -type f -name "*.h" | sed "s|^\./||")
-CPP_HDR  = $(shell find $(INCLUDE) -type f -name "*.hpp" | sed "s|^\./||")
+C_HDR    = $(shell find $(KERNEL_DIR) -type f -name "*.h" | sed "s|^\./||")
+CPP_HDR  = $(shell find $(KERNEL_DIR) -type f -name "*.hpp" | sed "s|^\./||")
 HEADERS  = $(CPP_HDR) $(C_HDR)
 # Libraries
 LIBS_A   = $(shell find $(LIBRARY_DIR) -type f -name "*.a" -exec basename {} \;)
@@ -39,8 +36,7 @@ LIBS     = $(addprefix -l:, $(LIBS_A))
 # *******************
 
 CPPFLAGS +=                \
-	-I ${INCLUDE}/kernel/  \
-	-I ${INCLUDE}/boot/    \
+	-I ${KERNEL_DIR}       \
 	-I $(THIRDPARTY_DIR)
 
 # Add compiler analysis to the kernel compilation
