@@ -10,7 +10,6 @@
  */
 // System library functions
 #include <stdint.h>
-#include <sys/kernel.hpp>
 #include <sys/panic.hpp>
 #include <sys/tasks.hpp>
 #include <lib/string.hpp>
@@ -35,6 +34,8 @@
 #include <apps/spinner.hpp>
 // Debug
 #include <lib/assert.hpp>
+// Meta
+#include <meta/defines.hpp>
 
 static Boot::Handoff handoff;
 
@@ -104,16 +105,19 @@ void kernel_main(void *boot_info, uint32_t magic) {
 static void kernel_print_splash() {
     tty_clear();
     kprintf(
-        "\033[93mWelcome to Panix %s\n"
-        "Developed by graduates and undergraduates of Cedarville University.\n"
-        "Copyright the Panix Contributors (c) %i. All rights reserved.\n\033[0m",
+        "\033[93m"
+        "Panix %s\n"
+        "Copyright the Panix Contributors (c) %i. All rights reserved.\n"
+        "Kernel source available at %s.\n"
+        "\033[0m",
         VER_NAME,
         (
             ((__DATE__)[7] - '0') * 1000 + \
             ((__DATE__)[8] - '0') * 100  + \
             ((__DATE__)[9] - '0') * 10   + \
             ((__DATE__)[10] - '0') * 1     \
-        )
+        ),
+        REPO_URL
     );
     kprintf("Commit %s (v%s.%s.%s) built on %s at %s.\n\n", COMMIT, VER_MAJOR, VER_MINOR, VER_PATCH, __DATE__, __TIME__);
 }
