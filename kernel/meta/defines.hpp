@@ -1,9 +1,9 @@
 /**
- * @file kernel.hpp
+ * @file defines.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief Global kernel definitions
+ * @brief Compiler pre-processor definitions
  * @version 0.1
- * @date 2021-02-21
+ * @date 2021-07-20
  *
  * @copyright Copyright the Panix Contributors (c) 2021
  *
@@ -22,5 +22,8 @@
 #endif
 // Panix release name
 #ifndef VER_NAME
-    #define VER_NAME "Unknown"
+    #define VER_NAME "unknown"
+#endif
+#ifndef REPO_URL
+    #define REPO_URL "(unknown)"
 #endif

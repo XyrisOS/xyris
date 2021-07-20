@@ -13,7 +13,9 @@ export PROJ_NAME = panix
 
 # Makefile flags
 # prevent make from showing "entering/leaving directory" messages
-export MAKEFLAGS   += --no-print-directory
+export MAKEFLAGS  += --no-print-directory
+# Panix Repo
+export REPO_URL   := "https://git.io/JWjEx"
 # Panix Version
 export GIT_COMMIT := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 export VER_MAJOR  := "0"
@@ -120,6 +122,7 @@ export CXXFLAGS :=          \
 # C / C++ pre-processor flags
 export CPPFLAGS :=                \
 	${PANIX_CPPFLAGS}             \
+	-D REPO_URL=\"$(REPO_URL)\"   \
 	-D COMMIT=\"$(GIT_COMMIT)\"   \
 	-D VER_MAJOR=\"$(VER_MAJOR)\" \
 	-D VER_MINOR=\"$(VER_MINOR)\" \
