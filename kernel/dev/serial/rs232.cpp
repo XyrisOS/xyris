@@ -39,7 +39,7 @@ namespace rs232 {
 
 static uint16_t rs_232_port_base;
 static RingBuffer<char, 1024> ring;
-static mutex_t mutex_rs232("rs232");
+static Mutex mutex_rs232("rs232");
 
 static int received();
 static int is_transmit_empty();
@@ -55,9 +55,9 @@ static int is_transmit_empty() {
 }
 
 static char read_byte() {
-    mutex_lock(&mutex_rs232);
+    mutex_rs232.Lock();
     while (received() == 0);
-    mutex_unlock(&mutex_rs232);
+    mutex_rs232.Unlock();
     return readByte(rs_232_port_base + RS_232_DATA_REG);
 }
 
@@ -135,13 +135,13 @@ void init(uint16_t com_id) {
 
 size_t read(char* buf, size_t count) {
     size_t bytes = 0;
-    mutex_lock(&mutex_rs232);
+    mutex_rs232.Lock();
     for (size_t idx = 0; idx < count && !ring.IsEmpty(); idx++)
     {
         buf[idx] = ring.Dequeue();
         bytes++;
     }
-    mutex_unlock(&mutex_rs232);
+    mutex_rs232.Unlock();
     return bytes;
 }
 

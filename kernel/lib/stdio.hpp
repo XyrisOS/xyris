@@ -75,7 +75,7 @@ int putchar(char c);
  * @param c the chraracter to be printed.
  */
 int putchar_unlocked(char c);
-extern mutex_t put_mutex;
+extern Mutex put_mutex;
 /**
  * @brief Prints a given string to the kernel display.
  *

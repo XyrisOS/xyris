@@ -3,7 +3,7 @@
 #include <lib/errno.h>
 #include <stddef.h>
 
-static mutex_t lock("alloc");
+static Mutex lock("alloc");
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,7 +15,7 @@ extern "C" {
 int liballoc_lock()
 {
     int old_errno = errno;
-    int result = mutex_lock(&lock);
+    int result = lock.Lock();
     errno = old_errno;
     return result;
 }
@@ -26,7 +26,7 @@ int liballoc_lock()
 int liballoc_unlock()
 {
     int old_errno = errno;
-    int result = mutex_unlock(&lock);
+    int result = lock.Unlock();
     errno = old_errno;
     return result;
 }

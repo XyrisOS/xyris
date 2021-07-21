@@ -21,7 +21,7 @@
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 
 static uint32_t machine_page_count;
-static mutex_t mutex_paging("paging");
+static Mutex mutex_paging("paging");
 
 #define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
 
@@ -221,7 +221,7 @@ static uint32_t find_next_free_phys_page() {
  * map in a new page. if you request less than one page, you will get exactly one page
  */
 void* get_new_page(uint32_t size) {
-    mutex_lock(&mutex_paging);
+    mutex_paging.Lock();
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t free_idx = find_next_free_virt_addr(page_count);
     if (free_idx == SIZE_MAX) return NULL;
@@ -230,12 +230,12 @@ void* get_new_page(uint32_t size) {
         if (phys_page_idx == SIZE_MAX) return NULL;
         map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys_page_idx * PAGE_SIZE);
     }
-    mutex_unlock(&mutex_paging);
+    mutex_paging.Unlock();
     return (void *)(free_idx * PAGE_SIZE);
 }
 
 void free_page(void *page, uint32_t size) {
-    mutex_lock(&mutex_paging);
+    mutex_paging.Lock();
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t page_index = (uint32_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
@@ -253,7 +253,7 @@ void free_page(void *page, uint32_t size) {
         // clear that tlb
         invalidate_page(page);
     }
-    mutex_unlock(&mutex_paging);
+    mutex_paging.Unlock();
 }
 
 bool page_is_present(size_t addr) {

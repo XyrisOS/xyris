@@ -1,5 +1,5 @@
 /**
- * @file mutex.cpp
+ * @file Mutex.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief
  * @version 0.3
@@ -23,55 +23,33 @@
 #include <mem/heap.hpp>
 #include <stddef.h>
 
-#define ACQUIRE_MUTEX_LOCK(mutex) __atomic_test_and_set(&mutex->locked, __ATOMIC_RELEASE)
-
-#define IS_MUTEX_VALID(mutex) { \
-    if (mutex == NULL)          \
-    {                           \
-        errno = EINVAL;         \
-        return -1;              \
-    }                           \
-}
-
-mutex::mutex(const char *name)
+Mutex::Mutex(const char* name)
     : locked(false)
 {
     task_sync.dbg_name = name;
+    tasks_sync_init(&task_sync);
 };
 
-int mutex_init(mutex_t *mutex) {
-    IS_MUTEX_VALID(mutex);
-    // Initialize the value to false
-    mutex->locked = false;
-    tasks_sync_init(&mutex->task_sync);
-    // Success, return 0
-    return 0;
+Mutex::~Mutex()
+{
+    // Nothing to destruct yet
 }
 
-int mutex_destroy(mutex_t *mutex) {
-    IS_MUTEX_VALID(mutex);
-    free(mutex);
-    // Success, return 0
-    return 0;
-}
-
-int mutex_lock(mutex_t *mutex) {
-    IS_MUTEX_VALID(mutex);
-    // Check if the mutex is unlocked
-    while (ACQUIRE_MUTEX_LOCK(mutex))
-    {
+int Mutex::Lock()
+{
+    // Check if the Mutex is unlocked
+    while (__atomic_test_and_set(&locked, __ATOMIC_RELEASE)) {
         // Block the current kernel task
-        TASK_ONLY tasks_sync_block(&mutex->task_sync);
+        TASK_ONLY tasks_sync_block(&task_sync);
     }
     // Success, return 0
     return 0;
 }
 
-int mutex_trylock(mutex_t *mutex) {
-    IS_MUTEX_VALID(mutex);
+int Mutex::Trylock()
+{
     // If we cannot immediately acquire the lock then just return an error
-    if (ACQUIRE_MUTEX_LOCK(mutex))
-    {
+    if (__atomic_test_and_set(&locked, __ATOMIC_RELEASE)) {
         errno = EINVAL;
         return -1;
     }
@@ -79,11 +57,11 @@ int mutex_trylock(mutex_t *mutex) {
     return 0;
 }
 
-int mutex_unlock(mutex_t *mutex) {
-    IS_MUTEX_VALID(mutex);
+int Mutex::Unlock()
+{
     // Clear the lock
-    __atomic_clear(&mutex->locked, __ATOMIC_RELEASE);
-    TASK_ONLY tasks_sync_unblock(&mutex->task_sync);
+    __atomic_clear(&locked, __ATOMIC_RELEASE);
+    TASK_ONLY tasks_sync_unblock(&task_sync);
     // Success, return 0
     return 0;
 }
