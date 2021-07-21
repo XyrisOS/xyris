@@ -64,7 +64,7 @@ int Semaphore::Wait()
     return 0;
 }
 
-int Semaphore::Trywait()
+int Semaphore::TryWait()
 {
     // Used to store the current value of the semaphore for atomic comparison later.
     uint32_t curVal = count;
@@ -83,7 +83,7 @@ int Semaphore::Trywait()
     return 0;
 }
 
-int Semaphore::Timedwait(const uint32_t* usec)
+int Semaphore::TimedWait(const uint32_t* usec)
 {
     // TODO: Add the timer functionality here.
     (void)usec;
