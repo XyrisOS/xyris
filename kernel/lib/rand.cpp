@@ -16,7 +16,7 @@
  *
  */
 
-#include <lib/stdlib.hpp>
+#include <lib/rand.hpp>
 
 unsigned long _seedrand = 1;
 
