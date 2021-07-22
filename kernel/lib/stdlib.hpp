@@ -1,11 +1,12 @@
 /**
  * @file stdlib.hpp
  * @author Michel (JMallone) Gomes (michels@utfpr.edu.br)
- * @brief Standard library
+ * @brief Standard library, based code from the book "The Standard C Library" - ISBN-10: 0131315099  
+ *
  * @version 0.1
  * @date 2021-07-20
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright 
  *
  */
 #pragma once
