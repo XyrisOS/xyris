@@ -9,6 +9,8 @@
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
 
+BUILD_DIR := $(BUILD_DIR)/kernel
+
 # *****************************
 # * Source Code & Directories *
 # *****************************
