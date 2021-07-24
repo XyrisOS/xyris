@@ -1,12 +1,15 @@
 /**
  * @file graphics.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
+ * @author Michel (JMallone) Gomes (michels@utfpr.edu.br)
  * @brief
- * @version 0.1
- * @date 2021-06-11
+ * @version 0.2
+ * @date 2021-07-24
  *
  * @copyright Copyright the Panix Contributors (c) 2021
  *
+ * References:
+ *          https://wiki.osdev.org/Double_Buffering
  */
 #include <dev/vga/graphics.hpp>
 #include <dev/vga/fb.hpp>
@@ -20,6 +23,7 @@
 #include <sys/panic.hpp>
 #include <lib/assert.hpp>
 #include <lib/stdio.hpp>
+#include <lib/string.hpp>
 // Bootloader
 #include <boot/Handoff.hpp>
 // Debug
@@ -30,6 +34,7 @@ namespace fb {
 FramebufferInfo fbInfo;
 // Cached values
 static void* addr = NULL;
+static void* backbuffer = NULL;
 static uint32_t width = 0;
 static uint32_t height = 0;
 static uint16_t depth = 0;
@@ -58,6 +63,7 @@ static void testPattern() {
         0x000000,  // Black
     };
 
+    resetDoubleBuffer();
     // Generate complete frame
     unsigned columnWidth = width / 8;
     for (unsigned y = 0; y < height; y++)
@@ -68,6 +74,8 @@ static void testPattern() {
             pixel(x, y, BAR_COLOR[col_idx]);
         }
     }
+    // Show modification in the Screen
+    swap();
 }
 
 void init(FramebufferInfo info)
@@ -97,6 +105,9 @@ void init(FramebufferInfo info)
     {
         map_kernel_page(VADDR(page), page);
     }
+    // Alloc the backbuffer
+    backbuffer = malloc(height * pitch);
+    memcpy(backbuffer, addr, height * pitch);
 
     initialized = true;
     testPattern();
@@ -110,7 +121,7 @@ void pixel(uint32_t x, uint32_t y, uint32_t color)
     // Special thanks to the SkiftOS contributors.
     if ((x <= width) && (y <= height))
     {
-        uint8_t *pixel = (uint8_t*)addr + (y * pitch) + (x * pixelwidth);
+        uint8_t *pixel = (uint8_t*)backbuffer + (y * pitch) + (x * pixelwidth);
         // Pixel information
         pixel[0] = (color >> b_shift) & 0xff;   // B
         pixel[1] = (color >> g_shift) & 0xff;   // G
@@ -130,6 +141,16 @@ void putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color)
             pixel(curr_x, curr_y, color);
         }
     }
+}
+
+void resetDoubleBuffer()
+{
+    memset(backbuffer, 0, height * pitch);
+}
+
+void swap()
+{
+    memcpy(addr, backbuffer, height * pitch);
 }
 
 };
