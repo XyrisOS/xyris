@@ -101,67 +101,36 @@ irq%1:
 ; the CPU already does that for us.
 ;
 m_isr_2 0 ; 0: Divide By Zero Exception
-
 m_isr_2 1 ; 1: Debug Exception
-
 m_isr_2 2 ; 2: Non Maskable Interrupt Exception
-
 m_isr_2 3 ; 3: Int 3 Exception
-
 m_isr_2 4 ; 4: INTO Exception
-
 m_isr_2 5 ; 5: Out of Bounds Exception
-
 m_isr_2 6 ; 6: Invalid Opcode Exception
-
 m_isr_2 7 ; 7: Coprocessor Not Available Exception
-
 m_isr_1 8 ; 8: Double Fault Exception (With Error Code!)
-
 m_isr_2 9 ; 9: Coprocessor Segment Overrun Exception
-
 m_isr_1 10 ; 10: Bad TSS Exception (With Error Code!)
-
 m_isr_1 11 ; 11: Segment Not Present Exception (With Error Code!)
-
 m_isr_1 12 ; 12: Stack Fault Exception (With Error Code!)
-
 m_isr_1 13 ; 13: General Protection Fault Exception (With Error Code!)
-
 m_isr_1 14 ; 14: Page Fault Exception (With Error Code!)
-
 m_isr_2 15 ; 15: Reserved Exception
-
 m_isr_2 16 ; 16: Floating Point Exception
-
 m_isr_1 17 ; 17: Alignment Check Exception (With Error Code!)
-
 m_isr_2 18 ; 18: Machine Check Exception
-
 m_isr_2 19 ; 19: Reserved
-
 m_isr_2 20 ; 20: Reserved
-
 m_isr_2 21 ; 21: Reserved
-
 m_isr_2 22 ; 22: Reserved
-
 m_isr_2 23 ; 23: Reserved
-
 m_isr_2 24 ; 24: Reserved
-
 m_isr_2 25 ; 25: Reserved
-
 m_isr_2 26 ; 26: Reserved
-
 m_isr_2 27 ; 27: Reserved
-
 m_isr_2 28 ; 28: Reserved
-
 m_isr_2 29 ; 29: Reserved
-
 m_isr_1 30 ; 30: Reserved (With Error Code!)
-
 m_isr_2 31 ; 31: Reserved
 
 ; All of the following Interrupt Requests are
@@ -171,35 +140,19 @@ m_isr_2 31 ; 31: Reserved
 ; corresponding hardware interrupt value (starting at 32).
 ;
 ; Interrupt Request handlers
-
 m_irq_2 0, 32 ; System timer (PIT)
-
 m_irq_2 1, 33 ; PS2 Keyboard
-
 m_irq_2 2, 34 ; PIC2
-
 m_irq_2 3, 35 ; COM2
-
 m_irq_2 4, 36 ; COM1
-
 m_irq_2 5, 37 ; LPT2
-
 m_irq_2 6, 38 ; Floppy Disk Drive
-
 m_irq_2 7, 39 ; LPT1
-
 m_irq_2 8, 40 ; CMOS Real Time Clock
-
 m_irq_2 9, 41 ; Unused / Generic
-
 m_irq_2 10, 42 ; Unused / Generic
-
 m_irq_2 11, 43 ; Unused / Generic
-
 m_irq_2 12, 44 ; PS2 Mouse
-
 m_irq_2 13, 45 ; Numeric Coprocessor
-
 m_irq_2 14, 46 ; IDE0 (HDD)
-
 m_irq_2 15, 47 ; IDE1 (HDD)
