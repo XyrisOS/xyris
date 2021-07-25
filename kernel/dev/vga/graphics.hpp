@@ -2,7 +2,7 @@
  * @file graphics.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @author Michel (JMallone) Gomes (michels@utfpr.edu.br)
- * @brief
+ * @brief Graphics management and control
  * @version 0.2
  * @date 2021-07-24
  *
@@ -20,17 +20,16 @@ namespace graphics {
 /**
  * @brief Checks if the framebuffer has been initialized
  *
- * @return true Framebuffer is initialized
- * @return false Framebuffer is not initialized
+ * @return true if the framebuffer is initialized, otherwise false
  */
 bool isInitialized();
 
 /**
- * @brief Initializes the framebuffer (if it exists)
+ * @brief Initializes the framebuffer (if available)
  *
  * @param info
  */
-void init(FramebufferInfo info);
+void init(Framebuffer info);
 
 /**
  * @brief Draws a pixel at a given coordinate.
@@ -66,4 +65,11 @@ void resetDoubleBuffer();
  */
 void swap();
 
-} // !namespace graphics
+/**
+ * @brief Get a pointer to the active framebuffer
+ *
+ * @return Framebuffer* Pointer to active framebuffer
+ */
+Framebuffer* getFramebuffer();
+
+}; // !namespace graphics

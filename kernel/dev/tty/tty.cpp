@@ -14,6 +14,8 @@
  *
  */
 #include <dev/tty/tty.hpp>
+#include <dev/vga/framebuffer.hpp>
+#include <dev/vga/graphics.hpp>
 #include <lib/stdio.hpp>
 #include <stddef.h>
 
@@ -27,7 +29,8 @@ tty_vga_color color_fore = VGA_White;
 tty_vga_color reset_back = VGA_Black;
 tty_vga_color reset_fore = VGA_White;
 
-void shift_tty_up() {
+void tty_shift_up()
+{
     // start on the second row
     volatile uint16_t* where = x86_bios_vga_mem + X86_TTY_WIDTH;
     for (size_t row = 1; row < X86_TTY_HEIGHT; ++row) {
@@ -40,35 +43,27 @@ void shift_tty_up() {
     }
 }
 
-void tty_clear(tty_vga_color fore, tty_vga_color back) {
+void tty_clear(tty_vga_color fore, tty_vga_color back)
+{
     color_fore = fore;
     color_back = back;
     reset_fore = fore;
     reset_back = back;
-    volatile uint16_t* where;
-    uint16_t attrib = VGA_COLOR(color_back, color_fore);
-    // For each character in each line of the TTY, set to ' '.
-    for (int y = 0; y < X86_TTY_HEIGHT; y++) {
-        for (int x = 0; x < X86_TTY_WIDTH; x++) {
-            // This is a direct write to the BIOS TTY memory.
-            // It is much more efficient than calling putchar().
-            where = x86_bios_vga_mem + (y * X86_TTY_WIDTH + x);
-            *where = VGA_CHAR(' ', attrib);
-        }
-    }
+    // Clear the framebuffer
+    graphics::Framebuffer* fb = graphics::getFramebuffer();
+    graphics::putrect(0, 0, fb->getWidth(), fb->getHeight(), reset_back);
     // Reset the cursor position
     tty_coords_x = 0;
     tty_coords_y = 0;
 }
 
-void tty_reset_defaults() {
+void tty_reset_defaults()
+{
     color_back = VGA_DEFAULT_BACK;
     color_fore = VGA_DEFAULT_FORE;
 }
 
-void set_indicator(tty_vga_color color) {
-    volatile uint16_t* where;
-    uint16_t attrib = (uint16_t)((color << 4) | (color & 0x0F));
-    where = x86_bios_vga_mem + (X86_IND_Y * X86_TTY_WIDTH + X86_IND_X);
-    *where = VGA_CHAR(' ', attrib);
+void set_indicator(tty_vga_color color)
+{
+    graphics::putrect(0, 0, 16, 32, color);
 }

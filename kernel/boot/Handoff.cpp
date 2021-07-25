@@ -152,7 +152,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                             framebuffer->blue_mask_size,
                             framebuffer->blue_mask_shift);
             // Initialize the framebuffer information
-            that->_fbInfo = graphics::FramebufferInfo(
+            that->_framebuffer = graphics::Framebuffer(
                 framebuffer->framebuffer_width,
                 framebuffer->framebuffer_height,
                 framebuffer->framebuffer_bpp,
@@ -226,7 +226,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
                             framebuffer->framebuffer_blue_mask_size,
                             framebuffer->framebuffer_blue_field_position);
             // Initialize the framebuffer information
-            that->_fbInfo = graphics::FramebufferInfo(
+            that->_framebuffer = graphics::Framebuffer(
                 framebuffer->common.framebuffer_width,
                 framebuffer->common.framebuffer_height,
                 framebuffer->common.framebuffer_bpp,

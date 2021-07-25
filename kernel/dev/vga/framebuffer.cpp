@@ -15,7 +15,7 @@
 
 namespace graphics {
 
-FramebufferInfo::FramebufferInfo()
+Framebuffer::Framebuffer()
     : _addr(NULL)
     , _width(0)
     , _height(0)
@@ -32,7 +32,7 @@ FramebufferInfo::FramebufferInfo()
     // Default constructor.
 }
 
-FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr)
+Framebuffer::Framebuffer(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr)
     : _addr(addr)
     , _width(width)
     , _height(height)
@@ -49,7 +49,7 @@ FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height, uint16_t depth
     // Common parameters constructor
 }
 
-FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height,
+Framebuffer::Framebuffer(uint32_t width, uint32_t height,
                                  uint16_t depth, uint32_t pitch,
                                  void* addr, FramebufferMemoryModel model,
                                  uint8_t redMaskSize, uint8_t redMaskShift,

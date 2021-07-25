@@ -35,23 +35,23 @@
  * in tty.cpp.
  *
  */
-enum tty_vga_color : uint16_t {
-    VGA_Black           = 0,
-    VGA_Blue            = 1,
-    VGA_Green           = 2,
-    VGA_Cyan            = 3,
-    VGA_Red             = 4,
-    VGA_Magenta         = 5,
-    VGA_Brown           = 6,
-    VGA_LightGrey       = 7,
-    VGA_DarkGrey        = 8,
-    VGA_LightBlue       = 9,
-    VGA_LightGreen      = 10,
-    VGA_LightCyan       = 11,
-    VGA_LightRed        = 12,
-    VGA_LightMagenta    = 13,
-    VGA_Yellow          = 14,
-    VGA_White           = 15
+enum tty_vga_color : uint32_t {
+    VGA_Black           = 0x000000,
+    VGA_Blue            = 0x0000AA,
+    VGA_Green           = 0x00AA00,
+    VGA_Cyan            = 0x00AAAA,
+    VGA_Red             = 0xAA0000,
+    VGA_Magenta         = 0xAA00AA,
+    VGA_Brown           = 0xAA5500,
+    VGA_LightGrey       = 0xAAAAAA,
+    VGA_DarkGrey        = 0x555555,
+    VGA_LightBlue       = 0x5555FF,
+    VGA_LightGreen      = 0x55FF55,
+    VGA_LightCyan       = 0x55FFFF,
+    VGA_LightRed        = 0xFF5555,
+    VGA_LightMagenta    = 0xFF55FF,
+    VGA_Yellow          = 0x5555FF,
+    VGA_White           = 0xFFFFFF,
 };
 /**
  * @brief ANSI color codes for use in functions
@@ -78,7 +78,7 @@ enum tty_ansi_color : uint16_t {
     ANSI_BrightBlue     = 94,
     ANSI_BrightMagenta  = 95,
     ANSI_BrightCyan     = 96,
-    ANSI_BrightWhite    = 97
+    ANSI_BrightWhite    = 97,
 };
 #define VGA_COLOR(bg, fg) (uint16_t)(((bg)<<4)|((fg)&0xF))
 #define VGA_CHAR(ch, co) (uint16_t)((ch)|((co)<<8))
@@ -95,7 +95,7 @@ extern tty_vga_color reset_fore;
  * @brief Shifts the entire TTY screen up by one line.
  *
  */
-void shift_tty_up();
+void tty_shift_up();
 /**
  * @brief Clears the TTY and resets the cursor position.
  *

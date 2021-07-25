@@ -2,7 +2,7 @@
  * @file graphics.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @author Michel (JMallone) Gomes (michels@utfpr.edu.br)
- * @brief
+ * @brief Graphics management and control
  * @version 0.2
  * @date 2021-07-24
  *
@@ -22,67 +22,43 @@
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
 // System library functions
+#include <boot/Handoff.hpp>
+#include <dev/serial/rs232.hpp>
 #include <lib/assert.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
-#include <boot/Handoff.hpp>
-#include <dev/serial/rs232.hpp>
 
 namespace graphics {
 
-FramebufferInfo fbInfo;
+Framebuffer fb;
 static void* backbuffer = NULL;
 static bool initialized = false;
 
 bool isInitialized() { return initialized; }
 
-static void testPattern() {
-    const uint32_t BAR_COLOR[8] =
-    {
-        0xFFFFFF,  // 100% White
-        0xFFFF00,  // Yellow
-        0x00FFFF,  // Cyan
-        0x00FF00,  // Green
-        0xFF00FF,  // Magenta
-        0xFF0000,  // Red
-        0x0000FF,  // Blue
-        0x000000,  // Black
-    };
-
-    resetDoubleBuffer();
-    // Generate complete frame
-    unsigned columnWidth = fbInfo.getWidth() / 8;
-    for (unsigned y = 0; y < fbInfo.getHeight(); y++)
-    {
-        for (unsigned x = 0; x < fbInfo.getWidth(); x++)
-        {
-            unsigned col_idx = x / columnWidth;
-            pixel(x, y, BAR_COLOR[col_idx]);
-        }
-    }
-    // Show modification in the Screen
-    swap();
+Framebuffer* getFramebuffer()
+{
+    return &fb;
 }
 
-void init(FramebufferInfo info)
+void init(Framebuffer info)
 {
-    fbInfo = info;
+    info = info;
     // Ensure valid info is provided
-    if (!fbInfo.getAddress())
+    if (!info.getAddress())
         return;
     // Map in the framebuffer
     RS232::printf("Mapping framebuffer...\n");
-    for (uintptr_t page = (uintptr_t)fbInfo.getAddress() & PAGE_ALIGN;
-         page < (uintptr_t)fbInfo.getAddress() + (fbInfo.getPitch() * fbInfo.getHeight());
+    for (uintptr_t page = (uintptr_t)info.getAddress() & PAGE_ALIGN;
+         page < (uintptr_t)info.getAddress() + (info.getPitch() * info.getHeight());
          page += PAGE_SIZE) {
         map_kernel_page(VADDR(page), page);
     }
     // Alloc the backbuffer
-    backbuffer = malloc(fbInfo.getPitch() * fbInfo.getHeight());
-    memcpy(backbuffer, fbInfo.getAddress(), fbInfo.getPitch() * fbInfo.getHeight());
+    backbuffer = malloc(info.getPitch() * info.getHeight());
+    memcpy(backbuffer, info.getAddress(), info.getPitch() * info.getHeight());
 
     initialized = true;
-    testPattern();
 }
 
 void pixel(uint32_t x, uint32_t y, uint32_t color)
@@ -90,15 +66,15 @@ void pixel(uint32_t x, uint32_t y, uint32_t color)
     // Ensure framebuffer information exists
     if (!initialized)
         return;
-    if ((x <= fbInfo.getWidth()) && (y <= fbInfo.getHeight())) {
+    if ((x <= fb.getWidth()) && (y <= fb.getHeight())) {
         // Special thanks to the SkiftOS contributors.
-        uint8_t* pixel = (uint8_t*)backbuffer + (y * fbInfo.getPitch()) + (x * fbInfo.getPixelWidth());
+        uint8_t* pixel = (uint8_t*)backbuffer + (y * fb.getPitch()) + (x * fb.getPixelWidth());
         // Pixel information
-        pixel[0] = (color >> fbInfo.getBlueMaskShift()) & 0xff;  // B
-        pixel[1] = (color >> fbInfo.getGreenMaskShift()) & 0xff; // G
-        pixel[2] = (color >> fbInfo.getRedMaskShift()) & 0xff;   // R
+        pixel[0] = (color >> fb.getBlueMaskShift()) & 0xff;  // B
+        pixel[1] = (color >> fb.getGreenMaskShift()) & 0xff; // G
+        pixel[2] = (color >> fb.getRedMaskShift()) & 0xff;   // R
         // Additional pixel information
-        if (fbInfo.getPixelWidth() == 4)
+        if (fb.getPixelWidth() == 4)
             pixel[3] = 0x00;
     }
 }
@@ -114,16 +90,18 @@ void putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color)
             pixel(curr_x, curr_y, color);
         }
     }
+    // Swap after doing a large operation
+    swap();
 }
 
 void resetDoubleBuffer()
 {
-    memset(backbuffer, 0, (fbInfo.getPitch() * fbInfo.getHeight()));
+    memset(backbuffer, 0, (fb.getPitch() * fb.getHeight()));
 }
 
 void swap()
 {
-    memcpy(fbInfo.getAddress(), backbuffer, (fbInfo.getPitch() * fbInfo.getHeight()));
+    memcpy(fb.getAddress(), backbuffer, (fb.getPitch() * fb.getHeight()));
 }
 
 } // !namespace graphics

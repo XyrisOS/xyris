@@ -95,10 +95,10 @@ public:
     Handoff(void* handoff, uint32_t magic);
     ~Handoff();
     // Getters
-    const char* getCmdLine()                            { return _cmdline; }
-    const void* getHandle()                             { return _handle; }
-    graphics::FramebufferInfo getFramebufferInfo()      { return _fbInfo; }
-    HandoffBootloaderType getBootType()                 { return _bootType; }
+    const char* getCmdLine()                    { return _cmdline; }
+    const void* getHandle()                     { return _handle; }
+    graphics::Framebuffer getFramebufferInfo()  { return _framebuffer; }
+    HandoffBootloaderType getBootType()         { return _bootType; }
 
 private:
     static void parseStivale2(Handoff* that, void* handoff);
@@ -107,7 +107,7 @@ private:
     void* _handle;
     char* _cmdline;
     uint32_t _magic;
-    graphics::FramebufferInfo _fbInfo;
+    graphics::Framebuffer _framebuffer;
     HandoffBootloaderType _bootType;
 };
 

@@ -19,12 +19,12 @@ enum FramebufferMemoryModel {
     RGB_FBMM = 1,
 };
 
-class FramebufferInfo {
+class Framebuffer {
 public:
     // Constructors
-    FramebufferInfo();
-    FramebufferInfo(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr);
-    FramebufferInfo(uint32_t width, uint32_t height,
+    Framebuffer();
+    Framebuffer(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr);
+    Framebuffer(uint32_t width, uint32_t height,
                     uint16_t depth, uint32_t pitch,
                     void* addr, FramebufferMemoryModel model,
                     uint8_t redMaskSize, uint8_t redMaskShift,

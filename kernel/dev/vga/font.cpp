@@ -18,8 +18,6 @@ namespace graphics {
 namespace font {
 
 #define FONT_COUNT 128
-#define FONT_WIDTH 8
-#define FONT_HEIGHT 8
 
 // *Huge* shout out to SkiftOS for providing this font. We tried to
 // use bdf2c to get a custom font, but because of licensing issues we

@@ -12,6 +12,9 @@
 #include <dev/vga/framebuffer.hpp>
 #include <stdint.h>
 
+#define FONT_WIDTH 8
+#define FONT_HEIGHT 8
+
 namespace graphics {
 namespace font {
 
