@@ -8,12 +8,12 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <dev/vga/fb.hpp>
+#include <dev/vga/framebuffer.hpp>
 // Types
 #include <stddef.h>
 #include <stdint.h>
 
-namespace FB {
+namespace graphics {
 
 FramebufferInfo::FramebufferInfo()
     : _addr(NULL)

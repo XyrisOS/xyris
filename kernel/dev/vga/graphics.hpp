@@ -13,9 +13,9 @@
  */
 #pragma once
 #include <stdint.h>
-#include <dev/vga/fb.hpp>
+#include <dev/vga/framebuffer.hpp>
 
-namespace FB {
+namespace graphics {
 
 /**
  * @brief Checks if the framebuffer has been initialized
@@ -66,4 +66,4 @@ void resetDoubleBuffer();
  */
 void swap();
 
-} // !namespace FB
+} // !namespace graphics

@@ -9,10 +9,12 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  * References:
- *          https://wiki.osdev.org/Double_Buffering
+ *     https://wiki.osdev.org/Double_Buffering
+ *     https://github.com/skiftOS/skift/blob/main/kernel/system/graphics/Graphics.cpp
+ * 
  */
+#include <dev/vga/framebuffer.hpp>
 #include <dev/vga/graphics.hpp>
-#include <dev/vga/fb.hpp>
 // Types
 #include <stddef.h>
 #include <stdint.h>
@@ -23,28 +25,13 @@
 #include <lib/assert.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
-// Bootloader
 #include <boot/Handoff.hpp>
-// Debug
 #include <dev/serial/rs232.hpp>
 
-namespace FB {
+namespace graphics {
 
 FramebufferInfo fbInfo;
-// Cached values
-static void* addr = NULL;
 static void* backbuffer = NULL;
-static uint32_t width = 0;
-static uint32_t height = 0;
-static uint16_t depth = 0;
-static uint32_t pitch = 0;
-static uint32_t pixelwidth = 0;
-static uint8_t r_size = 0;
-static uint8_t r_shift = 0;
-static uint8_t g_size = 0;
-static uint8_t g_shift = 0;
-static uint8_t b_size = 0;
-static uint8_t b_shift = 0;
 static bool initialized = false;
 
 bool isInitialized() { return initialized; }
@@ -64,10 +51,10 @@ static void testPattern() {
 
     resetDoubleBuffer();
     // Generate complete frame
-    unsigned columnWidth = width / 8;
-    for (unsigned y = 0; y < height; y++)
+    unsigned columnWidth = fbInfo.getWidth() / 8;
+    for (unsigned y = 0; y < fbInfo.getHeight(); y++)
     {
-        for (unsigned x = 0; x < width; x++)
+        for (unsigned x = 0; x < fbInfo.getWidth(); x++)
         {
             unsigned col_idx = x / columnWidth;
             pixel(x, y, BAR_COLOR[col_idx]);
@@ -81,32 +68,18 @@ void init(FramebufferInfo info)
 {
     fbInfo = info;
     // Ensure valid info is provided
-    if (fbInfo.getAddress() == NULL) { return; }
-    // Cache framebuffer values in order to avoid
-    // function calls when plotting pixels.
-    addr = fbInfo.getAddress();
-    width = fbInfo.getWidth();
-    height = fbInfo.getHeight();
-    depth = fbInfo.getDepth();
-    pitch = fbInfo.getPitch();
-    r_size = fbInfo.getRedMaskSize();
-    r_shift = fbInfo.getRedMaskShift();
-    g_size = fbInfo.getGreenMaskSize();
-    g_shift = fbInfo.getGreenMaskShift();
-    b_size = fbInfo.getBlueMaskSize();
-    b_shift = fbInfo.getBlueMaskShift();
-    pixelwidth = (depth / 8);
+    if (!fbInfo.getAddress())
+        return;
     // Map in the framebuffer
     RS232::printf("Mapping framebuffer...\n");
-    for (uintptr_t page = (uintptr_t)addr & PAGE_ALIGN;
-        page < (uintptr_t)addr + (pitch * height);
-        page += PAGE_SIZE)
-    {
+    for (uintptr_t page = (uintptr_t)fbInfo.getAddress() & PAGE_ALIGN;
+         page < (uintptr_t)fbInfo.getAddress() + (fbInfo.getPitch() * fbInfo.getHeight());
+         page += PAGE_SIZE) {
         map_kernel_page(VADDR(page), page);
     }
     // Alloc the backbuffer
-    backbuffer = malloc(height * pitch);
-    memcpy(backbuffer, addr, height * pitch);
+    backbuffer = malloc(fbInfo.getPitch() * fbInfo.getHeight());
+    memcpy(backbuffer, fbInfo.getAddress(), fbInfo.getPitch() * fbInfo.getHeight());
 
     initialized = true;
     testPattern();
@@ -115,25 +88,26 @@ void init(FramebufferInfo info)
 void pixel(uint32_t x, uint32_t y, uint32_t color)
 {
     // Ensure framebuffer information exists
-    if (!initialized) { return; }
-    // Reference: SkiftOS (Graphics.cpp)
-    // Special thanks to the SkiftOS contributors.
-    if ((x <= width) && (y <= height))
-    {
-        uint8_t *pixel = (uint8_t*)backbuffer + (y * pitch) + (x * pixelwidth);
+    if (!initialized)
+        return;
+    if ((x <= fbInfo.getWidth()) && (y <= fbInfo.getHeight())) {
+        // Special thanks to the SkiftOS contributors.
+        uint8_t* pixel = (uint8_t*)backbuffer + (y * fbInfo.getPitch()) + (x * fbInfo.getPixelWidth());
         // Pixel information
-        pixel[0] = (color >> b_shift) & 0xff;   // B
-        pixel[1] = (color >> g_shift) & 0xff;   // G
-        pixel[2] = (color >> r_shift) & 0xff;   // R
+        pixel[0] = (color >> fbInfo.getBlueMaskShift()) & 0xff;  // B
+        pixel[1] = (color >> fbInfo.getGreenMaskShift()) & 0xff; // G
+        pixel[2] = (color >> fbInfo.getRedMaskShift()) & 0xff;   // R
         // Additional pixel information
-        if (pixelwidth == 4) pixel[3] = 0x00;
+        if (fbInfo.getPixelWidth() == 4)
+            pixel[3] = 0x00;
     }
 }
 
 void putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color)
 {
     // Ensure framebuffer information exists
-    if (!initialized) return;
+    if (!initialized)
+        return;
     for (uint32_t curr_x = x; curr_x <= x + w; curr_x++) {
         for (uint32_t curr_y = y; curr_y <= y + h; curr_y++) {
             // Extremely slow but good for debugging
@@ -144,12 +118,12 @@ void putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color)
 
 void resetDoubleBuffer()
 {
-    memset(backbuffer, 0, height * pitch);
+    memset(backbuffer, 0, (fbInfo.getPitch() * fbInfo.getHeight()));
 }
 
 void swap()
 {
-    memcpy(addr, backbuffer, height * pitch);
+    memcpy(fbInfo.getAddress(), backbuffer, (fbInfo.getPitch() * fbInfo.getHeight()));
 }
 
-} // !namespace FB
+} // !namespace graphics

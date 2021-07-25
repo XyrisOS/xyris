@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <meta/compiler.hpp>
 
-namespace FB {
+namespace graphics {
 
 enum FramebufferMemoryModel {
     Undefined_FBMM = 0,
@@ -72,4 +72,4 @@ private:
     FramebufferMemoryModel _memoryModel;
 };
 
-} // !namespace FB
+} // !namespace graphics

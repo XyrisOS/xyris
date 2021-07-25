@@ -139,32 +139,33 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 framebuffer->framebuffer_height,
                 framebuffer->framebuffer_bpp);
             RS232::printf("\tPixel format:\n"
-                          "\t\tRed size:    %u\n"
-                          "\t\tRed shift:   %u\n"
-                          "\t\tGreen size:  %u\n"
-                          "\t\tGreen shift: %u\n"
-                          "\t\tBlue size:   %u\n"
-                          "\t\tBlue shift:  %u\n",
-                framebuffer->red_mask_size,
-                framebuffer->red_mask_shift,
-                framebuffer->green_mask_size,
-                framebuffer->green_mask_shift,
-                framebuffer->blue_mask_size,
-                framebuffer->blue_mask_shift);
+                            "\t\tRed size:    %u\n"
+                            "\t\tRed shift:   %u\n"
+                            "\t\tGreen size:  %u\n"
+                            "\t\tGreen shift: %u\n"
+                            "\t\tBlue size:   %u\n"
+                            "\t\tBlue shift:  %u\n",
+                            framebuffer->red_mask_size,
+                            framebuffer->red_mask_shift,
+                            framebuffer->green_mask_size,
+                            framebuffer->green_mask_shift,
+                            framebuffer->blue_mask_size,
+                            framebuffer->blue_mask_shift);
             // Initialize the framebuffer information
-            that->_fbInfo = FB::FramebufferInfo(
+            that->_fbInfo = graphics::FramebufferInfo(
                 framebuffer->framebuffer_width,
                 framebuffer->framebuffer_height,
                 framebuffer->framebuffer_bpp,
                 framebuffer->framebuffer_pitch,
                 reinterpret_cast<void*>(framebuffer->framebuffer_addr),
-                static_cast<FB::FramebufferMemoryModel>(framebuffer->memory_model),
+                static_cast<graphics::FramebufferMemoryModel>(framebuffer->memory_model),
                 framebuffer->red_mask_size,
                 framebuffer->red_mask_shift,
                 framebuffer->green_mask_size,
                 framebuffer->green_mask_shift,
                 framebuffer->blue_mask_size,
-                framebuffer->blue_mask_shift);
+                framebuffer->blue_mask_shift
+            );
             break;
         }
         default: {
@@ -204,7 +205,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
             break;
         }
         case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
-            auto framebuffer = (struct multiboot_tag_framebuffer*)tag;
+            auto framebuffer = (struct multiboot_tag_framebuffer *)tag;
             RS232::printf("Multiboot2 framebuffer:\n");
             RS232::printf("\tAddress: 0x%08X\n", framebuffer->common.framebuffer_addr);
             RS232::printf("\tResolution: %ix%ix%i\n",
@@ -212,32 +213,33 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
                 framebuffer->common.framebuffer_height,
                 (framebuffer->common.framebuffer_bpp));
             RS232::printf("\tPixel format:\n"
-                          "\t\tRed size:    %u\n"
-                          "\t\tRed shift:   %u\n"
-                          "\t\tGreen size:  %u\n"
-                          "\t\tGreen shift: %u\n"
-                          "\t\tBlue size:   %u\n"
-                          "\t\tBlue shift:  %u\n",
-                framebuffer->framebuffer_red_mask_size,
-                framebuffer->framebuffer_red_field_position,
-                framebuffer->framebuffer_green_mask_size,
-                framebuffer->framebuffer_green_field_position,
-                framebuffer->framebuffer_blue_mask_size,
-                framebuffer->framebuffer_blue_field_position);
+                            "\t\tRed size:    %u\n"
+                            "\t\tRed shift:   %u\n"
+                            "\t\tGreen size:  %u\n"
+                            "\t\tGreen shift: %u\n"
+                            "\t\tBlue size:   %u\n"
+                            "\t\tBlue shift:  %u\n",
+                            framebuffer->framebuffer_red_mask_size,
+                            framebuffer->framebuffer_red_field_position,
+                            framebuffer->framebuffer_green_mask_size,
+                            framebuffer->framebuffer_green_field_position,
+                            framebuffer->framebuffer_blue_mask_size,
+                            framebuffer->framebuffer_blue_field_position);
             // Initialize the framebuffer information
-            that->_fbInfo = FB::FramebufferInfo(
+            that->_fbInfo = graphics::FramebufferInfo(
                 framebuffer->common.framebuffer_width,
                 framebuffer->common.framebuffer_height,
                 framebuffer->common.framebuffer_bpp,
                 framebuffer->common.framebuffer_pitch,
                 (void*)framebuffer->common.framebuffer_addr,
-                (FB::FramebufferMemoryModel)framebuffer->common.framebuffer_type,
+                (graphics::FramebufferMemoryModel)framebuffer->common.framebuffer_type,
                 framebuffer->framebuffer_red_mask_size,
                 framebuffer->framebuffer_red_field_position,
                 framebuffer->framebuffer_green_mask_size,
                 framebuffer->framebuffer_green_field_position,
                 framebuffer->framebuffer_blue_mask_size,
-                framebuffer->framebuffer_blue_field_position);
+                framebuffer->framebuffer_blue_field_position
+            );
             break;
         }
         default: {

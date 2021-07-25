@@ -26,7 +26,8 @@
 #include <dev/serial/rs232.hpp>
 #include <dev/spkr/spkr.hpp>
 #include <dev/tty/tty.hpp>
-#include <dev/vga/fb.hpp>
+#include <dev/vga/framebuffer.hpp>
+#include <dev/vga/font.hpp>
 #include <dev/vga/graphics.hpp>
 // Apps
 #include <apps/animation.hpp>
@@ -111,7 +112,7 @@ extern "C" void kernelEntry(void* boot_info, uint32_t magic)
     // Initialize info from bootloader
     bootInit(boot_info, magic, &handoff);
     paging_init(0);
-    FB::init(handoff.getFramebufferInfo());
+    graphics::init(handoff.getFramebufferInfo());
     // Print the splash screen to show we've booted into the kernel properly.
     printSplash();
     // Print some info to show we did things right
