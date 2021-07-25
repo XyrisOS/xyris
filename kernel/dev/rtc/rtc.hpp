@@ -1,28 +1,20 @@
 /**
- * @file rtc.hpp
+ * @file rtc.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
+ * @author Michel (JMallone) Gomes (michels@utfpr.edu.br)
  * @brief
- * @version 0.3
- * @date 2019-11-18
+ * @version 0.4
+ * @date 2021-07-25
  *
- * @copyright Copyright the Panix Contributors (c) 2019
+ * @copyright Copyright the Panix Contributors (c) 2021
  *
+ * References:
+ *         https://github.com/limine-bootloader/limine/blob/trunk/stage23/lib/time.c
+ *         https://en.wikipedia.org/wiki/Julian_day
  */
 #pragma once
 
 #include <stdint.h>
-
-#define RTC_CMOS_PORT       0x70
-#define RTC_DATA_PORT       0x71
-#define RTC_CURRENT_YEAR    2019    // Needs to be updated every year!
-#define RTC_CURRENT_CENTURY 0       // Needs to be updated every century!
-
-extern uint32_t rtc_second; // Current UTC second
-extern uint32_t rtc_minute; // Current UTC minute
-extern uint32_t rtc_hour;   // Current UTC hour
-extern uint32_t rtc_day;    // Current UTC day (not reliable)
-extern uint32_t rtc_month;  // Current UTC month
-extern uint32_t rtc_year;  // Current UTC year
 
 /**
  * @brief Initializes the Real Time Clock driver
@@ -31,8 +23,7 @@ extern uint32_t rtc_year;  // Current UTC year
  */
 void rtc_init();
 /**
- * @brief Prints the current time as specified by
- * the platforms Real Time Clock.
- *
+ * @brief Get a epoch number from rtc.
+ * @return uint64_t A epoch number
  */
-void rtc_print();
+uint64_t getEpoch();

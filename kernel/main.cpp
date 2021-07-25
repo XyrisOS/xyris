@@ -14,6 +14,7 @@
 #include <sys/tasks.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
+#include <lib/time.hpp>
 // Bootloader
 #include <boot/Handoff.hpp>
 // Memory management & paging
@@ -39,7 +40,6 @@
 #include <meta/defines.hpp>
 
 static Boot::Handoff handoff;
-
 static void kernel_print_splash();
 static void kernel_boot_tone();
 
@@ -81,7 +81,8 @@ void kernel_main(void *boot_info, uint32_t magic) {
     // Enable interrupts now that we're out of a critical area
     interrupts_enable();
     // Print some info to show we did things right
-    rtc_print();
+    Time::TimeDescriptor time;
+    time.printDate();
     // Get the CPU vendor and model data to print
     const char *vendor = cpu_get_vendor();
     const char *model = cpu_get_model();
@@ -95,7 +96,6 @@ void kernel_main(void *boot_info, uint32_t magic) {
     tasks_new(apps::show_primes, &status, TASK_READY, "prime_display");
     tasks_new(apps::spinner, &spinner, TASK_READY, "spinner");
     tasks_new(apps::testAnimation, &animation, TASK_READY, "testAnimation");
-
     // Now that we're done make a joyful noise
     kernel_boot_tone();
 
