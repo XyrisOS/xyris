@@ -32,6 +32,7 @@
 // Apps
 #include <apps/primes.hpp>
 #include <apps/spinner.hpp>
+#include <apps/animation.hpp>
 // Debug
 #include <lib/assert.hpp>
 // Meta
@@ -89,10 +90,11 @@ void kernel_main(void *boot_info, uint32_t magic) {
     rs232::printf("%s\n%s\n", vendor, model);
 
     tasks_init();
-    task_t compute, status, spinner;
+    task_t compute, status, spinner, animation;
     tasks_new(apps::find_primes, &compute, TASK_READY, "prime_compute");
     tasks_new(apps::show_primes, &status, TASK_READY, "prime_display");
     tasks_new(apps::spinner, &spinner, TASK_READY, "spinner");
+    tasks_new(apps::testAnimation, &animation, TASK_READY, "testAnimation");
 
     // Now that we're done make a joyful noise
     kernel_boot_tone();

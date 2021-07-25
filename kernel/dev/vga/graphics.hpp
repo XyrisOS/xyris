@@ -1,12 +1,15 @@
 /**
- * @file graphics.hpp
+ * @file graphics.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
+ * @author Michel (JMallone) Gomes (michels@utfpr.edu.br)
  * @brief
- * @version 0.1
- * @date 2021-06-11
+ * @version 0.2
+ * @date 2021-07-24
  *
  * @copyright Copyright the Panix Contributors (c) 2021
  *
+ * References:
+ *          https://wiki.osdev.org/Double_Buffering
  */
 #pragma once
 #include <stdint.h>
@@ -49,5 +52,18 @@ void pixel(uint32_t x, uint32_t y, uint32_t color);
  * @param color Hex color
  */
 void putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color);
+
+/**
+ * @brief Fill the backbuffer with '0'.
+ *
+ */
+void resetDoubleBuffer();
+
+/**
+ * @brief Swap the data on backbuffer to memory video buffer
+ * and show in the screen.
+ *
+ */
+void swap();
 
 };
