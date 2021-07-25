@@ -10,7 +10,7 @@
  */
 #include <arch/i386/idt.hpp>
 #include <lib/stdio.hpp>
-#include <dev/tty/tty.hpp>
+#include <dev/graphics/tty.hpp>
 
 struct idt_gate idt[IDT_ENTRIES];
 struct idt_register idt_reg;

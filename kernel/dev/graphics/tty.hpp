@@ -91,22 +91,19 @@ extern tty_vga_color color_fore;
 // Default colors set by tty_clear()
 extern tty_vga_color reset_back;
 extern tty_vga_color reset_fore;
+
 /**
  * @brief Shifts the entire TTY screen up by one line.
  *
  */
 void tty_shift_up();
+
 /**
  * @brief Clears the TTY and resets the cursor position.
  *
  */
 void tty_clear(tty_vga_color fore = VGA_DEFAULT_FORE, tty_vga_color back = VGA_DEFAULT_BACK);
-/**
- * @brief Resets the default TTY background and foreground
- * colors without clearing the screen.
- *
- */
-void tty_reset_defaults();
+
 /**
  * @brief Sets the indicator in the top right corner.
  * Used mostly for debugging interrupts.

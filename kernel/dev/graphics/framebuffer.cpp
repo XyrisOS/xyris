@@ -8,12 +8,14 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <dev/vga/framebuffer.hpp>
+#include <dev/graphics/framebuffer.hpp>
 // Types
 #include <stddef.h>
 #include <stdint.h>
 
 namespace graphics {
+
+static Framebuffer* framebuffer;
 
 Framebuffer::Framebuffer()
     : _addr(NULL)
@@ -30,6 +32,7 @@ Framebuffer::Framebuffer()
     , _memoryModel(Undefined_FBMM)
 {
     // Default constructor.
+    framebuffer = this;
 }
 
 Framebuffer::Framebuffer(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr)
@@ -47,6 +50,7 @@ Framebuffer::Framebuffer(uint32_t width, uint32_t height, uint16_t depth, uint32
     , _memoryModel(Undefined_FBMM)
 {
     // Common parameters constructor
+    framebuffer = this;
 }
 
 Framebuffer::Framebuffer(uint32_t width, uint32_t height,
@@ -69,6 +73,12 @@ Framebuffer::Framebuffer(uint32_t width, uint32_t height,
     , _memoryModel(model)
 {
     // All parameters constructor
+    framebuffer = this;
+}
+
+Framebuffer* getFramebuffer()
+{
+    return framebuffer;
 }
 
 } // !namespace FB

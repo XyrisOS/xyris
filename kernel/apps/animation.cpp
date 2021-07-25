@@ -9,8 +9,8 @@
  *
  */
 #include <apps/animation.hpp>
-#include <dev/vga/graphics.hpp>
-#include <dev/vga/framebuffer.hpp>
+#include <dev/graphics/graphics.hpp>
+#include <dev/graphics/framebuffer.hpp>
 
 namespace Apps {
 

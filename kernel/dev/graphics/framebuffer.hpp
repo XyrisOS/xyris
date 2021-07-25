@@ -72,4 +72,11 @@ private:
     FramebufferMemoryModel _memoryModel;
 };
 
-} // !namespace graphics
+/**
+ * @brief Get a pointer to the active framebuffer
+ * 
+ * @return Framebuffer* Pointer to active framebuffer
+ */
+Framebuffer* getFramebuffer();
+
+}; // !namespace graphics

@@ -13,7 +13,7 @@
 #include <arch/i386/gdt.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
-#include <dev/tty/tty.hpp>
+#include <dev/graphics/tty.hpp>
 
 // Defined in the gdt_flush.s file.
 extern "C" void gdt_flush(uintptr_t);

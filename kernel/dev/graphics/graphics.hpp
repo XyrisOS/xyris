@@ -13,23 +13,15 @@
  */
 #pragma once
 #include <stdint.h>
-#include <dev/vga/framebuffer.hpp>
+#include <dev/graphics/framebuffer.hpp>
 
 namespace graphics {
 
 /**
- * @brief Checks if the framebuffer has been initialized
- *
- * @return true if the framebuffer is initialized, otherwise false
- */
-bool isInitialized();
-
-/**
  * @brief Initializes the framebuffer (if available)
  *
- * @param info
  */
-void init(Framebuffer info);
+void init();
 
 /**
  * @brief Draws a pixel at a given coordinate.
@@ -64,12 +56,5 @@ void resetDoubleBuffer();
  *
  */
 void swap();
-
-/**
- * @brief Get a pointer to the active framebuffer
- *
- * @return Framebuffer* Pointer to active framebuffer
- */
-Framebuffer* getFramebuffer();
 
 }; // !namespace graphics

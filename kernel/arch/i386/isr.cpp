@@ -10,7 +10,7 @@
  */
 #include <arch/i386/isr.hpp>
 #include <lib/stdio.hpp>
-#include <dev/tty/tty.hpp>
+#include <dev/graphics/tty.hpp>
 
 // Private array of interrupt handlers
 isr_cb_t interrupt_handlers[256];

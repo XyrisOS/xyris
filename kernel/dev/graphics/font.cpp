@@ -10,8 +10,8 @@
  * References:
  *     https://github.com/skiftOS/skift/blob/main/kernel/system/graphics/Font.cpp
  */
-#include <dev/vga/font.hpp>
-#include <dev/vga/graphics.hpp>
+#include <dev/graphics/font.hpp>
+#include <dev/graphics/graphics.hpp>
 #include <stdint.h>
 
 namespace graphics {

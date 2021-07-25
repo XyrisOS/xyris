@@ -22,13 +22,13 @@
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
 // Generic devices
+#include <dev/graphics/framebuffer.hpp>
+#include <dev/graphics/font.hpp>
+#include <dev/graphics/graphics.hpp>
+#include <dev/graphics/tty.hpp>
 #include <dev/rtc/rtc.hpp>
 #include <dev/serial/rs232.hpp>
 #include <dev/spkr/spkr.hpp>
-#include <dev/tty/tty.hpp>
-#include <dev/vga/framebuffer.hpp>
-#include <dev/vga/font.hpp>
-#include <dev/vga/graphics.hpp>
 // Apps
 #include <apps/animation.hpp>
 #include <apps/primes.hpp>
@@ -112,7 +112,7 @@ extern "C" void kernelEntry(void* boot_info, uint32_t magic)
     // Initialize info from bootloader
     bootInit(boot_info, magic, &handoff);
     paging_init(0);
-    graphics::init(handoff.getFramebufferInfo());
+    graphics::init();
     // Print the splash screen to show we've booted into the kernel properly.
     printSplash();
     // Print some info to show we did things right

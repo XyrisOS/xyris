@@ -13,9 +13,9 @@
  * @copyright Copyright Keeton Feavel et al (c) 2020
  *
  */
-#include <dev/tty/tty.hpp>
-#include <dev/vga/framebuffer.hpp>
-#include <dev/vga/graphics.hpp>
+#include <dev/graphics/framebuffer.hpp>
+#include <dev/graphics/graphics.hpp>
+#include <dev/graphics/tty.hpp>
 #include <lib/stdio.hpp>
 #include <stddef.h>
 
@@ -45,22 +45,12 @@ void tty_shift_up()
 
 void tty_clear(tty_vga_color fore, tty_vga_color back)
 {
-    color_fore = fore;
-    color_back = back;
-    reset_fore = fore;
-    reset_back = back;
-    // Clear the framebuffer
-    graphics::Framebuffer* fb = graphics::getFramebuffer();
-    graphics::putrect(0, 0, fb->getWidth(), fb->getHeight(), reset_back);
-    // Reset the cursor position
     tty_coords_x = 0;
     tty_coords_y = 0;
-}
-
-void tty_reset_defaults()
-{
-    color_back = VGA_DEFAULT_BACK;
-    color_fore = VGA_DEFAULT_FORE;
+    color_fore = reset_fore = fore;
+    color_back = reset_back = back;
+    graphics::Framebuffer* fb = graphics::getFramebuffer();
+    graphics::putrect(0, 0, fb->getWidth(), fb->getHeight(), reset_back);
 }
 
 void set_indicator(tty_vga_color color)

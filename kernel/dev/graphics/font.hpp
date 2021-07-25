@@ -9,7 +9,7 @@
  * 
  */
 #pragma once
-#include <dev/vga/framebuffer.hpp>
+#include <dev/graphics/framebuffer.hpp>
 #include <stdint.h>
 
 #define FONT_WIDTH 8

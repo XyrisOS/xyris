@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 // Generic devices
-#include <dev/vga/framebuffer.hpp>
+#include <dev/graphics/framebuffer.hpp>
 
 namespace Boot {
 

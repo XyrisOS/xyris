@@ -15,8 +15,8 @@
 #include <lib/string.hpp>
 #include <mem/paging.hpp>
 // Generic devices
+#include <dev/graphics/tty.hpp>
 #include <dev/serial/rs232.hpp>
-#include <dev/tty/tty.hpp>
 // Bootloaders
 #include <multiboot/multiboot2.h>
 #include <stivale/stivale2.h>

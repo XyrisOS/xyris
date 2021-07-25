@@ -12,7 +12,7 @@
 #include <arch/arch.hpp>
 #include <meta/sections.hpp>
 #include <meta/compiler.hpp>
-#include <dev/tty/tty.hpp>
+#include <dev/graphics/tty.hpp>
 
 // Provide a function prototype to make the compiler warnings happy. Don't
 // want to make it public though, so we won't put it in the panic header.
