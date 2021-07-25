@@ -56,6 +56,37 @@ irq_common_stub:
     iret
     ; These irets need to be iretq's when in long mode
 
+; Macro expansions for isr and irq
+
+%macro m_isr_2 1
+
+global isr%1
+isr%1:
+    push 0
+    push %1
+    jmp isr_common_stub
+
+%endmacro
+
+%macro m_isr_1 1
+
+global isr%1
+isr%1:
+    push %1
+    jmp isr_common_stub
+
+%endmacro
+
+%macro m_irq_2 2
+
+global irq%1
+irq%1:
+    push %1
+    push %2
+    jmp irq_common_stub
+
+%endmacro
+
 ; We don't get information about which interrupt was called
 ; when the handler is run, so we will need to have a different handler
 ; for every interrupt.
@@ -69,221 +100,69 @@ irq_common_stub:
 ; exception has an error code, $0 will not be pushed as
 ; the CPU already does that for us.
 ;
-; 0: Divide By Zero Exception
-global isr0
-isr0:
-    push 0
-    push 0
-    jmp isr_common_stub
+m_isr_2 0 ; 0: Divide By Zero Exception
 
-; 1: Debug Exception
-global isr1
-isr1:
-    push 0
-    push 1
-    jmp isr_common_stub
+m_isr_2 1 ; 1: Debug Exception
 
-; 2: Non Maskable Interrupt Exception
-global isr2
-isr2:
-    push 0
-    push 2
-    jmp isr_common_stub
+m_isr_2 2 ; 2: Non Maskable Interrupt Exception
 
-; 3: Int 3 Exception
-global isr3
-isr3:
-    push 0
-    push 3
-    jmp isr_common_stub
+m_isr_2 3 ; 3: Int 3 Exception
 
-; 4: INTO Exception
-global isr4
-isr4:
-    push 0
-    push 4
-    jmp isr_common_stub
+m_isr_2 4 ; 4: INTO Exception
 
-; 5: Out of Bounds Exception
-global isr5
-isr5:
-    push 0
-    push 5
-    jmp isr_common_stub
+m_isr_2 5 ; 5: Out of Bounds Exception
 
-; 6: Invalid Opcode Exception
-global isr6
-isr6:
-    push 0
-    push 6
-    jmp isr_common_stub
+m_isr_2 6 ; 6: Invalid Opcode Exception
 
-; 7: Coprocessor Not Available Exception
-global isr7
-isr7:
-    push 0
-    push 7
-    jmp isr_common_stub
+m_isr_2 7 ; 7: Coprocessor Not Available Exception
 
-; 8: Double Fault Exception (With Error Code!)
-global isr8
-isr8:
-    push 8
-    jmp isr_common_stub
+m_isr_1 8 ; 8: Double Fault Exception (With Error Code!)
 
-; 9: Coprocessor Segment Overrun Exception
-global isr9
-isr9:
-    push 0
-    push 9
-    jmp isr_common_stub
+m_isr_2 9 ; 9: Coprocessor Segment Overrun Exception
 
-; 10: Bad TSS Exception (With Error Code!)
-global isr10
-isr10:
-    push 10
-    jmp isr_common_stub
+m_isr_1 10 ; 10: Bad TSS Exception (With Error Code!)
 
-; 11: Segment Not Present Exception (With Error Code!)
-global isr11
-isr11:
-    push 11
-    jmp isr_common_stub
+m_isr_1 11 ; 11: Segment Not Present Exception (With Error Code!)
 
-; 12: Stack Fault Exception (With Error Code!)
-global isr12
-isr12:
-    push 12
-    jmp isr_common_stub
+m_isr_1 12 ; 12: Stack Fault Exception (With Error Code!)
 
-; 13: General Protection Fault Exception (With Error Code!)
-global isr13
-isr13:
-    push 13
-    jmp isr_common_stub
+m_isr_1 13 ; 13: General Protection Fault Exception (With Error Code!)
 
-; 14: Page Fault Exception (With Error Code!)
-global isr14
-isr14:
-    push 14
-    jmp isr_common_stub
+m_isr_1 14 ; 14: Page Fault Exception (With Error Code!)
 
-; 15: Reserved Exception
-global isr15
-isr15:
-    push 0
-    push 15
-    jmp isr_common_stub
+m_isr_2 15 ; 15: Reserved Exception
 
-; 16: Floating Point Exception
-global isr16
-isr16:
-    push 0
-    push 16
-    jmp isr_common_stub
+m_isr_2 16 ; 16: Floating Point Exception
 
-; 17: Alignment Check Exception (With Error Code!)
-global isr17
-isr17:
-    push 17
-    jmp isr_common_stub
+m_isr_1 17 ; 17: Alignment Check Exception (With Error Code!)
 
-; 18: Machine Check Exception
-global isr18
-isr18:
-    push 0
-    push 18
-    jmp isr_common_stub
+m_isr_2 18 ; 18: Machine Check Exception
 
-; 19: Reserved
-global isr19
-isr19:
-    push 0
-    push 19
-    jmp isr_common_stub
+m_isr_2 19 ; 19: Reserved
 
-; 20: Reserved
-global isr20
-isr20:
-    push 0
-    push 20
-    jmp isr_common_stub
+m_isr_2 20 ; 20: Reserved
 
-; 21: Reserved
-global isr21
-isr21:
-    push 0
-    push 21
-    jmp isr_common_stub
+m_isr_2 21 ; 21: Reserved
 
-; 22: Reserved
-global isr22
-isr22:
-    push 0
-    push 22
-    jmp isr_common_stub
+m_isr_2 22 ; 22: Reserved
 
-; 23: Reserved
-global isr23
-isr23:
-    push 0
-    push 23
-    jmp isr_common_stub
+m_isr_2 23 ; 23: Reserved
 
-; 24: Reserved
-global isr24
-isr24:
-    push 0
-    push 24
-    jmp isr_common_stub
+m_isr_2 24 ; 24: Reserved
 
-; 25: Reserved
-global isr25
-isr25:
-    push 0
-    push 25
-    jmp isr_common_stub
+m_isr_2 25 ; 25: Reserved
 
-; 26: Reserved
-global isr26
-isr26:
-    push 0
-    push 26
-    jmp isr_common_stub
+m_isr_2 26 ; 26: Reserved
 
-; 27: Reserved
-global isr27
-isr27:
-    push 0
-    push 27
-    jmp isr_common_stub
+m_isr_2 27 ; 27: Reserved
 
-; 28: Reserved
-global isr28
-isr28:
-    push 0
-    push 28
-    jmp isr_common_stub
+m_isr_2 28 ; 28: Reserved
 
-; 29: Reserved
-global isr29
-isr29:
-    push 0
-    push 29
-    jmp isr_common_stub
+m_isr_2 29 ; 29: Reserved
 
-; 30: Reserved (With Error Code!)
-global isr30
-isr30:
-    push 30
-    jmp isr_common_stub
+m_isr_1 30 ; 30: Reserved (With Error Code!)
 
-; 31: Reserved
-global isr31
-isr31:
-    push 0
-    push 31
-    jmp isr_common_stub
+m_isr_2 31 ; 31: Reserved
 
 ; All of the following Interrupt Requests are
 ; stubs for hardware interrupts such as device interrupts.
@@ -292,99 +171,35 @@ isr31:
 ; corresponding hardware interrupt value (starting at 32).
 ;
 ; Interrupt Request handlers
-; System timer (PIT)
-global irq0
-irq0:
-        push 0
-        push 32
-        jmp irq_common_stub
-; PS2 Keyboard
-global irq1
-irq1:
-        push 1
-        push 33
-        jmp irq_common_stub
-; PIC2
-global irq2
-irq2:
-        push 2
-        push 34
-        jmp irq_common_stub
-; COM2
-global irq3
-irq3:
-        push 3
-        push 35
-        jmp irq_common_stub
-; COM1
-global irq4
-irq4:
-        push 4
-        push 36
-        jmp irq_common_stub
-; LPT2
-global irq5
-irq5:
-        push 5
-        push 37
-        jmp irq_common_stub
-; Floppy Disk Drive
-global irq6
-irq6:
-        push 6
-        push 38
-        jmp irq_common_stub
-; LPT1
-global irq7
-irq7:
-        push 7
-        push 39
-        jmp irq_common_stub
-; CMOS Real Time Clock
-global irq8
-irq8:
-        push 8
-        push 40
-        jmp irq_common_stub
-; Unused / Generic
-global irq9
-irq9:
-        push 9
-        push 41
-        jmp irq_common_stub
-; Unused / Generic
-global irq10
-irq10:
-        push 10
-        push 42
-        jmp irq_common_stub
-; Unused / Generic
-global irq11
-irq11:
-        push 11
-        push 43
-        jmp irq_common_stub
-; PS2 Mouse
-global irq12
-irq12:
-        push 12
-        push 44
-        jmp irq_common_stub
-; Numeric Coprocessor
-global irq13
-irq13:
-        push 13
-        push 45
-        jmp irq_common_stub
-; IDE0 (HDD)
-global irq14
-irq14:
-        push 14
-        push 46
-        jmp irq_common_stub
-; IDE1 (HDD)
-global irq15
-irq15:
-        push 15
-        push 47
-        jmp irq_common_stub
+
+m_irq_2 0, 32 ; System timer (PIT)
+
+m_irq_2 1, 33 ; PS2 Keyboard
+
+m_irq_2 2, 34 ; PIC2
+
+m_irq_2 3, 35 ; COM2
+
+m_irq_2 4, 36 ; COM1
+
+m_irq_2 5, 37 ; LPT2
+
+m_irq_2 6, 38 ; Floppy Disk Drive
+
+m_irq_2 7, 39 ; LPT1
+
+m_irq_2 8, 40 ; CMOS Real Time Clock
+
+m_irq_2 9, 41 ; Unused / Generic
+
+m_irq_2 10, 42 ; Unused / Generic
+
+m_irq_2 11, 43 ; Unused / Generic
+
+m_irq_2 12, 44 ; PS2 Mouse
+
+m_irq_2 13, 45 ; Numeric Coprocessor
+
+m_irq_2 14, 46 ; IDE0 (HDD)
+
+m_irq_2 15, 47 ; IDE1 (HDD)
