@@ -1,4 +1,4 @@
-![Logo](https://github.com/panix-os/panix-os.github.io/blob/master/img/logo.png?raw=true)
+![Logo](.github/logo.png)
 
 <div style="text-align:center">
     <a href="https://github.com/panix-os/Panix/actions/workflows/c-cpp.yml"><img alt="C/C++ CI" src="https://github.com/panix-os/Panix/actions/workflows/c-cpp.yml/badge.svg"></a>
