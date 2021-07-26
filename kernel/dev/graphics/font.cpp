@@ -12,6 +12,7 @@
  */
 #include <dev/graphics/font.hpp>
 #include <dev/graphics/graphics.hpp>
+#include <lib/stdio.hpp>
 #include <stdint.h>
 
 namespace graphics {
@@ -156,20 +157,28 @@ static uint8_t fontData[FONT_COUNT][FONT_WIDTH] = {
 
 void Draw(char c, uint32_t x, uint32_t y, uint32_t fore)
 {
+    // Convert screen coordinates to pixel coordinates
+    x *= FONT_WIDTH;
+    y *= FONT_HEIGHT;
     // Draw the font glyph
     uint8_t fp = (uint8_t)c;
-    for (int fy = 0; fy < 9; fy++) {
-        for (int fx = 0; fx < 9; fx++) {
+    for (int fy = 0; fy <= FONT_HEIGHT; fy++) {
+        for (int fx = 0; fx <= FONT_WIDTH; fx++) {
             if (fx != FONT_WIDTH && fy != FONT_HEIGHT && (fontData[fp][fy] & (1 << fx))) {
                 // Current position is part of the font glyph.
                 pixel(x + fx, y + fy, fore);
             }
         }
     }
+    // Swap out the buffer in draw
+    graphics::swap();
 }
 
 void Draw(char c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back)
 {
+    // Convert screen coordinates to pixel coordinates
+    x *= FONT_WIDTH;
+    y *= FONT_HEIGHT;
     // Draw the font glyph
     uint8_t fp = (uint8_t)c;
     for (int fy = 0; fy < 9; fy++) {
@@ -183,6 +192,8 @@ void Draw(char c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back)
             }
         }
     }
+    // Swap out the buffer in draw
+    graphics::swap();
 }
 
 } // !font

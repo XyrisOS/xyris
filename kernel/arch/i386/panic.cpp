@@ -23,7 +23,6 @@ void panic_print_file(const char *file, uint32_t line, const char *func);
 void panic_print_register(struct registers *regs);
 
 void printPanicScreen() {
-    tty_clear(VGA_Black, VGA_White);
     char cow[256];
     ksprintf(
         cow,

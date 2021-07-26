@@ -11,9 +11,9 @@
  *
  */
 #include <arch/i386/gdt.hpp>
-#include <lib/string.hpp>
-#include <lib/stdio.hpp>
 #include <dev/graphics/tty.hpp>
+#include <lib/stdio.hpp>
+#include <lib/string.hpp>
 
 // Defined in the gdt_flush.s file.
 extern "C" void gdt_flush(uintptr_t);
@@ -21,9 +21,10 @@ extern "C" void gdt_flush(uintptr_t);
 void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags);
 // Define our local variables
 struct gdt_entry gdt_entries[5];
-struct gdt_ptr   gdt_ptr;
+struct gdt_ptr gdt_ptr;
 
-void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags) {
+void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags)
+{
     // 32-bit address space
     // Now we have to squeeze the (32-bit) limit into 2.5 regiters (20-bit).
     // This is done by discarding the 12 least significant bits, but this
@@ -37,24 +38,24 @@ void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags) {
     uint64_t descriptor = 0;
 
     // Create the high 32 bit segment
-    descriptor =  base         & 0xFF000000;    // base direct map
-    descriptor |= (base >> 16) & 0x000000FF;    // base 23-16 : 7-0
-    descriptor |= (flags << 8) & 0x00F0FF00;    // flags 16-11 : 24-19 7-0 : 15-8
-    descriptor |= limit        & 0x000F0000;    // limit direct map
+    descriptor = base & 0xFF000000;          // base direct map
+    descriptor |= (base >> 16) & 0x000000FF; // base 23-16 : 7-0
+    descriptor |= (flags << 8) & 0x00F0FF00; // flags 16-11 : 24-19 7-0 : 15-8
+    descriptor |= limit & 0x000F0000;        // limit direct map
     // Shift by 32 to move to the lower half of the section
     descriptor <<= 32;
     // Create the low 32 bit segment
-    descriptor |= (base << 16) & 0xFFFF0000;    // base 15-0 : 31-16
-    descriptor |= limit        & 0x0000FFFF;    // limit direct map
+    descriptor |= (base << 16) & 0xFFFF0000; // base 15-0 : 31-16
+    descriptor |= limit & 0x0000FFFF;        // limit direct map
     // Copy the descriptor value into our GDT entries array
     memcpy(&gdt_entries[num], &descriptor, sizeof(uint64_t));
 }
 
 //gdt_flush((uintptr_t)gdtp);
-void gdt_install() {
-    kprintf(DBG_INFO "Installing the GDT...\n");
+void gdt_install()
+{
     gdt_ptr.limit = (sizeof(struct gdt_entry) * 5) - 1;
-    gdt_ptr.base  = (uint32_t)&gdt_entries;
+    gdt_ptr.base = (uint32_t)&gdt_entries;
 
     gdt_set_gate(0, 0, 0, 0);                     // Null segment
     gdt_set_gate(1, 0, 0x000FFFFF, GDT_CODE_PL0); // Kernel code segment
@@ -63,5 +64,4 @@ void gdt_install() {
     gdt_set_gate(4, 0, 0x000FFFFF, GDT_DATA_PL3); // User mode data segment
 
     gdt_flush((uint32_t)&gdt_ptr);
-    kprintf(DBG_OKAY "Installed the GDT.\n");
 }

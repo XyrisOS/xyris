@@ -346,9 +346,9 @@ static int vprintf_help(unsigned c, void** ptr)
 *****************************************************************************/
 int kvprintf(const char* fmt, va_list args)
 {
-    put_mutex.Lock();
+    putLock.Lock();
     int retval = do_printf(fmt, args, vprintf_help, NULL);
-    put_mutex.Unlock();
+    putLock.Unlock();
     return retval;
 }
 /*****************************************************************************

@@ -27,10 +27,8 @@ void idt_set_gate(int n, uint32_t handler_addr) {
 }
 
 void load_idt() {
-    kprintf(DBG_INFO "Loading the IDT...\n");
     idt_reg.base = (uint32_t) &idt;
     idt_reg.limit = IDT_ENTRIES * sizeof(struct idt_gate) - 1;
     /* Don't make the mistake of loading &idt -- always load &idt_reg */
     asm volatile("lidt (%0)" : : "r" (&idt_reg) : "memory");
-    kprintf(DBG_OKAY "Loaded the IDT.\n");
 }

@@ -27,6 +27,7 @@ namespace font {
  * @param fore Character hex color
  */
 void Draw(char c, uint32_t x, uint32_t y, uint32_t fore);
+
 /**
  * @brief Draw the character at the given coordinates in the given color.
  * 

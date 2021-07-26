@@ -9,13 +9,41 @@
  *
  */
 
-#include <dev/graphics/tty.hpp>
 #include <dev/graphics/font.hpp>
 #include <dev/graphics/framebuffer.hpp>
 #include <dev/graphics/graphics.hpp>
+#include <dev/graphics/tty.hpp>
 #include <lib/mutex.hpp>
 #include <lib/stdio.hpp>
 #include <stddef.h>
+
+/**
+ * @brief ANSI color codes for use in functions
+ * like printf(). To change the color from the
+ * foreground to the background, add 10 to the
+ * desired color value.
+ * (i.e. ANSI_Red == 31 (fore)--> 41 (back))
+ *
+ */
+enum tty_ansi_color : uint16_t {
+    ANSI_Background = 10,
+    ANSI_Black = 30,
+    ANSI_Red = 31,
+    ANSI_Green = 32,
+    ANSI_Yellow = 33,
+    ANSI_Blue = 34,
+    ANSI_Magenta = 35,
+    ANSI_Cyan = 36,
+    ANSI_White = 37,
+    ANSI_BrightBlack = 90,
+    ANSI_BrightRed = 91,
+    ANSI_BrightGreen = 92,
+    ANSI_BrightYellow = 93,
+    ANSI_BrightBlue = 94,
+    ANSI_BrightMagenta = 95,
+    ANSI_BrightCyan = 96,
+    ANSI_BrightWhite = 97,
+};
 
 static uint16_t ansi_values[8] = { 0 };
 static size_t ansi_values_index = 0;
@@ -45,17 +73,17 @@ uint32_t ansi_vga_table[16] = {
     VGA_LightCyan, VGA_White
 };
 // Printing mutual exclusion
-Mutex put_mutex;
+Mutex putLock;
 
 int putchar(char c)
 {
     int retval;
     // must lock when writing to the screen
-    put_mutex.Lock();
+    putLock.Lock();
     // call the unlocked implementation of putchar
     retval = putchar_unlocked(c);
     // release the screen to be used by other tasks
-    put_mutex.Unlock();
+    putLock.Unlock();
     return retval;
 }
 
@@ -106,12 +134,12 @@ int putchar_unlocked(char c)
                     color_back = reset_back;
                 } else if (ansi_val >= ANSI_Black && ansi_val <= ANSI_White) {
                     color_fore = (tty_vga_color)ansi_vga_table[ansi_val - ANSI_Black];
-                } else if (ansi_val >= (ANSI_Black + 10) && ansi_val <= (ANSI_White + 10)) {
-                    color_back = (tty_vga_color)ansi_vga_table[ansi_val - (ANSI_Black + 10)];
+                } else if (ansi_val >= (ANSI_Black + ANSI_Background) && ansi_val <= (ANSI_White + ANSI_Background)) {
+                    color_back = (tty_vga_color)ansi_vga_table[ansi_val - (ANSI_Black + ANSI_Background)];
                 } else if (ansi_val >= ANSI_BrightBlack && ansi_val <= ANSI_BrightWhite) {
                     color_fore = (tty_vga_color)ansi_vga_table[ansi_val - ANSI_BrightBlack + 8];
-                } else if (ansi_val >= (ANSI_BrightBlack + 10) && ansi_val <= (ANSI_BrightWhite + 10)) {
-                    color_back = (tty_vga_color)ansi_vga_table[ansi_val - (ANSI_BrightBlack + 10) + 8];
+                } else if (ansi_val >= (ANSI_BrightBlack + ANSI_Background) && ansi_val <= (ANSI_BrightWhite + ANSI_Background)) {
+                    color_back = (tty_vga_color)ansi_vga_table[ansi_val - (ANSI_BrightBlack + ANSI_Background) + 8];
                 } // else it was an unknown code
             }
             goto normal;
@@ -163,17 +191,20 @@ int putchar_unlocked(char c)
         tty_coords_x = 0;
         break;
     }
+
     // Print the character
-    graphics::font::Draw(c, tty_coords_x, tty_coords_y, color_fore);
+    graphics::font::Draw(c, tty_coords_x++, tty_coords_y, 0xFFFFFF);
+
     // Move to the next line
     if (tty_coords_x >= X86_TTY_WIDTH) {
+        debugf("Move to the next line\n");
         tty_coords_x = 0;
         tty_coords_y++;
     }
     // Clear the screen
     if (tty_coords_y >= X86_TTY_HEIGHT) {
-        tty_shift_up();
-        //TODO: Reset the bottom line
+        debugf("Shift up the screen\n");
+        //TODO: Shift text up and reset the bottom line
         /*
         where = x86_bios_vga_mem + ((X86_TTY_HEIGHT - 1) * X86_TTY_WIDTH - 1);
         for (size_t col = 0; col < X86_TTY_WIDTH; ++col) {

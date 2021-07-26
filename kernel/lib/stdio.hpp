@@ -69,13 +69,13 @@ int putchar(char c);
 /**
  * @brief Prints a single character to the screen without locking the screen mutex
  *
- * Callers of this function *must* manually lock and unlock `put_mutex` when utilizing
+ * Callers of this function *must* manually lock and unlock `putLock` when utilizing
  * this function to draw to the screen.
  *
  * @param c the chraracter to be printed.
  */
 int putchar_unlocked(char c);
-extern Mutex put_mutex;
+extern Mutex putLock;
 /**
  * @brief Prints a given string to the kernel display.
  *

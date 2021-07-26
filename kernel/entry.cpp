@@ -61,7 +61,6 @@ static void devInit()
 
 static void printSplash()
 {
-    tty_clear();
     kprintf(
         "\033[93m"
         "Xyris %s\n"

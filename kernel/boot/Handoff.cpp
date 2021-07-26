@@ -56,7 +56,7 @@ Handoff::Handoff(void* handoff, uint32_t magic)
     } else {
         PANIC("Invalid bootloader information!");
     }
-    kprintf(DBG_INFO "Booted via %s\n", bootProtoName);
+    RS232::printf("Booted via %s\n", bootProtoName);
 }
 
 Handoff::~Handoff()

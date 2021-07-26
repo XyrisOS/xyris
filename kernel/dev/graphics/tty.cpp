@@ -19,6 +19,9 @@
 #include <lib/stdio.hpp>
 #include <stddef.h>
 
+#define INDICATOR_WIDTH 8
+#define INDICATOR_HEIGHT 16
+
 // Coorinate trackers
 uint8_t tty_coords_x = 0;
 uint8_t tty_coords_y = 0;
@@ -29,31 +32,13 @@ tty_vga_color color_fore = VGA_White;
 tty_vga_color reset_back = VGA_Black;
 tty_vga_color reset_fore = VGA_White;
 
-void tty_shift_up()
+namespace console {
+
+void Write(char* str, uint32_t fore, uint32_t back)
 {
-    // start on the second row
-    volatile uint16_t* where = x86_bios_vga_mem + X86_TTY_WIDTH;
-    for (size_t row = 1; row < X86_TTY_HEIGHT; ++row) {
-        for (size_t col = 0; col < X86_TTY_WIDTH; ++col) {
-            // copy the char to the previous row
-            *(where - X86_TTY_WIDTH) = *where;
-            // increment the pointer
-            ++where;
-        }
-    }
+    (void)str;
+    (void)fore;
+    (void)back;
 }
 
-void tty_clear(tty_vga_color fore, tty_vga_color back)
-{
-    tty_coords_x = 0;
-    tty_coords_y = 0;
-    color_fore = reset_fore = fore;
-    color_back = reset_back = back;
-    graphics::Framebuffer* fb = graphics::getFramebuffer();
-    graphics::putrect(0, 0, fb->getWidth(), fb->getHeight(), reset_back);
-}
-
-void set_indicator(tty_vga_color color)
-{
-    graphics::putrect(0, 0, 16, 32, color);
 }

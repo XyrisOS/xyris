@@ -24,13 +24,10 @@ void (* irq_func_ptr[])(void) = { irq0, irq1, irq2, irq3,   irq4,  irq5,  irq6, 
 /* Can't do this with a loop because we need the address
  * of the function names */
 void isr_install() {
-    kprintf(DBG_INFO "Initializing the IDT...\n");
     // Set all of the gate addresses
-    kprintf(DBG_INFO "Setting the ISRs...\n");
     for (int isr = 0; isr < 32; ++isr) {
         idt_set_gate(isr, (uint32_t)isr_func_ptr[isr]);
     }
-    kprintf(DBG_INFO "Remapping the PIC...\n");
     // Remap the PIC
     writeByte(0x20, 0x11);
     writeByte(0xA0, 0x11);
@@ -43,13 +40,11 @@ void isr_install() {
     writeByte(0x21, 0x0);
     writeByte(0xA1, 0x0);
     // Install the IRQs
-    kprintf(DBG_INFO "Setting the IRQs...\n");
     for (int irq = 0; irq < 16; ++irq) {
         idt_set_gate(32 + irq, (uint32_t)irq_func_ptr[irq]);
     }
     // Load the IDT now that we've registered all of our IDT, IRQ, and ISR addresses
     load_idt();
-    kprintf(DBG_OKAY "Loaded the ISR.\n");
 }
 
 extern "C" void register_interrupt_handler(uint8_t n, isr_cb_t handler) {
@@ -61,7 +56,6 @@ extern "C" void isr_handler(struct registers *r) {
 }
 
 extern "C" void irq_handler(struct registers *regs) {
-    set_indicator(VGA_Red);
     /* After every interrupt we need to send an EOI to the PICs
      * or they will not send another interrupt again */
     if (regs->int_num >= 40) {
@@ -71,9 +65,7 @@ extern "C" void irq_handler(struct registers *regs) {
 
     /* Handle the interrupt in a more modular way */
     if (interrupt_handlers[regs->int_num] != 0) {
-        set_indicator(VGA_Yellow);
         isr_cb_t handler = interrupt_handlers[regs->int_num];
         handler(regs);
     }
-    set_indicator(VGA_Green);
 }
