@@ -22,6 +22,9 @@ export VER_MAJOR  := "0"
 export VER_MINOR  := "4"
 export VER_PATCH  := "0"
 export VER_NAME   := "Phoenix"
+# Build output types
+export MODE       ?= debug
+export IMGTYPE    ?= img
 
 # ******************************
 # * Compiler Output Formatting *
@@ -62,7 +65,6 @@ export THIRDPARTY_DIR := $(ROOT)/thirdparty
 export ISOIMG         := $(PROJ_NAME).iso
 export IMGIMG         := $(PROJ_NAME).img
 export SYMBOLS        := $(KERNEL).sym
-export IMGTYPE        ?= img
 export RUNIMG         := $(PROJ_NAME).$(IMGTYPE)
 
 # Libraries
@@ -147,27 +149,25 @@ all: debug release
 debug: CPPFLAGS += -DDEBUG
 debug: CXXFLAGS += -ggdb3
 debug: CFLAGS += -ggdb3
-debug: $(KERNEL)
+debug: MODE := debug
+debug: $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 
 # Release build
-# This will be build by default since it
-# is the first target in the Makefile
 release: CXXFLAGS += -O3 -mno-avx
 release: CFLAGS += -O3 -mno-avx
-release: $(KERNEL)
+release: MODE := release
+release: $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 
 # Kernel (Linked With Libraries)
-.PHONY: $(KERNEL)
-$(KERNEL):
-	@printf "$(COLOR_INFO)Making Libs$(COLOR_NONE)\n"
+.PHONY: $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
+$(PRODUCTS_DIR)/$(MODE)/$(KERNEL):
+	@printf "$(COLOR_INFO)Making Libs ($(MODE))$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do        \
         $(MAKE) -C $$dir $(PROJ_NAME); \
     done
-	@printf "$(COLOR_INFO)Making Kernel$(COLOR_NONE)\n"
+	@printf "$(COLOR_INFO)Making Kernel ($(MODE))$(COLOR_NONE)\n"
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
-
-$(PRODUCTS_DIR)/$(KERNEL): $(KERNEL)
 
 # *********************
 # * Kernel Unit Tests *
@@ -178,7 +178,6 @@ unit-test:
 	@$(MAKE) -C $(TESTS_DIR) $@
 	@$(RM) -r $(BUILD_DIR)/$@
 	@$(RM) $(TESTS_DIR)/report.xml
-	@$(PRODUCTS_DIR)/$@ -r junit --out $(TESTS_DIR)/report.xml
 
 # ********************************
 # * Kernel Distribution Creation *
@@ -188,15 +187,15 @@ unit-test:
 dist: $(PRODUCTS_DIR)/$(RUNIMG)
 
 # Create bootable ISO
-$(PRODUCTS_DIR)/$(ISOIMG): $(PRODUCTS_DIR)/$(KERNEL)
+$(PRODUCTS_DIR)/$(ISOIMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 	@mkdir -p iso/boot/grub
-	@cp $(PRODUCTS_DIR)/$(KERNEL) iso/boot/
+	@cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) iso/boot/
 	@cp boot/grub.cfg iso/boot/grub/grub.cfg
 	@$(MKGRUB) -o $@ iso
 	@rm -rf iso
 
 # Create a bootable IMG
-$(PRODUCTS_DIR)/$(IMGIMG): $(PRODUCTS_DIR)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
+$(PRODUCTS_DIR)/$(IMGIMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
 	@printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
 	@rm -f $@
 	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
@@ -269,7 +268,7 @@ vbox: vbox-create
 
 .PHONY: docs
 docs:
-	@echo Generating docs according to the Doxyfile...
+	@printf "$(COLOR_INFO)Generating docs according to the Doxyfile...$(COLOR_NONE)\n"
 	@doxygen ./Doxyfile
 
 # ********************
@@ -279,11 +278,11 @@ docs:
 # Clear out objects and BIN
 .PHONY: clean
 clean:
-	@printf "$(COLOR_OK)Cleaning objects...$(COLOR_NONE)\n"
-	@$(RM) -r $(PRODUCTS_DIR)/$(KERNEL) $(PRODUCTS_DIR)/$(SYMBOLS) $(PRODUCTS_DIR)/$(ISOIMG)
-	@printf "$(COLOR_OK)Cleaning directories...$(COLOR_NONE)\n"
+	@printf "$(COLOR_INFO)Cleaning products...$(COLOR_NONE)\n"
+	@$(RM) -r $(PRODUCTS_DIR)
+	@printf "$(COLOR_INFO)Cleaning objects...$(COLOR_NONE)\n"
 	@$(RM) -r $(BUILD_DIR)
-	@printf "$(COLOR_OK)Cleaning libraries...$(COLOR_NONE)\n"
+	@printf "$(COLOR_INFO)Cleaning libraries...$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do \
 	    printf " -   " &&       \
         $(MAKE) -C $$dir clean; \

@@ -3,20 +3,38 @@ image: docker.pkg.github.com/panix-os/panixbuild/panixbuild:3.2.0
 aliases:
     # Building
     build: make -j$(nproc)
-    clean: make clean
     debug: make -j$(nproc) debug
     release: make -j$(nproc) release
+    # Testing
+    test:
+      script:
+        - make -j$(nproc) unit-test
+        - ./dist/unit-test
+    # Cleaning
+    clean: make clean
+    test-clean: make clean-tests
     # Distribution
-    image: make -j$(nproc) dist
-    img: make -j$(nproc) dist IMGTYPE=img
-    iso: make -j$(nproc) dist IMGTYPE=iso
+    image: make dist
+    img:
+      environment:
+        IMGTYPE: img
+      script: make dist
+    iso:
+      environment:
+        IMGTYPE: iso
+      script: make dist
     # Running
-    run: make run
+    run:
+      environment:
+        MODE: debug
+      script: make run
     run-debug:
+      environment:
+        MODE: debug
       script:
         - make run-debug &
         - i686-elf-gdb -x gdb.commands
-    # Testing
-    test: make -j$(nproc) unit-test
-    # Provide a way to compile & run the unit test w/ stdout
-    test-verbose: make -j$(nproc) unit-test && ./dist/unit-test
+    run-release:
+      environment:
+        MODE: release
+      script: make run

@@ -9,7 +9,8 @@
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Panix Contributors (c) 2019
 
-BUILD_DIR := $(BUILD_DIR)/kernel
+BUILD_DIR := $(BUILD_DIR)/$(MODE)/kernel
+PRODUCTS_DIR := $(PRODUCTS_DIR)/$(MODE)
 
 # *****************************
 # * Source Code & Directories *
@@ -100,4 +101,4 @@ $(PRODUCTS_DIR)/$(KERNEL): $(OBJ)
 	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(CXX) -o $@ $(OBJ) $(LDFLAGS)
 	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$(shell basename $@)\n"
-	@$(OBJCP) --only-keep-debug $(PRODUCTS_DIR)/$(KERNEL) $(PRODUCTS_DIR)/$(SYMBOLS)
+	@$(OBJCP) --only-keep-debug $@ $(PRODUCTS_DIR)/$(SYMBOLS)

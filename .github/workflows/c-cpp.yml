@@ -20,9 +20,8 @@ jobs:
       with:
         submodules: true
     # Unit Tests
-    # To ensure that CI continues, append `|| true`
     - name: Build and Run Tests
-      run: make unit-test || true
+      run: make unit-test && ./dist/unit-test -r junit --out ./tests/report.xml
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v2
       with:
