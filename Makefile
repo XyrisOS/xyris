@@ -185,6 +185,9 @@ unit-test:
 # * Kernel Distribution Creation *
 # ********************************
 
+# Create a bootable image (either img or iso)
+dist: $(PRODUCTS_DIR)/$(RUNIMG)
+
 # Create bootable ISO
 $(PRODUCTS_DIR)/$(ISOIMG): $(PRODUCTS_DIR)/$(KERNEL)
 	@mkdir -p iso/boot/grub
@@ -206,9 +209,6 @@ $(PRODUCTS_DIR)/$(IMGIMG): $(PRODUCTS_DIR)/$(KERNEL) $(THIRDPARTY_DIR)/limine/li
 	@echfs-utils -m -p0 $@ import $(THIRDPARTY_DIR)/limine/limine.sys limine.sys
 	@echfs-utils -m -p0 $@ import $< kernel
 	$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
-
-# Create a bootable image (either img or iso)
-dist: $(PRODUCTS_DIR)/$(RUNIMG)
 
 # *************************
 # * Virtual Machine Flags *
@@ -235,7 +235,7 @@ QEMU = $(shell which qemu-system-$(QEMU_ARCH))
 # Run Panix in QEMU
 .PHONY: run
 run: $(PRODUCTS_DIR)/$(RUNIMG)
-	$(QEMU)                           \
+	$(QEMU)                                      \
 	-drive file=$<,index=0,media=disk,format=raw \
 	$(QEMU_FLAGS)
 
@@ -243,12 +243,10 @@ run: $(PRODUCTS_DIR)/$(RUNIMG)
 .PHONY: run-debug
 run-debug: $(PRODUCTS_DIR)/$(RUNIMG)
 	# Start QEMU with debugger
-	($(QEMU)   \
+	$(QEMU)   \
 	-S -s      \
 	-drive file=$<,index=0,media=disk,format=raw \
-	$(QEMU_FLAGS) > /dev/null &)
-	sleep 1
-	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
+	$(QEMU_FLAGS) > /dev/null
 
 # Create Virtualbox VM
 .PHONY: vbox-create
@@ -274,10 +272,6 @@ vbox: vbox-create
 docs:
 	@echo Generating docs according to the Doxyfile...
 	@doxygen ./Doxyfile
-
-.PHONY: todo
-todo:
-	-@for file in $(ALLFILES:Makefile=); do fgrep -i -H --color=always -e TODO -e FIXME $$file; done; true
 
 # ********************
 # * Cleaning Targets *
