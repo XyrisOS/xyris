@@ -40,7 +40,6 @@ export COLOR_NONE := \033[m
 # CXX is also used as linker per
 # the OSDev wiki recommendations
 export NASM    := $(shell which nasm)
-export AS      := $(shell which i686-elf-as)
 export AR      := $(shell which i686-elf-ar)
 export CC      := $(shell which i686-elf-gcc)
 export CXX     := $(shell which i686-elf-g++)

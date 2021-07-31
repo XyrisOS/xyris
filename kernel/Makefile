@@ -88,11 +88,6 @@ $(BUILD_DIR)/%.o: %.cpp $(HEADERS)
 	@$(OBJ_DIRS_MAKE)
 	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -std=c++17 -MMD -c -o $@ $<
-# GAS assembly -> object
-$(BUILD_DIR)/%.o: %.s
-	@$(OBJ_DIRS_MAKE)
-	@printf "$(COLOR_COM)(AS)$(COLOR_NONE)\t$(shell basename $@)\n"
-	@$(AS) $(ASFLAGS) -o $@ $<
 # NASM assembly -> object
 $(BUILD_DIR)/%.o: %.S
 	@$(OBJ_DIRS_MAKE)
