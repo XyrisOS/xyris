@@ -159,7 +159,6 @@ release: MODE := release
 release: $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 
 # Kernel (Linked With Libraries)
-.PHONY: $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 $(PRODUCTS_DIR)/$(MODE)/$(KERNEL):
 	@printf "$(COLOR_INFO)Making Libs ($(MODE))$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do        \

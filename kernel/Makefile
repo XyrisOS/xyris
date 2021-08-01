@@ -10,7 +10,6 @@
 # Copyright the Panix Contributors (c) 2019
 
 BUILD_DIR := $(BUILD_DIR)/$(MODE)/kernel
-PRODUCTS_DIR := $(PRODUCTS_DIR)/$(MODE)
 
 # *****************************
 # * Source Code & Directories *
@@ -94,11 +93,12 @@ $(BUILD_DIR)/%.o: %.S
 	@$(OBJ_DIRS_MAKE)
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(NASM) -f elf32 -o $@ $<
+# Kernel object alias
+$(KERNEL): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 # Kernel object
-$(KERNEL): $(PRODUCTS_DIR)/$(KERNEL)
-$(PRODUCTS_DIR)/$(KERNEL): $(OBJ)
-	@mkdir -p $(PRODUCTS_DIR)
+$(PRODUCTS_DIR)/$(MODE)/$(KERNEL): $(OBJ)
+	@mkdir -p $(PRODUCTS_DIR)/$(MODE)
 	@printf "$(COLOR_COM)(LD)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(CXX) -o $@ $(OBJ) $(LDFLAGS)
 	@printf "$(COLOR_COM)(OBJCP)$(COLOR_NONE)\t$(shell basename $@)\n"
-	@$(OBJCP) --only-keep-debug $@ $(PRODUCTS_DIR)/$(SYMBOLS)
+	@$(OBJCP) --only-keep-debug $@ $(PRODUCTS_DIR)/$(MODE)/$(SYMBOLS)
