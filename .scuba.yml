@@ -2,9 +2,15 @@ image: docker.pkg.github.com/panix-os/panixbuild/panixbuild:3.2.0
 
 aliases:
     # Building
-    build: make -j$(nproc)
-    debug: make -j$(nproc) debug
-    release: make -j$(nproc) release
+    build: make -j$(nproc) all
+    debug:
+      environment:
+        MODE: debug
+      script: make -j$(nproc)
+    release:
+      environment:
+        MODE: release
+      script: make -j$(nproc)
     # Testing
     test:
       script:
@@ -14,14 +20,25 @@ aliases:
     clean: make clean
     test-clean: make clean-tests
     # Distribution
-    image: make dist
-    img:
+    img-debug:
       environment:
         IMGTYPE: img
+        MODE: debug
       script: make dist
-    iso:
+    img-release:
+      environment:
+        IMGTYPE: img
+        MODE: release
+      script: make dist
+    iso-debug:
       environment:
         IMGTYPE: iso
+        MODE: debug
+      script: make dist
+    iso-release:
+      environment:
+        IMGTYPE: iso
+        MODE: release
       script: make dist
     # Running
     run:

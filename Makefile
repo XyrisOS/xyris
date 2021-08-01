@@ -62,10 +62,11 @@ export LIBRARY_DIR    := $(ROOT)/libs
 export TESTS_DIR      := $(ROOT)/tests
 export PRODUCTS_DIR   := $(ROOT)/dist
 export THIRDPARTY_DIR := $(ROOT)/thirdparty
-export ISOIMG         := $(PROJ_NAME).iso
-export IMGIMG         := $(PROJ_NAME).img
+# Products
+export ISO            := $(PROJ_NAME).iso
+export IMG            := $(PROJ_NAME).img
 export SYMBOLS        := $(KERNEL).sym
-export RUNIMG         := $(PROJ_NAME).$(IMGTYPE)
+export BOOTIMG        := $(PROJ_NAME).$(IMGTYPE)
 
 # Libraries
 export LIB_DIRS := $(shell find $(LIBRARY_DIR) -mindepth 1 -maxdepth 1 -type d)
@@ -143,20 +144,15 @@ export LDFLAGS :=       \
 # * Kernel Build Targets *
 # ************************
 
-all: debug release
-
-# Debug build
-debug: CPPFLAGS += -DDEBUG
-debug: CXXFLAGS += -ggdb3
-debug: CFLAGS += -ggdb3
-debug: MODE := debug
-debug: $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
-
-# Release build
-release: CXXFLAGS += -O3 -mno-avx
-release: CFLAGS += -O3 -mno-avx
-release: MODE := release
-release: $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
+ifeq ($(MODE), "debug")
+    CPPFLAGS += -DDEBUG
+	CXXFLAGS += -ggdb3
+	CFLAGS += -ggdb3
+else
+    CPPFLAGS += -DRELEASE
+	CXXFLAGS += -O3 -mno-avx
+	CFLAGS += -O3 -mno-avx
+endif
 
 # Kernel (Linked With Libraries)
 $(PRODUCTS_DIR)/$(MODE)/$(KERNEL):
@@ -167,6 +163,12 @@ $(PRODUCTS_DIR)/$(MODE)/$(KERNEL):
 	@printf "$(COLOR_INFO)Making Kernel ($(MODE))$(COLOR_NONE)\n"
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
+
+# Hacky way to build all targets. This target cannot
+# be the first one otherwise it's a circular dependency.
+all:
+	@$(MAKE) MODE=debug
+	@$(MAKE) MODE=release
 
 # *********************
 # * Kernel Unit Tests *
@@ -183,19 +185,19 @@ unit-test:
 # ********************************
 
 # Create a bootable image (either img or iso)
-dist: $(PRODUCTS_DIR)/$(RUNIMG)
+dist: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
 
 # Create bootable ISO
-$(PRODUCTS_DIR)/$(ISOIMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
-	@mkdir -p iso/boot/grub
-	@cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) iso/boot/
-	@cp boot/grub.cfg iso/boot/grub/grub.cfg
-	@$(MKGRUB) -o $@ iso
-	@rm -rf iso
+$(PRODUCTS_DIR)/$(MODE)/$(ISO): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
+	@mkdir -p $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub
+	@cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(PRODUCTS_DIR)/$(MODE)/iso/boot/
+	@cp boot/grub.cfg $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub/grub.cfg
+	@$(MKGRUB) -o $@ $(PRODUCTS_DIR)/$(MODE)/iso
+	@rm -rf $(PRODUCTS_DIR)/$(MODE)/iso
 
 # Create a bootable IMG
-$(PRODUCTS_DIR)/$(IMGIMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
-	@printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
+$(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
+	@printf "$(COLOR_INFO)Making Limine boot image ($(MODE))$(COLOR_NONE)\n"
 	@rm -f $@
 	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
 	@parted -s $@ mklabel msdos
@@ -231,14 +233,14 @@ QEMU = $(shell which qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: $(PRODUCTS_DIR)/$(RUNIMG)
+run: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
 	$(QEMU)                                      \
 	-drive file=$<,index=0,media=disk,format=raw \
 	$(QEMU_FLAGS)
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: run-debug
-run-debug: $(PRODUCTS_DIR)/$(RUNIMG)
+run-debug: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
 	# Start QEMU with debugger
 	$(QEMU)   \
 	-S -s      \
@@ -247,7 +249,7 @@ run-debug: $(PRODUCTS_DIR)/$(RUNIMG)
 
 # Create Virtualbox VM
 .PHONY: vbox-create
-vbox-create: $(PRODUCTS_DIR)/$(ISOIMG)
+vbox-create: $(PRODUCTS_DIR)/$(ISO)
 	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCTS_DIR)
 	$(VBOX) modifyvm $(VM_NAME)                 \
 	--memory 256 --ioapic on --cpus 2 --vram 16 \
@@ -255,7 +257,7 @@ vbox-create: $(PRODUCTS_DIR)/$(ISOIMG)
 	--audiocontroller sb16 --uart1 0x3f8 4      \
 	--uartmode1 file $(shell pwd)/com1.txt
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCTS_DIR)/$(ISOIMG)
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCTS_DIR)/$(ISO)
 
 .PHONY: vbox-create
 vbox: vbox-create

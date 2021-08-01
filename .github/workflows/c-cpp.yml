@@ -34,25 +34,21 @@ jobs:
         path: tests/report.xml
     # Debug
     - name: 'Build Kernel (Debug)'
-      run: make debug
+      run: make MODE=debug
     - name: 'Build Image (Debug)'
-      run: make dist
+      run: make dist MODE=debug
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
         name: os-image-debug
-        path: dist/panix.img
-    # Need to clean in between debug and
-    # release for Make to rebuild properly.
-    - name: 'Clean'
-      run: make clean
+        path: dist/debug/panix.img
     # Release
     - name: 'Build Kernel (Release)'
-      run: make release
+      run: make MODE=release
     - name: 'Build Image (Release)'
-      run: make dist
+      run: make dist MODE=release
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
         name: os-image-release
-        path: dist/panix.img
+        path: dist/release/panix.img
