@@ -22,6 +22,9 @@ export VER_MAJOR  := "0"
 export VER_MINOR  := "4"
 export VER_PATCH  := "0"
 export VER_NAME   := "Phoenix"
+# Build output types
+export MODE       ?= debug
+export IMGTYPE    ?= img
 
 # ******************************
 # * Compiler Output Formatting *
@@ -40,7 +43,6 @@ export COLOR_NONE := \033[m
 # CXX is also used as linker per
 # the OSDev wiki recommendations
 export NASM    := $(shell which nasm)
-export AS      := $(shell which i686-elf-as)
 export AR      := $(shell which i686-elf-ar)
 export CC      := $(shell which i686-elf-gcc)
 export CXX     := $(shell which i686-elf-g++)
@@ -60,11 +62,11 @@ export LIBRARY_DIR    := $(ROOT)/libs
 export TESTS_DIR      := $(ROOT)/tests
 export PRODUCTS_DIR   := $(ROOT)/dist
 export THIRDPARTY_DIR := $(ROOT)/thirdparty
-export ISOIMG         := $(PROJ_NAME).iso
-export IMGIMG         := $(PROJ_NAME).img
+# Products
+export ISO            := $(PROJ_NAME).iso
+export IMG            := $(PROJ_NAME).img
 export SYMBOLS        := $(KERNEL).sym
-export IMGTYPE        ?= img
-export RUNIMG         := $(PROJ_NAME).$(IMGTYPE)
+export BOOTIMG        := $(PROJ_NAME).$(IMGTYPE)
 
 # Libraries
 export LIB_DIRS := $(shell find $(LIBRARY_DIR) -mindepth 1 -maxdepth 1 -type d)
@@ -142,33 +144,31 @@ export LDFLAGS :=       \
 # * Kernel Build Targets *
 # ************************
 
-all: debug release
-
-# Debug build
-debug: CPPFLAGS += -DDEBUG
-debug: CXXFLAGS += -ggdb3
-debug: CFLAGS += -ggdb3
-debug: $(KERNEL)
-
-# Release build
-# This will be build by default since it
-# is the first target in the Makefile
-release: CXXFLAGS += -O3 -mno-avx
-release: CFLAGS += -O3 -mno-avx
-release: $(KERNEL)
+ifeq ($(MODE), "debug")
+    CPPFLAGS += -DDEBUG
+	CXXFLAGS += -ggdb3
+	CFLAGS += -ggdb3
+else
+    CPPFLAGS += -DRELEASE
+	CXXFLAGS += -O3 -mno-avx
+	CFLAGS += -O3 -mno-avx
+endif
 
 # Kernel (Linked With Libraries)
-.PHONY: $(KERNEL)
-$(KERNEL):
-	@printf "$(COLOR_INFO)Making Libs$(COLOR_NONE)\n"
+$(PRODUCTS_DIR)/$(MODE)/$(KERNEL):
+	@printf "$(COLOR_INFO)Making Libs ($(MODE))$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do        \
         $(MAKE) -C $$dir $(PROJ_NAME); \
     done
-	@printf "$(COLOR_INFO)Making Kernel$(COLOR_NONE)\n"
+	@printf "$(COLOR_INFO)Making Kernel ($(MODE))$(COLOR_NONE)\n"
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
 
-$(PRODUCTS_DIR)/$(KERNEL): $(KERNEL)
+# Hacky way to build all targets. This target cannot
+# be the first one otherwise it's a circular dependency.
+all:
+	@$(MAKE) MODE=debug
+	@$(MAKE) MODE=release
 
 # *********************
 # * Kernel Unit Tests *
@@ -179,23 +179,25 @@ unit-test:
 	@$(MAKE) -C $(TESTS_DIR) $@
 	@$(RM) -r $(BUILD_DIR)/$@
 	@$(RM) $(TESTS_DIR)/report.xml
-	@$(PRODUCTS_DIR)/$@ -r junit --out $(TESTS_DIR)/report.xml
 
 # ********************************
 # * Kernel Distribution Creation *
 # ********************************
 
+# Create a bootable image (either img or iso)
+dist: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
+
 # Create bootable ISO
-$(PRODUCTS_DIR)/$(ISOIMG): $(PRODUCTS_DIR)/$(KERNEL)
-	@mkdir -p iso/boot/grub
-	@cp $(PRODUCTS_DIR)/$(KERNEL) iso/boot/
-	@cp boot/grub.cfg iso/boot/grub/grub.cfg
-	@$(MKGRUB) -o $@ iso
-	@rm -rf iso
+$(PRODUCTS_DIR)/$(MODE)/$(ISO): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
+	@mkdir -p $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub
+	@cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(PRODUCTS_DIR)/$(MODE)/iso/boot/
+	@cp boot/grub.cfg $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub/grub.cfg
+	@$(MKGRUB) -o $@ $(PRODUCTS_DIR)/$(MODE)/iso
+	@rm -rf $(PRODUCTS_DIR)/$(MODE)/iso
 
 # Create a bootable IMG
-$(PRODUCTS_DIR)/$(IMGIMG): $(PRODUCTS_DIR)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
-	@printf "$(COLOR_INFO)Making Limine boot image$(COLOR_NONE)\n"
+$(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
+	@printf "$(COLOR_INFO)Making Limine boot image ($(MODE))$(COLOR_NONE)\n"
 	@rm -f $@
 	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
 	@parted -s $@ mklabel msdos
@@ -206,9 +208,6 @@ $(PRODUCTS_DIR)/$(IMGIMG): $(PRODUCTS_DIR)/$(KERNEL) $(THIRDPARTY_DIR)/limine/li
 	@echfs-utils -m -p0 $@ import $(THIRDPARTY_DIR)/limine/limine.sys limine.sys
 	@echfs-utils -m -p0 $@ import $< kernel
 	$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
-
-# Create a bootable image (either img or iso)
-dist: $(PRODUCTS_DIR)/$(RUNIMG)
 
 # *************************
 # * Virtual Machine Flags *
@@ -234,25 +233,23 @@ QEMU = $(shell which qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: $(PRODUCTS_DIR)/$(RUNIMG)
-	$(QEMU)                           \
+run: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
+	$(QEMU)                                      \
 	-drive file=$<,index=0,media=disk,format=raw \
 	$(QEMU_FLAGS)
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: run-debug
-run-debug: $(PRODUCTS_DIR)/$(RUNIMG)
+run-debug: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
 	# Start QEMU with debugger
-	($(QEMU)   \
+	$(QEMU)   \
 	-S -s      \
 	-drive file=$<,index=0,media=disk,format=raw \
-	$(QEMU_FLAGS) > /dev/null &)
-	sleep 1
-	wmctrl -xr qemu.Qemu-system-$(QEMU_ARCH) -b add,above
+	$(QEMU_FLAGS) > /dev/null
 
 # Create Virtualbox VM
 .PHONY: vbox-create
-vbox-create: $(PRODUCTS_DIR)/$(ISOIMG)
+vbox-create: $(PRODUCTS_DIR)/$(ISO)
 	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCTS_DIR)
 	$(VBOX) modifyvm $(VM_NAME)                 \
 	--memory 256 --ioapic on --cpus 2 --vram 16 \
@@ -260,7 +257,7 @@ vbox-create: $(PRODUCTS_DIR)/$(ISOIMG)
 	--audiocontroller sb16 --uart1 0x3f8 4      \
 	--uartmode1 file $(shell pwd)/com1.txt
 	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCTS_DIR)/$(ISOIMG)
+	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCTS_DIR)/$(ISO)
 
 .PHONY: vbox-create
 vbox: vbox-create
@@ -272,12 +269,8 @@ vbox: vbox-create
 
 .PHONY: docs
 docs:
-	@echo Generating docs according to the Doxyfile...
+	@printf "$(COLOR_INFO)Generating docs according to the Doxyfile...$(COLOR_NONE)\n"
 	@doxygen ./Doxyfile
-
-.PHONY: todo
-todo:
-	-@for file in $(ALLFILES:Makefile=); do fgrep -i -H --color=always -e TODO -e FIXME $$file; done; true
 
 # ********************
 # * Cleaning Targets *
@@ -286,11 +279,11 @@ todo:
 # Clear out objects and BIN
 .PHONY: clean
 clean:
-	@printf "$(COLOR_OK)Cleaning objects...$(COLOR_NONE)\n"
-	@$(RM) -r $(PRODUCTS_DIR)/$(KERNEL) $(PRODUCTS_DIR)/$(SYMBOLS) $(PRODUCTS_DIR)/$(ISOIMG)
-	@printf "$(COLOR_OK)Cleaning directories...$(COLOR_NONE)\n"
+	@printf "$(COLOR_INFO)Cleaning products...$(COLOR_NONE)\n"
+	@$(RM) -r $(PRODUCTS_DIR)
+	@printf "$(COLOR_INFO)Cleaning objects...$(COLOR_NONE)\n"
 	@$(RM) -r $(BUILD_DIR)
-	@printf "$(COLOR_OK)Cleaning libraries...$(COLOR_NONE)\n"
+	@printf "$(COLOR_INFO)Cleaning libraries...$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do \
 	    printf " -   " &&       \
         $(MAKE) -C $$dir clean; \

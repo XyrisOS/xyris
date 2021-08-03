@@ -1,16 +1,57 @@
-image: docker.pkg.github.com/panix-os/panixbuild/panixbuild:3.1.1
+image: docker.pkg.github.com/panix-os/panixbuild/panixbuild:3.2.0
 
 aliases:
     # Building
-    build: make -j$(nproc)
-    clean: make clean
-    debug: make -j$(nproc) debug
-    release: make -j$(nproc) release
-    # Distribution
-    image: make -j$(nproc) dist
-    img: make -j$(nproc) dist IMGTYPE=img
-    iso: make -j$(nproc) dist IMGTYPE=iso
+    build: make -j$(nproc) all
+    debug:
+      environment:
+        MODE: debug
+      script: make -j$(nproc)
+    release:
+      environment:
+        MODE: release
+      script: make -j$(nproc)
     # Testing
-    test: make -j$(nproc) unit-test
-    # Provide a way to compile & run the unit test w/ stdout
-    test-verbose: make -j$(nproc) unit-test && ./dist/unit-test
+    test:
+      script:
+        - make -j$(nproc) unit-test
+        - ./dist/unit-test
+    # Cleaning
+    clean: make clean
+    test-clean: make clean-tests
+    # Distribution
+    img-debug:
+      environment:
+        IMGTYPE: img
+        MODE: debug
+      script: make dist
+    img-release:
+      environment:
+        IMGTYPE: img
+        MODE: release
+      script: make dist
+    iso-debug:
+      environment:
+        IMGTYPE: iso
+        MODE: debug
+      script: make dist
+    iso-release:
+      environment:
+        IMGTYPE: iso
+        MODE: release
+      script: make dist
+    # Running
+    run:
+      environment:
+        MODE: debug
+      script: make run
+    run-debug:
+      environment:
+        MODE: debug
+      script:
+        - make run-debug &
+        - i686-elf-gdb -x gdb.commands
+    run-release:
+      environment:
+        MODE: release
+      script: make run
