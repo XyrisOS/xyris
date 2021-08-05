@@ -144,17 +144,21 @@ export LDFLAGS :=       \
 # * Kernel Build Targets *
 # ************************
 
-ifeq ($(MODE), "debug")
-    CPPFLAGS += -DDEBUG
+# Debug
+ifeq ($(MODE), debug)
+	CPPFLAGS += -DDEBUG
 	CXXFLAGS += -ggdb3
 	CFLAGS += -ggdb3
-else
-    CPPFLAGS += -DRELEASE
+endif
+# Release
+ifeq ($(MODE), release)
+	CPPFLAGS += -DRELEASE
 	CXXFLAGS += -O3 -mno-avx
 	CFLAGS += -O3 -mno-avx
 endif
 
 # Kernel (Linked With Libraries)
+.PHONY: $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 $(PRODUCTS_DIR)/$(MODE)/$(KERNEL):
 	@printf "$(COLOR_INFO)Making Libs ($(MODE))$(COLOR_NONE)\n"
 	@for dir in $(LIB_DIRS); do        \
@@ -163,6 +167,11 @@ $(PRODUCTS_DIR)/$(MODE)/$(KERNEL):
 	@printf "$(COLOR_INFO)Making Kernel ($(MODE))$(COLOR_NONE)\n"
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
+
+# Necessary for the images to build properly since the
+# normal kernel target is PHONY, which causes the image
+# to constantly rebuild.
+$(KERNEL): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 
 # Hacky way to build all targets. This target cannot
 # be the first one otherwise it's a circular dependency.
@@ -185,10 +194,11 @@ unit-test:
 # ********************************
 
 # Create a bootable image (either img or iso)
+.PHONY: dist
 dist: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
 
 # Create bootable ISO
-$(PRODUCTS_DIR)/$(MODE)/$(ISO): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
+$(PRODUCTS_DIR)/$(MODE)/$(ISO): $(KERNEL)
 	@mkdir -p $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub
 	@cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(PRODUCTS_DIR)/$(MODE)/iso/boot/
 	@cp boot/grub.cfg $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub/grub.cfg
@@ -196,7 +206,7 @@ $(PRODUCTS_DIR)/$(MODE)/$(ISO): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 	@rm -rf $(PRODUCTS_DIR)/$(MODE)/iso
 
 # Create a bootable IMG
-$(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
+$(PRODUCTS_DIR)/$(MODE)/$(IMG): $(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
 	@printf "$(COLOR_INFO)Making Limine boot image ($(MODE))$(COLOR_NONE)\n"
 	@rm -f $@
 	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
@@ -206,7 +216,7 @@ $(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_D
 	@echfs-utils -m -p0 $@ quick-format 32768
 	@echfs-utils -m -p0 $@ import boot/limine.cfg limine.cfg
 	@echfs-utils -m -p0 $@ import $(THIRDPARTY_DIR)/limine/limine.sys limine.sys
-	@echfs-utils -m -p0 $@ import $< kernel
+	@echfs-utils -m -p0 $@ import $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) kernel
 	$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
 
 # *************************
