@@ -1,5 +1,5 @@
 target remote localhost:1234
-file dist/kernel
+file dist/debug/kernel
 break kernel_main
 set disassembly-flavor intel
 layout asm
