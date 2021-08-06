@@ -25,7 +25,7 @@
 #include <dev/graphics/framebuffer.hpp>
 #include <dev/graphics/font.hpp>
 #include <dev/graphics/graphics.hpp>
-#include <dev/graphics/tty.hpp>
+#include <dev/graphics/console.hpp>
 #include <dev/rtc/rtc.hpp>
 #include <dev/serial/rs232.hpp>
 #include <dev/spkr/spkr.hpp>

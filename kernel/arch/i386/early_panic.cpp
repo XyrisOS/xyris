@@ -12,7 +12,7 @@
 #include <arch/arch.hpp>
 #include <meta/sections.hpp>
 #include <meta/compiler.hpp>
-#include <dev/graphics/tty.hpp>
+#include <dev/graphics/console.hpp>
 
 #define VGA_COLOR(bg, fg) (uint16_t)(((bg)<<4)|((fg)&0xF))
 #define VGA_CHAR(ch, co) (uint16_t)((ch)|((co)<<8))

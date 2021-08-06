@@ -13,7 +13,7 @@
  *         https://en.wikipedia.org/wiki/Julian_day
  */
 #include <arch/arch.hpp>
-#include <dev/graphics/tty.hpp>
+#include <dev/graphics/console.hpp>
 #include <dev/rtc/rtc.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>

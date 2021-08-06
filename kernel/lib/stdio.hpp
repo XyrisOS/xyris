@@ -61,28 +61,6 @@ int kvprintf(const char* fmt, va_list args);
  */
 int kprintf(const char* fmt, ...);
 /**
- * @brief Prints a single character to the kernel display.
- *
- * @param c Character to be printed.
- */
-int putchar(char c);
-/**
- * @brief Prints a single character to the screen without locking the screen mutex
- *
- * Callers of this function *must* manually lock and unlock `putLock` when utilizing
- * this function to draw to the screen.
- *
- * @param c the chraracter to be printed.
- */
-int putchar_unlocked(char c);
-extern Mutex putLock;
-/**
- * @brief Prints a given string to the kernel display.
- *
- * @param str String to be printed.
- */
-int puts(const char *str);
-/**
  * @brief Prints a statement to serial debugger if the kernel
  * is built with the debug flag defined. Max message size is
  * 1024 (including null terminator).

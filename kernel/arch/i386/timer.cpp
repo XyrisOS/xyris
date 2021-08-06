@@ -11,7 +11,7 @@
 #include <arch/i386/timer.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
-#include <dev/graphics/tty.hpp>
+#include <dev/graphics/console.hpp>
 
 static void timer_callback(struct registers *regs);
 volatile uint32_t timer_tick;

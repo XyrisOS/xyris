@@ -17,7 +17,7 @@
 #include <lib/stdio.hpp>
 #include <stdarg.h>
 #include <lib/string.hpp>
-#include <dev/graphics/tty.hpp>
+#include <dev/graphics/console.hpp>
 
 /*****************************************************************************
 Stripped-down printf()
@@ -339,21 +339,25 @@ static int vprintf_help(unsigned c, void** ptr)
 {
     (void)ptr;
     // we use the unlocked putchar here becaus we lock at the printf level
-    putchar_unlocked((char)c);
+    console::WriteUnlocked(c);
     return 0;
 }
 /*****************************************************************************
 *****************************************************************************/
 int kvprintf(const char* fmt, va_list args)
 {
-    putLock.Lock();
+    console::Lock();
     int retval = do_printf(fmt, args, vprintf_help, NULL);
-    putLock.Unlock();
+    console::Unlock();
     return retval;
 }
 /*****************************************************************************
 *****************************************************************************/
 
+// TODO: Do we want to move this into graphics::tty? It would make more sense
+//       to have it there, and then this printf source is basically the
+//       printf helper function that can be used by other, specific printf's.
+//       See the RS232 serial driver for an example.
 int kprintf(const char* fmt, ...)
 {
     va_list args;

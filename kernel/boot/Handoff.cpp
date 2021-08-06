@@ -15,7 +15,7 @@
 #include <lib/string.hpp>
 #include <mem/paging.hpp>
 // Generic devices
-#include <dev/graphics/tty.hpp>
+#include <dev/graphics/console.hpp>
 #include <dev/serial/rs232.hpp>
 // Bootloaders
 #include <multiboot/multiboot2.h>

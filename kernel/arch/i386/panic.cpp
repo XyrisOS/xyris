@@ -12,7 +12,7 @@
 
 #include <arch/i386/panic.hpp>
 #include <sys/trace.hpp>
-#include <dev/graphics/tty.hpp>
+#include <dev/graphics/console.hpp>
 #include <dev/serial/rs232.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
