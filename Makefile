@@ -168,11 +168,6 @@ $(PRODUCTS_DIR)/$(MODE)/$(KERNEL):
 	@$(MAKE) -C $(KERNEL) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
 
-# Necessary for the images to build properly since the
-# normal kernel target is PHONY, which causes the image
-# to constantly rebuild.
-$(KERNEL): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
-
 # Hacky way to build all targets. This target cannot
 # be the first one otherwise it's a circular dependency.
 all:
@@ -198,7 +193,7 @@ unit-test:
 dist: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
 
 # Create bootable ISO
-$(PRODUCTS_DIR)/$(MODE)/$(ISO): $(KERNEL)
+$(PRODUCTS_DIR)/$(MODE)/$(ISO): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 	@mkdir -p $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub
 	@cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(PRODUCTS_DIR)/$(MODE)/iso/boot/
 	@cp boot/grub.cfg $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub/grub.cfg
@@ -206,7 +201,7 @@ $(PRODUCTS_DIR)/$(MODE)/$(ISO): $(KERNEL)
 	@rm -rf $(PRODUCTS_DIR)/$(MODE)/iso
 
 # Create a bootable IMG
-$(PRODUCTS_DIR)/$(MODE)/$(IMG): $(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
+$(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
 	@printf "$(COLOR_INFO)Making Limine boot image ($(MODE))$(COLOR_NONE)\n"
 	@rm -f $@
 	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
@@ -243,23 +238,25 @@ QEMU = $(shell which qemu-system-$(QEMU_ARCH))
 
 # Run Panix in QEMU
 .PHONY: run
-run: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
+run:
 	$(QEMU)                                      \
-	-drive file=$<,index=0,media=disk,format=raw \
+	-drive file=$(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG),\
+	index=0,media=disk,format=raw \
 	$(QEMU_FLAGS)
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: run-debug
-run-debug: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
+run-debug:
 	# Start QEMU with debugger
 	$(QEMU)   \
 	-S -s      \
-	-drive file=$<,index=0,media=disk,format=raw \
+	-drive file=$(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG),\
+	index=0,media=disk,format=raw \
 	$(QEMU_FLAGS) > /dev/null
 
 # Create Virtualbox VM
 .PHONY: vbox-create
-vbox-create: $(PRODUCTS_DIR)/$(ISO)
+vbox-create: $(PRODUCTS_DIR)/$(MODE)/$(ISO)
 	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCTS_DIR)
 	$(VBOX) modifyvm $(VM_NAME)                 \
 	--memory 256 --ioapic on --cpus 2 --vram 16 \
