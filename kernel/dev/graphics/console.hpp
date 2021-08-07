@@ -21,7 +21,7 @@
 #define DBG_FAIL "[ \033[91mFAIL \033[0m] "
 #define DBG_OKAY "[ \033[92m OK  \033[0m] "
 
-namespace console {
+namespace Console {
 
 int printf(const char* fmt, ...);
 void write(const char c);

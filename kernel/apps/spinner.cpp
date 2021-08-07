@@ -16,12 +16,12 @@
 namespace Apps {
 
 void spinner(void) {
-    console::printf("\n");
+    Console::printf("\n");
     int i = 0;
     const char spinnay[] = { '|', '/', '-', '\\' };
     while (true) {
         // Display a spinner to know that we're still running.
-        console::printf("\e[s\e[24;0f%c\e[u", spinnay[i]);
+        Console::printf("\e[s\e[24;0f%c\e[u", spinnay[i]);
         i = (i + 1) % sizeof(spinnay);
         asm volatile("hlt");
     }

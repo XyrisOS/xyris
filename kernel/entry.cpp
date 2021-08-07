@@ -61,7 +61,7 @@ static void devInit()
 
 static void printSplash()
 {
-    console::printf(
+    Console::printf(
         "\033[93m"
         "Xyris %s\n"
         "Copyright the Xyris Contributors (c) %i. All rights reserved.\n"
@@ -75,7 +75,7 @@ static void printSplash()
             ((__DATE__)[10] - '0') * 1     \
         ),
         REPO_URL);
-    console::printf("Commit %s (v%s.%s.%s) built on %s at %s.\n\n", COMMIT, VER_MAJOR, VER_MINOR, VER_PATCH, __DATE__, __TIME__);
+    Console::printf("Commit %s (v%s.%s.%s) built on %s at %s.\n\n", COMMIT, VER_MAJOR, VER_MINOR, VER_PATCH, __DATE__, __TIME__);
 }
 
 static void bootTone()
@@ -120,7 +120,7 @@ extern "C" void kernelEntry(void* boot_info, uint32_t magic)
     // Get the CPU vendor and model data to print
     const char* vendor = Arch::cpuGetVendor();
     const char* model = Arch::cpuGetModel();
-    console::printf(DBG_INFO "%s %s\n", vendor, model);
+    Console::printf(DBG_INFO "%s %s\n", vendor, model);
     RS232::printf("%s\n%s\n", vendor, model);
 
     tasks_init();

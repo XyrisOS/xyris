@@ -16,7 +16,7 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-namespace console {
+namespace Console {
 
 enum vgaColor : uint32_t {
     VGA_Black           = 0x000000,

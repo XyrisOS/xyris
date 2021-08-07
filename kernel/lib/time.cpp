@@ -69,7 +69,7 @@ void TimeDescriptor::converterEpochToDate(uint64_t epoch)
 
 void TimeDescriptor::printDate()
 {
-    console::printf(
+    Console::printf(
         DBG_INFO
         "UTC: %i/%i/%i %i:%i\n",
         getMonth(),
