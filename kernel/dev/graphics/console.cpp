@@ -38,14 +38,14 @@ enum vgaColor : uint32_t {
 };
 
 // Coorinate trackers
-uint8_t ttyCoordsX = 0;
-uint8_t ttyCoordsY = 0;
+uint8_t cursorX = 0;
+uint8_t cursorY = 0;
 // VGA colors (defaults are white on black)
-vgaColor colorBack = VGA_Black;
-vgaColor colorFore = VGA_White;
+uint32_t colorBack = VGA_Black;
+uint32_t colorFore = VGA_White;
 // Default colors set by tty_clear()
-vgaColor resetBack = VGA_Black;
-vgaColor resetFore = VGA_White;
+uint32_t resetBack = VGA_Black;
+uint32_t resetFore = VGA_White;
 
 /**
  * @brief ANSI color codes for use in functions
@@ -130,12 +130,12 @@ static int putchar(unsigned c, void **ptr)
             ansiState = Value;
             goto end;
         } else if (c == 's') { // Save cursor position attribute
-            ansiCursorX = ttyCoordsX;
-            ansiCursorY = ttyCoordsY;
+            ansiCursorX = cursorX;
+            ansiCursorY = cursorY;
             goto normal;
         } else if (c == 'u') { // Restore cursor position attribute
-            ttyCoordsX = ansiCursorX;
-            ttyCoordsY = ansiCursorY;
+            cursorX = ansiCursorX;
+            cursorY = ansiCursorY;
             goto normal;
         }
         break;
@@ -172,8 +172,8 @@ static int putchar(unsigned c, void **ptr)
             if (ansiValuesIdx > 2) {
                 goto error;
             }
-            ttyCoordsX = (uint8_t)POP_VAL();
-            ttyCoordsY = (uint8_t)POP_VAL();
+            cursorX = (uint8_t)POP_VAL();
+            cursorY = (uint8_t)POP_VAL();
             goto normal;
         } else if (c == 'J') { // Clear screen attribute
             // The proper code is ESC[2J
@@ -197,39 +197,39 @@ static int putchar(unsigned c, void **ptr)
     switch (c) {
     // Backspace
     case 0x08:
-        if (ttyCoordsX > 0) {
-            ttyCoordsX--;
+        if (cursorX > 0) {
+            cursorX--;
         }
         break;
     // Newline
     case '\n':
-        ttyCoordsX = 0;
-        ttyCoordsY++;
+        cursorX = 0;
+        cursorY++;
         break;
     case '\t':
-        while (++ttyCoordsX % TAB_WIDTH);
+        while (++cursorX % TAB_WIDTH);
         break;
     // Carriage return
     case '\r':
-        ttyCoordsX = 0;
+        cursorX = 0;
         break;
+    // Anything else (visible characters)
+    default:
+        Graphics::Font::Draw(c, cursorX++, cursorY, colorFore, colorBack);
     }
-
-    // Print the character
-    Graphics::Font::Draw(c, ttyCoordsX++, ttyCoordsY, colorFore, colorBack);
 
     // Move to the next line
-    if (ttyCoordsX >= X86_TTY_WIDTH) {
+    if (cursorX >= X86_TTY_WIDTH) {
         debugf("Move to the next line\n");
-        ttyCoordsX = 0;
-        ttyCoordsY++;
+        cursorX = 0;
+        cursorY++;
     }
     // Clear the screen
-    if (ttyCoordsY >= X86_TTY_HEIGHT) {
+    if (cursorY >= X86_TTY_HEIGHT) {
         debugf("Shift up the screen\n");
         //TODO: Shift text up and reset the bottom line
-        ttyCoordsX = 0;
-        ttyCoordsY = X86_TTY_HEIGHT - 1;
+        cursorX = 0;
+        cursorY = X86_TTY_HEIGHT - 1;
     }
     goto end;
 error:
@@ -283,6 +283,20 @@ int printf(const char* fmt, ...)
     Graphics::swap();
 
     return ret_val;
+}
+
+void reset(uint32_t fore, uint32_t back)
+{
+    cursorX = cursorY = 0;
+    colorBack = resetBack = back;
+    colorFore = resetFore = fore;
+}
+
+void reset()
+{
+    cursorX = cursorY = 0;
+    colorBack = resetBack;
+    colorFore = resetFore;
 }
 
 } // !console

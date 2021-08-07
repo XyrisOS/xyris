@@ -23,8 +23,10 @@
 
 namespace Console {
 
-int printf(const char* fmt, ...);
 void write(const char c);
 void write(const char* str);
+int printf(const char* fmt, ...);
+void reset(uint32_t fore, uint32_t back);
+void reset();
 
 }
