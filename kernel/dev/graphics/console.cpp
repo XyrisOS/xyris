@@ -216,7 +216,7 @@ static int putchar(unsigned c, void **ptr)
     }
 
     // Print the character
-    graphics::font::Draw(c, ttyCoordsX++, ttyCoordsY, colorFore, colorBack);
+    graphics::Font::Draw(c, ttyCoordsX++, ttyCoordsY, colorFore, colorBack);
 
     // Move to the next line
     if (ttyCoordsX >= X86_TTY_WIDTH) {

@@ -16,7 +16,7 @@
 #define FONT_HEIGHT 8
 
 namespace graphics {
-namespace font {
+namespace Font {
 
 /**
  * @brief Draw the character at the given coordinates in the given color.
