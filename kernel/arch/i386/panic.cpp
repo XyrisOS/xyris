@@ -37,7 +37,7 @@ void printPanicScreen() {
         "< OH NO! Xyris panicked! >\n"
     );
     // Print to VGA and serial
-    kprintf("%s", cow);
+    console::printf("%s", cow);
     RS232::printf("%s", cow);
 }
 
@@ -49,7 +49,7 @@ NORET void panic(const char* msg, const char *file, uint32_t line, const char *f
     char buf[128];
     ksprintf(buf, "\n%s\n", msg);
     // Print to VGA and serial
-    kprintf("%s", buf);
+    console::printf("%s", buf);
     RS232::printf("%s", buf);
     // Print out file info to describe where crash occured
     panic_print_file(file, line, func);
@@ -70,7 +70,7 @@ NORET void panic(struct registers *regs, const char *file, uint32_t line, const 
         exception_descriptions[regs->int_num]
     );
     // Print to VGA and serial
-    kprintf("%s", msg);
+    console::printf("%s", msg);
     RS232::printf("%s", msg);
     // Check if we have an error code and print
     if (regs->err_code) {
@@ -80,7 +80,7 @@ NORET void panic(struct registers *regs, const char *file, uint32_t line, const 
             regs->err_code
         );
         // Print to VGA and serial
-        kprintf("%s", msg);
+        console::printf("%s", msg);
         RS232::printf("%s", msg);
     }
     // Print out register values
@@ -114,7 +114,7 @@ NORET void panic(struct registers *regs, const char *file, uint32_t line, const 
             id
         );
         // Print to VGA and serial
-        kprintf("%s", msg);
+        console::printf("%s", msg);
         RS232::printf("%s", msg);
     }
     panic_print_file(file, line, func);
@@ -134,7 +134,7 @@ void panic_print_file(const char *file, uint32_t line, const char *func) {
         line
     );
     // Print to VGA and serial
-    kprintf("%s", msg);
+    console::printf("%s", msg);
     RS232::printf("%s", msg);
 }
 
@@ -162,6 +162,6 @@ void panic_print_register(struct registers *regs) {
     );
     #endif
     // Print to VGA and serial
-    kprintf("%s", msg);
+    console::printf("%s", msg);
     RS232::printf("%s", msg);
 }

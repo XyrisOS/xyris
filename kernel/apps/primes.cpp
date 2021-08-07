@@ -14,6 +14,7 @@
 #include <lib/stdio.hpp>
 #include <sys/tasks.hpp>
 #include <apps/primes.hpp>
+#include <dev/graphics/console.hpp>
 
 namespace Apps {
 
@@ -44,14 +45,14 @@ void show_primes(void)
     do {
         tasks_nano_sleep(1000ULL * 1000 * 1000);
         size_t pct = (prime_current * 100) / PRIME_MAX_SQRT;
-        kprintf("\e[s\e[23;0fComputing primes: %%%u\e[u", pct);
+        console::printf("\e[s\e[23;0fComputing primes: %%%u\e[u", pct);
     } while (prime_current < PRIME_MAX_SQRT);
 
     size_t count = 0;
     for (size_t i = 2; i < PRIME_MAX; i++) {
         count += map.Get(i);
     }
-    kprintf("\e[s\e[23;0fFound %u primes between 2 and %u.\e[u", count, PRIME_MAX);
+    console::printf("\e[s\e[23;0fFound %u primes between 2 and %u.\e[u", count, PRIME_MAX);
 }
 
 }

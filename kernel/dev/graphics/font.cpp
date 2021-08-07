@@ -170,8 +170,6 @@ void Draw(char c, uint32_t x, uint32_t y, uint32_t fore)
             }
         }
     }
-    // Swap out the buffer in draw
-    graphics::swap();
 }
 
 void Draw(char c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back)
@@ -192,8 +190,6 @@ void Draw(char c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back)
             }
         }
     }
-    // Swap out the buffer in draw
-    graphics::swap();
 }
 
 } // !font

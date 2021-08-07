@@ -23,9 +23,8 @@
 
 namespace console {
 
-void Write(char c);
-void WriteUnlocked(char c);
-void Lock();
-void Unlock();
+int printf(const char* fmt, ...);
+void write(const char c);
+void write(const char* str);
 
 }

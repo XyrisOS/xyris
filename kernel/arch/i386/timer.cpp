@@ -52,7 +52,7 @@ static void timer_callback(struct registers *regs) {
 }
 
 void timer_print() {
-    kprintf(DBG_INFO "Tick: %i\n", timer_tick);
+    console::printf(DBG_INFO "Tick: %i\n", timer_tick);
 }
 
 void sleep(uint32_t ms) {

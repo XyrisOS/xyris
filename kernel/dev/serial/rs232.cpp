@@ -73,7 +73,7 @@ static int vprintf_helper(unsigned c, void **ptr)
 int vprintf(const char* fmt, va_list args)
 {
     int retval;
-    retval = do_printf(fmt, args, vprintf_helper, NULL);
+    retval = printf_helper(fmt, args, vprintf_helper, NULL);
     return retval;
 }
 

@@ -18,9 +18,8 @@
 #define EOF (-1)
 #endif
 
-typedef int (*fnptr_t)(unsigned c, void** helper);
-
-int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr);
+typedef int (*printf_fnptr_t)(unsigned c, void** helper);
+int printf_helper(const char* fmt, va_list args, printf_fnptr_t fn, void* ptr);
 
 /**
  * @brief Sends formatted output to a string using an argument list.
@@ -42,24 +41,6 @@ int kvsprintf(char* buf, const char* fmt, va_list args);
  * The number of characters not written if negative.
  */
 int ksprintf(char* buf, const char* fmt, ...);
-/**
- * @brief Sends formatted output to stdout using an argument list.
- *
- * @param fmt C string that contains a format string
- * @param args A value identifying a variable arguments list
- * @return int The total number of characters written.
- * The number of characters not written if negative.
- */
-int kvprintf(const char* fmt, va_list args);
-/**
- * @brief Sends formatted output to stdout.
- *
- * @param fmt C string that contains a format string
- * @param ... Sequence of additional arguments
- * @return int The total number of characters written.
- * The number of characters not written if negative.
- */
-int kprintf(const char* fmt, ...);
 /**
  * @brief Prints a statement to serial debugger if the kernel
  * is built with the debug flag defined. Max message size is

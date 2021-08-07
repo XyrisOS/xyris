@@ -14,6 +14,7 @@
 #include <dev/graphics/font.hpp>
 #include <lib/stdio.hpp>
 #include <stddef.h>
+#include <stdarg.h>
 
 namespace console {
 
@@ -105,8 +106,12 @@ uint32_t ansiVGATable[16] = {
 // Printing mutual exclusion
 Mutex ttyLock;
 
-void WriteUnlocked(char c)
+static void Lock() { ttyLock.Lock(); }
+static void Unlock() { ttyLock.Unlock(); }
+
+static int putchar(unsigned c, void **ptr)
 {
+    (void)ptr;
     // Check the ANSI state
     switch (ansiState) {
     case Normal: // print the character out normally unless it's an ESC
@@ -233,22 +238,51 @@ error:
     // Return to normal
     ansiState = Normal;
     ansiVal = 0;
-    return;
+    return -1;
 normal:
     ansiState = Normal;
     ansiVal = 0;
 end:
-    return;
+    return 0;
 }
 
-void Write(char c)
+static int vprintf(const char* fmt, va_list args)
 {
-    ttyLock.Lock();
-    WriteUnlocked(c);
-    ttyLock.Unlock();
+    int retval;
+    Lock();
+    retval = printf_helper(fmt, args, putchar, NULL);
+    Unlock();
+    return retval;
 }
 
-void Lock() { ttyLock.Lock(); }
-void Unlock() { ttyLock.Unlock(); }
+void write(const char c)
+{
+    Lock();
+    putchar(c, NULL);
+    Unlock();
+}
+
+void write(const char* str)
+{
+    size_t i = 0;
+    Lock();
+    while (str[i])
+        putchar(str[i++], NULL);
+    Unlock();
+}
+
+int printf(const char* fmt, ...)
+{
+    va_list args;
+    int ret_val;
+
+    va_start(args, fmt);
+    ret_val = vprintf(fmt, args);
+    va_end(args);
+    // Swap out the buffer in draw
+    graphics::swap();
+
+    return ret_val;
+}
 
 } // !console
