@@ -97,7 +97,7 @@ public:
     // Getters
     const char* getCmdLine()                    { return _cmdline; }
     const void* getHandle()                     { return _handle; }
-    graphics::Framebuffer getFramebufferInfo()  { return _framebuffer; }
+    Graphics::Framebuffer getFramebufferInfo()  { return _framebuffer; }
     HandoffBootloaderType getBootType()         { return _bootType; }
 
 private:
@@ -107,7 +107,7 @@ private:
     void* _handle;
     char* _cmdline;
     uint32_t _magic;
-    graphics::Framebuffer _framebuffer;
+    Graphics::Framebuffer _framebuffer;
     HandoffBootloaderType _bootType;
 };
 

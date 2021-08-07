@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <dev/graphics/framebuffer.hpp>
 
-namespace graphics {
+namespace Graphics {
 
 /**
  * @brief Initializes the framebuffer (if available)

@@ -21,15 +21,15 @@ void testAnimation()
         if (x > 250)
             x = 10;
 
-        graphics::resetDoubleBuffer();
+        Graphics::resetDoubleBuffer();
         //background
-        graphics::putrect(0,0,280,280,0x00FFFF);
+        Graphics::putrect(0,0,280,280,0x00FFFF);
         x+=10;
         //snake
-        graphics::putrect(x,10,10,10,0xFF0000);
+        Graphics::putrect(x,10,10,10,0xFF0000);
         //apple
-        graphics::putrect(50,30,10,10,0xFFFF00);
-        graphics::swap();
+        Graphics::putrect(50,30,10,10,0xFFFF00);
+        Graphics::swap();
     }
 }
 

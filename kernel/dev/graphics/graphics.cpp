@@ -28,7 +28,7 @@
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 
-namespace graphics {
+namespace Graphics {
 
 static Framebuffer* info = NULL;
 static void* backbuffer = NULL;

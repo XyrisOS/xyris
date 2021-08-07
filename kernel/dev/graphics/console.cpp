@@ -183,8 +183,8 @@ static int putchar(unsigned c, void **ptr)
             // Clear by resetting the double buffer and swapping.
             // TODO: Find a better way to do this?
             debugf("Clearing screen\n");
-            graphics::resetDoubleBuffer();
-            graphics::swap();
+            Graphics::resetDoubleBuffer();
+            Graphics::swap();
         } else if (c >= '0' && c <= '9') { // just another digit of a value
             ansiVal = (uint16_t)(ansiVal * 10 + (uint16_t)(c - '0'));
         } else
@@ -216,7 +216,7 @@ static int putchar(unsigned c, void **ptr)
     }
 
     // Print the character
-    graphics::Font::Draw(c, ttyCoordsX++, ttyCoordsY, colorFore, colorBack);
+    Graphics::Font::Draw(c, ttyCoordsX++, ttyCoordsY, colorFore, colorBack);
 
     // Move to the next line
     if (ttyCoordsX >= X86_TTY_WIDTH) {
@@ -280,7 +280,7 @@ int printf(const char* fmt, ...)
     ret_val = vprintf(fmt, args);
     va_end(args);
     // Swap out the buffer in draw
-    graphics::swap();
+    Graphics::swap();
 
     return ret_val;
 }

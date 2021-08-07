@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace graphics {
+namespace Graphics {
 
 static Framebuffer* framebuffer = NULL;
 

@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <meta/compiler.hpp>
 
-namespace graphics {
+namespace Graphics {
 
 enum FramebufferMemoryModel {
     Undefined_FBMM = 0,
@@ -74,7 +74,7 @@ private:
 
 /**
  * @brief Get a pointer to the active framebuffer
- * 
+ *
  * @return Framebuffer* Pointer to active framebuffer
  */
 Framebuffer* getFramebuffer();

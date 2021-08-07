@@ -15,7 +15,7 @@
 #include <lib/stdio.hpp>
 #include <stdint.h>
 
-namespace graphics {
+namespace Graphics {
 namespace Font {
 
 #define FONT_COUNT 128

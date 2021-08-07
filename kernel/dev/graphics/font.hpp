@@ -15,12 +15,12 @@
 #define FONT_WIDTH 8
 #define FONT_HEIGHT 8
 
-namespace graphics {
+namespace Graphics {
 namespace Font {
 
 /**
  * @brief Draw the character at the given coordinates in the given color.
- * 
+ *
  * @param c Character to draw
  * @param x Horizontal position
  * @param y Vertical position
@@ -30,7 +30,7 @@ void Draw(char c, uint32_t x, uint32_t y, uint32_t fore);
 
 /**
  * @brief Draw the character at the given coordinates in the given color.
- * 
+ *
  * @param c Character to draw
  * @param x Horizontal position
  * @param y Vertical position

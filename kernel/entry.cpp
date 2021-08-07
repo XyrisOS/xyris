@@ -111,7 +111,7 @@ extern "C" void kernelEntry(void* boot_info, uint32_t magic)
     // Initialize info from bootloader
     bootInit(boot_info, magic, &handoff);
     paging_init(0);
-    graphics::init();
+    Graphics::init();
     // Print the splash screen to show we've booted into the kernel properly.
     printSplash();
     // Print some info to show we did things right
