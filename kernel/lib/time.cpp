@@ -67,18 +67,6 @@ void TimeDescriptor::converterEpochToDate(uint64_t epoch)
     setYear(year);
 }
 
-void TimeDescriptor::printDate()
-{
-    Console::printf(
-        DBG_INFO
-        "UTC: %i/%i/%i %i:%i\n",
-        getMonth(),
-        getDay(),
-        getYear(),
-        getHour(),
-        getMinutes());
-}
-
 void TimeDescriptor::toDate()
 {
     uint64_t epoch = RTC::getEpoch();

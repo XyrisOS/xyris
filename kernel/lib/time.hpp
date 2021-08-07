@@ -37,7 +37,6 @@ public:
     void setYear(int y) { _year = y; }
     // methods
     void toDate();
-    void printDate();
 
 private:
     void converterEpochToDate(uint64_t Number);

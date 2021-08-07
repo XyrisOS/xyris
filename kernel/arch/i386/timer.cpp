@@ -51,10 +51,6 @@ static void timer_callback(struct registers *regs) {
     }
 }
 
-void timer_print() {
-    Console::printf(DBG_INFO "Tick: %i\n", timer_tick);
-}
-
 void sleep(uint32_t ms) {
     uint32_t start = timer_tick;
     uint32_t final = start + ms;

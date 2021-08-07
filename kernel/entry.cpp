@@ -116,7 +116,12 @@ extern "C" void kernelEntry(void* boot_info, uint32_t magic)
     printSplash();
     // Print some info to show we did things right
     Time::TimeDescriptor time;
-    time.printDate();
+    Console::printf(DBG_INFO "UTC: %i/%i/%i %i:%i\n",
+        time.getMonth(),
+        time.getDay(),
+        time.getYear(),
+        time.getHour(),
+        time.getMinutes());
     // Get the CPU vendor and model data to print
     const char* vendor = Arch::cpuGetVendor();
     const char* model = Arch::cpuGetModel();
