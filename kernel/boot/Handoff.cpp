@@ -78,12 +78,61 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
     struct stivale2_tag* tag = (struct stivale2_tag*)(fixed->tags);
     while (tag)
     {
+/* -- GRUE REMOVE
         // TODO: Find a way around this when the new memory manager code is done.
         uintptr_t page = ((uintptr_t)tag & PAGE_ALIGN);
         map_kernel_page(VADDR(page), page);
+ */
         // Follows the tag list order in stivale2.h
         switch(tag->identifier)
         {
+#ifdef DEBUG
+            case STIVALE2_STRUCT_TAG_MEMMAP_ID:
+            {
+                auto memmap = (struct stivale2_struct_tag_memmap*)tag;
+                rs232::printf("Stivale2 memmap found...\n");
+                for(uint32_t i = 0; i < (uint32_t)memmap->entries; i++)
+                {
+                    switch((uint32_t) memmap->memmap[i].type)
+                    {
+                        case STIVALE2_MMAP_USABLE:
+                            rs232::printf("Stivale2 USABLE memory: ");
+                            break;
+
+                        case STIVALE2_MMAP_RESERVED:
+                            rs232::printf("Stivale2 RESERVED memory: ");
+                            break;
+
+                        case STIVALE2_MMAP_ACPI_RECLAIMABLE:
+                            rs232::printf("Stivale2 ACPI_RECLAIMABLE memory: ");
+                            break;
+
+                        case STIVALE2_MMAP_ACPI_NVS:
+                            rs232::printf("Stivale2 ACPI_NVS memory: ");
+                            break;
+
+                        case STIVALE2_MMAP_BAD_MEMORY:
+                            rs232::printf("Stivale2 BAD memory: ");
+                            break;
+
+                        case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
+                            rs232::printf("Stivale2 BOOTLOADER_RECLAIMABLE memory: ");
+                            break;
+
+                        case STIVALE2_MMAP_KERNEL_AND_MODULES:
+                            rs232::printf("Stivale2 KERNEL_AND_MODULES memory: ");
+                            break;
+
+			default:
+                            rs232::printf("Unknown Memory Type 0x%08X: ", memmap->memmap[i].type);
+                            break;
+                    }
+                    rs232::printf("Base: 0x%08X, Length: 0x%08X\n", (uint32_t) memmap->memmap[i].base,
+                        (uint32_t) memmap->memmap[i].length);
+                }
+                break;
+            }
+#endif
             case STIVALE2_STRUCT_TAG_CMDLINE_ID:
             {
                 auto cmdline = (struct stivale2_struct_tag_cmdline*)tag;

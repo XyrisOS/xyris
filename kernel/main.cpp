@@ -45,12 +45,14 @@ static void kernel_boot_tone();
 
 static void boot_init(void *boot_info, uint32_t magic)
 {
+/* -- GRUE REMOVE
     // Map in bootloader information
     // TODO: Find a way to avoid this until after parsing
     if (boot_info != NULL) {
         uintptr_t page = (uintptr_t)boot_info & PAGE_ALIGN;
         map_kernel_page(VADDR(page), page);
     }
+ */
     // Parse the bootloader information into common format
     handoff = Boot::Handoff(boot_info, magic);
     // Ensure handoff is no longer default initialized
@@ -69,11 +71,14 @@ void kernel_main(void *boot_info, uint32_t magic) {
     gdt_install();                  // Initialize the Global Descriptor Table
     isr_install();                  // Initialize Interrupt Service Requests
     rs232::init(RS_232_COM1);        // RS232 Serial
-    paging_init(0);                 // Initialize paging service (0 is placeholder)
     boot_init(boot_info, magic);    // Initialize bootloader information
+    paging_init(0);                 // Initialize paging service (0 is placeholder)
+/* -- GRUE REMOVE
+//    boot_init(boot_info, magic);    // Initialize bootloader information
                                     // TODO: Bootloader should be first but currently
                                     //       requires paging, which should come after
                                     //       boot information is parsed.
+ */
     fb::init(handoff.getFramebufferInfo());
     kbd_init();                     // Initialize PS/2 Keyboard
     rtc_init();                     // Initialize Real Time Clock
