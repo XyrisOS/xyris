@@ -29,37 +29,31 @@ extern "C" uint32_t multiboot2_mmap_helper(void* baseaddr);
  *
  */
 extern "C" uint32_t
-__attribute__ ((section(".early_text")))
-__attribute__((optimize("O0")))
-stivale2_mmap_helper(void* baseaddr)
+    __attribute__((section(".early_text")))
+    __attribute__((optimize("O0")))
+    stivale2_mmap_helper(void* baseaddr)
 {
     struct stivale2_tag* tag = (struct stivale2_tag*)baseaddr;
 
-    while (tag)
-    {
-        switch(tag->identifier)
-        {
-            case STIVALE2_STRUCT_TAG_MEMMAP_ID:
-            {
-                auto memmap = (struct stivale2_struct_tag_memmap*)tag;
-                for(uint32_t i = 0; i < (uint32_t)memmap->entries; i++)
-                {
-                    switch((uint32_t) memmap->memmap[i].type)
-                    {
-                        case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
-                            if(((uint32_t) memmap->memmap[i].base) == (uint32_t) baseaddr)
-                            {
-                                return (uint32_t) memmap->memmap[i].length;
-                            }
-                            break;
-
-                        default:
-                            break;
+    while (tag) {
+        switch (tag->identifier) {
+        case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
+            auto memmap = (struct stivale2_struct_tag_memmap*)tag;
+            for (uint32_t i = 0; i < (uint32_t)memmap->entries; i++) {
+                switch ((uint32_t)memmap->memmap[i].type) {
+                case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
+                    if (((uint32_t)memmap->memmap[i].base) == (uint32_t)baseaddr) {
+                        return (uint32_t)memmap->memmap[i].length;
                     }
+                    break;
+
+                default:
+                    break;
                 }
             }
-            default:
-                break;
+        }
+        default:
+            break;
         }
         tag = (struct stivale2_tag*)tag->next;
     }
@@ -82,16 +76,15 @@ stivale2_mmap_helper(void* baseaddr)
  */
 
 extern "C" uint32_t
-__attribute__ ((section(".early_text")))
-__attribute__((optimize("O0")))
-multiboot2_mmap_helper(void* baseaddr)
+    __attribute__((section(".early_text")))
+    __attribute__((optimize("O0")))
+    multiboot2_mmap_helper(void* baseaddr)
 {
-    struct multiboot_fixed
-    {
+    struct multiboot_fixed {
         uint32_t total_size;
         uint32_t reserved;
     };
 
-    auto fixed = (struct multiboot_fixed *) baseaddr;
+    auto fixed = (struct multiboot_fixed*)baseaddr;
     return fixed->total_size;
 }

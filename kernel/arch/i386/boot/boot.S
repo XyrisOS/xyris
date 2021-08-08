@@ -76,28 +76,28 @@ _start.lowmem:
     mov edx, _KERNEL_START
     shr edx, 22       ; find which directory entry we need to use
 
-        ; the first page table
+    ; the first page table
     mov eax, kernel_pt
     mov [edx * 4 + page_directory], eax
     or dword [edx * 4 + page_directory], PAGE_PERM
 
-        ; the second page table
-        inc edx
-        mov eax, pages_pt
-        mov [edx * 4 + page_directory], eax
-        or dword [edx * 4 + page_directory], PAGE_PERM
+    ; the second page table
+    inc edx
+    mov eax, pages_pt
+    mov [edx * 4 + page_directory], eax
+    or dword [edx * 4 + page_directory], PAGE_PERM
 
     mov eax, _KERNEL_START ; the kernel's current virtual start
 
 _start.higher:
-        ; compute the page table offset
-        ; this only works because the two page tables are adjacent
+    ; compute the page table offset
+    ; this only works because the two page tables are adjacent
     mov edx, eax
-        shr edx, 22
-        sub edx, 0x300
-        imul edx, PAGE_SIZE
+    shr edx, 22
+    sub edx, 0x300
+    imul edx, PAGE_SIZE
 
-        mov ecx, eax
+    mov ecx, eax
     shr ecx, PAGE_SHIFT
     and ecx, 0x3ff ; generate kernel PTE index
 
@@ -111,10 +111,10 @@ _start.higher:
     jl _start.higher
 
 _start.bootinfo:
-        ; Locate the bootinfo structures so we can map those
-        ; along with the kernel
+    ; Locate the bootinfo structures so we can map those
+    ; along with the kernel
 
-        ; Check for stivale2 magic
+    ; Check for stivale2 magic
     xor eax, eax
     mov eax, dword [multiboot_magic]
     cmp eax, STIVALE2_MAGIC
@@ -161,7 +161,6 @@ _start.trymb2:
     pop eax
 
 _start.markboot:
-
     mov ecx, eax
     shr ecx, PAGE_SHIFT
     and ecx, 0x3ff
@@ -206,7 +205,6 @@ _start.badboot:
     jmp _start.failhang
 
 _start.badinfo:
-
     ; panic because we can't find the length
     ; of the bootloader info area
     push bad_info_msg
