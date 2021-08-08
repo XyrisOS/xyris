@@ -67,9 +67,9 @@ void kernel_main(void* boot_info, uint32_t magic)
     boot_init(boot_info, magic); // Initialize bootloader information
     paging_init(0);              // Initialize paging service (0 is placeholder)
     fb::init(handoff.getFramebufferInfo());
-    kbd_init();       // Initialize PS/2 Keyboard
-    rtc_init();       // Initialize Real Time Clock
-    timer_init(1000); // Programmable Interrupt Timer (1ms)
+    kbd_init();                  // Initialize PS/2 Keyboard
+    rtc_init();                  // Initialize Real Time Clock
+    timer_init(1000);            // Programmable Interrupt Timer (1ms)
     // Enable interrupts now that we're out of a critical area
     interrupts_enable();
     // Print some info to show we did things right
@@ -107,7 +107,11 @@ static void kernel_print_splash()
         "\033[0m",
         VER_NAME,
         (
-            ((__DATE__)[7] - '0') * 1000 + ((__DATE__)[8] - '0') * 100 + ((__DATE__)[9] - '0') * 10 + ((__DATE__)[10] - '0') * 1),
+            ((__DATE__)[7] - '0') * 1000 + \
+            ((__DATE__)[8] - '0') * 100  + \
+            ((__DATE__)[9] - '0') * 10   + \
+            ((__DATE__)[10] - '0') * 1     \
+        ),
         REPO_URL);
     kprintf("Commit %s (v%s.%s.%s) built on %s at %s.\n\n", COMMIT, VER_MAJOR, VER_MINOR, VER_PATCH, __DATE__, __TIME__);
 }
