@@ -98,7 +98,7 @@ action:    minimal subfunction for ?printf, calls function
     'fn' with arg 'ptr' for each character to be output
 returns:total number of characters output
 *****************************************************************************/
-int printf_helper(const char* fmt, va_list args, printf_fnptr_t fn, void* ptr)
+int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr)
 {
     unsigned char radix, *where, buf[PR_BUFLEN];
     unsigned int state, flags, actual_wd, count, given_wd;

@@ -38,14 +38,14 @@ enum vgaColor : uint32_t {
 };
 
 // Coorinate trackers
-uint8_t cursorX = 0;
-uint8_t cursorY = 0;
+static uint8_t cursorX = 0;
+static uint8_t cursorY = 0;
 // VGA colors (defaults are white on black)
-uint32_t colorBack = VGA_Black;
-uint32_t colorFore = VGA_White;
+static uint32_t colorBack = VGA_Black;
+static uint32_t colorFore = VGA_White;
 // Default colors set by tty_clear()
-uint32_t resetBack = VGA_Black;
-uint32_t resetFore = VGA_White;
+static uint32_t resetBack = VGA_Black;
+static uint32_t resetFore = VGA_White;
 
 /**
  * @brief ANSI color codes for use in functions

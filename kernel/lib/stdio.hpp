@@ -18,9 +18,21 @@
 #define EOF (-1)
 #endif
 
-typedef int (*printf_fnptr_t)(unsigned c, void** helper);
-int printf_helper(const char* fmt, va_list args, printf_fnptr_t fn, void* ptr);
-
+typedef int (*printf_cb_fnptr_t)(unsigned c, void** helper);
+/**
+ * @brief Perform all printf operations on the format string using the provided
+ * argument list and uses the callback function to perform the character printing
+ * operation. This allows for adding printf capabilities to a wide range of
+ * text output applications, such as an RS232 debug driver, or a framebuffer
+ * console.
+ *
+ * @param fmt Format string
+ * @param args Arguments list
+ * @param fn Character printing callback function pointer
+ * @param ptr User-provided data / handle pointer
+ * @return int Returns number of characters written
+ */
+int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr);
 /**
  * @brief Sends formatted output to a string using an argument list.
  *
