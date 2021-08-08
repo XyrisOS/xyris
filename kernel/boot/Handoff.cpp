@@ -207,6 +207,7 @@ struct multiboot_fixed
 void Handoff::parseMultiboot2(Handoff* that, void* handoff)
 {
     auto fixed = (struct multiboot_fixed *) handoff;
+/* -- GRUE REMOVE
     // TODO: Find a way around this when the new memory manager code is done.
     for (uintptr_t page = ((uintptr_t)handoff & PAGE_ALIGN) + PAGE_SIZE;
          page <= (((uintptr_t)handoff + fixed->total_size) & PAGE_ALIGN);
@@ -214,6 +215,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
         rs232::printf("Mapping bootinfo at 0x%08x\n", page);
         map_kernel_page(VADDR(page), page);
     }
+ */
     struct multiboot_tag *tag = (struct multiboot_tag*)((uintptr_t)fixed + sizeof(struct multiboot_fixed));
     while (tag->type != MULTIBOOT_TAG_TYPE_END) {
         switch (tag->type)
