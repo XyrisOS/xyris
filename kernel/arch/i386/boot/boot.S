@@ -11,6 +11,10 @@ extern _fini
 extern kernel_main
 ; minimal panic function that works in most situations
 extern early_panic
+; paging helper for stivale2 bootloader info
+extern stivale2_mmap_helper
+; paging helper for multiboot2 bootloader info
+extern multiboot2_mmap_helper
 
 extern _KERNEL_BASE
 extern _KERNEL_START
@@ -28,6 +32,10 @@ PAGE_SIZE equ 4096
 PAGE_SHIFT equ 12                       ; 2^12 = 4096 = PAGE_SIZE
 PAGE_PERM equ 3                         ; default page permissions: present, read/write
 STACK_SIZE equ 4*PAGE_SIZE              ; initial kernel stack space size of 16k
+
+; Magic numbers for pre-mapping
+STIVALE2_MAGIC equ 'stv2'
+MULTIBOOT2_MAGIC equ 0x36d76289
 
 ; Text section of our executable. See linker.ld
 ; This is the kernel entry point
@@ -68,28 +76,28 @@ _start.lowmem:
     mov edx, _KERNEL_START
     shr edx, 22       ; find which directory entry we need to use
 
-        ; the first page table
+    ; the first page table
     mov eax, kernel_pt
     mov [edx * 4 + page_directory], eax
     or dword [edx * 4 + page_directory], PAGE_PERM
 
-        ; the second page table
-        inc edx
-        mov eax, pages_pt
-        mov [edx * 4 + page_directory], eax
-        or dword [edx * 4 + page_directory], PAGE_PERM
+    ; the second page table
+    inc edx
+    mov eax, pages_pt
+    mov [edx * 4 + page_directory], eax
+    or dword [edx * 4 + page_directory], PAGE_PERM
 
     mov eax, _KERNEL_START ; the kernel's current virtual start
 
 _start.higher:
-        ; compute the page table offset
-        ; this only works because the two page tables are adjacent
+    ; compute the page table offset
+    ; this only works because the two page tables are adjacent
     mov edx, eax
-        shr edx, 22
-        sub edx, 0x300
-        imul edx, PAGE_SIZE
+    shr edx, 22
+    sub edx, 0x300
+    imul edx, PAGE_SIZE
 
-        mov ecx, eax
+    mov ecx, eax
     shr ecx, PAGE_SHIFT
     and ecx, 0x3ff ; generate kernel PTE index
 
@@ -101,6 +109,66 @@ _start.higher:
     add eax, PAGE_SIZE  ; move on to the next page
     cmp eax, _KERNEL_END ; are we done mapping in the kernel?
     jl _start.higher
+
+_start.bootinfo:
+    ; Locate the bootinfo structures so we can map those
+    ; along with the kernel
+
+    ; Check for stivale2 magic
+    xor eax, eax
+    mov eax, dword [multiboot_magic]
+    cmp eax, STIVALE2_MAGIC
+    jne _start.trymb2      ; nope, try multiboot2
+    xor eax, eax
+    mov eax, dword [multiboot_info]
+    add eax, 128          ; Skip over the text fields
+    mov edx, [eax]        ; address of stivale2 structures
+    push edx              ; save address for later
+    shr edx, 22           ; get the right directory entry
+    mov eax, bootld_pt    ; bootloader info page table
+    mov [edx * 4 + page_directory], eax
+    or dword [edx * 4 + page_directory], PAGE_PERM
+    pop eax               ; recover address
+    mov ebx, eax          ; save a copy
+    push ebx
+    push eax
+    call stivale2_mmap_helper
+    add ebx, eax
+    cmp eax, 0x00000000   ; If we have zero here, bad news
+    je _start.badinfo
+    pop eax
+    jmp _start.markboot
+
+_start.trymb2:
+    cmp eax, MULTIBOOT2_MAGIC
+    jne _start.badboot    ; no luck, bail
+    xor eax, eax
+    mov eax, dword [multiboot_info]
+    mov edx, [eax]        ; address of multiboot2 structures
+    push edx              ; save address for later
+    shr edx, 22           ; get the right directory entry
+    mov eax, bootld_pt    ; bootloader info page table
+    mov [edx * 4 + page_directory], eax
+    or dword [edx * 4 + page_directory], PAGE_PERM
+    pop eax               ; recover address
+    mov ebx, eax          ; save a copy
+    push ebx
+    push eax
+    call multiboot2_mmap_helper
+    add ebx, eax
+    cmp eax, 0x00000000   ; If we have zero here, bad news
+    je _start.badinfo
+    pop eax
+
+_start.markboot:
+    mov ecx, eax
+    shr ecx, PAGE_SHIFT
+    and ecx, 0x3ff
+    mov [ecx * 4 + bootld_pt], eax
+    or dword [ecx * 4 + bootld_pt], PAGE_PERM
+    add eax, PAGE_SIZE
+    cmp eax, ebx
+    jl _start.markboot
 
     mov eax, page_directory
     mov cr3, eax ; load CR3 with our page directory
@@ -128,6 +196,21 @@ _start.higher:
 
     ; panic because no SSE :'(
     push no_sse_msg
+    jmp _start.failhang
+
+_start.badboot:
+    ; panic because we don't have proof of
+    ; of a valid bootloader
+    push bad_boot_msg
+    jmp _start.failhang
+
+_start.badinfo:
+    ; panic because we can't find the length
+    ; of the bootloader info area
+    push bad_info_msg
+    jmp _start.failhang
+
+_start.failhang:
     call early_panic
 
     ; infinite loop if panic returns
@@ -172,12 +255,15 @@ page_directory: resd 1024    ; should also be page aligned (hopefully)
 lowmem_pt: resd 1024         ; lowmem identity mappings
 kernel_pt: resd 1024         ; our kernel page table mappings
 pages_pt: resd 1024          ; a page table that maps pages that contain page tables
+bootld_pt: resd 1024         ; a page table to hold bootloader structures
 
 section .early_data alloc write
 align 4
 multiboot_magic: dd 0
 multiboot_info: dd 0
 no_sse_msg: db "Error: No SSE support available!", 0
+bad_info_msg: db "Error: Cannot detect bootloader info length!", 0
+bad_boot_msg: db "Error: Cannot detect bootloader!", 0
 
 section .bss alloc write nobits
 align 4
