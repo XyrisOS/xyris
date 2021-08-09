@@ -12,6 +12,7 @@
 
 // Function attributes
 #define NORET __attribute__((noreturn))
+#define OPTIMIZE(x) __attribute__((optimize("O"#x)))
 #define ALWAYS_INLINE __attribute__((always_inline))
 
 // Branch prediction

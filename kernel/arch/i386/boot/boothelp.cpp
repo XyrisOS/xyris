@@ -9,7 +9,8 @@
  *
  */
 #include <stdint.h>
-
+#include <meta/sections.hpp>
+#include <meta/compiler.hpp>
 #include <multiboot/multiboot2.h>
 #include <stivale/stivale2.h>
 
@@ -29,9 +30,9 @@ extern "C" uint32_t multiboot2_mmap_helper(void* baseaddr);
  *
  */
 extern "C" uint32_t
-    __attribute__((section(".early_text")))
-    __attribute__((optimize("O0")))
-    stivale2_mmap_helper(void* baseaddr)
+OPTIMIZE(0)
+SECTION(".early_text")
+stivale2_mmap_helper(void* baseaddr)
 {
     struct stivale2_tag* tag = (struct stivale2_tag*)baseaddr;
 
@@ -76,9 +77,9 @@ extern "C" uint32_t
  */
 
 extern "C" uint32_t
-    __attribute__((section(".early_text")))
-    __attribute__((optimize("O0")))
-    multiboot2_mmap_helper(void* baseaddr)
+OPTIMIZE(0)
+SECTION(".early_text")
+multiboot2_mmap_helper(void* baseaddr)
 {
     struct multiboot_fixed {
         uint32_t total_size;
