@@ -10,6 +10,8 @@
  */
 
 #include <arch/arch.hpp>
+#include <meta/sections.hpp>
+#include <meta/compiler.hpp>
 #include <dev/tty/tty.hpp>
 
 // Provide a function prototype to make the compiler warnings happy. Don't
@@ -17,8 +19,8 @@
 extern "C" void early_panic(const char *str);
 
 extern "C" void
-__attribute__ ((section(".early_text")))
-__attribute__((optimize("O0")))
+SECTION(".early_text")
+OPTIMIZE(0)
 early_panic(const char *str) {
     volatile uint16_t* where;
     int x = 0;

@@ -12,6 +12,9 @@
 
 #include <stddef.h>
 
+// Kernel ELF Section Attribute
+#define SECTION(x) __attribute__((section(x)))
+
 // Kernel ELF Sections
 // Externs (address values) are prefixed with an underscore
 // Pointers to sections have the underscore removed

@@ -16,6 +16,7 @@
 #include <lib/stdio.hpp>
 #include <lib/mutex.hpp>
 #include <dev/serial/rs232.hpp>
+#include <meta/sections.hpp>
 #include <stddef.h>
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
@@ -35,8 +36,8 @@ static uint32_t         page_dir_addr;
 static page_table_t*    page_dir_virt[PAGE_ENTRIES];
 
 /* both of these must be page aligned for anything to work right at all */
-static page_directory_entry_t page_dir_phys[PAGE_ENTRIES] __attribute__ ((section (".page_tables,\"aw\", @nobits#")));
-static page_table_t           page_tables[PAGE_ENTRIES]   __attribute__ ((section (".page_tables,\"aw\", @nobits#")));
+static page_directory_entry_t page_dir_phys[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
+static page_table_t           page_tables[PAGE_ENTRIES]   SECTION(".page_tables,\"aw\", @nobits#");
 
 // Function prototypes
 static void mem_page_fault(registers_t* regs);
