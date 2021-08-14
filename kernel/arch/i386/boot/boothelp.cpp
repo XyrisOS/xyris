@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2021-08-07
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
 #include <stdint.h>
@@ -73,7 +73,7 @@ stivale2_mmap_helper(void* baseaddr)
  * right at the beginning, which makes things easier.
  * Return the length found.  We'll memory map
  * the entire area.
- * 
+ *
  */
 
 extern "C" uint32_t

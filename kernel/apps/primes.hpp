@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2020-12-30
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
 #pragma once

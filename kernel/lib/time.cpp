@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2021-07-27
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  * References:
  *         https://github.com/sidsingh78/EPOCH-to-time-date-converter/blob/master/epoch_conv.c

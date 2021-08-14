@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2021-07-25
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  * References:
  *         https://wiki.osdev.org/C++

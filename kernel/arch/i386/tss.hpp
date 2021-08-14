@@ -1,12 +1,12 @@
 /**
  * @file tss.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.3
  * @date 2019-11-14
- * 
- * @copyright Copyright the Panix Contributors (c) 2019
- * 
+ *
+ * @copyright Copyright the Xyris Contributors (c) 2019
+ *
  */
 #pragma once
 
@@ -19,19 +19,19 @@
  * our function is defined somewhere else and the "C" part tells
  * the compiler to not string mangle our function and to instead
  * look for a literal "tss_flush" function in assembly.
- * 
+ *
  */
 extern "C" void tss_flush();
 
 /**
- * @brief The Task State Segment (TSS) is a special data structure for x86 processors 
- * which holds information about a task. The TSS is primarily suited for hardware 
- * multitasking, where each individual process has its own TSS. In Software multitasking, 
- * one or two TSS's are also generally used, as they allow for entering 
+ * @brief The Task State Segment (TSS) is a special data structure for x86 processors
+ * which holds information about a task. The TSS is primarily suited for hardware
+ * multitasking, where each individual process has its own TSS. In Software multitasking,
+ * one or two TSS's are also generally used, as they allow for entering
  * Ring 0 code after an interrupt. (OSDev Wiki)
- * 
+ *
  * Thanks to OSDev Wiki for this section of code.
- * 
+ *
  */
 typedef struct tss_entry {
     uint32_t    prev;    // The previous TSS - if we used hardware task switching this would form a linked list.

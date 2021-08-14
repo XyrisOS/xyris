@@ -6,7 +6,7 @@
  * @version 0.3
  * @date 2019-11-15
  *
- * @copyright Copyright the Panix Contributors (c) 2019
+ * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
 
@@ -28,7 +28,7 @@ void printPanicScreen(int exception) {
     if (exception == 13) {
         tag = "< Wait... That's Illegal >\n";
     } else {
-        tag = "< OH NO! Panix panicked! >\n";
+        tag = "< OH NO! Xyris panicked! >\n";
     }
     char cow[256];
     ksprintf(

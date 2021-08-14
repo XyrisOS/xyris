@@ -6,7 +6,7 @@
  * @version 0.4
  * @date 2021-07-25
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  * References:
  *         https://github.com/limine-bootloader/limine/blob/trunk/stage23/lib/time.c

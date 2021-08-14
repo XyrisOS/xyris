@@ -1,22 +1,23 @@
-#  ____             _
-# |  _ \ __ _ _ __ (_)_  __
-# | |_) / _` | '_ \| \ \/ /
-# |  __/ (_| | | | | |>  <
-# |_|   \__,_|_| |_|_/_/\_\
+# __  __          _
+# \ \/ /   _ _ __(_)___
+#  \  / | | | '__| / __|
+#  /  \ |_| | |  | \__ \
+# /_/\_\__, |_|  |_|___/
+#      |___/
 #
 # Compiles the kernel source code located in the kernel folder.
 
 # Designed by Keeton Feavel & Micah Switzer
-# Copyright the Panix Contributors (c) 2019
+# Copyright the Xyris Contributors (c) 2019
 
-export PROJ_NAME = panix
+export PROJ_NAME = xyris
 
 # Makefile flags
 # prevent make from showing "entering/leaving directory" messages
 export MAKEFLAGS  += --no-print-directory
-# Panix Repo
+# Xyris Repo
 export REPO_URL   := "https://git.io/JWjEx"
-# Panix Version
+# Xyris Version
 export GIT_COMMIT := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 export VER_MAJOR  := "0"
 export VER_MINOR  := "4"
@@ -112,7 +113,7 @@ export CFLAGS :=            \
 	-fstack-protector-all   \
 	-fno-builtin            \
 	-fno-omit-frame-pointer \
-	${PANIX_CFLAGS}         \
+	${XYRIS_CFLAGS}         \
 	${WARNINGS}
 # C++ flags
 export CXXFLAGS :=          \
@@ -120,10 +121,10 @@ export CXXFLAGS :=          \
 	-fno-rtti               \
 	-fno-exceptions         \
 	-fno-use-cxa-atexit     \
-	${PANIX_CXXFLAGS}       \
+	${XYRIS_CXXFLAGS}       \
 # C / C++ pre-processor flags
 export CPPFLAGS :=                \
-	${PANIX_CPPFLAGS}             \
+	${XYRIS_CPPFLAGS}             \
 	-D REPO_URL=\"$(REPO_URL)\"   \
 	-D COMMIT=\"$(GIT_COMMIT)\"   \
 	-D VER_MAJOR=\"$(VER_MAJOR)\" \
@@ -132,10 +133,10 @@ export CPPFLAGS :=                \
 	-D VER_NAME=\"$(VER_NAME)\"
 # Assembler flags
 export ASFLAGS :=       \
-	${PANIX_ASFLAGS}
+	${XYRIS_ASFLAGS}
 # Linker flags
 export LDFLAGS :=       \
-	${PANIX_LDFLAGS}    \
+	${XYRIS_LDFLAGS}    \
 	-nostdlib           \
 	-lgcc               \
 	-L.
@@ -236,7 +237,7 @@ QEMU = $(shell which qemu-system-$(QEMU_ARCH))
 # * Virtual Machine Testing *
 # ***************************
 
-# Run Panix in QEMU
+# Run Xyris in QEMU
 .PHONY: run
 run:
 	$(QEMU)                                      \

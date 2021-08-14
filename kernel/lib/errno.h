@@ -4,9 +4,9 @@
  * @brief POSIX error number header
  * @version 0.3
  * @date 2020-08-08
- * 
- * @copyright Copyright the Panix Contributors (c) 2020
- * 
+ *
+ * @copyright Copyright the Xyris Contributors (c) 2020
+ *
  */
 #pragma once
 
@@ -17,11 +17,11 @@ extern int errno;
 /**
  * @brief POSIX Error number definitions. These definitions
  * are taken from the Open Group Base Specification Issue 7.
- * 
+ *
  * The Open Group Base Specifications Issue 7, 2018 edition
  * IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
  * Copyright © 2001-2018 IEEE and The Open Group
- * 
+ *
  */
 #define E2BIG           1     /* Argument list too long. */
 #define EACCES          2     /* Permission denied. */

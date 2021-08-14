@@ -11,7 +11,7 @@
 #       some reason. We should figure out how to fix that.
 
 # Designed by Keeton Feavel & Micah Switzer
-# Copyright the Panix Contributors (c) 2019
+# Copyright the Xyris Contributors (c) 2019
 
 # *****************************
 # * Source Code & Directories *
