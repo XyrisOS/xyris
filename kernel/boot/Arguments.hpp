@@ -25,34 +25,27 @@ public:
     const char* getCommand();
     cmdline_cb_t getCallback();
     /* Setters */
-    void setCommand(const char* cmd);
+    void setArgument(const char* arg);
     void setCallback(cmdline_cb_t cb);
 
 private:
-    char _cmd[MAX_ARGUMENT_LEN];
+    char _arg[MAX_ARGUMENT_LEN];
     cmdline_cb_t _callback;
 };
 
-class ArgumentParser {
-public:
-    /**
-     * @brief Parse a command line for registered arguments
-     *
-     * @param cmdline Command line string to be parsed
-     */
-    static void parse(char* cmdline);
+/**
+ * @brief Parse a command line for registered arguments
+ *
+ * @param cmdline Command line string to be parsed
+ */
+void parseCommandLine(char* cmdline);
 
-    /**
-     * @brief Register an argument and callback with the argument parser
-     *
-     * @param arg Argument to be matched. Do not include the `--`.
-     * @param cb Callback to be called if a match is found
-     */
-    static bool registerArgument(const char* arg, cmdline_cb_t cb);
-
-private:
-    static size_t _argPos;
-    static Argument _args[MAX_ARGUMENTS];
-};
+/**
+ * @brief Register an argument and callback with the argument parser
+ *
+ * @param arg Argument to be matched. Do not include the `--`.
+ * @param cb Callback to be called if a match is found
+ */
+void registerArgument(const char* arg, cmdline_cb_t cb);
 
 }

@@ -128,7 +128,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
             auto cmdline = (struct stivale2_struct_tag_cmdline*)tag;
             that->_cmdline = (char*)(cmdline->cmdline);
             rs232::printf("Stivale2 cmdline: '%s'\n", that->_cmdline);
-            ArgumentParser::parse(that->_cmdline);
+            parseCommandLine(that->_cmdline);
             break;
         }
         case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID: {
@@ -201,7 +201,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
             auto cmdline = (struct multiboot_tag_string*)tag;
             that->_cmdline = (char*)(cmdline->string);
             rs232::printf("Multiboot2 cmdline: '%s'\n", that->_cmdline);
-            ArgumentParser::parse(that->_cmdline);
+            parseCommandLine(that->_cmdline);
             break;
         }
         case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
