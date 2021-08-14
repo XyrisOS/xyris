@@ -5,7 +5,7 @@
  * @version 0.3
  * @date 2020-06-29
  *
- * @copyright Copyright the Panix Contributors (c) 2020
+ * @copyright Copyright the Xyris Contributors (c) 2020
  *
  * TODO: Make this module robust enough for fast transmission of binary data
  * currently it adequately supports slow, character transmission.
@@ -124,12 +124,16 @@ void init(uint16_t com_id) {
     writeByte(rs_232_port_base + RS_232_INTERRUPT_ENABLE_REG, 0x01);
     // Print out header info to the serial
     printf("%s",
-        "\033[93m\n    ____              _              _____\n"
-        "   / __ \\____ _____  (_)  __   _   _|__  /\n"
-        "  / /_/ / __ `/ __ \\/ / |/_/  | | / //_ < \n"
-        " / ____/ /_/ / / / / />  <    | |/ /__/ / \n"
-        "/_/    \\__,_/_/ /_/_/_/|_|    |___/____/  \n\n\033[0m"
-        "Panix Serial Output Debugger\n\n"
+        "\033[93m\n"
+        "   _  __           _              _____\n"
+        "  | |/ /_  _______(_)____   _   _|__  /\n"
+        "  |   / / / / ___/ / ___/  | | / //_ <\n"
+        " /   / /_/ / /  / (__  )   | |/ /__/ /\n"
+        "/_/|_\\__, /_/  /_/____/    |___/____/\n"
+        "    /____/\n"
+        "\n\033[0m"
+        "Xyris Serial Output Debugger\n\n"
+
     );
 }
 

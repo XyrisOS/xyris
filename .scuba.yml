@@ -1,4 +1,4 @@
-image: docker.pkg.github.com/panix-os/panixbuild/panixbuild:3.2.0
+image: ghcr.io/xyrisos/xyris-build/xyris-build:3.2.0
 
 aliases:
     # Building

@@ -4,9 +4,9 @@
  * @brief local static variable guards
  * @version 0.1
  * @date 2021-07-24
- * 
- * @copyright Copyright the Panix Contributors (c) 2021
- * 
+ *
+ * @copyright Copyright the Xyris Contributors (c) 2021
+ *
  * References:
  *     https://wiki.osdev.org/C++#Local_Static_Variables_.28GCC_Only.29
  *
@@ -19,7 +19,7 @@
 extern "C" void __cxa_pure_virtual();
 
 // These static variable guard functions are only used by
-// GCC (according to the Wiki). If Panix ever switches to
+// GCC (according to the Wiki). If Xyris ever switches to
 // or supports Clang, we want to be prepared.
 #ifdef __GNUG__
 namespace __cxxabiv1 {

@@ -8,7 +8,7 @@
             "type": "shell",
             "isBackground": true,
             "linux": {
-                "command": "qemu-system-i386 -S -gdb tcp::1234 -drive format=raw,file=dist/panix.iso -m 512 &"
+                "command": "qemu-system-i386 -S -gdb tcp::1234 -drive format=raw,file=dist/xyris.iso -m 512 &"
             },
             "options": {
                 "cwd": "${workspaceRoot}"

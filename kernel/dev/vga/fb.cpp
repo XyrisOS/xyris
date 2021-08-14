@@ -1,12 +1,12 @@
 /**
  * @file fb.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2021-06-11
- * 
- * @copyright Copyright the Panix Contributors (c) 2021
- * 
+ *
+ * @copyright Copyright the Xyris Contributors (c) 2021
+ *
  */
 #include <dev/vga/fb.hpp>
 // Types

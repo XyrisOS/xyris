@@ -8,7 +8,7 @@
  * @date 2021-07-20
  *
  * @copyright C Programming Language copyright Brian Kernighan, Dennis Ritchie
- * Implementation copyright the Panix Contributors (c) 2021.
+ * Implementation Copyright the Xyris Contributors (c) 2021.
  *
  * References:
  *     https://wiki.osdev.org/Random_Number_Generator#The_Standard.27s_Example
@@ -19,15 +19,15 @@
 #define MAX_RAND 32767
 
 /**
- * @brief Return a random value 
- * 
- * @param 
+ * @brief Return a random value
+ *
+ * @param
  * @return int random value
  */
 int rand(void);
 /**
  * @brief Set a seed to rand
- * 
+ *
  * @param seed a number to set seed
  */
 void srand(unsigned int seed);

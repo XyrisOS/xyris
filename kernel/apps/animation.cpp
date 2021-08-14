@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2021-07-24
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
 #include <apps/animation.hpp>
@@ -14,7 +14,7 @@
 
 namespace apps {
 
-void testAnimation() 
+void testAnimation()
 {
     int x = 10;
     while (1) {

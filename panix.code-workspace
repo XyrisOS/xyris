@@ -19,7 +19,7 @@
 		"C_Cpp.default.cppStandard": "c++17",
 		"C_Cpp.default.cStandard": "c17",
 		"doxdocgen.file.copyrightTag": [
-			"@copyright Copyright the Panix Contributors (c) {year}"
+			"@copyright Copyright the Xyris Contributors (c) {year}"
 		],
 		"clang-format.fallbackStyle": "Webkit",
 		"C_Cpp.intelliSenseEngineFallback": "Enabled"

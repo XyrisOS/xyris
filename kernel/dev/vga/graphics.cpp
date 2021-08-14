@@ -6,7 +6,7 @@
  * @version 0.2
  * @date 2021-07-24
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  * References:
  *          https://wiki.osdev.org/Double_Buffering

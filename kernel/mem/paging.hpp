@@ -5,7 +5,7 @@
  * @version 0.3
  * @date 2019-11-22
  *
- * @copyright Copyright the Panix Contributors (c) 2019
+ * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
 #pragma once
@@ -108,9 +108,9 @@ typedef struct page_directory_entry
  */
 typedef struct page_directory
 {
-    page_table_t *tables[1024];                  // Pointers that Panix uses to access the pages in memory
+    page_table_t *tables[1024];                  // Pointers that Xyris uses to access the pages in memory
     page_directory_entry_t tablesPhysical[1024]; // Pointers that the Intel CPU uses to access pages in memory
-    uint32_t physical_addr;                         // Physical address of this 4Kb aligned page table referenced by this entry
+    uint32_t physical_addr;                      // Physical address of this 4Kb aligned page table referenced by this entry
 } page_directory_t;
 
 /**

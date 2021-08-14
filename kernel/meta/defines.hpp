@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2021-07-20
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
 #pragma once
@@ -20,7 +20,7 @@
     #define VER_MINOR '0'
     #define VER_PATCH '0'
 #endif
-// Panix release name
+// Xyris release name
 #ifndef VER_NAME
     #define VER_NAME "unknown"
 #endif

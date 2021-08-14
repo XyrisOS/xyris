@@ -1,11 +1,11 @@
 /**
  * @file main.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief The entry point into the Panix kernel. Everything is loaded from here.
+ * @brief The entry point into the Xyris kernel. Everything is loaded from here.
  * @version 0.3
  * @date 2019-11-14
  *
- * @copyright Copyright the Panix Contributors (c) 2019
+ * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
 // System library functions
@@ -52,7 +52,7 @@ static void boot_init(void* boot_info, uint32_t magic)
 }
 
 /**
- * @brief This is the Panix kernel entry point. This function is called directly from the
+ * @brief This is the Xyris kernel entry point. This function is called directly from the
  * assembly written in boot.S located in arch/i386/boot.S.
  */
 void kernel_main(void* boot_info, uint32_t magic)
@@ -101,8 +101,8 @@ static void kernel_print_splash()
     tty_clear();
     kprintf(
         "\033[93m"
-        "Panix %s\n"
-        "Copyright the Panix Contributors (c) %i. All rights reserved.\n"
+        "Xyris %s\n"
+        "Copyright the Xyris Contributors (c) %i. All rights reserved.\n"
         "Kernel source available at %s.\n"
         "\033[0m",
         VER_NAME,

@@ -2,11 +2,11 @@
  * @file rs232.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief A simple, write-only driver for the RS232 serial
- * device standard. Code mostly ported from Panix v2.
+ * device standard. Code mostly ported from Panix-Archive (v2).
  * @version 0.3
  * @date 2020-06-29
  *
- * @copyright Copyright the Panix Contributors (c) 2020
+ * @copyright Copyright the Xyris Contributors (c) 2020
  *
  */
 #pragma once

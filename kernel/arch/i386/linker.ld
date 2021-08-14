@@ -6,7 +6,7 @@
  * @version 0.1
  * @date 2021-06-27
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
 ENTRY(_start)

@@ -6,7 +6,7 @@
  * @version 0.4
  * @date 2021-07-25
  *
- * @copyright Copyright the Panix Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2021
  *
  * References:
  *         https://github.com/limine-bootloader/limine/blob/trunk/stage23/lib/time.c
@@ -100,10 +100,10 @@ static void read_rtc()
     rtc_year = rtc_get_register(0x09);
     rtc_century = rtc_get_register(RTC_CURRENT_CENTURY);
 
-    while ((last_second != rtc_second) || (last_minute != rtc_minute) || 
+    while ((last_second != rtc_second) || (last_minute != rtc_minute) ||
            (last_hour != rtc_hour)     || (last_day != rtc_day)       ||
-           (last_month != rtc_month)   || (last_year != rtc_year)     || 
-           (last_century != rtc_century)) 
+           (last_month != rtc_month)   || (last_year != rtc_year)     ||
+           (last_century != rtc_century))
     {
         last_second = rtc_second;
         last_minute = rtc_minute;
@@ -161,7 +161,7 @@ static void read_rtc()
 /**
  * JDN is time since noon Universal Time on January 1, 4713 BCE (on the Julian calendar)
  * Developed by Fliegel and van Flandern (1968), published in "Compact Computer Algorithms"
- * 
+ *
  *           (153 * m) + 2                y     y     y
  * JDN = d + ------------- + (365 * y) + --- - --- + --- - 32045
  *                  5                     4    100   400

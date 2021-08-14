@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: docker.pkg.github.com/panix-os/panixbuild/panixbuild:3.1.1
+      image: ghcr.io/xyrisos/xyris-build/xyris-build:3.2.0
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -41,7 +41,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: os-image-debug
-        path: dist/debug/panix.img
+        path: dist/debug/xyris.img
     # Release
     - name: 'Build Kernel (Release)'
       run: make MODE=release
@@ -51,4 +51,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: os-image-release
-        path: dist/release/panix.img
+        path: dist/release/xyris.img

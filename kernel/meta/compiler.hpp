@@ -4,9 +4,9 @@
  * @brief Compiler meta directives
  * @version 0.1
  * @date 2021-06-17
- * 
- * @copyright Copyright the Panix Contributors (c) 2021
- * 
+ *
+ * @copyright Copyright the Xyris Contributors (c) 2021
+ *
  */
 #pragma once
 
