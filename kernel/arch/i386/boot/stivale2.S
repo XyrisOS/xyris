@@ -25,13 +25,7 @@ section .early_data
 align 4
 __stivale2_framebuffer:
     dq 0x3ecc1bc43d0f7971
-    dd __stivale2_cmdline
+    dq 0
     dw 0 ; Width (0 = Best)
     dw 0 ; Height (0 = Best)
     dw 0 ; Color depth (0 = Best)
-
-align 4
-__stivale2_cmdline:
-    dq 0xe5e76a1b4597a781
-    dq 0
-    dq 0
