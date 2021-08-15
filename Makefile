@@ -205,7 +205,7 @@ $(PRODUCTS_DIR)/$(MODE)/$(ISO): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 $(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
 	@printf "$(COLOR_INFO)Making Limine boot image ($(MODE))$(COLOR_NONE)\n"
 	@rm -f $@
-	@dd if=/dev/zero bs=1M count=0 seek=64 of=$@ 2> /dev/null
+	@dd if=/dev/zero bs=1M count=0 seek=2 of=$@ 2> /dev/null
 	@parted -s $@ mklabel msdos
 	@parted -s $@ mkpart primary 1 100%
 	@parted -s $@ set 1 boot on
