@@ -75,4 +75,20 @@ private:
     off_t _pos;
 };
 
+class BinaryReader {
+public:
+    BinaryReader(Read* reader)
+        : _reader(reader)
+    {
+    }
+
+    template<typename T>
+    bool read(T* out) {
+        return true;
+    }
+
+private:
+    Read* _reader;
+};
+
 }
