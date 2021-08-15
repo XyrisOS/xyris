@@ -18,21 +18,6 @@ namespace Boot {
 
 typedef void (*cmdline_cb_t)(const char* arg);
 
-class Argument {
-public:
-    Argument();
-    /* Getters */
-    const char* getCommand();
-    cmdline_cb_t getCallback();
-    /* Setters */
-    void setArgument(const char* arg);
-    void setCallback(cmdline_cb_t cb);
-
-private:
-    char _arg[MAX_ARGUMENT_LEN];
-    cmdline_cb_t _callback;
-};
-
 /**
  * @brief Parse a command line for registered arguments
  *

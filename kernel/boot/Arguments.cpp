@@ -9,38 +9,31 @@
  *
  */
 #include <boot/Arguments.hpp>
-#include <dev/serial/rs232.hpp>
+#include <lib/stdio.hpp>
 #include <lib/string.hpp>
 #include <lib/assert.hpp>
 
 namespace Boot {
 
+// Use a C style structure because we're early enough in the kernel initialization
+// (since we're registering argument callbacks when constructing) that we can't
+// use classes since there is no guarantee that we'll be constructed in order.
+struct argument {
+    char arg[MAX_ARGUMENT_LEN];
+    cmdline_cb_t callback;
+};
+
 static size_t _argPos = 0;
-static Argument _args[MAX_ARGUMENTS];
-
-Argument::Argument()
-    : _callback(NULL)
-{
-    // Default constructor
-}
-
-/* Getters */
-const char* Argument::getCommand() { return _arg; }
-cmdline_cb_t Argument::getCallback() { return _callback; }
-/* Setters */
-void Argument::setCallback(cmdline_cb_t cb) { _callback = cb; }
-void Argument::setArgument(const char* arg) { strncpy(_arg, arg, MAX_ARGUMENT_LEN); }
+static struct argument _args[MAX_ARGUMENTS];
 
 void parseCommandLine(char* cmdline)
 {
-    rs232::printf("Parsing cmdline...\n");
+    debugf("Parsing cmdline...\n");
     for (size_t pos = 0; pos < _argPos; pos++) {
-        Argument arg = _args[pos];
-        const char* cmd = arg.getCommand();
-        rs232::printf("Position: %d, cmd: %s\n", pos, cmd);
-        if (strstr(cmdline, cmd)) {
-            rs232::printf("Match. Callback\n");
-            arg.getCallback()(cmd);
+        struct argument* arg = &_args[pos];
+        const char* str = arg->arg;
+        if (strstr(cmdline, str)) {
+            arg->callback(str);
         }
     }
 }
@@ -48,9 +41,9 @@ void parseCommandLine(char* cmdline)
 void registerArgument(const char* arg, cmdline_cb_t cb)
 {
     assert(_argPos < MAX_ARGUMENTS);
-    Argument nextArg = _args[_argPos++];
-    nextArg.setCallback(cb);
-    nextArg.setArgument(arg);
+    struct argument* nextArg = &_args[_argPos++];
+    nextArg->callback = cb;
+    strncpy(nextArg->arg, arg, MAX_ARGUMENT_LEN);
 }
 
 }
