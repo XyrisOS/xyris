@@ -78,13 +78,12 @@ private:
 class BinaryReader {
 public:
     BinaryReader(Read* reader)
-        : _reader(reader)
-    {
+        : _reader(reader) {
     }
 
     template<typename T>
     bool read(T* out) {
-        return true;
+        return _reader->read(out, sizeof(*out), 1) == sizeof(*out);
     }
 
 private:
