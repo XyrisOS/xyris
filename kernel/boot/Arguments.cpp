@@ -28,7 +28,6 @@ static struct argument _args[MAX_ARGUMENTS];
 
 void parseCommandLine(char* cmdline)
 {
-    debugf("Parsing cmdline...\n");
     for (size_t pos = 0; pos < _argPos; pos++) {
         struct argument* arg = &_args[pos];
         const char* str = arg->arg;

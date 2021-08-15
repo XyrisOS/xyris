@@ -51,17 +51,16 @@ void strncpy(char* destination, const char* source, size_t len)
 
 int strcmp(const char *s1, const char *s2)
 {
-    while (*s1 && *s2)
+    while (*s1)
     {
-        if (*s1 != *s2) {
-            return 0;
-        }
+        if (*s1 != *s2)
+            break;
 
         s1++;
         s2++;
     }
 
-    return (*s2 == '\0');
+    return (int)*s1 - (int)*s2;
 }
 
 const char* strstr(const char* haystack, const char* needle)
