@@ -65,9 +65,9 @@ int strcmp(const char *s1, const char *s2)
 
 const char* strstr(const char* haystack, const char* needle)
 {
-    while (*haystack != '\0')
+    while (*haystack)
     {
-        if ((*haystack == *needle) && strcmp(haystack, needle)) {
+        if ((*haystack == *needle) && (strcmp(haystack, needle) == 0)) {
             return haystack;
         }
         haystack++;
