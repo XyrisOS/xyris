@@ -11,38 +11,17 @@
 #include <boot/Arguments.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
-#include <lib/assert.hpp>
+#include <meta/sections.hpp>
 
 namespace Boot {
 
-// Use a C style structure because we're early enough in the kernel initialization
-// (since we're registering argument callbacks when constructing) that we can't
-// use classes since there is no guarantee that we'll be constructed in order.
-struct argument {
-    char arg[MAX_ARGUMENT_LEN];
-    cmdline_cb_t callback;
-};
-
-static size_t _argPos = 0;
-static struct argument _args[MAX_ARGUMENTS];
-
 void parseCommandLine(char* cmdline)
 {
-    for (size_t pos = 0; pos < _argPos; pos++) {
-        struct argument* arg = &_args[pos];
-        const char* str = arg->arg;
-        if (strstr(cmdline, str)) {
-            arg->callback(str);
+    for (struct argument* arg = _ARGUMENTS_START; arg < _ARGUMENTS_END; arg++) {
+        if (strstr(cmdline, arg->arg)) {
+            arg->callback(arg->arg);
         }
     }
-}
-
-void registerArgument(const char* arg, cmdline_cb_t cb)
-{
-    assert(_argPos < MAX_ARGUMENTS);
-    struct argument* nextArg = &_args[_argPos++];
-    nextArg->callback = cb;
-    strncpy(nextArg->arg, arg, MAX_ARGUMENT_LEN);
 }
 
 }

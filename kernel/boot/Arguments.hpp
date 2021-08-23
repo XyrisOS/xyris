@@ -11,12 +11,18 @@
 #pragma once
 #include <lib/LinkedList.hpp>
 
-#define MAX_ARGUMENTS 32
 #define MAX_ARGUMENT_LEN 32
+#define KERNEL_PARAM(name, arg, callback) \
+    SECTION(".arguments") struct Boot::argument __##name##_arg = \
+    { arg, callback }
 
 namespace Boot {
 
 typedef void (*cmdline_cb_t)(const char* arg);
+struct argument {
+    char arg[MAX_ARGUMENT_LEN];
+    cmdline_cb_t callback;
+};
 
 /**
  * @brief Parse a command line for registered arguments
@@ -24,13 +30,5 @@ typedef void (*cmdline_cb_t)(const char* arg);
  * @param cmdline Command line string to be parsed
  */
 void parseCommandLine(char* cmdline);
-
-/**
- * @brief Register an argument and callback with the argument parser
- *
- * @param arg Argument to be matched. Do not include the `--`.
- * @param cb Callback to be called if a match is found
- */
-void registerArgument(const char* arg, cmdline_cb_t cb);
 
 }

@@ -57,7 +57,9 @@ static inline void set_page_dir(uint32_t page_directory);
 static inline void paging_enable();
 static inline void paging_disable();
 static void paging_args_cb(const char* arg);
-static CONSTRUCTOR void paging_args_init();
+
+// Kernel cmdline argument
+KERNEL_PARAM(enable_mapping_output, MAPPING_OUTPUT_FLAG, paging_args_cb);
 
 void paging_init(uint32_t page_count) {
     machine_page_count = page_count;
@@ -265,14 +267,10 @@ uint32_t get_phys_page_dir() {
     return page_dir_addr;
 }
 
-static CONSTRUCTOR void paging_args_init()
-{
-    Boot::registerArgument(MAPPING_OUTPUT_FLAG, paging_args_cb);
-}
-
 static void paging_args_cb(const char* arg)
 {
     if (strcmp(arg, MAPPING_OUTPUT_FLAG) == 0) {
+        debugf("is_mapping_output_enabled = true");
         is_mapping_output_enabled = true;
     }
 }
