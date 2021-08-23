@@ -9,6 +9,7 @@
  *
  */
 #include <boot/Handoff.hpp>
+#include <boot/Arguments.hpp>
 // System library functions
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
@@ -125,8 +126,9 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
 #endif
         case STIVALE2_STRUCT_TAG_CMDLINE_ID: {
             auto cmdline = (struct stivale2_struct_tag_cmdline*)tag;
-            rs232::printf("Stivale2 cmdline: '%s'\n", (const char*)cmdline->cmdline);
             that->_cmdline = (char*)(cmdline->cmdline);
+            rs232::printf("Stivale2 cmdline: '%s'\n", that->_cmdline);
+            parseCommandLine(that->_cmdline);
             break;
         }
         case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID: {
@@ -197,8 +199,9 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
         switch (tag->type) {
         case MULTIBOOT_TAG_TYPE_CMDLINE: {
             auto cmdline = (struct multiboot_tag_string*)tag;
-            rs232::printf("Multiboot2 cmdline: '%s'\n", cmdline->string);
             that->_cmdline = (char*)(cmdline->string);
+            rs232::printf("Multiboot2 cmdline: '%s'\n", that->_cmdline);
+            parseCommandLine(that->_cmdline);
             break;
         }
         case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {

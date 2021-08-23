@@ -15,6 +15,10 @@
 #define OPTIMIZE(x) __attribute__((optimize("O"#x)))
 #define ALWAYS_INLINE __attribute__((always_inline))
 
+// Constructors / Destructors
+#define CONSTRUCTOR __attribute__ ((constructor))
+#define DESTRUCTOR __attribute__ ((destructor))
+
 // Branch prediction
 #define likely(x)   __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)

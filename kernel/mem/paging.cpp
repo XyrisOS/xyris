@@ -15,6 +15,8 @@
 #include <lib/bitset.hpp>
 #include <lib/stdio.hpp>
 #include <lib/mutex.hpp>
+#include <lib/string.hpp>
+#include <boot/Arguments.hpp>
 #include <dev/serial/rs232.hpp>
 #include <meta/sections.hpp>
 #include <stddef.h>
@@ -39,6 +41,10 @@ static page_table_t*    page_dir_virt[PAGE_ENTRIES];
 static page_directory_entry_t page_dir_phys[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
 static page_table_t           page_tables[PAGE_ENTRIES]   SECTION(".page_tables,\"aw\", @nobits#");
 
+// Debug output flags
+#define MAPPING_OUTPUT_FLAG "--enable-mapping-output"
+static bool is_mapping_output_enabled = false;
+
 // Function prototypes
 static void mem_page_fault(registers_t* regs);
 static void paging_init_dir();
@@ -50,6 +56,10 @@ static inline void map_kernel_page_table(uint32_t pd_idx, page_table_t *table);
 static inline void set_page_dir(uint32_t page_directory);
 static inline void paging_enable();
 static inline void paging_disable();
+static void paging_args_cb(const char* arg);
+
+// Kernel cmdline argument
+KERNEL_PARAM(enable_mapping_output, MAPPING_OUTPUT_FLAG, paging_args_cb);
 
 void paging_init(uint32_t page_count) {
     machine_page_count = page_count;
@@ -120,27 +130,16 @@ void map_kernel_page(virtual_address_t vaddr, uint32_t paddr) {
     }
     page_table_entry *entry = &(page_tables[pde].pages[pte]);
     // Print a debug message to serial
-    debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr, vaddr.val, pde, pte);
+    if (is_mapping_output_enabled) {
+        debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr, vaddr.val, pde, pte);
+    }
     // If the page is already mapped into memory
     if (entry->present) {
         if (entry->frame == paddr >> 12) {
             // this page was already mapped the same way
             return;
         }
-/*
-#ifdef DEBUG
-        size_t bit_idx = INDEX_FROM_BIT(vaddr.val >> 12);
-#endif
-        debugf(
-            "pte { present = %d, read_write = %d, usermode = %d, "
-            "write_through = %d,\n      cache_disable = %d, accessed = %d, "
-            "dirty = %d,\n      page_att_table = %d, global = %d, frame = 0x%08x\n}\n"
-            "mem_map[i-1] = 0x%08x\nmem_map[i]   = 0x%08x\nmem_map[i+1] = 0x%08x\n",
-            entry->present, entry->read_write, entry->usermode, entry->write_through,
-            entry->cache_disable, entry->accessed, entry->dirty, entry->page_att_table,
-            entry->global, entry->frame, mapped_pages[bit_idx - 1],
-            mapped_pages[bit_idx], mapped_pages[bit_idx + 1]);
-*/
+
         PANIC("Attempted to map already mapped page.\n");
     }
     // Set the page information
@@ -266,4 +265,12 @@ bool page_is_present(size_t addr) {
 // TODO: maybe enforce access control here in the future
 uint32_t get_phys_page_dir() {
     return page_dir_addr;
+}
+
+static void paging_args_cb(const char* arg)
+{
+    if (strcmp(arg, MAPPING_OUTPUT_FLAG) == 0) {
+        debugf("is_mapping_output_enabled = true");
+        is_mapping_output_enabled = true;
+    }
 }

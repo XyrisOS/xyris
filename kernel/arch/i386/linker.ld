@@ -39,7 +39,15 @@ SECTIONS
     _KERNEL_START = .;
 
     .text ALIGN (4K) : AT(ADDR(.text) - _KERNEL_BASE) { *(.text) }
-    .rodata ALIGN (4K) : AT(ADDR(.rodata) - _KERNEL_BASE) { *(.rodata*) }
+    .rodata ALIGN (4K) : AT(ADDR(.rodata) - _KERNEL_BASE)
+    {
+        /* Kernel command line arguments */
+        _ARGUMENTS_START = .;
+        *(.arguments)
+        _ARGUMENTS_END = .;
+        /* Read-only data has to be last */
+        *(.rodata*)
+    }
     .data ALIGN (4K) : AT(ADDR(.data) - _KERNEL_BASE)
     {
         _CTORS_START = .;
@@ -55,10 +63,7 @@ SECTIONS
         *(COMMON)
         _BSS_END = .;
     }
-    .page_tables ALIGN (4K) : AT(ADDR(.page_tables) - _KERNEL_BASE)
-    {
-        *(.page_tables)
-    }
+    .page_tables ALIGN (4K) : AT(ADDR(.page_tables) - _KERNEL_BASE) { *(.page_tables) }
 
     _KERNEL_END = .;
 

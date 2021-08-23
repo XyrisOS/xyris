@@ -10,6 +10,8 @@
  */
 #pragma once
 
+#include <sys/panic.hpp>
+
 /**
  * @brief Creates an assertion which must be held to be true.
  * If the assertion passes, nothing happens and the kernel
