@@ -10,7 +10,7 @@
  */
 
 #pragma once
-namespace apps {
+namespace Apps {
 
 /**
  * @brief Run a simple animation

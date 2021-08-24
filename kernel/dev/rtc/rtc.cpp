@@ -18,7 +18,7 @@
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 
-namespace rtc {
+namespace RTC {
 
 #define RTC_CMOS_PORT 0x70
 #define RTC_DATA_PORT 0x71
@@ -201,4 +201,4 @@ uint64_t getEpoch()
     return getUnixEpoch(second, minute, hour, day, month, year);
 }
 
-}
+} // !namespace RTC

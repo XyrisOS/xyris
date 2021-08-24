@@ -1,12 +1,12 @@
 /**
  * @file i386.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2021-08-24
- * 
+ *
  * @copyright Copyright the Xyris Contributors (c) 2021
- * 
+ *
  */
 // Architecture (i386) specific header
 #include <arch/i386/i386.hpp>
@@ -32,7 +32,7 @@ const char* exception_descriptions[] = {
  * /_/ \_\_| \__|_||_| |___|_||_\__\___|_| |_| \__,_\__\___|
  */
 
-namespace arch {
+namespace Arch {
 
 void cpuInit()
 {
@@ -70,4 +70,4 @@ const char* cpuGetModel()
     return model;
 }
 
-}
+} // !namespace Arch

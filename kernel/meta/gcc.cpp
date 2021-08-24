@@ -47,7 +47,7 @@ extern "C" void __cxa_guard_abort(__guard* g)
     __atomic_clear(g, __ATOMIC_RELEASE);
 }
 
-} // !__cxxabiv1
+} // !namespace __cxxabiv1
 #endif
 
 extern "C" void __cxa_pure_virtual()

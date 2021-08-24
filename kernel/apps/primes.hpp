@@ -10,7 +10,7 @@
  */
 #pragma once
 
-namespace apps {
+namespace Apps {
 
 /**
  * @brief Starts a task to find prime numbers.

@@ -91,7 +91,7 @@ int puts(const char *str);
  */
 #ifdef DEBUG
 #include <dev/serial/rs232.hpp>
-#define debugf(fmt, ...) rs232::printf(fmt, ##__VA_ARGS__)
+#define debugf(fmt, ...) RS232::printf(fmt, ##__VA_ARGS__)
 #else
 #define debugf(fmt, ...)
 #endif

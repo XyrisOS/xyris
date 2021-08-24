@@ -28,7 +28,7 @@
 // Debug
 #include <dev/serial/rs232.hpp>
 
-namespace fb {
+namespace FB {
 
 FramebufferInfo fbInfo;
 // Cached values
@@ -97,7 +97,7 @@ void init(FramebufferInfo info)
     b_shift = fbInfo.getBlueMaskShift();
     pixelwidth = (depth / 8);
     // Map in the framebuffer
-    rs232::printf("Mapping framebuffer...\n");
+    RS232::printf("Mapping framebuffer...\n");
     for (uintptr_t page = (uintptr_t)addr & PAGE_ALIGN;
         page < (uintptr_t)addr + (pitch * height);
         page += PAGE_SIZE)
@@ -152,4 +152,4 @@ void swap()
     memcpy(addr, backbuffer, height * pitch);
 }
 
-};
+} // !namespace FB

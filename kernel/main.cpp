@@ -56,18 +56,18 @@ static void boot_init(void* boot_info, uint32_t magic)
 void kernel_main(void* boot_info, uint32_t magic)
 {
     // Initialize the CPU
-    arch::cpuInit();
-    // Initialize info from bootloader
-    boot_init(boot_info, magic);
+    Arch::cpuInit();
     // Initialize devices
     // TODO: Find a better way to do this
     {
-        arch::interrupts_disable();
-        rs232::init(RS_232_COM1);
-        rtc::init();
+        Arch::interrupts_disable();
+        RS232::init(RS_232_COM1);
+        // Initialize info from bootloader
+        boot_init(boot_info, magic);
+        RTC::init();
         paging_init(0);
-        fb::init(handoff.getFramebufferInfo());
-        arch::interrupts_enable();
+        FB::init(handoff.getFramebufferInfo());
+        Arch::interrupts_enable();
     }
     // Print the splash screen to show we've booted into the kernel properly.
     kernel_print_splash();
@@ -75,18 +75,18 @@ void kernel_main(void* boot_info, uint32_t magic)
     Time::TimeDescriptor time;
     time.printDate();
     // Get the CPU vendor and model data to print
-    const char* vendor = arch::cpuGetVendor();
-    const char* model = arch::cpuGetModel();
+    const char* vendor = Arch::cpuGetVendor();
+    const char* model = Arch::cpuGetModel();
     kprintf(DBG_INFO "%s %s\n", vendor, model);
     // Print out the CPU vendor info
-    rs232::printf("%s\n%s\n", vendor, model);
+    RS232::printf("%s\n%s\n", vendor, model);
 
     tasks_init();
     task_t compute, status, spinner, animation;
-    tasks_new(apps::find_primes, &compute, TASK_READY, "prime_compute");
-    tasks_new(apps::show_primes, &status, TASK_READY, "prime_display");
-    tasks_new(apps::spinner, &spinner, TASK_READY, "spinner");
-    tasks_new(apps::testAnimation, &animation, TASK_READY, "testAnimation");
+    tasks_new(Apps::find_primes, &compute, TASK_READY, "prime_compute");
+    tasks_new(Apps::show_primes, &status, TASK_READY, "prime_display");
+    tasks_new(Apps::spinner, &spinner, TASK_READY, "spinner");
+    tasks_new(Apps::testAnimation, &animation, TASK_READY, "testAnimation");
     // Now that we're done make a joyful noise
     kernel_boot_tone();
 

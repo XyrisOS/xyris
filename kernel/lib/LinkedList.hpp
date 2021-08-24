@@ -264,4 +264,4 @@ private:
     size_t count;
 };
 
-}
+} // !namespace LinkedList

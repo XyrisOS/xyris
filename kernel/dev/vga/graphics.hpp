@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <dev/vga/fb.hpp>
 
-namespace fb {
+namespace FB {
 
 /**
  * @brief Checks if the framebuffer has been initialized
@@ -66,4 +66,4 @@ void resetDoubleBuffer();
  */
 void swap();
 
-};
+} // !namespace FB

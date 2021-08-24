@@ -15,7 +15,7 @@
 #include <sys/tasks.hpp>
 #include <apps/primes.hpp>
 
-namespace apps {
+namespace Apps {
 
 // this value can be tweaked based on memory constraints
 #define PRIME_MAX_SQRT 4000

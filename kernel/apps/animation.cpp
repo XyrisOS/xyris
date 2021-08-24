@@ -12,7 +12,7 @@
 #include <dev/vga/graphics.hpp>
 #include <dev/vga/fb.hpp>
 
-namespace apps {
+namespace Apps {
 
 void testAnimation()
 {
@@ -21,15 +21,15 @@ void testAnimation()
         if (x > 250)
             x = 10;
 
-        fb::resetDoubleBuffer();
+        FB::resetDoubleBuffer();
         //background
-        fb::putrect(0,0,280,280,0x00FFFF);
+        FB::putrect(0,0,280,280,0x00FFFF);
         x+=10;
         //snake
-        fb::putrect(x,10,10,10,0xFF0000);
+        FB::putrect(x,10,10,10,0xFF0000);
         //apple
-        fb::putrect(50,30,10,10,0xFFFF00);
-        fb::swap();
+        FB::putrect(50,30,10,10,0xFFFF00);
+        FB::swap();
     }
 }
 

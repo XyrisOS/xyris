@@ -23,7 +23,7 @@ extern "C" void kernel_main(void* boot_info, uint32_t magic);
 // Kernel panic
 #define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)
 
-namespace arch {
+namespace Arch {
 
 // Architecture initialization
 void cpuInit();
@@ -36,4 +36,4 @@ void interrupts_enable();
 const char* cpuGetVendor();
 const char* cpuGetModel();
 
-}
+} // !namespace Arch

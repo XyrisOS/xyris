@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 
-namespace rtc {
+namespace RTC {
 
 /**
  * @brief Initializes the Real Time Clock driver
@@ -30,4 +30,4 @@ void init();
  */
 uint64_t getEpoch();
 
-}
+} // !namespace RTC

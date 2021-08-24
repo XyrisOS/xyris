@@ -35,7 +35,7 @@
 #define RS_232_MODEM_STATUS_REG 0x6
 #define RS_232_SCRATCH_REG 0x7
 
-namespace rs232 {
+namespace RS232 {
 
 static uint16_t rs_232_port_base;
 static RingBuffer<char, 1024> ring;
@@ -164,4 +164,4 @@ int close() {
     return 0;
 }
 
-};
+} // !namespace RS232

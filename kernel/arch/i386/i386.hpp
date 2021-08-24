@@ -75,4 +75,4 @@ static inline int cpuid(int flag, int regs[4])
     return (int)regs[0];
 }
 
-}
+} // !namespace i386
