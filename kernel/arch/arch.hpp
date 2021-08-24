@@ -19,6 +19,9 @@
 // Kernel entry point
 extern "C" void kernel_main(void* boot_info, uint32_t magic);
 
+// Kernel panic
+#define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)
+
 namespace arch {
 
 // CPU Identification

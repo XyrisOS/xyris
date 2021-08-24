@@ -19,8 +19,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)
-
 /**
  * @brief x86 BIOS based VGA pointers and data.
  * Used for printing to the VGA screen via BIOS memory.
@@ -30,6 +28,9 @@
 #define X86_IND_X 79
 #define X86_IND_Y 0
 inline uint16_t* x86_bios_vga_mem = (uint16_t*)0x000B8000;
+
+// List of all exceptions and their associated english descriptions
+extern const char* exception_descriptions[];
 
 /**
  * @brief A structure definining values for every since x86 register.
@@ -47,8 +48,7 @@ struct stackframe {
     size_t eip;
 };
 
-// List of all exceptions and their associated english descriptions
-extern const char* exception_descriptions[];
+namespace arch {
 
 // Inline CPUID functions
 static inline void cpuid(int flag, unsigned long eax, unsigned long ebx, unsigned long ecx, unsigned long edx)
@@ -65,4 +65,6 @@ static inline int cpuid(int flag, int regs[4])
                      : "=a"(*regs), "=b"(*(regs + 1)), "=c"(*(regs + 2)), "=d"(*(regs + 3))
                      : "a"(flag));
     return (int)regs[0];
+}
+
 }

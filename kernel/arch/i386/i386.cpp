@@ -29,9 +29,7 @@ namespace arch {
 const char* cpu_get_vendor()
 {
     static int vendor[4];
-    __asm__ volatile("cpuid"
-                     : "=a"(vendor[0]), "=b"(vendor[0]), "=d"(vendor[1]), "=c"(vendor[2])
-                     : "a"(0));
+    cpuid(0, vendor);
     return (char*)vendor;
 }
 
