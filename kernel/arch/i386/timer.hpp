@@ -9,7 +9,7 @@
  *
  */
 #pragma once
-
+#include <arch/i386/i386.hpp>
 #include <stdint.h>
 
 #define TIMER_COMMAND_PORT 0x43

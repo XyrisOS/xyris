@@ -11,7 +11,6 @@
  *
  */
 #include <arch/i386/gdt.hpp>
-#include <arch/arch.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 #include <dev/tty/tty.hpp>

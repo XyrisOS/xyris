@@ -20,7 +20,7 @@
 // Function prototypes
 void printPanicScreen(int exception);
 void panic_print_file(const char *file, uint32_t line, const char *func);
-void panic_print_register(registers_t *regs);
+void panic_print_register(struct registers *regs);
 
 void printPanicScreen(int exception) {
     tty_clear(VGA_Black, VGA_White);
@@ -65,7 +65,7 @@ NORET void panic(const char* msg, const char *file, uint32_t line, const char *f
     while (true) { asm("hlt"); }
 }
 
-NORET void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
+NORET void panic(struct registers *regs, const char *file, uint32_t line, const char *func) {
     asm volatile ("cli");
     // Print the panic cow and exception description
     printPanicScreen(regs->int_num);
@@ -145,7 +145,7 @@ void panic_print_file(const char *file, uint32_t line, const char *func) {
     rs232::printf("%s", msg);
 }
 
-void panic_print_register(registers_t *regs) {
+void panic_print_register(struct registers *regs) {
     // I really wanted to add color codes here to make the register labels
     // red, but that would also mean resetting the background *and* foreground
     // colors each time (to print the numbers in back) since I can't just call

@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2020
  *
  */
-#include <arch/i386/timer.hpp>
+#include <arch/arch.hpp>
 #include <sys/tasks.hpp>
 #include <mem/heap.hpp>
 #include <sys/panic.hpp>

@@ -36,4 +36,4 @@ NORET void panic(const char* msg, const char *file, uint32_t line, const char *f
  * @param line Line with the error
  * @param func Function containing error
  */
-NORET void panic(registers_t *regs, const char *file, uint32_t line, const char *func);
+NORET void panic(struct registers *regs, const char *file, uint32_t line, const char *func);

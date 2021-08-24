@@ -12,8 +12,7 @@
  *         https://github.com/limine-bootloader/limine/blob/trunk/stage23/lib/time.c
  *         https://en.wikipedia.org/wiki/Julian_day
  */
-#include <arch/i386/ports.hpp>
-#include <arch/i386/isr.hpp>
+#include <arch/arch.hpp>
 #include <dev/rtc/rtc.hpp>
 #include <dev/tty/tty.hpp>
 #include <lib/stdio.hpp>
@@ -24,7 +23,7 @@
 #define RTC_CURRENT_YEAR 2021 // Needs to be updated every year!
 #define RTC_CURRENT_CENTURY 0 // Needs to be updated every century!
 
-static void rtc_callback(registers_t* regs);
+static void rtc_callback(struct registers* regs);
 static bool rtc_get_update_in_progress();
 static uint8_t rtc_get_register(uint8_t reg);
 static void read_rtc();
@@ -57,7 +56,7 @@ void rtc_init()
     register_interrupt_handler(IRQ8, rtc_callback);
 }
 
-static void rtc_callback(registers_t* regs)
+static void rtc_callback(struct registers* regs)
 {
     (void)regs;
     kprintf(DBG_INFO "RTC updated.\n");

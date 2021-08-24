@@ -9,9 +9,7 @@
  *
  */
 
-#include <arch/i386/ports.hpp>
-#include <arch/i386/isr.hpp>
-#include <arch/i386/timer.hpp>
+#include <arch/arch.hpp>
 #include <dev/spkr/spkr.hpp>
 
 static void spkr_tone(uint32_t freq) {

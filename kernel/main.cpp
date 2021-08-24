@@ -22,9 +22,6 @@
 #include <mem/paging.hpp>
 // Architecture specific code
 #include <arch/arch.hpp>
-#include <arch/i386/gdt.hpp>
-#include <arch/i386/isr.hpp>
-#include <arch/i386/timer.hpp>
 // Generic devices
 #include <dev/rtc/rtc.hpp>
 #include <dev/serial/rs232.hpp>

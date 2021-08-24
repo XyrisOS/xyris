@@ -9,8 +9,6 @@
  *
  */
 #include <arch/i386/isr.hpp>
-#include <arch/i386/idt.hpp>
-#include <arch/i386/ports.hpp>
 #include <sys/panic.hpp>
 #include <lib/stdio.hpp>
 #include <dev/tty/tty.hpp>
@@ -68,11 +66,11 @@ extern "C" void register_interrupt_handler(uint8_t n, isr_cb handler) {
     interrupt_handlers[n] = handler;
 }
 
-extern "C" void isr_handler(registers_t *r) {
+extern "C" void isr_handler(struct registers *r) {
     PANIC(r);
 }
 
-extern "C" void irq_handler(registers_t *regs) {
+extern "C" void irq_handler(struct registers *regs) {
     set_indicator(VGA_Red);
     /* After every interrupt we need to send an EOI to the PICs
      * or they will not send another interrupt again */

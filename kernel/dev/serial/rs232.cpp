@@ -13,8 +13,7 @@
  */
 
 #include <stdarg.h>
-#include <arch/i386/ports.hpp>
-#include <arch/i386/isr.hpp>
+#include <arch/arch.hpp>
 #include <dev/serial/rs232.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
@@ -45,7 +44,7 @@ static Mutex mutex_rs232("rs232");
 static int received();
 static int is_transmit_empty();
 static char read_byte();
-static void callback(registers_t *regs);
+static void callback(struct registers *regs);
 
 static int received() {
     return readByte(rs_232_port_base + RS_232_LINE_STATUS_REG) & 1;
@@ -89,7 +88,7 @@ int printf(const char *format, ...)
     return ret_val;
 }
 
-static void callback(registers_t *regs) {
+static void callback(struct registers *regs) {
     (void)regs;
     // Grab the input character
     char in = read_byte();

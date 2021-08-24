@@ -9,7 +9,6 @@
  *
  */
 #pragma once
-
 #include <stdint.h>
 
 // R/W CR0 register macros

@@ -9,7 +9,7 @@
  * @copyright Copyright Keeton Feavel and Micah Switzer (c) 2019
  *
  */
-#include <arch/i386/isr.hpp>
+#include <arch/arch.hpp>
 #include <sys/panic.hpp>
 #include <mem/paging.hpp>
 #include <lib/bitset.hpp>
@@ -46,7 +46,7 @@ static page_table_t           page_tables[PAGE_ENTRIES]   SECTION(".page_tables,
 static bool is_mapping_output_enabled = false;
 
 // Function prototypes
-static void mem_page_fault(registers_t* regs);
+static void mem_page_fault(struct registers* regs);
 static void paging_init_dir();
 static void paging_map_early_mem();
 static void paging_map_hh_kernel();
@@ -64,7 +64,7 @@ KERNEL_PARAM(enable_mapping_output, MAPPING_OUTPUT_FLAG, paging_args_cb);
 void paging_init(uint32_t page_count) {
     machine_page_count = page_count;
     // we can set breakpoints or make a futile attempt to recover.
-    register_interrupt_handler(14, mem_page_fault);
+    register_interrupt_handler(ISR_PAGE_FAULT, mem_page_fault);
     // init our structures
     paging_init_dir();
     // identity map the first 1 MiB of RAM
@@ -77,7 +77,7 @@ void paging_init(uint32_t page_count) {
     paging_enable();
 }
 
-static void mem_page_fault(registers_t* regs) {
+static void mem_page_fault(struct registers* regs) {
    PANIC(regs);
 }
 
