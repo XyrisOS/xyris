@@ -10,7 +10,7 @@
  *
  */
 
-#include <sys/panic.hpp>
+#include <arch/i386/panic.hpp>
 #include <sys/trace.hpp>
 #include <dev/tty/tty.hpp>
 #include <dev/serial/rs232.hpp>

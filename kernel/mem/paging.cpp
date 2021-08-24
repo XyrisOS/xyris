@@ -10,7 +10,6 @@
  *
  */
 #include <arch/arch.hpp>
-#include <sys/panic.hpp>
 #include <mem/paging.hpp>
 #include <lib/bitset.hpp>
 #include <lib/stdio.hpp>

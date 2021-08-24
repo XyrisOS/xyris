@@ -9,7 +9,6 @@
  *
  */
 #include <arch/stack.hpp>
-#include <sys/panic.hpp>
 #include <stdint.h>
 
 /**

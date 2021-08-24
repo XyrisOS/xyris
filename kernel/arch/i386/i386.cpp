@@ -24,6 +24,8 @@ const char* exception_descriptions[] = {
     "RESERVED", "Security Excptn", "RESERVED", "Triple Fault", "FPU Error"
 };
 
+namespace arch {
+
 const char* cpu_get_vendor()
 {
     static int vendor[4];
@@ -39,8 +41,10 @@ const char* cpu_get_model()
     // EAX, EBX, ECX, and EDX to store the string, so we basically
     // are appending all 4 register values to this char array each time.
     static char model[48];
-    arch_cpuid(0x80000002, (int*)(model));
-    arch_cpuid(0x80000003, (int*)(model + 16));
-    arch_cpuid(0x80000004, (int*)(model + 32));
+    cpuid(0x80000002, (int*)(model));
+    cpuid(0x80000003, (int*)(model + 16));
+    cpuid(0x80000004, (int*)(model + 32));
     return model;
+}
+
 }

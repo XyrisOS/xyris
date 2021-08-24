@@ -11,7 +11,6 @@
 #include <arch/arch.hpp>
 #include <sys/tasks.hpp>
 #include <mem/heap.hpp>
-#include <sys/panic.hpp>
 #include <lib/stdio.hpp>
 #include <dev/serial/rs232.hpp>
 #include <stdint.h>         // Data type definitions

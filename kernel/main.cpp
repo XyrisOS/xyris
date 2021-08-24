@@ -13,7 +13,6 @@
 #include <lib/string.hpp>
 #include <lib/time.hpp>
 #include <stdint.h>
-#include <sys/panic.hpp>
 #include <sys/tasks.hpp>
 // Bootloader
 #include <boot/Handoff.hpp>
@@ -74,8 +73,8 @@ void kernel_main(void* boot_info, uint32_t magic)
     Time::TimeDescriptor time;
     time.printDate();
     // Get the CPU vendor and model data to print
-    const char* vendor = cpu_get_vendor();
-    const char* model = cpu_get_model();
+    const char* vendor = arch::cpu_get_vendor();
+    const char* model = arch::cpu_get_model();
     kprintf(DBG_INFO "%s %s\n", vendor, model);
     // Print out the CPU vendor info
     rs232::printf("%s\n%s\n", vendor, model);

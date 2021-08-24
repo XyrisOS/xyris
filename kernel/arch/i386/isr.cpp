@@ -9,7 +9,6 @@
  *
  */
 #include <arch/i386/isr.hpp>
-#include <sys/panic.hpp>
 #include <lib/stdio.hpp>
 #include <dev/tty/tty.hpp>
 

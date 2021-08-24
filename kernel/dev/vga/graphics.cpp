@@ -20,7 +20,6 @@
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
 // System library functions
-#include <sys/panic.hpp>
 #include <lib/assert.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>

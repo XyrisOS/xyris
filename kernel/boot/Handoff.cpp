@@ -14,7 +14,6 @@
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 #include <mem/paging.hpp>
-#include <sys/panic.hpp>
 // Generic devices
 #include <dev/serial/rs232.hpp>
 #include <dev/tty/tty.hpp>

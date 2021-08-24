@@ -11,14 +11,9 @@
 #pragma once
 
 #include <stdint.h>             // Data type definitions
-#include <arch/arch.hpp>        // Architecture specific features
+#include <arch/i386/i386.hpp>   // Architecture types
 #include <meta/compiler.hpp>    // Compiler hints
 
-// Macros for panic and assert
-#define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)
-
-// List of all exceptions and their associated english descriptions
-extern const char* exception_descriptions[];
 /**
  * @brief Halts kernel execution and prints provided info.
  *
@@ -28,6 +23,7 @@ extern const char* exception_descriptions[];
  * @param func Function containing error
  */
 NORET void panic(const char* msg, const char *file, uint32_t line, const char *func);
+
 /**
  * @brief Halts kernel execution and prints register info.
  *

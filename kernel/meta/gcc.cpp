@@ -11,9 +11,9 @@
  *     https://wiki.osdev.org/C++#Local_Static_Variables_.28GCC_Only.29
  *
  */
+#include <arch/arch.hpp>
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/panic.hpp>
 
 // Function prototypes
 extern "C" void __cxa_pure_virtual();

@@ -12,12 +12,14 @@
 #include <arch/i386/gdt.hpp>
 #include <arch/i386/idt.hpp>
 #include <arch/i386/isr.hpp>
+#include <arch/i386/panic.hpp>
 #include <arch/i386/ports.hpp>
 #include <arch/i386/timer.hpp>
 #include <cpuid.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)
 
 /**
  * @brief x86 BIOS based VGA pointers and data.
@@ -45,15 +47,18 @@ struct stackframe {
     size_t eip;
 };
 
+// List of all exceptions and their associated english descriptions
+extern const char* exception_descriptions[];
+
 // Inline CPUID functions
-static inline void arch_cpuid(int flag, unsigned long eax, unsigned long ebx, unsigned long ecx, unsigned long edx)
+static inline void cpuid(int flag, unsigned long eax, unsigned long ebx, unsigned long ecx, unsigned long edx)
 {
     __asm__ volatile("cpuid"
                      : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
                      : "a"(flag));
 }
 
-static inline int arch_cpuid(int flag, int regs[4])
+static inline int cpuid(int flag, int regs[4])
 {
     // ECX and EDX are swapped in order to make the strings readable
     __asm__ volatile("cpuid"

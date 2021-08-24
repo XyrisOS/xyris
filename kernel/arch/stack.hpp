@@ -10,6 +10,7 @@
  */
 
 #pragma once
+#include <arch/arch.hpp>
 #include <stdint.h>
 
 // Used as a magic number for stack smashing protection

@@ -19,6 +19,10 @@
 // Kernel entry point
 extern "C" void kernel_main(void* boot_info, uint32_t magic);
 
+namespace arch {
+
 // CPU Identification
 const char* cpu_get_vendor();
 const char* cpu_get_model();
+
+}
