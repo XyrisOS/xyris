@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-
+#include <arch/i386/idt.hpp>
 #include <arch/arch.hpp>
 #include <lib/stdio.hpp>
 #include <dev/tty/tty.hpp>

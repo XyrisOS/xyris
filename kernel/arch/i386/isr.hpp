@@ -114,6 +114,8 @@ extern "C" void irq13();
 extern "C" void irq14();
 extern "C" void irq15();
 
+typedef void (*isr_cb)(registers_t *);
+
 /**
  * @brief Disables interrupts.
  *
@@ -141,7 +143,7 @@ extern "C" void isr_handler(registers_t *t);
  * @param n
  * @param handler
  */
-extern "C" void register_interrupt_handler(uint8_t n, isr_t handler);
+extern "C" void register_interrupt_handler(uint8_t n, isr_cb handler);
 /**
  * @brief
  *

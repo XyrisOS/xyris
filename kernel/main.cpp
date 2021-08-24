@@ -22,8 +22,10 @@
 #include <mem/paging.hpp>
 // Architecture specific code
 #include <arch/arch.hpp>
+#include <arch/i386/gdt.hpp>
+#include <arch/i386/isr.hpp>
+#include <arch/i386/timer.hpp>
 // Generic devices
-#include <dev/kbd/kbd.hpp>
 #include <dev/rtc/rtc.hpp>
 #include <dev/serial/rs232.hpp>
 #include <dev/spkr/spkr.hpp>
@@ -67,7 +69,6 @@ void kernel_main(void* boot_info, uint32_t magic)
     boot_init(boot_info, magic); // Initialize bootloader information
     paging_init(0);              // Initialize paging service (0 is placeholder)
     fb::init(handoff.getFramebufferInfo());
-    kbd_init();                  // Initialize PS/2 Keyboard
     rtc_init();                  // Initialize Real Time Clock
     timer_init(1000);            // Programmable Interrupt Timer (1ms)
     // Enable interrupts now that we're out of a critical area

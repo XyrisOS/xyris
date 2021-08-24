@@ -8,8 +8,9 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-
-#include <arch/arch.hpp>
+#include <arch/i386/timer.hpp>
+#include <arch/i386/isr.hpp>
+#include <arch/i386/ports.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 #include <dev/tty/tty.hpp>

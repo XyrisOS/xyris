@@ -8,14 +8,15 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-
+#include <arch/i386/isr.hpp>
+#include <arch/i386/idt.hpp>
+#include <arch/i386/ports.hpp>
 #include <sys/panic.hpp>
-#include <arch/arch.hpp>
 #include <lib/stdio.hpp>
 #include <dev/tty/tty.hpp>
 
 // Private array of interrupt handlers
-isr_t interrupt_handlers[256];
+isr_cb interrupt_handlers[256];
 void (* isr_func_ptr[])(void) = { isr0,  isr1,  isr2,  isr3,  isr4,  isr5,  isr6,  isr7,
                                   isr8,  isr9,  isr10, isr11, isr12, isr13, isr14, isr15,
                                   isr16, isr17, isr18, isr19, isr20, isr21, isr22, isr23,
@@ -63,7 +64,7 @@ void isr_install() {
     kprintf(DBG_OKAY "Loaded the ISR.\n");
 }
 
-extern "C" void register_interrupt_handler(uint8_t n, isr_t handler) {
+extern "C" void register_interrupt_handler(uint8_t n, isr_cb handler) {
     interrupt_handlers[n] = handler;
 }
 
@@ -83,7 +84,7 @@ extern "C" void irq_handler(registers_t *regs) {
     /* Handle the interrupt in a more modular way */
     if (interrupt_handlers[regs->int_num] != 0) {
         set_indicator(VGA_Yellow);
-        isr_t handler = interrupt_handlers[regs->int_num];
+        isr_cb handler = interrupt_handlers[regs->int_num];
         handler(regs);
     }
     set_indicator(VGA_Green);

@@ -9,7 +9,7 @@
  * @copyright Copyright Keeton Feavel and Micah Switzer (c) 2019
  *
  */
-
+#include <arch/i386/isr.hpp>
 #include <sys/panic.hpp>
 #include <mem/paging.hpp>
 #include <lib/bitset.hpp>
