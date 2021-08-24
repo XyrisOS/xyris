@@ -32,6 +32,14 @@ inline uint16_t* x86_bios_vga_mem = (uint16_t*)0x000B8000;
 // List of all exceptions and their associated english descriptions
 extern const char* exception_descriptions[];
 
+/*
+ *    _          _      _____
+ *   /_\  _ _ __| |_   |_   _|  _ _ __  ___ ___
+ *  / _ \| '_/ _| ' \    | || || | '_ \/ -_|_-<
+ * /_/ \_\_| \__|_||_|   |_| \_, | .__/\___/__/
+ *                           |__/|_|
+ */
+
 /**
  * @brief A structure definining values for every since x86 register.
  * Used when in various x86 architecture functions and panic.
@@ -48,7 +56,7 @@ struct stackframe {
     size_t eip;
 };
 
-namespace arch {
+namespace i386 {
 
 // Inline CPUID functions
 static inline void cpuid(int flag, unsigned long eax, unsigned long ebx, unsigned long ecx, unsigned long edx)

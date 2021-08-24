@@ -21,15 +21,6 @@ void (* isr_func_ptr[])(void) = { isr0,  isr1,  isr2,  isr3,  isr4,  isr5,  isr6
 void (* irq_func_ptr[])(void) = { irq0, irq1, irq2, irq3,   irq4,  irq5,  irq6,  irq7,
                                   irq8, irq9, irq10, irq11, irq12, irq13, irq14, irq15 };
 
-void interrupts_disable() {
-    kprintf(DBG_WARN "Disabling interrupts\n");
-    asm volatile("cli");
-}
-void interrupts_enable() {
-    kprintf(DBG_WARN "Enabling interrupts\n");
-    asm volatile("sti");
-}
-
 /* Can't do this with a loop because we need the address
  * of the function names */
 void isr_install() {

@@ -80,7 +80,7 @@ void TimeDescriptor::printDate()
 
 void TimeDescriptor::toDate()
 {
-    uint64_t epoch = getEpoch();
+    uint64_t epoch = rtc::getEpoch();
     converterEpochToDate(epoch);
     // TODO: for another GMT, add or subtract time zone in epoch number
     // e.g

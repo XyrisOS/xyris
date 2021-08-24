@@ -120,18 +120,6 @@ extern "C" void irq15();
 typedef void (*isr_cb)(struct registers*);
 
 /**
- * @brief Disables interrupts.
- *
- */
-void interrupts_disable();
-
-/**
- * @brief Enables interrupts.
- *
- */
-void interrupts_enable();
-
-/**
  * @brief
  *
  */

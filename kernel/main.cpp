@@ -55,26 +55,28 @@ static void boot_init(void* boot_info, uint32_t magic)
  */
 void kernel_main(void* boot_info, uint32_t magic)
 {
+    // Initialize the CPU
+    arch::cpuInit();
+    // Initialize info from bootloader
+    boot_init(boot_info, magic);
+    // Initialize devices
+    // TODO: Find a better way to do this
+    {
+        arch::interrupts_disable();
+        rs232::init(RS_232_COM1);
+        rtc::init();
+        paging_init(0);
+        fb::init(handoff.getFramebufferInfo());
+        arch::interrupts_enable();
+    }
     // Print the splash screen to show we've booted into the kernel properly.
     kernel_print_splash();
-    // Install the GDT
-    interrupts_disable();
-    gdt_install();               // Initialize the Global Descriptor Table
-    isr_install();               // Initialize Interrupt Service Requests
-    rs232::init(RS_232_COM1);    // RS232 Serial
-    boot_init(boot_info, magic); // Initialize bootloader information
-    paging_init(0);              // Initialize paging service (0 is placeholder)
-    fb::init(handoff.getFramebufferInfo());
-    rtc_init();                  // Initialize Real Time Clock
-    timer_init(1000);            // Programmable Interrupt Timer (1ms)
-    // Enable interrupts now that we're out of a critical area
-    interrupts_enable();
     // Print some info to show we did things right
     Time::TimeDescriptor time;
     time.printDate();
     // Get the CPU vendor and model data to print
-    const char* vendor = arch::cpu_get_vendor();
-    const char* model = arch::cpu_get_model();
+    const char* vendor = arch::cpuGetVendor();
+    const char* model = arch::cpuGetModel();
     kprintf(DBG_INFO "%s %s\n", vendor, model);
     // Print out the CPU vendor info
     rs232::printf("%s\n%s\n", vendor, model);

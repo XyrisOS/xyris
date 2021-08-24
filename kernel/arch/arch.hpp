@@ -12,6 +12,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <boot/Handoff.hpp>
 #if defined(__i386__)
 #    include <arch/i386/i386.hpp>
 #endif
@@ -24,8 +25,15 @@ extern "C" void kernel_main(void* boot_info, uint32_t magic);
 
 namespace arch {
 
+// Architecture initialization
+void cpuInit();
+
+// Architecture common CPU controls
+void interrupts_disable();
+void interrupts_enable();
+
 // CPU Identification
-const char* cpu_get_vendor();
-const char* cpu_get_model();
+const char* cpuGetVendor();
+const char* cpuGetModel();
 
 }
