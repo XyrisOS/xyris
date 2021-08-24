@@ -49,6 +49,12 @@ static void boot_init(void* boot_info, uint32_t magic)
     assert(handoff.getHandle());
 }
 
+static void dev_init()
+{
+    RS232::init(RS_232_COM1);
+    RTC::init();
+}
+
 /**
  * @brief This is the Xyris kernel entry point. This function is called directly from the
  * assembly written in boot.S located in arch/i386/boot.S.
@@ -58,17 +64,11 @@ void kernel_main(void* boot_info, uint32_t magic)
     // Initialize the CPU
     Arch::cpuInit();
     // Initialize devices
-    // TODO: Find a better way to do this
-    {
-        Arch::interrupts_disable();
-        RS232::init(RS_232_COM1);
-        // Initialize info from bootloader
-        boot_init(boot_info, magic);
-        RTC::init();
-        paging_init(0);
-        FB::init(handoff.getFramebufferInfo());
-        Arch::interrupts_enable();
-    }
+    Arch::criticalRegion(dev_init);
+    // Initialize info from bootloader
+    boot_init(boot_info, magic);
+    paging_init(0);
+    FB::init(handoff.getFramebufferInfo());
     // Print the splash screen to show we've booted into the kernel properly.
     kernel_print_splash();
     // Print some info to show we did things right

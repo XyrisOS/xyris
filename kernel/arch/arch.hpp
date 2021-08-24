@@ -29,8 +29,16 @@ namespace Arch {
 void cpuInit();
 
 // Architecture common CPU controls
-void interrupts_disable();
-void interrupts_enable();
+void interruptsDisable();
+void interruptsEnable();
+// Critical region lambda function
+template <typename Function>
+void criticalRegion(Function critWork)
+{
+    interruptsDisable();
+    critWork();
+    interruptsEnable();
+}
 
 // CPU Identification
 const char* cpuGetVendor();

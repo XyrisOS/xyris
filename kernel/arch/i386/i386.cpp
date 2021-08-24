@@ -36,18 +36,18 @@ namespace Arch {
 
 void cpuInit()
 {
-    interrupts_disable();
-    gdt_install();               // Initialize the Global Descriptor Table
-    isr_install();               // Initialize Interrupt Service Requests
-    timer_init(1000);            // Programmable Interrupt Timer (1ms)
-    interrupts_enable();
+    Arch::criticalRegion([]() {
+        gdt_install();               // Initialize the Global Descriptor Table
+        isr_install();               // Initialize Interrupt Service Requests
+        timer_init(1000);            // Programmable Interrupt Timer (1ms)
+    });
 }
 
-void interrupts_disable() {
+void interruptsDisable() {
     asm volatile("cli");
 }
 
-void interrupts_enable() {
+void interruptsEnable() {
     asm volatile("sti");
 }
 
