@@ -1,7 +1,7 @@
 /**
  * @file trace.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief
+ * @brief Kernel stack tracing
  * @version 0.3
  * @date 2020-08-09
  *
@@ -9,7 +9,6 @@
  *
  */
 #pragma once
-
 #include <stddef.h>
 
 void stack_trace(size_t max);

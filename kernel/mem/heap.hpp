@@ -1,8 +1,7 @@
 /**
  * @file heap.hpp
- * @author Goswin von Brederlow (goswin-v-b@web.de)
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief
+ * @brief Liballoc heap implementation
  * @version 0.3
  * @date 2019-11-22
  *
@@ -16,8 +15,8 @@
 
 #include <stddef.h>
 
-extern "C"
-{
+extern "C" {
+
 /**
  * @brief This function is supposed to lock the memory data structures. It
  * could be as simple as disabling interrupts or acquiring a spinlock.
@@ -58,8 +57,9 @@ void* liballoc_alloc(unsigned int);
  */
 int liballoc_free(void*, unsigned int);
 
-extern void     *malloc(size_t);
-extern void     *realloc(void *, size_t);
-extern void     *calloc(size_t, size_t);
-extern void      free(void *);
+extern void* malloc(size_t);
+extern void* realloc(void*, size_t);
+extern void* calloc(size_t, size_t);
+extern void free(void*);
+
 }

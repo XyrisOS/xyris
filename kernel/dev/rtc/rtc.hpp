@@ -13,7 +13,6 @@
  *         https://en.wikipedia.org/wiki/Julian_day
  */
 #pragma once
-
 #include <stdint.h>
 
 namespace RTC {
@@ -24,6 +23,7 @@ namespace RTC {
  *
  */
 void init();
+
 /**
  * @brief Get a epoch number from rtc.
  * @return uint64_t A epoch number
