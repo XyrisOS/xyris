@@ -1,4 +1,5 @@
-#include <test-helpers/test-panic.hpp>
+#include <stdlib.h>
+#include <arch/arch.hpp>
 #include <catch2/catch.hpp>
 
 // Provide a panic function for worse-case failure reporting
@@ -13,4 +14,7 @@ void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     );
     // Force test case failure
     REQUIRE(0 == 1);
+    // Force a no-return case
+    // (TODO: Fix / rework this in the future?)
+    exit(1);
 }

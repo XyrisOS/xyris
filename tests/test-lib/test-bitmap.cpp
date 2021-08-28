@@ -9,7 +9,6 @@
  *
  */
 #include <catch2/catch.hpp>
-#include <test-helpers/test-panic.hpp>
 #include <lib/bitset.cpp>
 
 #define TEST_BITMAP_SIZE 4096 / (sizeof(size_t) * CHAR_BIT)

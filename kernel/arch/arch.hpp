@@ -13,15 +13,36 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <boot/Handoff.hpp>
+#include <meta/compiler.hpp>
 #if defined(__i386__)
 #    include <arch/i386/arch-i386.hpp>
 #endif
 
-// Kernel entry point
-extern "C" void kernel_main(void* boot_info, uint32_t magic);
+// Architecture types (forward declarations)
+struct registers;
 
 // Kernel panic
 #define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)
+
+/**
+ * @brief Halts kernel execution and prints provided info.
+ *
+ * @param msg Explaination of what happened
+ * @param file File causing the issue
+ * @param line Line with the error
+ * @param func Function containing error
+ */
+NORET void panic(const char* msg, const char* file, uint32_t line, const char* func);
+
+/**
+ * @brief Halts kernel execution and prints register info.
+ *
+ * @param regs Registers struct
+ * @param file File causing the issue
+ * @param line Line with the error
+ * @param func Function containing error
+ */
+NORET void panic(struct registers* regs, const char* file, uint32_t line, const char* func);
 
 namespace Arch {
 

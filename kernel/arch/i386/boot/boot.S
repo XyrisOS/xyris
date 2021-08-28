@@ -8,7 +8,7 @@ extern _fini
 ; external reference to our global constructors and kernel main functions
 ; which are defined in our main.cpp file. This allows assembly to call
 ; function in C++ by telling the compiler they exist "somewhere"
-extern kernel_main
+extern kernelEntry
 ; minimal panic function that works in most situations
 extern early_panic
 ; paging helper for stivale2 bootloader info
@@ -237,7 +237,7 @@ _start.has_sse:
     push dword [multiboot_info]          ; Multiboot info structure
 
     ; Enter the high-level kernel.
-    call kernel_main
+    call kernelEntry
 
     ; Call global destructors
     call _fini
