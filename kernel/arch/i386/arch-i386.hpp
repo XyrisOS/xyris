@@ -1,12 +1,12 @@
 /**
- * @file i386.hpp
+ * @file arch-i386.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief i386 architecture implementation of arch.hpp
  * @version 0.1
  * @date 2021-08-24
- * 
+ *
  * @copyright Copyright the Xyris Contributors (c) 2021
- * 
+ *
  */
 #pragma once
 #include <arch/i386/gdt.hpp>
@@ -30,7 +30,7 @@
 inline uint16_t* x86_bios_vga_mem = (uint16_t*)0x000B8000;
 
 // List of all exceptions and their associated english descriptions
-extern const char* exception_descriptions[];
+extern const char* exception_descriptions[32][16];
 
 /*
  *    _          _      _____

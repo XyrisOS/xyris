@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <boot/Handoff.hpp>
 #if defined(__i386__)
-#    include <arch/i386/i386.hpp>
+#    include <arch/i386/arch-i386.hpp>
 #endif
 
 // Kernel entry point

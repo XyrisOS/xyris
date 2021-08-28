@@ -9,7 +9,7 @@
  *
  */
 #pragma once
-#include <arch/i386/i386.hpp>
+#include <arch/i386/arch-i386.hpp>
 #include <stdint.h>
 
 /**

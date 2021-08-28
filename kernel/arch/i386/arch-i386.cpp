@@ -1,7 +1,7 @@
 /**
  * @file i386.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief
+ * @brief i386 architecture implementation of arch.hpp
  * @version 0.1
  * @date 2021-08-24
  *
@@ -9,11 +9,11 @@
  *
  */
 // Architecture (i386) specific header
-#include <arch/i386/i386.hpp>
+#include <arch/i386/arch-i386.hpp>
 // Architecture agnostic header
 #include <arch/arch.hpp>
 
-const char* exception_descriptions[] = {
+const char* exception_descriptions[32][16] = {
     "Divide-By-Zero", "Debugging", "Non-Maskable", "Breakpoint",
     "Overflow", "Out Bound Range", "Invalid Opcode", "Device Not Avbl",
     "Double Fault", "Co-CPU Overrun", "Invalid TSS", "Sgmnt !Present",
@@ -23,7 +23,6 @@ const char* exception_descriptions[] = {
     "RESERVED", "RESERVED", "RESERVED", "RESERVED",
     "RESERVED", "Security Excptn", "RESERVED", "Triple Fault", "FPU Error"
 };
-
 
 /*
  *    _          _      ___     _            __

@@ -11,7 +11,7 @@
  */
 #pragma once
 #include <stdint.h>
-#include <arch/i386/i386.hpp>
+#include <arch/i386/arch-i386.hpp>
 
 /**
  * @brief Thanks to the OSDev Wiki for this solution. We had previously
