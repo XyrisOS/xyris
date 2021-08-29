@@ -52,3 +52,21 @@ jobs:
       with:
         name: os-image-release
         path: dist/release/xyris.img
+    # Documentation
+    - name: Checkout (Docs)
+      uses: actions/checkout@v2
+      with:
+        repository: 'XyrisOS/docs'
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: 'Cleanup docs'
+      working-directory: docs
+      run: ./cleanup.sh
+    - name: 'Generate docs'
+      uses: mattnotmitt/doxygen-action@v1
+    - name: Commit & Push changes
+      uses: actions-js/push@master
+      with:
+        branch: 'gh-pages'
+        directory: 'docs'
+        repository: 'XyrisOS/docs'
+        github_token: ${{ secrets.GITHUB_TOKEN }}
