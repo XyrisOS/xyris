@@ -1,19 +1,13 @@
-;
-; This small function has to be written in assembly and is used
-; to flush the GDT and reload the new one onto the system.
-; Thanks to James Molloy for the documentation and to toaruOS
-; for the translation from NASM to AT&T.
-;
 ; @brief This function is used to flush the GDT when we want to
 ; enter into ring 3 (userspace) since we need to flush out all of
 ; the kernel information and replace it with info safe for user
-; applications. The following function flushes the TSS.
+; applications. The following function flushes the TSS and can
+; "flush" (invalidate) a page.
 ;
 section .text
 align 4
-; Allows our code to call gdt_flush().
-global gdt_flush
 
+global gdt_flush
 gdt_flush:
     ; Load GDT
     mov eax,[esp+4]
@@ -30,7 +24,6 @@ gdt_flush:
 .flush:
     ret
 
-; Allows our code to call tss_flush().
 global tss_flush
 tss_flush:
     mov ax, 0x2B    ; Load the index of our TSS structure - The index is
@@ -38,4 +31,10 @@ tss_flush:
                     ; long, but we set the bottom two bits (making 0x2B)
                     ; so that it has an RPL of 3, not zero.
     ltr ax          ; Load 0x2B into the task state register.
+    ret
+
+global invalidate_page
+invalidate_page:
+    mov    eax, [esp+4]
+    invlpg  [eax]
     ret

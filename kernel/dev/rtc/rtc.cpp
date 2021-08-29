@@ -18,30 +18,32 @@
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 
+namespace RTC {
+
 #define RTC_CMOS_PORT 0x70
 #define RTC_DATA_PORT 0x71
 #define RTC_CURRENT_YEAR 2021 // Needs to be updated every year!
 #define RTC_CURRENT_CENTURY 0 // Needs to be updated every century!
 
-static void rtc_callback(registers_t* regs);
-static bool rtc_get_update_in_progress();
-static uint8_t rtc_get_register(uint8_t reg);
-static void read_rtc();
+static void callback(struct registers* regs);
+static bool getUpdateInProgress();
+static uint8_t getRegister(uint8_t reg);
+static void read();
 
 // Current values from RTC
 // These variables are way larger than they ever
 // should be, but the compiler doesn't like our
 // math with anything smaller, so we're going
 // to live with it since memory is "cheap"
-uint32_t rtc_second;  // Current UTC second
-uint32_t rtc_minute;  // Current UTC minute
-uint32_t rtc_hour;    // Current UTC hour
-uint32_t rtc_day;     // Current UTC day (not reliable)
-uint32_t rtc_month;   // Current UTC month
-uint32_t rtc_year;    // Current UTC year
-uint32_t rtc_century; // Current UTC century
+uint32_t second;  // Current UTC second
+uint32_t minute;  // Current UTC minute
+uint32_t hour;    // Current UTC hour
+uint32_t day;     // Current UTC day (not reliable)
+uint32_t month;   // Current UTC month
+uint32_t year;    // Current UTC year
+uint32_t century; // Current UTC century
 
-void rtc_init()
+void init()
 {
     kprintf(DBG_INFO "Initializing RTC...\n");
     // Initializer
@@ -53,22 +55,22 @@ void rtc_init()
     writeByte(RTC_CMOS_PORT, 0x8B);
     writeByte(RTC_DATA_PORT, (prev | 0x40));
     // Register our callback function with IRQ 8
-    register_interrupt_handler(IRQ8, rtc_callback);
+    register_interrupt_handler(IRQ8, callback);
 }
 
-static void rtc_callback(registers_t* regs)
+static void callback(struct registers* regs)
 {
     (void)regs;
     kprintf(DBG_INFO "RTC updated.\n");
 }
 
-static bool rtc_get_update_in_progress()
+static bool getUpdateInProgress()
 {
     writeByte(RTC_CMOS_PORT, 0x0A);
     return (readByte(RTC_DATA_PORT) & 0x80);
 }
 
-static uint8_t rtc_get_register(uint8_t reg)
+static uint8_t getRegister(uint8_t reg)
 {
     writeByte(RTC_CMOS_PORT, reg);
     return readByte(RTC_DATA_PORT);
@@ -81,7 +83,7 @@ static uint8_t rtc_get_register(uint8_t reg)
     Note: This uses the "read registers until you get the same values twice in a row" technique
     to avoid getting dodgy/inconsistent values due to RTC updates
 */
-static void read_rtc()
+static void read()
 {
     // Previous values from RTC
     // Used as a cache to check if we should update
@@ -90,71 +92,71 @@ static void read_rtc()
              last_month = 0, last_year = 0,
              last_century = 0, registerB = 0;
     // Make sure an update isn't in progress
-    while (rtc_get_update_in_progress());
+    while (getUpdateInProgress());
 
-    rtc_second = rtc_get_register(0x00);
-    rtc_minute = rtc_get_register(0x02);
-    rtc_hour = rtc_get_register(0x04);
-    rtc_day = rtc_get_register(0x07);
-    rtc_month = rtc_get_register(0x08);
-    rtc_year = rtc_get_register(0x09);
-    rtc_century = rtc_get_register(RTC_CURRENT_CENTURY);
+    second = getRegister(0x00);
+    minute = getRegister(0x02);
+    hour = getRegister(0x04);
+    day = getRegister(0x07);
+    month = getRegister(0x08);
+    year = getRegister(0x09);
+    century = getRegister(RTC_CURRENT_CENTURY);
 
-    while ((last_second != rtc_second) || (last_minute != rtc_minute) ||
-           (last_hour != rtc_hour)     || (last_day != rtc_day)       ||
-           (last_month != rtc_month)   || (last_year != rtc_year)     ||
-           (last_century != rtc_century))
+    while ((last_second != second) || (last_minute != minute) ||
+           (last_hour != hour)     || (last_day != day)       ||
+           (last_month != month)   || (last_year != year)     ||
+           (last_century != century))
     {
-        last_second = rtc_second;
-        last_minute = rtc_minute;
-        last_hour = rtc_hour;
-        last_day = rtc_day;
-        last_month = rtc_month;
-        last_year = rtc_year;
-        last_century = rtc_century;
+        last_second = second;
+        last_minute = minute;
+        last_hour = hour;
+        last_day = day;
+        last_month = month;
+        last_year = year;
+        last_century = century;
 
         // Make sure an update isn't in progress
-        while (rtc_get_update_in_progress());
+        while (getUpdateInProgress());
 
-        rtc_second = rtc_get_register(0x00);
-        rtc_minute = rtc_get_register(0x02);
-        rtc_hour = rtc_get_register(0x04);
-        rtc_day = rtc_get_register(0x07);
-        rtc_month = rtc_get_register(0x08);
-        rtc_year = rtc_get_register(0x09);
+        second = getRegister(0x00);
+        minute = getRegister(0x02);
+        hour = getRegister(0x04);
+        day = getRegister(0x07);
+        month = getRegister(0x08);
+        year = getRegister(0x09);
         if (RTC_CURRENT_CENTURY != 0) {
-            rtc_century = rtc_get_register(RTC_CURRENT_CENTURY);
+            century = getRegister(RTC_CURRENT_CENTURY);
         }
     }
 
-    registerB = rtc_get_register(0x0B);
+    registerB = getRegister(0x0B);
 
     // Convert BCD to binary values if necessary
     if (!(registerB & 0x04)) {
-        rtc_second = (rtc_second & 0x0F) + ((rtc_second / 16) * 10);
-        rtc_minute = (rtc_minute & 0x0F) + ((rtc_minute / 16) * 10);
-        rtc_hour = ((rtc_hour & 0x0F) + (((rtc_hour & 0x70) / 16) * 10)) | (rtc_hour & 0x80);
-        rtc_day = (rtc_day & 0x0F) + ((rtc_day / 16) * 10);
-        rtc_month = (rtc_month & 0x0F) + ((rtc_month / 16) * 10);
-        rtc_year = (rtc_year & 0x0F) + ((rtc_year / 16) * 10);
+        second = (second & 0x0F) + ((second / 16) * 10);
+        minute = (minute & 0x0F) + ((minute / 16) * 10);
+        hour = ((hour & 0x0F) + (((hour & 0x70) / 16) * 10)) | (hour & 0x80);
+        day = (day & 0x0F) + ((day / 16) * 10);
+        month = (month & 0x0F) + ((month / 16) * 10);
+        year = (year & 0x0F) + ((year / 16) * 10);
 
         if (RTC_CURRENT_CENTURY != 0) {
-            rtc_century = (rtc_century & 0x0F) + ((rtc_century / 16) * 10);
+            century = (century & 0x0F) + ((century / 16) * 10);
         }
     }
 
     // Convert 12 hour clock to 24 hour clock if necessary
-    if (!(registerB & 0x02) && (rtc_hour & 0x80)) {
-        rtc_hour = ((rtc_hour & 0x7F) + 12) % 24;
+    if (!(registerB & 0x02) && (hour & 0x80)) {
+        hour = ((hour & 0x7F) + 12) % 24;
     }
 
     // Calculate the full (4-digit) year
     if (RTC_CURRENT_CENTURY != 0) {
-        rtc_year += rtc_century * 100;
+        year += century * 100;
     } else {
-        rtc_year += (RTC_CURRENT_YEAR / 100) * 100;
-        if (rtc_year < RTC_CURRENT_YEAR)
-            rtc_year += 100;
+        year += (RTC_CURRENT_YEAR / 100) * 100;
+        if (year < RTC_CURRENT_YEAR)
+            year += 100;
     }
 }
 
@@ -195,6 +197,8 @@ static uint64_t getUnixEpoch(uint8_t seconds, uint8_t minutes, uint8_t hours, ui
 
 uint64_t getEpoch()
 {
-    read_rtc();
-    return getUnixEpoch(rtc_second, rtc_minute, rtc_hour, rtc_day, rtc_month, rtc_year);
+    read();
+    return getUnixEpoch(second, minute, hour, day, month, year);
 }
+
+} // !namespace RTC

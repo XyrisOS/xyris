@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace fb {
+namespace FB {
 
 FramebufferInfo::FramebufferInfo()
     : _addr(NULL)
@@ -71,4 +71,4 @@ FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height,
     // All parameters constructor
 }
 
-};
+} // !namespace FB

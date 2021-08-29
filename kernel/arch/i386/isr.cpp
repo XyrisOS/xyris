@@ -8,29 +8,18 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-
-#include <sys/panic.hpp>
-#include <arch/arch.hpp>
+#include <arch/i386/isr.hpp>
 #include <lib/stdio.hpp>
 #include <dev/tty/tty.hpp>
 
 // Private array of interrupt handlers
-isr_t interrupt_handlers[256];
+isr_cb_t interrupt_handlers[256];
 void (* isr_func_ptr[])(void) = { isr0,  isr1,  isr2,  isr3,  isr4,  isr5,  isr6,  isr7,
                                   isr8,  isr9,  isr10, isr11, isr12, isr13, isr14, isr15,
                                   isr16, isr17, isr18, isr19, isr20, isr21, isr22, isr23,
                                   isr24, isr25, isr26, isr27, isr28, isr29, isr30, isr31 };
 void (* irq_func_ptr[])(void) = { irq0, irq1, irq2, irq3,   irq4,  irq5,  irq6,  irq7,
                                   irq8, irq9, irq10, irq11, irq12, irq13, irq14, irq15 };
-
-void interrupts_disable() {
-    kprintf(DBG_WARN "Disabling interrupts\n");
-    asm volatile("cli");
-}
-void interrupts_enable() {
-    kprintf(DBG_WARN "Enabling interrupts\n");
-    asm volatile("sti");
-}
 
 /* Can't do this with a loop because we need the address
  * of the function names */
@@ -63,15 +52,15 @@ void isr_install() {
     kprintf(DBG_OKAY "Loaded the ISR.\n");
 }
 
-extern "C" void register_interrupt_handler(uint8_t n, isr_t handler) {
+extern "C" void register_interrupt_handler(uint8_t n, isr_cb_t handler) {
     interrupt_handlers[n] = handler;
 }
 
-extern "C" void isr_handler(registers_t *r) {
+extern "C" void isr_handler(struct registers *r) {
     PANIC(r);
 }
 
-extern "C" void irq_handler(registers_t *regs) {
+extern "C" void irq_handler(struct registers *regs) {
     set_indicator(VGA_Red);
     /* After every interrupt we need to send an EOI to the PICs
      * or they will not send another interrupt again */
@@ -83,7 +72,7 @@ extern "C" void irq_handler(registers_t *regs) {
     /* Handle the interrupt in a more modular way */
     if (interrupt_handlers[regs->int_num] != 0) {
         set_indicator(VGA_Yellow);
-        isr_t handler = interrupt_handlers[regs->int_num];
+        isr_cb_t handler = interrupt_handlers[regs->int_num];
         handler(regs);
     }
     set_indicator(VGA_Green);

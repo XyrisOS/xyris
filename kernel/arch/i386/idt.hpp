@@ -10,7 +10,7 @@
  */
 
 #pragma once
-
+#include <arch/i386/arch-i386.hpp>
 #include <stdint.h>
 
 /* Segment selectors */
@@ -21,7 +21,7 @@
 /* Reference: See mmu.h in XV6 for an alternative to this system where
  * bitfields are used for the uint8_t flag parameter instead of a magic
  * number like we use. */
-typedef struct {
+struct idt_gate {
     uint16_t low_offset;    /* Lower 16 bits of handler function address */
     uint16_t selector;      /* Kernel segment selector */
     uint8_t always0;
@@ -38,17 +38,17 @@ typedef struct {
      */
     uint8_t flags;
     uint16_t high_offset; /* Higher 16 bits of handler function address */
-} __attribute__((packed)) idt_gate_t ;
+} __attribute__((packed));
 
 /* A pointer to the array of interrupt handlers.
  * Assembly instruction 'lidt' will read it */
-typedef struct {
+struct idt_register {
     uint16_t limit;
     uint32_t base;
-} __attribute__((packed)) idt_register_t;
+} __attribute__((packed));
 
-extern idt_gate_t idt[IDT_ENTRIES];
-extern idt_register_t idt_reg;
+extern struct idt_gate idt[IDT_ENTRIES];
+extern struct idt_register idt_reg;
 
 /**
  * @brief Sets the handler function (via address) for a specific IDT.

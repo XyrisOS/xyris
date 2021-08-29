@@ -24,4 +24,4 @@ void parseCommandLine(char* cmdline)
     }
 }
 
-}
+} // !namespace Boot

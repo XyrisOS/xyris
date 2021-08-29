@@ -10,7 +10,7 @@
  */
 #pragma once
 
-namespace apps {
+namespace Apps {
 
 /**
  * @brief Starts a spinner in an infinite loop.

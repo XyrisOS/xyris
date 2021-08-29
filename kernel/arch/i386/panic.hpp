@@ -1,14 +1,16 @@
 /**
- * @file trace.hpp
+ * @file panic.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief Kernel stack tracing
+ * @brief
  * @version 0.3
- * @date 2020-08-09
+ * @date 2020-07-14
  *
  * @copyright Copyright the Xyris Contributors (c) 2020
  *
  */
 #pragma once
-#include <stddef.h>
+#include <arch/i386/arch-i386.hpp>
+#include <meta/compiler.hpp>
+#include <stdint.h>
 
-void stack_trace(size_t max);
+

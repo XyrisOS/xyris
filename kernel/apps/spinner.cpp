@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <lib/stdio.hpp>
 
-namespace apps {
+namespace Apps {
 
 void spinner(void) {
     kprintf("\n");

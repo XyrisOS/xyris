@@ -12,12 +12,12 @@
  */
 #include <mem/heap.hpp>
 
-void *operator new(size_t size)
+void* operator new(size_t size)
 {
     return malloc(size);
 }
 
-void *operator new [](size_t size)
+void* operator new[](size_t size)
 {
     return malloc(size);
 }
@@ -27,7 +27,7 @@ void operator delete(void* p)
     free(p);
 }
 
-void operator delete [](void* p)
+void operator delete[](void* p)
 {
     free(p);
 }
@@ -37,7 +37,7 @@ void operator delete(void* p, long unsigned int)
     free(p);
 }
 
-void operator delete [](void* p, long unsigned int)
+void operator delete[](void* p, long unsigned int)
 {
     free(p);
 }

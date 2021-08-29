@@ -10,7 +10,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-#include <arch/arch.hpp>
+#include <arch/i386/gdt.hpp>
 #include <lib/string.hpp>
 #include <lib/stdio.hpp>
 #include <dev/tty/tty.hpp>
@@ -20,8 +20,8 @@ extern "C" void gdt_flush(uintptr_t);
 // Function declarations
 void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags);
 // Define our local variables
-gdt_entry_t gdt_entries[5];
-gdt_ptr_t   gdt_ptr;
+struct gdt_entry gdt_entries[5];
+struct gdt_ptr   gdt_ptr;
 
 void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags) {
     // 32-bit address space
@@ -53,7 +53,7 @@ void gdt_set_gate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags) {
 //gdt_flush((uintptr_t)gdtp);
 void gdt_install() {
     kprintf(DBG_INFO "Installing the GDT...\n");
-    gdt_ptr.limit = (sizeof(gdt_entry_t) * 5) - 1;
+    gdt_ptr.limit = (sizeof(struct gdt_entry) * 5) - 1;
     gdt_ptr.base  = (uint32_t)&gdt_entries;
 
     gdt_set_gate(0, 0, 0, 0);                     // Null segment

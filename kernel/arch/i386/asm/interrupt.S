@@ -14,7 +14,7 @@ isr_common_stub:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    push esp            ; Push registers_t *r
+    push esp            ; Push struct registers *r
     ; 2. Clear the direction flag (eflags) & call C handler
     cld                 ; C code following the sysV ABI requires DF to be clear on function entry
     call isr_handler

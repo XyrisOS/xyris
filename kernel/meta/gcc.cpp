@@ -11,9 +11,9 @@
  *     https://wiki.osdev.org/C++#Local_Static_Variables_.28GCC_Only.29
  *
  */
+#include <arch/arch.hpp>
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/panic.hpp>
 
 // Function prototypes
 extern "C" void __cxa_pure_virtual();
@@ -47,7 +47,7 @@ extern "C" void __cxa_guard_abort(__guard* g)
     __atomic_clear(g, __ATOMIC_RELEASE);
 }
 
-} // !__cxxabiv1
+} // !namespace __cxxabiv1
 #endif
 
 extern "C" void __cxa_pure_virtual()

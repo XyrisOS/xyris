@@ -52,4 +52,4 @@ private:
     //int _dayLight;
 };
 
-};
+} // !namespace Time

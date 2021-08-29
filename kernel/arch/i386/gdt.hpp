@@ -10,8 +10,8 @@
  *
  */
 #pragma once
-
 #include <stdint.h>
+#include <arch/i386/arch-i386.hpp>
 
 /**
  * @brief Thanks to the OSDev Wiki for this solution. We had previously
@@ -74,7 +74,6 @@ struct gdt_entry {
     uint8_t  granularity;   // Bits 0..3: limit, Bits 4..7: additional data/code attributes
     uint8_t  base_high;     // Base
 } __attribute__((packed));
-typedef struct gdt_entry gdt_entry_t;
 
 /**
  * @brief GDT Pointer Struct
@@ -84,7 +83,6 @@ struct gdt_ptr {
     unsigned short limit;   // The upper 16 bits of all selector limits
     unsigned int base;      // The address of the first gdt_segment
 } __attribute__((packed));
-typedef struct gdt_ptr gdt_ptr_t;
 
 /**
  * @brief Setup and install the GDT onto the system.

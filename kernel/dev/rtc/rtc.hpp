@@ -13,17 +13,21 @@
  *         https://en.wikipedia.org/wiki/Julian_day
  */
 #pragma once
-
 #include <stdint.h>
+
+namespace RTC {
 
 /**
  * @brief Initializes the Real Time Clock driver
  * for the x86_64 architecture.
  *
  */
-void rtc_init();
+void init();
+
 /**
  * @brief Get a epoch number from rtc.
  * @return uint64_t A epoch number
  */
 uint64_t getEpoch();
+
+} // !namespace RTC

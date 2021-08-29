@@ -10,7 +10,7 @@
  *
  */
 
-#include <sys/panic.hpp>
+#include <arch/i386/panic.hpp>
 #include <sys/trace.hpp>
 #include <dev/tty/tty.hpp>
 #include <dev/serial/rs232.hpp>
@@ -18,18 +18,12 @@
 #include <lib/stdio.hpp>
 
 // Function prototypes
-void printPanicScreen(int exception);
+void printPanicScreen();
 void panic_print_file(const char *file, uint32_t line, const char *func);
-void panic_print_register(registers_t *regs);
+void panic_print_register(struct registers *regs);
 
-void printPanicScreen(int exception) {
+void printPanicScreen() {
     tty_clear(VGA_Black, VGA_White);
-    const char* tag;
-    if (exception == 13) {
-        tag = "< Wait... That's Illegal >\n";
-    } else {
-        tag = "< OH NO! Xyris panicked! >\n";
-    }
     char cow[256];
     ksprintf(
         cow,
@@ -40,24 +34,24 @@ void printPanicScreen(int exception) {
         "         \\  (XX)\\_______\n"
         "            (__)\\       )\\/\\\n"
         "             U  ||----w |\n"
-        "                ||     ||\n",
-        tag
+        "                ||     ||\n"
+        "< OH NO! Xyris panicked! >\n"
     );
     // Print to VGA and serial
     kprintf("%s", cow);
-    rs232::printf("%s", cow);
+    RS232::printf("%s", cow);
 }
 
 NORET void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     asm volatile ("cli");
     // Print the panic cow
-    printPanicScreen(0);
+    printPanicScreen();
     // Print the message passed in on a new line
     char buf[128];
     ksprintf(buf, "\n%s\n", msg);
     // Print to VGA and serial
     kprintf("%s", buf);
-    rs232::printf("%s", buf);
+    RS232::printf("%s", buf);
     // Print out file info to describe where crash occured
     panic_print_file(file, line, func);
     stack_trace(16);
@@ -65,10 +59,10 @@ NORET void panic(const char* msg, const char *file, uint32_t line, const char *f
     while (true) { asm("hlt"); }
 }
 
-NORET void panic(registers_t *regs, const char *file, uint32_t line, const char *func) {
+NORET void panic(struct registers *regs, const char *file, uint32_t line, const char *func) {
     asm volatile ("cli");
     // Print the panic cow and exception description
-    printPanicScreen(regs->int_num);
+    printPanicScreen();
     char msg[128];
     ksprintf(
         msg,
@@ -78,7 +72,7 @@ NORET void panic(registers_t *regs, const char *file, uint32_t line, const char 
     );
     // Print to VGA and serial
     kprintf("%s", msg);
-    rs232::printf("%s", msg);
+    RS232::printf("%s", msg);
     // Check if we have an error code and print
     if (regs->err_code) {
         ksprintf(
@@ -88,7 +82,7 @@ NORET void panic(registers_t *regs, const char *file, uint32_t line, const char 
         );
         // Print to VGA and serial
         kprintf("%s", msg);
-        rs232::printf("%s", msg);
+        RS232::printf("%s", msg);
     }
     // Print out register values
     panic_print_register(regs);
@@ -103,7 +97,7 @@ NORET void panic(registers_t *regs, const char *file, uint32_t line, const char 
     int reserved = regs->err_code & 0x8;     // Overwritten CPU-reserved bits of page entry?
     int id = regs->err_code & 0x10;          // Caused by an instruction fetch?
     // If we have a page fault, print out page fault info
-    if (regs->int_num == 14) {
+    if (regs->int_num == ISR_PAGE_FAULT) {
         // Output an error message.
         const char* real = (present ? "present " : "missing ");
         const char* rws = (rw ? "reading " : "writing ");
@@ -122,7 +116,7 @@ NORET void panic(registers_t *regs, const char *file, uint32_t line, const char 
         );
         // Print to VGA and serial
         kprintf("%s", msg);
-        rs232::printf("%s", msg);
+        RS232::printf("%s", msg);
     }
     panic_print_file(file, line, func);
     stack_trace(16);
@@ -142,10 +136,10 @@ void panic_print_file(const char *file, uint32_t line, const char *func) {
     );
     // Print to VGA and serial
     kprintf("%s", msg);
-    rs232::printf("%s", msg);
+    RS232::printf("%s", msg);
 }
 
-void panic_print_register(registers_t *regs) {
+void panic_print_register(struct registers *regs) {
     // I really wanted to add color codes here to make the register labels
     // red, but that would also mean resetting the background *and* foreground
     // colors each time (to print the numbers in back) since I can't just call
@@ -170,5 +164,5 @@ void panic_print_register(registers_t *regs) {
     #endif
     // Print to VGA and serial
     kprintf("%s", msg);
-    rs232::printf("%s", msg);
+    RS232::printf("%s", msg);
 }

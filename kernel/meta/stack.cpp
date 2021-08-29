@@ -8,9 +8,8 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <arch/stack.hpp>
-#include <sys/panic.hpp>
-#include <stdint.h>
+#include <meta/stack.hpp>
+#include <arch/arch.hpp>
 
 /**
  * @brief This function is the global handler for all

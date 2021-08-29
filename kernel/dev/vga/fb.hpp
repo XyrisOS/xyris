@@ -11,7 +11,7 @@
 #pragma once
 #include <stdint.h>
 
-namespace fb {
+namespace FB {
 
 enum FramebufferMemoryModel {
     Undefined_FBMM = 0,
@@ -70,4 +70,4 @@ private:
     FramebufferMemoryModel _memoryModel;
 };
 
-};
+} // !namespace FB

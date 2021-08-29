@@ -19,7 +19,7 @@
 #define RS_232_COM3 0x3E8
 #define RS_232_COM4 0x2E8
 
-namespace rs232 {
+namespace RS232 {
 
 /**
  * @brief Activates the RS232 serial driver
@@ -73,4 +73,4 @@ int vprintf(const char* fmt, va_list args);
  */
 int close();
 
-};
+} // !namespace RS232

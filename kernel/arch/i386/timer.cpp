@@ -8,13 +8,12 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-
-#include <arch/arch.hpp>
+#include <arch/i386/timer.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 #include <dev/tty/tty.hpp>
 
-static void timer_callback(registers_t *regs);
+static void timer_callback(struct registers *regs);
 volatile uint32_t timer_tick;
 
 typedef void (*voidfunc_t)();
@@ -46,7 +45,7 @@ void timer_init(uint32_t freq) {
     kprintf(DBG_OKAY "Started timer\n");
 }
 
-static void timer_callback(registers_t *regs) {
+static void timer_callback(struct registers *regs) {
     (void)regs;
     timer_tick++;
     for (size_t i = 0; i < _callback_count; i++) {

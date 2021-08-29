@@ -16,6 +16,7 @@
 #include <lib/stdio.hpp>
 #include <lib/time.hpp>
 namespace Time {
+
 TimeDescriptor::TimeDescriptor()
 {
     toDate();
@@ -80,7 +81,7 @@ void TimeDescriptor::printDate()
 
 void TimeDescriptor::toDate()
 {
-    uint64_t epoch = getEpoch();
+    uint64_t epoch = RTC::getEpoch();
     converterEpochToDate(epoch);
     // TODO: for another GMT, add or subtract time zone in epoch number
     // e.g
@@ -88,4 +89,5 @@ void TimeDescriptor::toDate()
     // converterEpochToDate(epoch-10800);
     converterEpochToDate(epoch);
 }
-};
+
+} // !namespace Time
