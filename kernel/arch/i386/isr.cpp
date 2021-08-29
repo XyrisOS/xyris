@@ -13,7 +13,7 @@
 #include <dev/tty/tty.hpp>
 
 // Private array of interrupt handlers
-isr_cb interrupt_handlers[256];
+isr_cb_t interrupt_handlers[256];
 void (* isr_func_ptr[])(void) = { isr0,  isr1,  isr2,  isr3,  isr4,  isr5,  isr6,  isr7,
                                   isr8,  isr9,  isr10, isr11, isr12, isr13, isr14, isr15,
                                   isr16, isr17, isr18, isr19, isr20, isr21, isr22, isr23,
@@ -52,7 +52,7 @@ void isr_install() {
     kprintf(DBG_OKAY "Loaded the ISR.\n");
 }
 
-extern "C" void register_interrupt_handler(uint8_t n, isr_cb handler) {
+extern "C" void register_interrupt_handler(uint8_t n, isr_cb_t handler) {
     interrupt_handlers[n] = handler;
 }
 
@@ -72,7 +72,7 @@ extern "C" void irq_handler(struct registers *regs) {
     /* Handle the interrupt in a more modular way */
     if (interrupt_handlers[regs->int_num] != 0) {
         set_indicator(VGA_Yellow);
-        isr_cb handler = interrupt_handlers[regs->int_num];
+        isr_cb_t handler = interrupt_handlers[regs->int_num];
         handler(regs);
     }
     set_indicator(VGA_Green);

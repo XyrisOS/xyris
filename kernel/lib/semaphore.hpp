@@ -87,5 +87,5 @@ public:
 private:
     bool shared;
     uint32_t count;
-    tasks_sync_t task_sync;
+    struct task_sync task_sync;
 };

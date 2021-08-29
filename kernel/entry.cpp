@@ -124,7 +124,7 @@ extern "C" void kernelEntry(void* boot_info, uint32_t magic)
     RS232::printf("%s\n%s\n", vendor, model);
 
     tasks_init();
-    task_t compute, status, spinner, animation;
+    struct task compute, status, spinner, animation;
     tasks_new(Apps::find_primes, &compute, TASK_READY, "prime_compute");
     tasks_new(Apps::show_primes, &status, TASK_READY, "prime_display");
     tasks_new(Apps::spinner, &spinner, TASK_READY, "spinner");

@@ -33,12 +33,12 @@ static size_t page_map[MEM_BITMAP_SIZE] = { 0 };
 static Bitset mapped_mem = Bitset(mem_map, MEM_BITMAP_SIZE);
 static Bitset mapped_pages = Bitset(page_map, MEM_BITMAP_SIZE);
 
-static uint32_t         page_dir_addr;
-static page_table_t*    page_dir_virt[PAGE_ENTRIES];
+static uint32_t             page_dir_addr;
+static struct page_table*   page_dir_virt[PAGE_ENTRIES];
 
 /* both of these must be page aligned for anything to work right at all */
-static page_directory_entry_t page_dir_phys[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
-static page_table_t           page_tables[PAGE_ENTRIES]   SECTION(".page_tables,\"aw\", @nobits#");
+static struct page_directory_entry page_dir_phys[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
+static struct page_table           page_tables[PAGE_ENTRIES]   SECTION(".page_tables,\"aw\", @nobits#");
 
 // Debug output flags
 #define MAPPING_OUTPUT_FLAG "--enable-mapping-output"
@@ -51,7 +51,7 @@ static void paging_map_early_mem();
 static void paging_map_hh_kernel();
 static uint32_t find_next_free_virt_addr(int seq);
 static uint32_t find_next_free_phys_page();
-static inline void map_kernel_page_table(uint32_t pd_idx, page_table_t *table);
+static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table *table);
 static inline void set_page_dir(uint32_t page_directory);
 static inline void paging_enable();
 static inline void paging_disable();
@@ -80,7 +80,7 @@ static void mem_page_fault(struct registers* regs) {
    PANIC(regs);
 }
 
-static inline void map_kernel_page_table(uint32_t pd_idx, page_table_t *table) {
+static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table *table) {
     page_dir_virt[pd_idx] = table;
     page_dir_phys[pd_idx] = {
         .present = 1,
@@ -107,11 +107,11 @@ static void paging_init_dir() {
         map_kernel_page_table(i, &page_tables[i]);
         // clear out the page tables
         for (int j = 0; j < PAGE_ENTRIES; j++) {
-            page_tables[i].pages[j] = (page_table_entry_t){ /* ZERO */ };
+            page_tables[i].pages[j] = (struct page_table_entry){ /* ZERO */ };
         }
     }
     // recursively map the last page table to the page directory
-    map_kernel_page_table(PAGE_ENTRIES - 1, (page_table_t*)&page_dir_phys[0]);
+    map_kernel_page_table(PAGE_ENTRIES - 1, (struct page_table*)&page_dir_phys[0]);
     for (uint32_t i = PAGE_ENTRIES * (PAGE_ENTRIES - 1); i < PAGE_ENTRIES * PAGE_ENTRIES; i++) {
         mapped_pages.Set(i);
     }
@@ -243,7 +243,7 @@ void free_page(void *page, uint32_t size) {
         // how much more UN-readable can we make this?? (pls, i need to know...)
         //*(uint32_t*)((uint32_t)page_tables + i * 4) = 0;
         // this is the same as the line above
-        page_table_entry_t *pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
+        struct page_table_entry *pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
         // the frame field is actually the page frame's index
         // basically it's frame 0, 1...(2^21-1)
         mapped_mem.Clear(pte->frame);

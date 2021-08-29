@@ -56,7 +56,7 @@ typedef union virtual_address
  * Intel Developer Manual Vol. 3a p. 4-12
  *
  */
-typedef struct page_table_entry
+struct page_table_entry
 {
     uint32_t present            : 1;  // Page present in memory
     uint32_t read_write         : 1;  // Read-only if clear, readwrite if set
@@ -69,24 +69,24 @@ typedef struct page_table_entry
     uint32_t global             : 1;  // Prevents the TLB from updating the address
     uint32_t unused             : 3;  // Amalgamation of unused and reserved bits
     uint32_t frame              : 20; // Frame address (shifted right 12 bits)
-} page_table_entry_t;
+};
 
 /**
  * @brief Page table structure as defined in accordance to the
  * Intel Developer Manual Vol. 3a p. 4-12
  *
  */
-typedef struct page_table
+struct page_table
 {
-   page_table_entry_t pages[1024];
-} page_table_t;
+   struct page_table_entry pages[1024];
+};
 
 /**
  * @brief Page directory entry structure as defined in accordance to the
  * Intel Developer Manual Vol. 3a p. 4-12
  *
  */
-typedef struct page_directory_entry
+struct page_directory_entry
 {
     uint32_t present            : 1;  // Is the page present in physical memory?
     uint32_t read_write         : 1;  // Is the page read/write or read-only?
@@ -98,7 +98,7 @@ typedef struct page_directory_entry
     uint32_t page_size          : 1;  // Is the page 4 Mb (enabled) or 4 Kb (disabled)?
     uint32_t ignored_b          : 4;  // Ignored
     uint32_t table_addr         : 20; // Physical address of the table
-} page_directory_entry_t;
+};
 
 /**
  * @brief Page directory contains pointers to all of the virtual memory addresses for the
@@ -106,12 +106,12 @@ typedef struct page_directory_entry
  * Page table entry defined in accordance to the Intel Developer Manual Vol. 3a p. 4-12.
  *
  */
-typedef struct page_directory
+struct page_directory
 {
-    page_table_t *tables[1024];                  // Pointers that Xyris uses to access the pages in memory
-    page_directory_entry_t tablesPhysical[1024]; // Pointers that the Intel CPU uses to access pages in memory
-    uint32_t physical_addr;                      // Physical address of this 4Kb aligned page table referenced by this entry
-} page_directory_t;
+    struct page_table *tables[1024];                    // Pointers that Xyris uses to access the pages in memory
+    struct page_directory_entry tablesPhysical[1024];   // Pointers that the Intel CPU uses to access pages in memory
+    uint32_t physical_addr;                             // Physical address of this 4Kb aligned page table referenced by this entry
+};
 
 /**
  * @brief Sets up the environment, page directories etc and enables paging.

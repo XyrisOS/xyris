@@ -47,5 +47,5 @@ public:
 
 private:
     bool locked;
-    tasks_sync_t task_sync;
+    struct task_sync task_sync;
 };

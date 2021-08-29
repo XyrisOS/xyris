@@ -117,7 +117,7 @@ extern "C" void irq13();
 extern "C" void irq14();
 extern "C" void irq15();
 
-typedef void (*isr_cb)(struct registers*);
+typedef void (*isr_cb_t)(struct registers*);
 
 /**
  * @brief
@@ -138,7 +138,7 @@ extern "C" void isr_handler(struct registers* t);
  * @param n
  * @param handler
  */
-extern "C" void register_interrupt_handler(uint8_t n, isr_cb handler);
+extern "C" void register_interrupt_handler(uint8_t n, isr_cb_t handler);
 
 /**
  * @brief

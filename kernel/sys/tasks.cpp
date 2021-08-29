@@ -19,32 +19,32 @@
 #include <arch/arch.hpp>
 
 /* forward declarations */
-static void _enqueue_task(tasklist_t *, task *);
-static task_t *_dequeue_task(tasklist_t *);
+static void _enqueue_task(struct tasklist *, task *);
+static struct task *_dequeue_task(struct tasklist *);
 static void _cleaner_task_impl(void);
 static void _schedule(void);
-extern "C" void _tasks_enqueue_ready(task_t *task);
+extern "C" void _tasks_enqueue_ready(struct task *task);
 void tasks_update_time();
-void _wakeup(task_t *task);
+void _wakeup(struct task *task);
 
 /* macro to create a new named tasklist and associated helper functions */
 #define NAMED_TASKLIST(name) \
-    tasklist_t tasks_##name = { /* Zero */ }; \
-    static inline void _enqueue_##name(task_t *task) { \
+    struct tasklist tasks_##name = { /* Zero */ }; \
+    static inline void _enqueue_##name(struct task *task) { \
         _enqueue_task(&tasks_##name, task); } \
-    static inline task_t *_dequeue_##name() { \
+    static inline struct task *_dequeue_##name() { \
         return _dequeue_task(&tasks_##name); }
 
-task_t *current_task = NULL;
-static task_t _cleaner_task;
-static task_t _first_task;
+struct task *current_task = NULL;
+static struct task _cleaner_task;
+static struct task _first_task;
 
-tasklist_t tasks_ready = { /* Zero */ };
+struct tasklist tasks_ready = { /* Zero */ };
 NAMED_TASKLIST(sleeping);
 NAMED_TASKLIST(stopped);
 
 // map between task state and the list it is in
-static tasklist_t *_state_lists[TASK_STATE_COUNT] = {
+static struct tasklist *_state_lists[TASK_STATE_COUNT] = {
     [TASK_RUNNING] = NULL, // not in a list
     [TASK_READY] = &tasks_ready,
     [TASK_SLEEPING] = &tasks_sleeping,
@@ -111,7 +111,7 @@ static inline uint64_t _get_cpu_time_ns()
     return (__rdtsc()) / _instr_per_ns;
 }
 
-static void _print_task(const task_t *task)
+static void _print_task(const struct task *task)
 {
     RS232::printf("%s is %s\n", task->name, _state_names[task->state]);
 }
@@ -122,9 +122,9 @@ static void _print_task(const task_t *task)
 #define TASK_ACTION(action, task)
 #endif
 
-static void _print_tasklist(const char *name, const tasklist_t *list)
+static void _print_tasklist(const char *name, const struct tasklist *list)
 {
-    task_t *task = list->head;
+    struct task *task = list->head;
     RS232::printf("%s:\n", name);
     while (task != NULL) {
         _print_task(task);
@@ -132,9 +132,9 @@ static void _print_tasklist(const char *name, const tasklist_t *list)
     }
 }
 
-static void _print_tasklist(const task_t *task)
+static void _print_tasklist(const struct task *task)
 {
-    const tasklist_t *list = _state_lists[task->state];
+    const struct tasklist *list = _state_lists[task->state];
     const char *state_name = _state_names[task->state];
     if (list == NULL) {
         RS232::printf("no tasklist available for %s tasks.\n", state_name);
@@ -149,7 +149,7 @@ static void _on_timer();
 void tasks_init()
 {
     // get a pointer to the first task's tcb
-    task_t *this_task = &_first_task;
+    struct task *this_task = &_first_task;
     // discover the CPU speed for accurate scheduling
     _discover_cpu_speed();
     *this_task = {
@@ -216,7 +216,7 @@ static inline void _stack_push_word(void **stack_pointer, size_t value)
     **(size_t**)stack_pointer = value;
 }
 
-static void _enqueue_task(tasklist_t *list, task *task)
+static void _enqueue_task(struct tasklist *list, task *task)
 {
     if (list->head == NULL) {
         list->head = task;
@@ -230,9 +230,9 @@ static void _enqueue_task(tasklist_t *list, task *task)
     list->tail = task;
 }
 
-static task_t *_dequeue_task(tasklist_t *list)
+static struct task *_dequeue_task(struct tasklist *list)
 {
-    task_t *task;
+    struct task *task;
     if (list->head == NULL) {
         // can't dequeue if there's not anything there
         return NULL;
@@ -252,7 +252,7 @@ static task_t *_dequeue_task(tasklist_t *list)
     return task;
 }
 
-static void _remove_task(tasklist_t *list, task_t *task, task_t *previous)
+static void _remove_task(struct tasklist *list, struct task *task, struct task *previous)
 {
     // if this is true, something's not right...
     if (previous != NULL && previous->next != task) {
@@ -274,22 +274,22 @@ static void _remove_task(tasklist_t *list, task_t *task, task_t *previous)
     task->next = NULL;
 }
 
-extern "C" void _tasks_enqueue_ready(task_t *task)
+extern "C" void _tasks_enqueue_ready(struct task *task)
 {
     _enqueue_task(&tasks_ready, task);
 }
 
-static task_t *_tasks_dequeue_ready()
+static struct task *_tasks_dequeue_ready()
 {
     return _dequeue_task(&tasks_ready);
 }
 
-task_t *tasks_new(void (*entry)(void), task_t *storage, task_state state, const char *name)
+struct task *tasks_new(void (*entry)(void), struct task *storage, task_state state, const char *name)
 {
-    task_t *new_task = storage;
+    struct task *new_task = storage;
     if (storage == NULL) {
         // allocate memory for our task structure
-        new_task = (task_t*)malloc(sizeof(task_t));
+        new_task = (struct task*)malloc(sizeof(struct task));
         // panic if the alloc fails (we have no fallback)
         if (new_task == NULL) {
             PANIC("Unable to allocate memory for new task struct.\n");
@@ -352,7 +352,7 @@ static void _schedule()
         return;
     }
     // get the next task
-    task_t *task = _tasks_dequeue_ready();
+    struct task *task = _tasks_dequeue_ready();
     // don't need to do anything if there's nothing ready to run
     if (task == NULL) {
         if (current_task->state == TASK_RUNNING) {
@@ -367,7 +367,7 @@ static void _schedule()
         tasks_update_time();
         /*** idle ***/
         // borrow this task to return to once we're not idle anymore
-        task_t *borrowed = current_task;
+        struct task *borrowed = current_task;
         // set the current task to null to indicate an idle state
         current_task = NULL;
         _idle_start = _get_cpu_time_ns();
@@ -427,7 +427,7 @@ void tasks_block_current(task_state reason)
     _release_scheduler_lock();
 }
 
-void tasks_unblock(task_t *task)
+void tasks_unblock(struct task *task)
 {
     _aquire_scheduler_lock();
     task->state = TASK_READY;
@@ -436,7 +436,7 @@ void tasks_unblock(task_t *task)
     _release_scheduler_lock();
 }
 
-void _wakeup(task_t *task)
+void _wakeup(struct task *task)
 {
     task->state = TASK_READY;
     task->wakeup_time = (0ULL - 1);
@@ -448,9 +448,9 @@ static void _on_timer()
 {
     _aquire_scheduler_lock();
 
-    task_t *pre = NULL;
-    task_t *task = tasks_sleeping.head;
-    task_t *next;
+    struct task *pre = NULL;
+    struct task *task = tasks_sleeping.head;
+    struct task *next;
     bool need_schedule = false;
     uint64_t time = _get_cpu_time_ns();
     uint64_t time_delta;
@@ -525,7 +525,7 @@ void tasks_exit()
     _release_scheduler_lock();
 }
 
-static void _clean_stopped_task(task_t *task)
+static void _clean_stopped_task(struct task *task)
 {
     // free the stack page
     uintptr_t page = task->stack_top & PAGE_ALIGN;
@@ -538,7 +538,7 @@ static void _clean_stopped_task(task_t *task)
 static void _cleaner_task_impl()
 {
     for (;;) {
-        task_t *task;
+        struct task *task;
         _aquire_scheduler_lock();
 
         while (tasks_stopped.head != NULL) {
@@ -555,7 +555,7 @@ static void _cleaner_task_impl()
     }
 }
 
-void tasks_sync_block(tasks_sync_t *ts)
+void tasks_sync_block(struct task_sync *ts)
 {
     _aquire_scheduler_lock();
 #ifdef DEBUG
@@ -570,7 +570,7 @@ void tasks_sync_block(tasks_sync_t *ts)
     _release_scheduler_lock();
 }
 
-void tasks_sync_unblock(tasks_sync_t *ts)
+void tasks_sync_unblock(struct task_sync *ts)
 {
     _aquire_scheduler_lock();
 #ifdef DEBUG
@@ -579,8 +579,8 @@ void tasks_sync_unblock(tasks_sync_t *ts)
     }
 #endif
     // iterate all tasks that were blocked and unblock them
-    task_t *task = ts->waiting.head;
-    task_t *next = NULL;
+    struct task *task = ts->waiting.head;
+    struct task *next = NULL;
     if (task == NULL) {
         // no other tasks were blocked
         goto exit;

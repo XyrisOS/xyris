@@ -29,12 +29,11 @@ enum task_state
 
 enum task_alloc { ALLOC_STATIC, ALLOC_DYNAMIC };
 
-typedef struct task task_t;
 struct task
 {
     uintptr_t stack_top;
     uintptr_t page_dir;
-    task_t *next;
+    struct task *next;
     task_state state;
     uint64_t time_used;
     uint64_t wakeup_time;
@@ -42,25 +41,25 @@ struct task
     task_alloc alloc;
 };
 
-extern task_t *current_task;
+extern struct task *current_task;
 
 #define TASK_ONLY if (current_task != NULL)
 
-typedef struct tasklist
+struct tasklist
 {
-    task_t *head;
-    task_t *tail;
-} tasklist_t;
+    struct task *head;
+    struct task *tail;
+};
 
 #define MAX_TASKS_QUEUED 8
-typedef struct tasks_sync
+struct task_sync
 {
-    task_t* possessor;
+    struct task* possessor;
     const char *dbg_name;
-    tasklist_t waiting;
-} tasks_sync_t;
+    struct tasklist waiting;
+};
 
-static inline void tasks_sync_init(tasks_sync_t *ts) {
+static inline void tasks_sync_init(struct task_sync *ts) {
     *ts = {
         .possessor = NULL,
         .dbg_name = NULL,
@@ -78,19 +77,19 @@ void tasks_init();
  *
  * @param task Pointer to the task struct
  */
-extern "C" void tasks_switch_to(task_t *task);
+extern "C" void tasks_switch_to(struct task *task);
 /**
  * @brief Creates a new kernel task with a provided entry point, register storage struct,
- * and task state struct. If the storage parameter is provided, the task_t struct
+ * and task state struct. If the storage parameter is provided, the struct task struct
  * provided will be written to. If NULL is passed as the storage parameter, a pointer
  * to a allocated task will be returned.
  *
  * @param entry Task function entry point
  * @param storage Task stack structure (if NULL, a pointer to the task is returned)
  * @param state Task state structure
- * @return task_t* Pointer to the created kernel task
+ * @return struct task* Pointer to the created kernel task
  */
-task_t *tasks_new(void (*entry)(void), task_t *storage, task_state state, const char *name);
+struct task *tasks_new(void (*entry)(void), struct task *storage, task_state state, const char *name);
 /**
  * @brief Tell the kernel task scheduler to schedule all of the added tasks.
  *
@@ -113,7 +112,7 @@ void tasks_block_current(task_state reason);
  *
  * @param task
  */
-void tasks_unblock(task_t *task);
+void tasks_unblock(struct task *task);
 /**
  * @brief Sleeps until the provided absolute time (in nanoseconds).
  *
@@ -132,6 +131,6 @@ void tasks_nano_sleep(uint64_t time);
  */
 void tasks_exit(void);
 
-void tasks_sync_block(tasks_sync_t *tsc);
+void tasks_sync_block(struct task_sync *tsc);
 
-void tasks_sync_unblock(tasks_sync_t *tsc);
+void tasks_sync_unblock(struct task_sync *tsc);
