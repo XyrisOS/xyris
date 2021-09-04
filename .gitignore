@@ -38,7 +38,7 @@ tests/run_tests
 com1.txt
 
 # Doxygen output
-docs/**
+docs/build/
 
 # Unit testing
 tests/report.xml
