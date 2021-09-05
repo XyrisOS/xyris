@@ -277,8 +277,7 @@ vbox: vbox-create
 
 .PHONY: docs
 docs:
-	@printf "$(COLOR_INFO)Generating docs according to the Doxyfile...$(COLOR_NONE)\n"
-	@doxygen ./Doxyfile
+	@$(MAKE) -C docs
 
 # ********************
 # * Cleaning Targets *
