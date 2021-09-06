@@ -87,6 +87,7 @@ extern "C" void tasks_switch_to(struct task *task);
  * @param entry Task function entry point
  * @param storage Task stack structure (if NULL, a pointer to the task is returned)
  * @param state Task state structure
+ * @param name Task name (for debugging / printing)
  * @return struct task* Pointer to the created kernel task
  */
 struct task *tasks_new(void (*entry)(void), struct task *storage, task_state state, const char *name);

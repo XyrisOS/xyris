@@ -27,7 +27,7 @@ static Mutex mutex_paging("paging");
 
 #define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
 
-/* one bit for every page */
+// one bit for every page
 static size_t mem_map[MEM_BITMAP_SIZE] = { 0 };
 static size_t page_map[MEM_BITMAP_SIZE] = { 0 };
 static Bitset mapped_mem = Bitset(mem_map, MEM_BITMAP_SIZE);
@@ -36,7 +36,7 @@ static Bitset mapped_pages = Bitset(page_map, MEM_BITMAP_SIZE);
 static uint32_t             page_dir_addr;
 static struct page_table*   page_dir_virt[PAGE_ENTRIES];
 
-/* both of these must be page aligned for anything to work right at all */
+// both of these must be page aligned for anything to work right at all
 static struct page_directory_entry page_dir_phys[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
 static struct page_table           page_tables[PAGE_ENTRIES]   SECTION(".page_tables,\"aw\", @nobits#");
 

@@ -130,7 +130,7 @@ void isr_install();
  *
  * @param r Register information struct
  */
-extern "C" void isr_handler(struct registers* t);
+extern "C" void isr_handler(struct registers* r);
 
 /**
  * @brief

@@ -78,7 +78,7 @@ struct page_table_entry
  */
 struct page_table
 {
-   struct page_table_entry pages[1024];
+   struct page_table_entry pages[1024]; // All entries for the table
 };
 
 /**

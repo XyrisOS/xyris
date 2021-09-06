@@ -1,5 +1,5 @@
 /**
- * @file kernel.hpp
+ * @file sections.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief Kernel ELF section definitions
  * @version 0.1

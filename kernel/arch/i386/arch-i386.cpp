@@ -1,5 +1,5 @@
 /**
- * @file i386.cpp
+ * @file arch-i386.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief i386 architecture implementation of arch.hpp
  * @version 0.1
