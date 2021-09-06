@@ -15,12 +15,15 @@
 
 class Mutex {
 public:
+    /**
+     * @brief Construct a new Mutex object
+     *
+     * @param name Mutex name (for debugging / printing)
+     */
     Mutex(const char* name = nullptr);
     /**
      * @brief Destroys a mutex and removes it from memory.
      *
-     * @param mutex Reference mutex
-     * @return int Returns 0 on success and -1 on error.
      */
     ~Mutex();
     /**

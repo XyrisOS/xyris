@@ -1,5 +1,5 @@
 /**
- * @file GlobalDescriptorTable.hpp
+ * @file gdt.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief The Global Descriptor Table (GDT) is specific to the IA32 architecture.
  * It contains entries telling the CPU about memory segments.

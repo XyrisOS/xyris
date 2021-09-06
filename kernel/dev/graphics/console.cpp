@@ -1,5 +1,5 @@
 /**
- * @file tty.cpp
+ * @file console.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief Framebuffer console
  * @version 0.3

@@ -1,5 +1,5 @@
 /**
- * @file fb.cpp
+ * @file framebuffer.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief
  * @version 0.1

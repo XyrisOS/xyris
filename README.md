@@ -27,7 +27,7 @@ See [LICENSE](https://github.com/XyrisOS/xyris/blob/stable/LICENSE) for details.
 <a href="https://github.com/XyrisOS/xyris/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=XyrisOS/xyris" />
 </a>
-</br>
+<br>
 
 ## Third Party Projects
 * [Limine Bootloader](https://github.com/limine-bootloader/limine)

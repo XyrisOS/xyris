@@ -1,5 +1,5 @@
 /**
- * @file main.cpp
+ * @file entry.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief The entry point into the Xyris kernel.
  * @version 0.3

@@ -1,5 +1,5 @@
 /**
- * @file Port.hpp
+ * @file ports.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief Ports header file. Provides inline functions
  * for getting and setting values at different ports.

@@ -26,10 +26,8 @@ public:
      * @param share Boolean value indicating whether the semaphore
      * should be shared amongst threads or will be used within one thread
      * exclusively.
-     * @param name Name of the mutex (for debugging tasks)
-     * @return int Returns 0 if the semaphore was initialized successfully.
+     * @param name Semaphore name (for debugging / printing)
      */
-
     Semaphore(uint32_t val, bool share, const char* name = nullptr);
     /**
      * @brief Destroys a semaphore by removing it from memory.

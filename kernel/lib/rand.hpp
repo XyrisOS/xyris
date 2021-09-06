@@ -21,13 +21,13 @@
 /**
  * @brief Return a random value
  *
- * @param
- * @return int random value
+ * @return int Value from random number generator
  */
 int rand(void);
+
 /**
  * @brief Set a seed to rand
  *
- * @param seed a number to set seed
+ * @param seed Random number generator seed
  */
 void srand(unsigned int seed);

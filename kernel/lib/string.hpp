@@ -86,7 +86,7 @@ void itoa(int n, char str[]);
 /**
  * @brief Sets the number of bytes in memory at ptr to the value.
  *
- * @param ptr Pointer to location in memory
+ * @param bufptr Pointer to location in memory
  * @param value Value to be written in memory
  * @param num Number of bytes
  * @return void* Pointer to location in memory
