@@ -12,7 +12,7 @@ jobs:
       - name: Emit repository_dispatch
         uses: mvasigh/dispatch-action@main
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.DOCS_PAT }}
           repo: docs
           owner: XyrisOS
           event_type: push_dev
