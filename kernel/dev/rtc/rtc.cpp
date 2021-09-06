@@ -13,8 +13,8 @@
  *         https://en.wikipedia.org/wiki/Julian_day
  */
 #include <arch/arch.hpp>
+#include <dev/graphics/console.hpp>
 #include <dev/rtc/rtc.hpp>
-#include <dev/tty/tty.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 
@@ -45,7 +45,6 @@ uint32_t century; // Current UTC century
 
 void init()
 {
-    kprintf(DBG_INFO "Initializing RTC...\n");
     // Initializer
     writeByte(RTC_CMOS_PORT, 0x8A);
     writeByte(RTC_DATA_PORT, 0x20);
@@ -61,7 +60,6 @@ void init()
 static void callback(struct registers* regs)
 {
     (void)regs;
-    kprintf(DBG_INFO "RTC updated.\n");
 }
 
 static bool getUpdateInProgress()

@@ -8,14 +8,15 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <dev/vga/fb.hpp>
-// Types
+#include <dev/graphics/framebuffer.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
-namespace FB {
+namespace Graphics {
 
-FramebufferInfo::FramebufferInfo()
+static Framebuffer* framebuffer = NULL;
+
+Framebuffer::Framebuffer()
     : _addr(NULL)
     , _width(0)
     , _height(0)
@@ -30,9 +31,11 @@ FramebufferInfo::FramebufferInfo()
     , _memoryModel(Undefined_FBMM)
 {
     // Default constructor.
+    if (!framebuffer)
+        framebuffer = this;
 }
 
-FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr)
+Framebuffer::Framebuffer(uint32_t width, uint32_t height, uint16_t depth, uint32_t pitch, void* addr)
     : _addr(addr)
     , _width(width)
     , _height(height)
@@ -47,9 +50,11 @@ FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height, uint16_t depth
     , _memoryModel(Undefined_FBMM)
 {
     // Common parameters constructor
+    if (!framebuffer)
+        framebuffer = this;
 }
 
-FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height,
+Framebuffer::Framebuffer(uint32_t width, uint32_t height,
                                  uint16_t depth, uint32_t pitch,
                                  void* addr, FramebufferMemoryModel model,
                                  uint8_t redMaskSize, uint8_t redMaskShift,
@@ -69,6 +74,13 @@ FramebufferInfo::FramebufferInfo(uint32_t width, uint32_t height,
     , _memoryModel(model)
 {
     // All parameters constructor
+    if (!framebuffer)
+        framebuffer = this;
+}
+
+Framebuffer* getFramebuffer()
+{
+    return framebuffer;
 }
 
 } // !namespace FB

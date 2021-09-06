@@ -24,11 +24,6 @@ extern volatile uint32_t timer_tick;
  */
 void timer_init(uint32_t freq);
 /**
- * @brief Prints out the current tick.
- *
- */
-void timer_print();
-/**
  * @brief Sleeps for a certain length of time.
  *
  * @param ms Sleep length in milliseconds

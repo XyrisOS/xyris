@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 // Generic devices
-#include <dev/vga/fb.hpp>
+#include <dev/graphics/framebuffer.hpp>
 
 namespace Boot {
 
@@ -97,7 +97,7 @@ public:
     // Getters
     const char* getCmdLine()                    { return _cmdline; }
     const void* getHandle()                     { return _handle; }
-    FB::FramebufferInfo getFramebufferInfo()    { return _fbInfo; }
+    Graphics::Framebuffer getFramebufferInfo()  { return _framebuffer; }
     HandoffBootloaderType getBootType()         { return _bootType; }
 
 private:
@@ -107,7 +107,7 @@ private:
     void* _handle;
     char* _cmdline;
     uint32_t _magic;
-    FB::FramebufferInfo _fbInfo;
+    Graphics::Framebuffer _framebuffer;
     HandoffBootloaderType _bootType;
 };
 

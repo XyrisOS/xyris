@@ -12,7 +12,7 @@
  *         https://www.oryx-embedded.com/doc/date__time_8c_source.html
  */
 #include <dev/rtc/rtc.hpp>
-#include <dev/tty/tty.hpp>
+#include <dev/graphics/console.hpp>
 #include <lib/stdio.hpp>
 #include <lib/time.hpp>
 namespace Time {
@@ -65,18 +65,6 @@ void TimeDescriptor::converterEpochToDate(uint64_t epoch)
     setDay(day);
     setMonth(month);
     setYear(year);
-}
-
-void TimeDescriptor::printDate()
-{
-    kprintf(
-        DBG_INFO
-        "UTC: %i/%i/%i %i:%i\n",
-        getMonth(),
-        getDay(),
-        getYear(),
-        getHour(),
-        getMinutes());
 }
 
 void TimeDescriptor::toDate()

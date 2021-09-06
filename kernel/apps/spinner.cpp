@@ -11,16 +11,17 @@
 #include <apps/spinner.hpp>
 #include <stdint.h>
 #include <lib/stdio.hpp>
+#include <dev/graphics/console.hpp>
 
 namespace Apps {
 
 void spinner(void) {
-    kprintf("\n");
+    Console::printf("\n");
     int i = 0;
     const char spinnay[] = { '|', '/', '-', '\\' };
     while (true) {
         // Display a spinner to know that we're still running.
-        kprintf("\e[s\e[24;0f%c\e[u", spinnay[i]);
+        Console::printf("\e[s\e[24;0f%c\e[u", spinnay[i]);
         i = (i + 1) % sizeof(spinnay);
         asm volatile("hlt");
     }

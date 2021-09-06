@@ -17,7 +17,8 @@
 #include <lib/stdio.hpp>
 #include <stdarg.h>
 #include <lib/string.hpp>
-#include <dev/tty/tty.hpp>
+#include <dev/graphics/graphics.hpp>
+#include <dev/graphics/console.hpp>
 
 /*****************************************************************************
 Stripped-down printf()
@@ -92,12 +93,12 @@ Using & for division here, so STACK_WIDTH must be a power of 2. */
 #define PR_BUFLEN 16
 
 /*****************************************************************************
-name:    do_printf
+name:    printf_helper
 action:    minimal subfunction for ?printf, calls function
     'fn' with arg 'ptr' for each character to be output
 returns:total number of characters output
 *****************************************************************************/
-int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr)
+int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr)
 {
     unsigned char radix, *where, buf[PR_BUFLEN];
     unsigned int state, flags, actual_wd, count, given_wd;
@@ -317,7 +318,7 @@ int kvsprintf(char* buf, const char* fmt, va_list args)
 {
     int ret_val;
 
-    ret_val = do_printf(fmt, args, vsprintf_help, (void*)buf);
+    ret_val = printf_helper(fmt, args, vsprintf_help, (void*)buf);
     buf[ret_val] = '\0';
     return ret_val;
 }
@@ -330,37 +331,6 @@ int ksprintf(char* buf, const char* fmt, ...)
 
     va_start(args, fmt);
     ret_val = kvsprintf(buf, fmt, args);
-    va_end(args);
-    return ret_val;
-}
-/*****************************************************************************
-*****************************************************************************/
-static int vprintf_help(unsigned c, void** ptr)
-{
-    (void)ptr;
-    // we use the unlocked putchar here becaus we lock at the printf level
-    putchar_unlocked((char)c);
-    return 0;
-}
-/*****************************************************************************
-*****************************************************************************/
-int kvprintf(const char* fmt, va_list args)
-{
-    put_mutex.Lock();
-    int retval = do_printf(fmt, args, vprintf_help, NULL);
-    put_mutex.Unlock();
-    return retval;
-}
-/*****************************************************************************
-*****************************************************************************/
-
-int kprintf(const char* fmt, ...)
-{
-    va_list args;
-    int ret_val;
-
-    va_start(args, fmt);
-    ret_val = kvprintf(fmt, args);
     va_end(args);
     return ret_val;
 }

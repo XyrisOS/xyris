@@ -22,12 +22,13 @@
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
 // Generic devices
+#include <dev/graphics/framebuffer.hpp>
+#include <dev/graphics/font.hpp>
+#include <dev/graphics/graphics.hpp>
+#include <dev/graphics/console.hpp>
 #include <dev/rtc/rtc.hpp>
 #include <dev/serial/rs232.hpp>
 #include <dev/spkr/spkr.hpp>
-#include <dev/tty/tty.hpp>
-#include <dev/vga/fb.hpp>
-#include <dev/vga/graphics.hpp>
 // Apps
 #include <apps/animation.hpp>
 #include <apps/primes.hpp>
@@ -60,22 +61,16 @@ static void devInit()
 
 static void printSplash()
 {
-    tty_clear();
-    kprintf(
+    Console::printf(
         "\033[93m"
         "Xyris %s\n"
         "Copyright the Xyris Contributors (c) %i. All rights reserved.\n"
         "Kernel source available at %s.\n"
         "\033[0m",
         VER_NAME,
-        (
-            ((__DATE__)[7] - '0') * 1000 + \
-            ((__DATE__)[8] - '0') * 100  + \
-            ((__DATE__)[9] - '0') * 10   + \
-            ((__DATE__)[10] - '0') * 1     \
-        ),
+        BUILD_DATE,
         REPO_URL);
-    kprintf("Commit %s (v%s.%s.%s) built on %s at %s.\n\n", COMMIT, VER_MAJOR, VER_MINOR, VER_PATCH, __DATE__, __TIME__);
+    Console::printf("Commit %s (v%s.%s.%s) built on %s at %s.\n\n", COMMIT, VER_MAJOR, VER_MINOR, VER_PATCH, __DATE__, __TIME__);
 }
 
 static void bootTone()
@@ -111,24 +106,28 @@ extern "C" void kernelEntry(void* boot_info, uint32_t magic)
     // Initialize info from bootloader
     bootInit(boot_info, magic, &handoff);
     paging_init(0);
-    FB::init(handoff.getFramebufferInfo());
+    Graphics::init();
     // Print the splash screen to show we've booted into the kernel properly.
     printSplash();
     // Print some info to show we did things right
     Time::TimeDescriptor time;
-    time.printDate();
+    Console::printf(DBG_INFO "UTC: %i/%i/%i %i:%i\n",
+        time.getMonth(),
+        time.getDay(),
+        time.getYear(),
+        time.getHour(),
+        time.getMinutes());
     // Get the CPU vendor and model data to print
     const char* vendor = Arch::cpuGetVendor();
     const char* model = Arch::cpuGetModel();
-    kprintf(DBG_INFO "%s %s\n", vendor, model);
+    Console::printf(DBG_INFO "%s %s\n", vendor, model);
     RS232::printf("%s\n%s\n", vendor, model);
 
     tasks_init();
-    struct task compute, status, spinner, animation;
+    struct task compute, status, spinner;
     tasks_new(Apps::find_primes, &compute, TASK_READY, "prime_compute");
     tasks_new(Apps::show_primes, &status, TASK_READY, "prime_display");
     tasks_new(Apps::spinner, &spinner, TASK_READY, "spinner");
-    tasks_new(Apps::testAnimation, &animation, TASK_READY, "testAnimation");
     // Now that we're done make a joyful noise
     bootTone();
 

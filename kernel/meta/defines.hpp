@@ -27,3 +27,10 @@
 #ifndef REPO_URL
     #define REPO_URL "(unknown)"
 #endif
+#ifndef BUILD_DATE
+#define BUILD_DATE \
+    (((__DATE__)[7] - '0') * 1000 + \
+    ((__DATE__)[8] - '0') * 100  + \
+    ((__DATE__)[9] - '0') * 10   + \
+    ((__DATE__)[10] - '0') * 1)
+#endif

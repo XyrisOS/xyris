@@ -18,10 +18,21 @@
 #define EOF (-1)
 #endif
 
-typedef int (*fnptr_t)(unsigned c, void** helper);
-
-int do_printf(const char* fmt, va_list args, fnptr_t fn, void* ptr);
-
+typedef int (*printf_cb_fnptr_t)(unsigned c, void** helper);
+/**
+ * @brief Perform all printf operations on the format string using the provided
+ * argument list and uses the callback function to perform the character printing
+ * operation. This allows for adding printf capabilities to a wide range of
+ * text output applications, such as an RS232 debug driver, or a framebuffer
+ * console.
+ *
+ * @param fmt Format string
+ * @param args Arguments list
+ * @param fn Character printing callback function pointer
+ * @param ptr User-provided data / handle pointer
+ * @return int Returns number of characters written
+ */
+int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr);
 /**
  * @brief Sends formatted output to a string using an argument list.
  *
@@ -42,46 +53,6 @@ int kvsprintf(char* buf, const char* fmt, va_list args);
  * The number of characters not written if negative.
  */
 int ksprintf(char* buf, const char* fmt, ...);
-/**
- * @brief Sends formatted output to stdout using an argument list.
- *
- * @param fmt C string that contains a format string
- * @param args A value identifying a variable arguments list
- * @return int The total number of characters written.
- * The number of characters not written if negative.
- */
-int kvprintf(const char* fmt, va_list args);
-/**
- * @brief Sends formatted output to stdout.
- *
- * @param fmt C string that contains a format string
- * @param ... Sequence of additional arguments
- * @return int The total number of characters written.
- * The number of characters not written if negative.
- */
-int kprintf(const char* fmt, ...);
-/**
- * @brief Prints a single character to the kernel display.
- *
- * @param c Character to be printed.
- */
-int putchar(char c);
-/**
- * @brief Prints a single character to the screen without locking the screen mutex
- *
- * Callers of this function *must* manually lock and unlock `put_mutex` when utilizing
- * this function to draw to the screen.
- *
- * @param c the chraracter to be printed.
- */
-int putchar_unlocked(char c);
-extern Mutex put_mutex;
-/**
- * @brief Prints a given string to the kernel display.
- *
- * @param str String to be printed.
- */
-int puts(const char *str);
 /**
  * @brief Prints a statement to serial debugger if the kernel
  * is built with the debug flag defined. Max message size is

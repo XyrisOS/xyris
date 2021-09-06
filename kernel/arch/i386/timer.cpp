@@ -11,7 +11,7 @@
 #include <arch/i386/timer.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
-#include <dev/tty/tty.hpp>
+#include <dev/graphics/console.hpp>
 
 static void timer_callback(struct registers *regs);
 volatile uint32_t timer_tick;
@@ -31,7 +31,6 @@ static voidfunc_t _callbacks[MAX_CALLBACKS];
  */
 
 void timer_init(uint32_t freq) {
-    kprintf(DBG_INFO "Initializing timer\n");
     /* Install the function we just wrote */
     register_interrupt_handler(IRQ0, timer_callback);
     /* Get the PIT value: hardware clock at 1193180 Hz */
@@ -42,7 +41,6 @@ void timer_init(uint32_t freq) {
     writeByte(TIMER_COMMAND_PORT, 0x36);
     writeByte(TIMER_DATA_PORT, low);
     writeByte(TIMER_DATA_PORT, high);
-    kprintf(DBG_OKAY "Started timer\n");
 }
 
 static void timer_callback(struct registers *regs) {
@@ -51,10 +49,6 @@ static void timer_callback(struct registers *regs) {
     for (size_t i = 0; i < _callback_count; i++) {
         _callbacks[i]();
     }
-}
-
-void timer_print() {
-    kprintf(DBG_INFO "Tick: %i\n", timer_tick);
 }
 
 void sleep(uint32_t ms) {
