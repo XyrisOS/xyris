@@ -9,52 +9,40 @@
  *
  */
 #include <dev/graphics/console.hpp>
+#include <dev/graphics/font.hpp>
 #include <dev/graphics/framebuffer.hpp>
 #include <dev/graphics/graphics.hpp>
-#include <dev/graphics/font.hpp>
 #include <lib/stdio.hpp>
-#include <stddef.h>
 #include <stdarg.h>
+#include <stddef.h>
 
 namespace Console {
 
+#define PUSH_VAL(VAL) ansiValues[ansiValuesIdx++] = (VAL)
+#define POP_VAL() ansiValues[--ansiValuesIdx]
+#define CLEAR_VALS() ansiValuesIdx = 0
+#define ESC ('\033')
+#define TAB_WIDTH 4u
+
 enum vgaColor : uint32_t {
-    VGA_Black           = 0x000000,
-    VGA_Blue            = 0x0000AA,
-    VGA_Green           = 0x00AA00,
-    VGA_Cyan            = 0x00AAAA,
-    VGA_Red             = 0xAA0000,
-    VGA_Magenta         = 0xAA00AA,
-    VGA_Brown           = 0xAA5500,
-    VGA_LightGrey       = 0xAAAAAA,
-    VGA_DarkGrey        = 0x555555,
-    VGA_LightBlue       = 0x5555FF,
-    VGA_LightGreen      = 0x55FF55,
-    VGA_LightCyan       = 0x55FFFF,
-    VGA_LightRed        = 0xFF5555,
-    VGA_LightMagenta    = 0xFF55FF,
-    VGA_Yellow          = 0xFFFF55,
-    VGA_White           = 0xFFFFFF,
+    VGA_Black = 0x000000,
+    VGA_Blue = 0x0000AA,
+    VGA_Green = 0x00AA00,
+    VGA_Cyan = 0x00AAAA,
+    VGA_Red = 0xAA0000,
+    VGA_Magenta = 0xAA00AA,
+    VGA_Brown = 0xAA5500,
+    VGA_LightGrey = 0xAAAAAA,
+    VGA_DarkGrey = 0x555555,
+    VGA_LightBlue = 0x5555FF,
+    VGA_LightGreen = 0x55FF55,
+    VGA_LightCyan = 0x55FFFF,
+    VGA_LightRed = 0xFF5555,
+    VGA_LightMagenta = 0xFF55FF,
+    VGA_Yellow = 0xFFFF55,
+    VGA_White = 0xFFFFFF,
 };
 
-// Coorinate trackers
-static uint8_t cursorX = 0;
-static uint8_t cursorY = 0;
-// VGA colors (defaults are white on black)
-static uint32_t colorBack = VGA_Black;
-static uint32_t colorFore = VGA_White;
-// Default colors set by tty_clear()
-static uint32_t resetBack = VGA_Black;
-static uint32_t resetFore = VGA_White;
-
-/**
- * @brief ANSI color codes for use in functions
- * like printf(). To change the color from the
- * foreground to the background, add 10 to the
- * desired color value.
- * (i.e. Red == 31 (fore)--> 41 (back))
- *
- */
 enum ansiColor : uint16_t {
     Background = 10,
     Black = 30,
@@ -75,41 +63,48 @@ enum ansiColor : uint16_t {
     BrightWhite = 97,
 };
 
-static uint16_t ansiValues[8] = { 0 };
-static size_t ansiValuesIdx = 0;
-#define PUSH_VAL(VAL) ansiValues[ansiValuesIdx++] = (VAL)
-#define POP_VAL() ansiValues[--ansiValuesIdx]
-#define CLEAR_VALS() ansiValuesIdx = 0
-#define ESC ('\033')
-#define TAB_WIDTH 4u
-// ANSI states
+// Coorinate trackers
+static uint8_t cursorX = 0;
+static uint8_t cursorY = 0;
+static uint32_t colorBack = VGA_Black;
+static uint32_t colorFore = VGA_White;
+static uint32_t resetBack = VGA_Black;
+static uint32_t resetFore = VGA_White;
+
+// ANSI State and value storage
 enum ansiStateType {
     Normal,
     Esc,
     Bracket,
     Value
 };
-// State and value storage
-ansiStateType ansiState = Normal;
-uint16_t ansiVal = 0;
-// Saved cursor positions
-uint32_t ansiCursorX = 0;
-uint32_t ansiCursorY = 0;
-// The names don't really line up, so this will need refactoring.
-uint32_t ansiVGATable[16] = {
+
+static uint16_t ansiVal = 0;
+static size_t ansiValuesIdx = 0;
+static uint16_t ansiValues[8] = { 0 };
+static ansiStateType ansiState = Normal;
+static uint32_t ansiCursorX = 0;
+static uint32_t ansiCursorY = 0;
+static uint32_t ansiVGATable[16] = {
     VGA_Black, VGA_Red, VGA_Green, VGA_Brown, VGA_Blue,
     VGA_Magenta, VGA_Cyan, VGA_LightGrey, VGA_DarkGrey, VGA_LightRed,
     VGA_LightGreen, VGA_Yellow, VGA_LightBlue, VGA_LightMagenta,
     VGA_LightCyan, VGA_White
 };
 
-// Printing mutual exclusion
-Mutex ttyLock;
+static Mutex ttyLock;
 
-static void Lock() { ttyLock.Lock(); }
-static void Unlock() { ttyLock.Unlock(); }
+static void Lock()
+{
+    ttyLock.Lock();
+}
 
-static int putchar(unsigned c, void **ptr)
+static void Unlock()
+{
+    ttyLock.Unlock();
+}
+
+static int putchar(unsigned c, void** ptr)
 {
     (void)ptr;
     // Check the ANSI state
@@ -207,7 +202,8 @@ static int putchar(unsigned c, void **ptr)
         cursorY++;
         break;
     case '\t':
-        while (++cursorX % TAB_WIDTH);
+        while (++cursorX % TAB_WIDTH)
+            ;
         break;
     // Carriage return
     case '\r':
