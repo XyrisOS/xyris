@@ -16,8 +16,6 @@
 #include <mem/heap.hpp>
 #include <meta/sections.hpp>
 
-extern "C" void invalidate_page(void *page_addr);
-
 // Thanks to Grant Hernandez for uOS and the absolutely amazing code
 // that he wrote. It helped us fix a lot of bugs and has provided a
 // lot of quality of life defines such as the ones below that we would
@@ -35,13 +33,13 @@ extern "C" void invalidate_page(void *page_addr);
 #define PAGES_PER_KB(kb)    (PAGE_ALIGN_UP((kb) * 1024) / PAGE_SIZE)
 #define PAGES_PER_MB(mb)    (PAGE_ALIGN_UP((mb) * 1024 * 1024) / PAGE_SIZE)
 #define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
-#define VADDR(ADDR)         ((virtual_address_t){ .val = (ADDR) })
+#define VADDR(ADDR)         ((union virtual_address){ .val = (ADDR) })
 
 /**
  * @brief Provides a structure for defining the necessary fields
  * which comprise a virtual address.
  */
-typedef union virtual_address
+union virtual_address
 {
     struct {
         uint32_t page_offset       : 12;  // Page offset address
@@ -49,7 +47,7 @@ typedef union virtual_address
         uint32_t page_dir_index    : 10;  // Page directory entry
     };
     uint32_t val;
-} virtual_address_t;
+};
 
 /**
  * @brief Page table entry defined in accordance to the
@@ -151,4 +149,4 @@ bool page_is_present(size_t addr);
  */
 uint32_t get_phys_page_dir();
 
-void map_kernel_page(virtual_address_t vaddr, uint32_t paddr);
+void map_kernel_page(union virtual_address vaddr, uint32_t paddr);

@@ -33,8 +33,8 @@ tss_flush:
     ltr ax          ; Load 0x2B into the task state register.
     ret
 
-global invalidate_page
-invalidate_page:
+global pageInvalidate
+pageInvalidate:
     mov    eax, [esp+4]
     invlpg  [eax]
     ret

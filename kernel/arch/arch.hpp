@@ -61,6 +61,11 @@ void criticalRegion(Function critWork)
     interruptsEnable();
 }
 
+// Architecture common memory controls
+void pagingEnable();
+void pagingDisable();
+void pagingInvalidate(void* pageAddr);
+
 // CPU Identification
 const char* cpuGetVendor();
 const char* cpuGetModel();

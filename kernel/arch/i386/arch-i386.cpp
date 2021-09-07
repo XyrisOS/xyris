@@ -10,6 +10,7 @@
  */
 // Architecture (i386) specific header
 #include <arch/i386/arch-i386.hpp>
+#include <arch/i386/regs.hpp>
 // Architecture agnostic header
 #include <arch/arch.hpp>
 
@@ -23,6 +24,8 @@ const char* exception_descriptions[32][16] = {
     "RESERVED", "RESERVED", "RESERVED", "RESERVED",
     "RESERVED", "Security Excptn", "RESERVED", "Triple Fault", "FPU Error"
 };
+
+extern "C" void pageInvalidate(void *page_addr);
 
 /*
  *    _          _      ___     _            __
@@ -48,6 +51,25 @@ void interruptsDisable() {
 
 void interruptsEnable() {
     asm volatile("sti");
+}
+
+void pagingEnable() {
+    struct Registers::CR0 cr0 = Registers::readCR0();
+    cr0.paging = 1;
+    Registers::writeCR0(cr0);
+}
+
+void pagingDisable() {
+    struct Registers::CR0 cr0 = Registers::readCR0();
+    cr0.paging = 0;
+    Registers::writeCR0(cr0);
+}
+
+void pagingInvalidate(void* pageAddr)
+{
+    // Call into the assembly stub
+    // FIXME: Inline assembly this
+    pageInvalidate(pageAddr);
 }
 
 const char* cpuGetVendor()

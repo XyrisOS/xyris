@@ -53,8 +53,6 @@ static uint32_t find_next_free_virt_addr(int seq);
 static uint32_t find_next_free_phys_page();
 static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table *table);
 static inline void set_page_dir(uint32_t page_directory);
-static inline void paging_enable();
-static inline void paging_disable();
 static void paging_args_cb(const char* arg);
 
 // Kernel cmdline argument
@@ -73,7 +71,7 @@ void paging_init(uint32_t page_count) {
     // use our new set of page tables
     set_page_dir(page_dir_addr & PAGE_ALIGN);
     // flush the tlb and we're off to the races!
-    paging_enable();
+    Arch::pagingEnable();
 }
 
 static void mem_page_fault(struct registers* regs) {
@@ -119,7 +117,7 @@ static void paging_init_dir() {
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
 }
 
-void map_kernel_page(virtual_address_t vaddr, uint32_t paddr) {
+void map_kernel_page(union virtual_address vaddr, uint32_t paddr) {
     // Set the page directory entry (pde) and page table entry (pte)
     uint32_t pde = vaddr.page_dir_index;
     uint32_t pte = vaddr.page_table_index;
@@ -162,7 +160,7 @@ void map_kernel_page(virtual_address_t vaddr, uint32_t paddr) {
 
 static void paging_map_early_mem() {
     debugf("==== MAP EARLY MEM ====\n");
-    virtual_address_t a;
+    union virtual_address a;
     for (a = VADDR(0); a.val < 0x100000; a.val += PAGE_SIZE) {
         // identity map the early memory
         map_kernel_page(a, a.val);
@@ -171,7 +169,7 @@ static void paging_map_early_mem() {
 
 static void paging_map_hh_kernel() {
     debugf("==== MAP HH KERNEL ====\n");
-    virtual_address_t a;
+    union virtual_address a;
     for (a = VADDR(KERNEL_START); a.val < KERNEL_END; a.val += PAGE_SIZE) {
         // map the higher-half kernel in
         map_kernel_page(a, KADDR_TO_PHYS(a.val));
@@ -180,28 +178,6 @@ static void paging_map_hh_kernel() {
 
 static inline void set_page_dir(size_t page_dir) {
     asm volatile("mov %0, %%cr3" :: "b"(page_dir));
-}
-
-static inline void paging_enable() {
-    size_t cr0;
-    asm volatile("mov %%cr0, %0": "=b"(cr0));
-    // 0x80000000 = 0b10000000000000000000000000000000
-    // The most significant bit signifies whether to
-    // enable or disable paging within control register 0.
-    cr0 |= 0x80000000;
-    asm volatile("mov %0, %%cr0":: "b"(cr0));
-}
-
-static inline void paging_disable() {
-    size_t cr0;
-    asm volatile("mov %%cr0, %0": "=b"(cr0));
-    // 0x80000000 = 0b10000000000000000000000000000000
-    // The most significant bit signifies whether to
-    // enable or disable paging within control register 0.
-    // In this case we set the opposite (~) so the result
-    // is 0b01111111111111111111111111111111
-    cr0 &= ~(0x80000000U);
-    asm volatile("mov %0, %%cr0":: "b"(cr0));
 }
 
 /**
@@ -250,7 +226,7 @@ void free_page(void *page, uint32_t size) {
         // zero it out to unmap it
         *pte = { /* Zero */ };
         // clear that tlb
-        invalidate_page(page);
+        Arch::pagingInvalidate(page);
     }
     mutex_paging.Unlock();
 }
