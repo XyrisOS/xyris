@@ -13,6 +13,7 @@
 #include <arch/i386/regs.hpp>
 // Architecture agnostic header
 #include <arch/arch.hpp>
+#include <cpuid.h>
 
 const char* exception_descriptions[32][16] = {
     "Divide-By-Zero", "Debugging", "Non-Maskable", "Breakpoint",
@@ -24,8 +25,6 @@ const char* exception_descriptions[32][16] = {
     "RESERVED", "RESERVED", "RESERVED", "RESERVED",
     "RESERVED", "Security Excptn", "RESERVED", "Triple Fault", "FPU Error"
 };
-
-extern "C" void pageInvalidate(void *page_addr);
 
 /*
  *    _          _      ___     _            __
@@ -65,30 +64,25 @@ void pagingDisable() {
     Registers::writeCR0(cr0);
 }
 
-void pagingInvalidate(void* pageAddr)
+void pageInvalidate(void* pageAddr)
 {
-    // Call into the assembly stub
-    // FIXME: Inline assembly this
-    pageInvalidate(pageAddr);
+   asm volatile("invlpg (%0)" ::"r" (pageAddr) : "memory");
 }
 
 const char* cpuGetVendor()
 {
     static int vendor[4];
-    i386::cpuid(0, vendor);
+    __cpuid(0, vendor[0], vendor[1], vendor[2], vendor[3]);
     return (char*)vendor;
 }
 
 const char* cpuGetModel()
 {
-    // The CPU model is broken up across 3 different calls, each using
-    // EAX, EBX, ECX, and EDX to store the string, so we basically
-    // are appending all 4 register values to this char array each time.
-    static char model[48];
-    i386::cpuid(0x80000002, (int*)(model));
-    i386::cpuid(0x80000003, (int*)(model + 16));
-    i386::cpuid(0x80000004, (int*)(model + 32));
-    return model;
+    static int model[12];
+    __cpuid(0x80000002, model[0], model[1], model[2], model[3]);
+    __cpuid(0x80000003, model[4], model[5], model[6], model[7]);
+    __cpuid(0x80000004, model[8], model[9], model[10], model[11]);
+    return (char*)model;
 }
 
 } // !namespace Arch

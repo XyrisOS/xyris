@@ -216,8 +216,6 @@ void free_page(void *page, uint32_t size) {
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
         // TODO: need locking here (maybe make a paging lock)
         mapped_pages.Clear(i);
-        // how much more UN-readable can we make this?? (pls, i need to know...)
-        //*(uint32_t*)((uint32_t)page_tables + i * 4) = 0;
         // this is the same as the line above
         struct page_table_entry *pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
         // the frame field is actually the page frame's index
@@ -226,7 +224,7 @@ void free_page(void *page, uint32_t size) {
         // zero it out to unmap it
         *pte = { /* Zero */ };
         // clear that tlb
-        Arch::pagingInvalidate(page);
+        Arch::pageInvalidate(page);
     }
     mutex_paging.Unlock();
 }
