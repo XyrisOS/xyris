@@ -25,16 +25,7 @@
 // lot of quality of life defines such as the ones below that we would
 // not have thought to use otherwise.
 #define ADDRESS_SPACE_SIZE  0x100000000
-#define NOT_PAGE_ALIGN      ~(PAGE_ALIGN)
-#define PAGE_ALIGN_UP(addr) (((addr) & NOT_PAGE_ALIGN) ? (((addr) & PAGE_ALIGN) + PAGE_SIZE) : ((addr)))
-#define PAGE_ENTRY_PRESENT  0x1
-#define PAGE_ENTRY_RW       0x2
-#define PAGE_ENTRY_ACCESS   0x20
 #define PAGE_ENTRIES        1024
-#define PAGE_TABLE_SIZE     (sizeof(uint32) * PAGE_ENTRIES)
-#define PAGES_PER_KB(kb)    (PAGE_ALIGN_UP((kb) * 1024) / PAGE_SIZE)
-#define PAGES_PER_MB(mb)    (PAGE_ALIGN_UP((mb) * 1024 * 1024) / PAGE_SIZE)
-#define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
 #define VADDR(ADDR)         ((union virtual_address_value) { .val = (ADDR) })
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
