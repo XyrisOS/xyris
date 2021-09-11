@@ -12,7 +12,7 @@
 #include <arch/Arch.hpp>
 #include <boot/Arguments.hpp>
 #include <dev/serial/rs232.hpp>
-#include <lib/bitset.hpp>
+#include <lib/Bitset.hpp>
 #include <lib/mutex.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
@@ -31,10 +31,8 @@ static Mutex mutex_paging("paging");
 #define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
 
 // one bit for every page
-static size_t mem_map[MEM_BITMAP_SIZE] = { 0 };
-static size_t page_map[MEM_BITMAP_SIZE] = { 0 };
-static Bitset mapped_mem = Bitset(mem_map, MEM_BITMAP_SIZE);
-static Bitset mapped_pages = Bitset(page_map, MEM_BITMAP_SIZE);
+static Bitset<size_t, MEM_BITMAP_SIZE> mapped_mem;
+static Bitset<size_t, MEM_BITMAP_SIZE> mapped_pages;
 
 static uint32_t page_dir_addr;
 static struct page_table* page_dir_virt[PAGE_ENTRIES];
@@ -207,12 +205,12 @@ static inline void set_page_dir(size_t page_dir)
  */
 static uint32_t find_next_free_virt_addr(int seq)
 {
-    return mapped_pages.FindFirstRangeClear(seq);
+    return mapped_pages.FindFirstRange(seq, false);
 }
 
 static uint32_t find_next_free_phys_page()
 {
-    return mapped_mem.FindFirstBitClear();
+    return mapped_mem.FindFirstBit(false);
 }
 
 /**
@@ -244,13 +242,12 @@ void free_page(void* page, uint32_t size)
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t page_index = (uint32_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
-        // TODO: need locking here (maybe make a paging lock)
-        mapped_pages.Clear(i);
+        mapped_pages.Reset(i);
         // this is the same as the line above
         struct page_table_entry* pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
         // the frame field is actually the page frame's index
         // basically it's frame 0, 1...(2^21-1)
-        mapped_mem.Clear(pte->frame);
+        mapped_mem.Reset(pte->frame);
         // zero it out to unmap it
         *pte = { /* Zero */ };
         // clear that tlb
@@ -263,7 +260,7 @@ bool page_is_present(size_t addr)
 {
     // Convert the address into an index and
     // check whether the page is in the bitmap
-    return mapped_pages.Get(addr >> 12);
+    return mapped_pages[addr >> 12];
 }
 
 // TODO: maybe enforce access control here in the future
