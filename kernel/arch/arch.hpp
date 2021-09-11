@@ -18,6 +18,16 @@
 #    include <arch/i386/arch-i386.hpp>
 #endif
 
+/**
+ * @brief Kernel entry point. Performs all kernel initialization
+ * and starts the init process(es). Should be called from bootloader
+ * entry points.
+ *
+ * @param info Bootloader information structure
+ * @param magic Bootloader magic
+ */
+extern "C" void kernelEntry(void* info, uint32_t magic);
+
 // Architecture types (forward declarations)
 struct registers;
 

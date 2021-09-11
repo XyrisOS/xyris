@@ -1,7 +1,7 @@
 /**
  * @file boothelp.cpp
  * @author James T. Sprinkle (the-grue@hotmail.com)
- * @brief
+ * @brief Maps bootloader information into memory
  * @version 0.1
  * @date 2021-08-07
  *
@@ -75,7 +75,6 @@ stivale2_mmap_helper(void* baseaddr)
  * the entire area.
  *
  */
-
 extern "C" uint32_t
 OPTIMIZE(0)
 SECTION(".early_text")

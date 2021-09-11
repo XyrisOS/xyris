@@ -22,3 +22,8 @@
 // Branch prediction
 #define likely(x)   __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
+
+// Data attributes
+#define USED __attribute__ ((used))
+#define PACKED __attribute__ ((__packed__))
+#define ALIGN(x) __attribute__ ((aligned ((x))))

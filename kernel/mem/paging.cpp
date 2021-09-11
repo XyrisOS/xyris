@@ -20,15 +20,10 @@
 #include <meta/sections.hpp>
 #include <stddef.h>
 
-// Thanks to Grant Hernandez for uOS and the absolutely amazing code
-// that he wrote. It helped us fix a lot of bugs and has provided a
-// lot of quality of life defines such as the ones below that we would
-// not have thought to use otherwise.
-#define ADDRESS_SPACE_SIZE  0x100000000
 #define PAGE_ENTRIES        1024
-#define VADDR(ADDR)         ((union address) { .val = (ADDR) })
-
+#define ADDRESS_SPACE_SIZE  0x100000000
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
+#define ADDR(addr)          ((union address) { .val = (addr) })
 
 static uint32_t machine_page_count;
 static Mutex mutex_paging("paging");
@@ -66,6 +61,7 @@ KERNEL_PARAM(enable_mapping_output, MAPPING_OUTPUT_FLAG, paging_args_cb);
 
 void paging_init(uint32_t page_count)
 {
+    // TODO: Get total RAM size / page count from bootloader
     machine_page_count = page_count;
     // we can set breakpoints or make a futile attempt to recover.
     register_interrupt_handler(ISR_PAGE_FAULT, mem_page_fault);
@@ -172,7 +168,7 @@ void map_kernel_page(union address vaddr, union address paddr)
 void map_kernel_range_virtual(uintptr_t begin, uintptr_t end)
 {
     union address a;
-    for (a = VADDR(begin); a.val < end; a.val += PAGE_SIZE) {
+    for (a = ADDR(begin); a.val < end; a.val += PAGE_SIZE) {
         map_kernel_page(a, a);
     }
 }
@@ -180,7 +176,7 @@ void map_kernel_range_virtual(uintptr_t begin, uintptr_t end)
 void map_kernel_range_physical(uintptr_t begin, uintptr_t end)
 {
     union address a;
-    for (a = VADDR(begin); a.val < end; a.val += PAGE_SIZE) {
+    for (a = ADDR(begin); a.val < end; a.val += PAGE_SIZE) {
         union address phys {
             .val = KADDR_TO_PHYS(a.val)
         };
@@ -236,7 +232,7 @@ void* get_new_page(uint32_t size)
         union address phys = {
             .val = phys_page_idx * PAGE_SIZE,
         };
-        map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys);
+        map_kernel_page(ADDR((uint32_t)i * PAGE_SIZE), phys);
     }
     mutex_paging.Unlock();
     return (void*)(free_idx * PAGE_SIZE);
