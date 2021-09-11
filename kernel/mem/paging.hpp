@@ -10,14 +10,14 @@
  */
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
 #include <arch/arch.hpp>
 #include <mem/heap.hpp>
 #include <meta/sections.hpp>
+#include <stddef.h>
+#include <stdint.h>
 
-#define PAGE_SIZE           0x1000
-#define PAGE_ALIGN          0xfffff000
+#define PAGE_SIZE   0x1000
+#define PAGE_ALIGN  0xfffff000
 
 /**
  * @brief Page frame structure. Same thing as a virtual address
@@ -132,7 +132,7 @@ void* get_new_page(uint32_t size);
  * @param page Starting location of page(s) to be freed
  * @param size Number of bytes to be freed
  */
-void free_page(void *page, uint32_t size);
+void free_page(void* page, uint32_t size);
 
 /**
  * @brief Checks whether an address is mapped into memory.

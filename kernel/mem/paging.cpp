@@ -10,13 +10,13 @@
  *
  */
 #include <arch/arch.hpp>
-#include <mem/paging.hpp>
-#include <lib/bitset.hpp>
-#include <lib/stdio.hpp>
-#include <lib/mutex.hpp>
-#include <lib/string.hpp>
 #include <boot/Arguments.hpp>
 #include <dev/serial/rs232.hpp>
+#include <lib/bitset.hpp>
+#include <lib/mutex.hpp>
+#include <lib/stdio.hpp>
+#include <lib/string.hpp>
+#include <mem/paging.hpp>
 #include <meta/sections.hpp>
 #include <stddef.h>
 
@@ -50,12 +50,12 @@ static size_t page_map[MEM_BITMAP_SIZE] = { 0 };
 static Bitset mapped_mem = Bitset(mem_map, MEM_BITMAP_SIZE);
 static Bitset mapped_pages = Bitset(page_map, MEM_BITMAP_SIZE);
 
-static uint32_t             page_dir_addr;
-static struct page_table*   page_dir_virt[PAGE_ENTRIES];
+static uint32_t page_dir_addr;
+static struct page_table* page_dir_virt[PAGE_ENTRIES];
 
 // both of these must be page aligned for anything to work right at all
 static struct page_directory_entry page_dir_phys[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
-static struct page_table           page_tables[PAGE_ENTRIES]   SECTION(".page_tables,\"aw\", @nobits#");
+static struct page_table page_tables[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
 
 // Function prototypes
 static void mem_page_fault(struct registers* regs);
@@ -64,7 +64,7 @@ static void paging_map_early_mem();
 static void paging_map_hh_kernel();
 static uint32_t find_next_free_virt_addr(int seq);
 static uint32_t find_next_free_phys_page();
-static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table *table);
+static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table* table);
 static inline void set_page_dir(uint32_t page_directory);
 static void paging_args_cb(const char* arg);
 
@@ -73,7 +73,8 @@ static bool is_mapping_output_enabled = false;
 #define MAPPING_OUTPUT_FLAG "--enable-mapping-output"
 KERNEL_PARAM(enable_mapping_output, MAPPING_OUTPUT_FLAG, paging_args_cb);
 
-void paging_init(uint32_t page_count) {
+void paging_init(uint32_t page_count)
+{
     machine_page_count = page_count;
     // we can set breakpoints or make a futile attempt to recover.
     register_interrupt_handler(ISR_PAGE_FAULT, mem_page_fault);
@@ -89,11 +90,13 @@ void paging_init(uint32_t page_count) {
     Arch::pagingEnable();
 }
 
-static void mem_page_fault(struct registers* regs) {
-   PANIC(regs);
+static void mem_page_fault(struct registers* regs)
+{
+    PANIC(regs);
 }
 
-static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table *table) {
+static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table* table)
+{
     page_dir_virt[pd_idx] = table;
     page_dir_phys[pd_idx] = {
         .present = 1,
@@ -114,13 +117,14 @@ static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table *tab
     };
 }
 
-static void paging_init_dir() {
+static void paging_init_dir()
+{
     // For every page in kernel memory
     for (int i = 0; i < PAGE_ENTRIES - 1; i++) {
         map_kernel_page_table(i, &page_tables[i]);
         // clear out the page tables
         for (int j = 0; j < PAGE_ENTRIES; j++) {
-            page_tables[i].pages[j] = (struct page_table_entry){ /* ZERO */ };
+            page_tables[i].pages[j] = (struct page_table_entry) { /* ZERO */ };
         }
     }
     // recursively map the last page table to the page directory
@@ -132,7 +136,8 @@ static void paging_init_dir() {
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
 }
 
-void map_kernel_page(union virtual_address_value vaddr_v, struct page_frame paddr) {
+void map_kernel_page(union virtual_address_value vaddr_v, struct page_frame paddr)
+{
     // Set the page directory entry (pde) and page table entry (pte)
     uint32_t pde = vaddr_v.vaddr.page_dir_index;
     uint32_t pte = vaddr_v.vaddr.page_table_index;
@@ -140,7 +145,7 @@ void map_kernel_page(union virtual_address_value vaddr_v, struct page_frame padd
     if (vaddr_v.vaddr.page_offset != 0) {
         PANIC("Attempted to map a non-page-aligned virtual address.\n");
     }
-    page_table_entry *entry = &(page_tables[pde].pages[pte]);
+    page_table_entry* entry = &(page_tables[pde].pages[pte]);
     // Print a debug message to serial
     if (is_mapping_output_enabled) {
         debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr, vaddr_v.val, pde, pte);
@@ -185,56 +190,69 @@ void map_kernel_range_physical(uintptr_t begin, uintptr_t end)
 {
     union virtual_address_value a;
     for (a = VADDR(begin); a.val < end; a.val += PAGE_SIZE) {
-        union virtual_address_value phys { .val = KADDR_TO_PHYS(a.val) };
+        union virtual_address_value phys {
+            .val = KADDR_TO_PHYS(a.val)
+        };
         map_kernel_page(a, phys.frame);
     }
 }
 
-static void paging_map_early_mem() {
+static void paging_map_early_mem()
+{
     debugf("==== MAP EARLY MEM ====\n");
     map_kernel_range_virtual(0x0, 0x100000);
 }
 
-static void paging_map_hh_kernel() {
+static void paging_map_hh_kernel()
+{
     debugf("==== MAP HH KERNEL ====\n");
     map_kernel_range_physical(KERNEL_START, KERNEL_END);
 }
 
-static inline void set_page_dir(size_t page_dir) {
-    asm volatile("mov %0, %%cr3" :: "b"(page_dir));
+static inline void set_page_dir(size_t page_dir)
+{
+    asm volatile("mov %0, %%cr3" ::"b"(page_dir));
 }
 
 /**
  * note: this can't find more than 32 sequential pages
  * @param seq the number of sequential pages to get
  */
-static uint32_t find_next_free_virt_addr(int seq) {
+static uint32_t find_next_free_virt_addr(int seq)
+{
     return mapped_pages.FindFirstRangeClear(seq);
 }
 
-static uint32_t find_next_free_phys_page() {
+static uint32_t find_next_free_phys_page()
+{
     return mapped_mem.FindFirstBitClear();
 }
 
 /**
  * map in a new page. if you request less than one page, you will get exactly one page
  */
-void* get_new_page(uint32_t size) {
+void* get_new_page(uint32_t size)
+{
     mutex_paging.Lock();
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t free_idx = find_next_free_virt_addr(page_count);
-    if (free_idx == SIZE_MAX) return NULL;
+    if (free_idx == SIZE_MAX)
+        return NULL;
     for (uint32_t i = free_idx; i < free_idx + page_count; i++) {
         uint32_t phys_page_idx = find_next_free_phys_page();
-        if (phys_page_idx == SIZE_MAX) return NULL;
-        union virtual_address_value phys = { .val = phys_page_idx * PAGE_SIZE, };
+        if (phys_page_idx == SIZE_MAX)
+            return NULL;
+        union virtual_address_value phys = {
+            .val = phys_page_idx * PAGE_SIZE,
+        };
         map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys.frame);
     }
     mutex_paging.Unlock();
-    return (void *)(free_idx * PAGE_SIZE);
+    return (void*)(free_idx * PAGE_SIZE);
 }
 
-void free_page(void *page, uint32_t size) {
+void free_page(void* page, uint32_t size)
+{
     mutex_paging.Lock();
     uint32_t page_count = (size / PAGE_SIZE) + 1;
     uint32_t page_index = (uint32_t)page >> 12;
@@ -242,7 +260,7 @@ void free_page(void *page, uint32_t size) {
         // TODO: need locking here (maybe make a paging lock)
         mapped_pages.Clear(i);
         // this is the same as the line above
-        struct page_table_entry *pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
+        struct page_table_entry* pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
         // the frame field is actually the page frame's index
         // basically it's frame 0, 1...(2^21-1)
         mapped_mem.Clear(pte->frame);
@@ -254,14 +272,16 @@ void free_page(void *page, uint32_t size) {
     mutex_paging.Unlock();
 }
 
-bool page_is_present(size_t addr) {
+bool page_is_present(size_t addr)
+{
     // Convert the address into an index and
     // check whether the page is in the bitmap
     return mapped_pages.Get(addr >> 12);
 }
 
 // TODO: maybe enforce access control here in the future
-uint32_t get_phys_page_dir() {
+uint32_t get_phys_page_dir()
+{
     return page_dir_addr;
 }
 
