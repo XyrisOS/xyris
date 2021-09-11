@@ -1,7 +1,7 @@
 /**
- * @file arch-i386.cpp
+ * @file Arch.i386.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief i386 architecture implementation of arch.hpp
+ * @brief i386 architecture implementation of Arch.hpp
  * @version 0.1
  * @date 2021-08-24
  *
@@ -9,10 +9,10 @@
  *
  */
 // Architecture (i386) specific header
-#include <arch/i386/arch-i386.hpp>
+#include <arch/i386/Arch.i386.hpp>
 #include <arch/i386/regs.hpp>
 // Architecture agnostic header
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <cpuid.h>
 
 const char* exception_descriptions[32][16] = {

@@ -1,5 +1,5 @@
 #include <lib/bitset.hpp>
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <stdint.h>
 
 Bitset::Bitset(void* buf, size_t size)

@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <catch2/catch.hpp>
 
 // Provide a panic function for worse-case failure reporting

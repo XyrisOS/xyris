@@ -9,7 +9,7 @@
  *
  */
 
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <dev/spkr/spkr.hpp>
 
 static void spkr_tone(uint32_t freq) {

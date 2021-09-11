@@ -17,7 +17,7 @@
 // Bootloader
 #include <boot/Handoff.hpp>
 // Architecture specific code
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>

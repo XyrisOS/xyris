@@ -10,7 +10,7 @@
  */
 #pragma once
 
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <mem/heap.hpp>
 #include <meta/sections.hpp>
 #include <stddef.h>

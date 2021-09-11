@@ -77,7 +77,6 @@ export LIB_DIRS := $(shell find $(LIBRARY_DIR) -mindepth 1 -maxdepth 1 -type d)
 # *******************
 
 # Warning flags
-# (Disable unused functions warning)
 export WARNINGS :=          \
 	-Wall                   \
 	-Werror                 \
@@ -94,18 +93,12 @@ export WARNINGS :=          \
 	-Wdouble-promotion      \
 	-Wno-unused-function    \
 	-Wmissing-declarations
-# Add this back in soon when
-# we can fix the last conversion
-# issue.
-#	-Wconversion
-# Flags to be added later
-#   -Wconversion
 # C only warnings
 export CWARNINGS :=         \
 	-Wnested-externs        \
 	-Wstrict-prototypes     \
 	-Wmissing-prototypes    \
-# C flags (include directory)
+# C flags
 export CFLAGS :=            \
 	-nostdlib               \
 	-nodefaultlibs          \

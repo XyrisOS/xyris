@@ -11,7 +11,7 @@
  *     https://wiki.osdev.org/C++#Local_Static_Variables_.28GCC_Only.29
  *
  */
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <stddef.h>
 #include <stdint.h>
 

@@ -4,15 +4,15 @@
  * @brief Stivale2 bootloader header
  * @version 0.1
  * @date 2021-09-11
- * 
+ *
  * @copyright Copyright the Xyris Contributors (c) 2021
- * 
+ *
  */
 #include <stdint.h>
 #include <meta/compiler.hpp>
 #include <meta/sections.hpp>
 #include <stivale/stivale2.h>
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 /*
 // TODO: Figure out why these structs aren't the same as the ones in stivale2.s
 #define STIVALE2_MAGIC "stv2"

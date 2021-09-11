@@ -9,7 +9,7 @@
  *
  */
 #include <meta/stack.hpp>
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 
 /**
  * @brief This function is the global handler for all

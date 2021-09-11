@@ -12,7 +12,7 @@
  *         https://github.com/limine-bootloader/limine/blob/trunk/stage23/lib/time.c
  *         https://en.wikipedia.org/wiki/Julian_day
  */
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <dev/graphics/console.hpp>
 #include <dev/rtc/rtc.hpp>
 #include <lib/stdio.hpp>

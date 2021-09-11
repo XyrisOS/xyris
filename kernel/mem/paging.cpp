@@ -9,7 +9,7 @@
  * @copyright Copyright Keeton Feavel and Micah Switzer (c) 2019
  *
  */
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <boot/Arguments.hpp>
 #include <dev/serial/rs232.hpp>
 #include <lib/bitset.hpp>

@@ -10,7 +10,7 @@
  */
 
 #pragma once
-#include <arch/i386/arch-i386.hpp>
+#include <arch/i386/Arch.i386.hpp>
 #include <stdint.h>
 
 /* Segment selectors */

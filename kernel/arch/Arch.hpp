@@ -1,5 +1,5 @@
 /**
- * @file arch.hpp
+ * @file Arch.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief Computer architecture initialization definitions
  * @version 0.3
@@ -15,7 +15,7 @@
 #include <boot/Handoff.hpp>
 #include <meta/compiler.hpp>
 #if defined(__i386__)
-#    include <arch/i386/arch-i386.hpp>
+#    include <arch/i386/Arch.i386.hpp>
 #endif
 
 /**

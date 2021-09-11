@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2020
  *
  */
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <sys/tasks.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
@@ -16,7 +16,7 @@
 #include <stdint.h>         // Data type definitions
 #include <x86gprintrin.h>   // needed for __rdtsc
 
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 
 /* forward declarations */
 static void _enqueue_task(struct tasklist *, task *);
