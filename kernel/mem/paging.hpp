@@ -20,34 +20,38 @@
 #define PAGE_ALIGN  0xfffff000
 
 /**
- * @brief Page frame structure. Same thing as a virtual address
- * with different representation.
+ * @brief Page frame structure. This represents a the
+ * address to a single unit of memory in RAM.
+ * (Chunk of physical memory)
  *
  */
-struct page_frame {
-    uint32_t frame_offset : 12; // Page offset address
-    uint32_t frame_index  : 20; // Page frame index
+struct frame {
+    uint32_t offset : 12; // Page offset address
+    uint32_t index  : 20; // Page frame index
 };
 
 /**
- * @brief Provides a structure for defining the necessary fields
- * which comprise a virtual address.
+ * @brief Virtual address structure. Represents an address
+ * in virtual memory that redirects to a physical page frame.
+ * (Chunk of virtual memory)
  */
-struct virtual_address {
-    uint32_t page_offset       : 12;  // Page offset address
-    uint32_t page_table_index  : 10;  // Page table entry
-    uint32_t page_dir_index    : 10;  // Page directory entry
+struct page {
+    uint32_t offset      : 12;  // Page offset address
+    uint32_t tableIndex  : 10;  // Page table entry
+    uint32_t dirIndex    : 10;  // Page directory entry
 };
 
 /**
- * @brief Virtual address union which allows accessing a virtual
- * address as a 32 bit value or as a page frame.
+ * @brief Address union. Represents a memory address that can
+ * be used to address a page in virtual memory, a frame in
+ * physical memory. Allows setting the value of these addresses
+ * by also including an uintptr_t representation.
  *
  */
-union virtual_address_value {
-    struct virtual_address vaddr;
-    struct page_frame frame;
-    uint32_t val;
+union address {
+    struct page page;
+    struct frame frame;
+    uintptr_t val;
 };
 
 /**
@@ -58,13 +62,13 @@ union virtual_address_value {
 struct page_table_entry
 {
     uint32_t present            : 1;  // Page present in memory
-    uint32_t read_write         : 1;  // Read-only if clear, readwrite if set
+    uint32_t readWrite          : 1;  // Read-only if clear, readwrite if set
     uint32_t usermode           : 1;  // Supervisor level only if clear
-    uint32_t write_through      : 1;  // Page level write through
-    uint32_t cache_disable      : 1;  // Disables TLB caching of page entry
+    uint32_t writeThrough       : 1;  // Page level write through
+    uint32_t cacheDisable       : 1;  // Disables TLB caching of page entry
     uint32_t accessed           : 1;  // Has the page been accessed since last refresh?
     uint32_t dirty              : 1;  // Has the page been written to since last refresh?
-    uint32_t page_att_table     : 1;  // Page attribute table (memory cache control)
+    uint32_t pageAttrTable      : 1;  // Page attribute table (memory cache control)
     uint32_t global             : 1;  // Prevents the TLB from updating the address
     uint32_t unused             : 3;  // Amalgamation of unused and reserved bits
     uint32_t frame              : 20; // Frame address (shifted right 12 bits)
@@ -88,15 +92,15 @@ struct page_table
 struct page_directory_entry
 {
     uint32_t present            : 1;  // Is the page present in physical memory?
-    uint32_t read_write         : 1;  // Is the page read/write or read-only?
+    uint32_t readWrite          : 1;  // Is the page read/write or read-only?
     uint32_t usermode           : 1;  // Can the page be accessed in usermode?
-    uint32_t write_through      : 1;  // Is write-through cache enabled?
-    uint32_t cache_disable      : 1;  // Can the page be cached?
+    uint32_t writeThrough       : 1;  // Is write-through cache enabled?
+    uint32_t cacheDisable       : 1;  // Can the page be cached?
     uint32_t accessed           : 1;  // Has the page been accessed?
-    uint32_t ignored_a          : 1;  // Ignored
-    uint32_t page_size          : 1;  // Is the page 4 Mb (enabled) or 4 Kb (disabled)?
-    uint32_t ignored_b          : 4;  // Ignored
-    uint32_t table_addr         : 20; // Physical address of the table
+    uint32_t ignoredA           : 1;  // Ignored
+    uint32_t size               : 1;  // Is the page 4 Mb (enabled) or 4 Kb (disabled)?
+    uint32_t ignoredB           : 4;  // Ignored
+    uint32_t tableAddr          : 20; // Physical address of the table
 };
 
 /**
@@ -107,9 +111,9 @@ struct page_directory_entry
  */
 struct page_directory
 {
-    struct page_table* tables[1024];                    // Pointers that Xyris uses to access the pages in memory
+    struct page_table* tablesVirtual[1024];             // Pointers that Xyris uses to access the pages in memory
     struct page_directory_entry tablesPhysical[1024];   // Pointers that the Intel CPU uses to access pages in memory
-    uint32_t physical_addr;                             // Physical address of this 4Kb aligned page table referenced by this entry
+    uint32_t physAddr;                                  // Physical address of this 4Kb aligned page table referenced by this entry
 };
 
 /**
@@ -153,10 +157,10 @@ uint32_t get_phys_page_dir();
 /**
  * @brief Map a page into the kernel address space.
  *
- * @param vaddr_v Virtual address (in kernel space)
+ * @param vaddr Virtual address (in kernel space)
  * @param paddr Physical address
  */
-void map_kernel_page(union virtual_address_value vaddr_v, struct page_frame paddr);
+void map_kernel_page(union address vaddr, union address paddr);
 
 /**
  * @brief Map an address range into the kernel virtual address space.

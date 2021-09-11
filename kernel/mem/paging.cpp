@@ -26,7 +26,7 @@
 // not have thought to use otherwise.
 #define ADDRESS_SPACE_SIZE  0x100000000
 #define PAGE_ENTRIES        1024
-#define VADDR(ADDR)         ((union virtual_address_value) { .val = (ADDR) })
+#define VADDR(ADDR)         ((union address) { .val = (ADDR) })
 
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 
@@ -91,20 +91,20 @@ static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table* tab
     page_dir_virt[pd_idx] = table;
     page_dir_phys[pd_idx] = {
         .present = 1,
-        .read_write = 1,
+        .readWrite = 1,
         .usermode = 0,
-        .write_through = 0,
-        .cache_disable = 0,
+        .writeThrough = 0,
+        .cacheDisable = 0,
         .accessed = 0,
-        .ignored_a = 0,
-        .page_size = 0,
-        .ignored_b = 0,
+        .ignoredA = 0,
+        .size = 0,
+        .ignoredB = 0,
         // compute the physical address of this page table
         // the virtual address is obtained with the & operator and
         // the offset is applied from the load address of the kernel
         // we must shift it over 12 bits because we only care about
         // the highest 20 bits for the page table
-        .table_addr = KADDR_TO_PHYS((uint32_t)table) >> 12
+        .tableAddr = KADDR_TO_PHYS((uint32_t)table) >> 12
     };
 }
 
@@ -127,23 +127,23 @@ static void paging_init_dir()
     page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
 }
 
-void map_kernel_page(union virtual_address_value vaddr_v, struct page_frame paddr)
+void map_kernel_page(union address vaddr, union address paddr)
 {
     // Set the page directory entry (pde) and page table entry (pte)
-    uint32_t pde = vaddr_v.vaddr.page_dir_index;
-    uint32_t pte = vaddr_v.vaddr.page_table_index;
+    uint32_t pde = vaddr.page.dirIndex;
+    uint32_t pte = vaddr.page.tableIndex;
     // If the page's virtual address is not aligned
-    if (vaddr_v.vaddr.page_offset != 0) {
+    if (vaddr.page.offset != 0) {
         PANIC("Attempted to map a non-page-aligned virtual address.\n");
     }
     page_table_entry* entry = &(page_tables[pde].pages[pte]);
     // Print a debug message to serial
     if (is_mapping_output_enabled) {
-        debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr, vaddr_v.val, pde, pte);
+        debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr.val, vaddr.val, pde, pte);
     }
     // If the page is already mapped into memory
     if (entry->present) {
-        if (entry->frame == paddr.frame_index) {
+        if (entry->frame == paddr.frame.index) {
             // this page was already mapped the same way
             return;
         }
@@ -153,38 +153,38 @@ void map_kernel_page(union virtual_address_value vaddr_v, struct page_frame padd
     // Set the page information
     page_tables[pde].pages[pte] = {
         .present = 1,               // The page is present
-        .read_write = 1,            // The page has r/w permissions
+        .readWrite = 1,             // The page has r/w permissions
         .usermode = 0,              // These are kernel pages
-        .write_through = 0,         // Disable write through
-        .cache_disable = 0,         // The page is cached
+        .writeThrough = 0,          // Disable write through
+        .cacheDisable = 0,          // The page is cached
         .accessed = 0,              // The page is unaccessed
         .dirty = 0,                 // The page is clean
-        .page_att_table = 0,        // The page has no attribute table
+        .pageAttrTable = 0,         // The page has no attribute table
         .global = 0,                // The page is local
         .unused = 0,                // Ignored
-        .frame = paddr.frame_index, // The last 20 bits are the frame
+        .frame = paddr.frame.index, // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
-    mapped_mem.Set(paddr.frame_index);
-    mapped_pages.Set(vaddr_v.frame.frame_index);
+    mapped_mem.Set(paddr.frame.index);
+    mapped_pages.Set(vaddr.frame.index);
 }
 
 void map_kernel_range_virtual(uintptr_t begin, uintptr_t end)
 {
-    union virtual_address_value a;
+    union address a;
     for (a = VADDR(begin); a.val < end; a.val += PAGE_SIZE) {
-        map_kernel_page(a, a.frame);
+        map_kernel_page(a, a);
     }
 }
 
 void map_kernel_range_physical(uintptr_t begin, uintptr_t end)
 {
-    union virtual_address_value a;
+    union address a;
     for (a = VADDR(begin); a.val < end; a.val += PAGE_SIZE) {
-        union virtual_address_value phys {
+        union address phys {
             .val = KADDR_TO_PHYS(a.val)
         };
-        map_kernel_page(a, phys.frame);
+        map_kernel_page(a, phys);
     }
 }
 
@@ -233,10 +233,10 @@ void* get_new_page(uint32_t size)
         uint32_t phys_page_idx = find_next_free_phys_page();
         if (phys_page_idx == SIZE_MAX)
             return NULL;
-        union virtual_address_value phys = {
+        union address phys = {
             .val = phys_page_idx * PAGE_SIZE,
         };
-        map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys.frame);
+        map_kernel_page(VADDR((uint32_t)i * PAGE_SIZE), phys);
     }
     mutex_paging.Unlock();
     return (void*)(free_idx * PAGE_SIZE);
