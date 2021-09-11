@@ -16,36 +16,37 @@
 #include <mem/heap.hpp>
 #include <meta/sections.hpp>
 
-// Thanks to Grant Hernandez for uOS and the absolutely amazing code
-// that he wrote. It helped us fix a lot of bugs and has provided a
-// lot of quality of life defines such as the ones below that we would
-// not have thought to use otherwise.
-#define ADDRESS_SPACE_SIZE  0x100000000
 #define PAGE_SIZE           0x1000
 #define PAGE_ALIGN          0xfffff000
-#define NOT_PAGE_ALIGN      ~(PAGE_ALIGN)
-#define PAGE_ALIGN_UP(addr) (((addr) & NOT_PAGE_ALIGN) ? (((addr) & PAGE_ALIGN) + PAGE_SIZE) : ((addr)))
-#define PAGE_ENTRY_PRESENT  0x1
-#define PAGE_ENTRY_RW       0x2
-#define PAGE_ENTRY_ACCESS   0x20
-#define PAGE_ENTRIES        1024
-#define PAGE_TABLE_SIZE     (sizeof(uint32)*PAGE_ENTRIES)
-#define PAGES_PER_KB(kb)    (PAGE_ALIGN_UP((kb) * 1024) / PAGE_SIZE)
-#define PAGES_PER_MB(mb)    (PAGE_ALIGN_UP((mb) * 1024 * 1024) / PAGE_SIZE)
-#define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
-#define VADDR(ADDR)         ((union virtual_address){ .val = (ADDR) })
+
+/**
+ * @brief Page frame structure. Same thing as a virtual address
+ * with different representation.
+ *
+ */
+struct page_frame {
+    uint32_t frame_offset : 12; // Page offset address
+    uint32_t frame_index  : 20; // Page frame index
+};
 
 /**
  * @brief Provides a structure for defining the necessary fields
  * which comprise a virtual address.
  */
-union virtual_address
-{
-    struct {
-        uint32_t page_offset       : 12;  // Page offset address
-        uint32_t page_table_index  : 10;  // Page table entry
-        uint32_t page_dir_index    : 10;  // Page directory entry
-    };
+struct virtual_address {
+    uint32_t page_offset       : 12;  // Page offset address
+    uint32_t page_table_index  : 10;  // Page table entry
+    uint32_t page_dir_index    : 10;  // Page directory entry
+};
+
+/**
+ * @brief Virtual address union which allows accessing a virtual
+ * address as a 32 bit value or as a page frame.
+ *
+ */
+union virtual_address_value {
+    struct virtual_address vaddr;
+    struct page_frame frame;
     uint32_t val;
 };
 
@@ -106,7 +107,7 @@ struct page_directory_entry
  */
 struct page_directory
 {
-    struct page_table *tables[1024];                    // Pointers that Xyris uses to access the pages in memory
+    struct page_table* tables[1024];                    // Pointers that Xyris uses to access the pages in memory
     struct page_directory_entry tablesPhysical[1024];   // Pointers that the Intel CPU uses to access pages in memory
     uint32_t physical_addr;                             // Physical address of this 4Kb aligned page table referenced by this entry
 };
@@ -131,7 +132,7 @@ void* get_new_page(uint32_t size);
  * @param page Starting location of page(s) to be freed
  * @param size Number of bytes to be freed
  */
-void  free_page(void *page, uint32_t size);
+void free_page(void *page, uint32_t size);
 
 /**
  * @brief Checks whether an address is mapped into memory.
@@ -149,4 +150,18 @@ bool page_is_present(size_t addr);
  */
 uint32_t get_phys_page_dir();
 
-void map_kernel_page(union virtual_address vaddr, uint32_t paddr);
+/**
+ * @brief Map a page into the kernel address space.
+ *
+ * @param vaddr_v Virtual address (in kernel space)
+ * @param paddr Physical address
+ */
+void map_kernel_page(union virtual_address_value vaddr_v, struct page_frame paddr);
+
+/**
+ * @brief Map an address range into the kernel address space.
+ *
+ * @param begin Beginning address
+ * @param end Ending address
+ */
+void map_kernel_range(uintptr_t begin, uintptr_t end);

@@ -33,6 +33,7 @@ int liballoc_unlock()
     return result;
 }
 
+// TODO: Move PAGE_SIZE to architecture headers?
 void* liballoc_alloc(unsigned int count)
 {
     return get_new_page(count * PAGE_SIZE - 1);

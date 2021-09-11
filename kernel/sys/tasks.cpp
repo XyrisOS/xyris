@@ -528,6 +528,7 @@ void tasks_exit()
 static void _clean_stopped_task(struct task *task)
 {
     // free the stack page
+    // TODO: Create page_get_from_addr(void*) function
     uintptr_t page = task->stack_top & PAGE_ALIGN;
     free_page((void *)page, PAGE_SIZE - 1);
     // somehow determine if the task was dynamically allocated or not
