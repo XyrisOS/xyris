@@ -173,31 +173,31 @@ void map_kernel_page(union virtual_address_value vaddr_v, struct page_frame padd
     mapped_pages.Set(vaddr_v.frame.frame_index);
 }
 
-void map_kernel_range(uintptr_t begin, uintptr_t end)
+void map_kernel_range_virtual(uintptr_t begin, uintptr_t end)
 {
-    for (uintptr_t page = begin & PAGE_ALIGN; page < end; page += PAGE_SIZE) {
-        union virtual_address_value phys = { .val = page, };
-        map_kernel_page(VADDR(page), phys.frame);
+    union virtual_address_value a;
+    for (a = VADDR(begin); a.val < end; a.val += PAGE_SIZE) {
+        map_kernel_page(a, a.frame);
+    }
+}
+
+void map_kernel_range_physical(uintptr_t begin, uintptr_t end)
+{
+    union virtual_address_value a;
+    for (a = VADDR(begin); a.val < end; a.val += PAGE_SIZE) {
+        union virtual_address_value phys { .val = KADDR_TO_PHYS(a.val) };
+        map_kernel_page(a, phys.frame);
     }
 }
 
 static void paging_map_early_mem() {
     debugf("==== MAP EARLY MEM ====\n");
-    union virtual_address_value a;
-    for (a = VADDR(0); a.val < 0x100000; a.val += PAGE_SIZE) {
-        // identity map the early memory
-        map_kernel_page(a, a.frame);
-    }
+    map_kernel_range_virtual(0x0, 0x100000);
 }
 
 static void paging_map_hh_kernel() {
     debugf("==== MAP HH KERNEL ====\n");
-    union virtual_address_value a;
-    for (a = VADDR(KERNEL_START); a.val < KERNEL_END; a.val += PAGE_SIZE) {
-        // map the higher-half kernel in
-        union virtual_address_value phys { .val = KADDR_TO_PHYS(a.val) };
-        map_kernel_page(a, phys.frame);
-    }
+    map_kernel_range_physical(KERNEL_START, KERNEL_END);
 }
 
 static inline void set_page_dir(size_t page_dir) {

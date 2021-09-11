@@ -44,7 +44,7 @@ void init()
         return;
     // Map in the framebuffer
     RS232::printf("Mapping framebuffer...\n");
-    map_kernel_range((uintptr_t)info->getAddress(), (uintptr_t)info->getAddress() + (info->getPitch() * info->getHeight()));
+    map_kernel_range_virtual((uintptr_t)info->getAddress(), (uintptr_t)info->getAddress() + (info->getPitch() * info->getHeight()));
     // Alloc the backbuffer
     backbuffer = malloc(info->getPitch() * info->getHeight());
     memcpy(backbuffer, info->getAddress(), info->getPitch() * info->getHeight());

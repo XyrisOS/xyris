@@ -159,9 +159,17 @@ uint32_t get_phys_page_dir();
 void map_kernel_page(union virtual_address_value vaddr_v, struct page_frame paddr);
 
 /**
- * @brief Map an address range into the kernel address space.
+ * @brief Map an address range into the kernel virtual address space.
  *
  * @param begin Beginning address
  * @param end Ending address
  */
-void map_kernel_range(uintptr_t begin, uintptr_t end);
+void map_kernel_range_virtual(uintptr_t begin, uintptr_t end);
+
+/**
+ * @brief Map a kernel address range into physical memory.
+ *
+ * @param begin Beginning address
+ * @param end Ending address
+ */
+void map_kernel_range_physical(uintptr_t begin, uintptr_t end);
