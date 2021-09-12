@@ -148,6 +148,15 @@ void free_page(void* page, uint32_t size);
 bool page_is_present(size_t addr);
 
 /**
+ * @brief Aligns the provided address to the start of its corresponding
+ * page address.
+ *
+ * @param addr Address to be aligned
+ * @return uintptr_t Page aligned address value
+ */
+uintptr_t page_align_addr(uintptr_t addr);
+
+/**
  * @brief Gets the physical address of the current page directory.
  *
  * @returns the physical address of the current page directory.

@@ -263,6 +263,11 @@ bool page_is_present(size_t addr)
     return mapped_pages[addr >> 12];
 }
 
+uintptr_t page_align_addr(uintptr_t addr)
+{
+    return addr & PAGE_ALIGN;
+}
+
 // TODO: maybe enforce access control here in the future
 uint32_t get_phys_page_dir()
 {
