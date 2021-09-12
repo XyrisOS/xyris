@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2020
  *
  */
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <sys/tasks.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
@@ -16,7 +16,7 @@
 #include <stdint.h>         // Data type definitions
 #include <x86gprintrin.h>   // needed for __rdtsc
 
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 
 /* forward declarations */
 static void _enqueue_task(struct tasklist *, task *);
@@ -528,7 +528,7 @@ void tasks_exit()
 static void _clean_stopped_task(struct task *task)
 {
     // free the stack page
-    uintptr_t page = task->stack_top & PAGE_ALIGN;
+    uintptr_t page = page_align_addr(task->stack_top);
     free_page((void *)page, PAGE_SIZE - 1);
     // somehow determine if the task was dynamically allocated or not
     // just assume statically allocated tasks will never exit (bad idea)

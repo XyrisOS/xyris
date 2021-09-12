@@ -9,7 +9,7 @@
  *
  */
 
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <dev/graphics/console.hpp>
 #include <dev/serial/rs232.hpp>
 #include <lib/stdio.hpp>

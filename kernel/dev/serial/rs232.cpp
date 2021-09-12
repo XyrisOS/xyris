@@ -13,7 +13,7 @@
  */
 
 #include <stdarg.h>
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <dev/serial/rs232.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>

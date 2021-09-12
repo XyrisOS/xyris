@@ -11,7 +11,7 @@
 #pragma once
 
 #include <stdint.h>         // Data type definitions
-#include <arch/arch.hpp>    // Architecture specific features
+#include <arch/Arch.hpp>    // Architecture specific features
 #include <mem/paging.hpp>
 
 #define TIME_SLICE_SIZE (1 * 1000 * 1000ULL)

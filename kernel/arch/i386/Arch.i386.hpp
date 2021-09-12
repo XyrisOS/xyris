@@ -1,7 +1,7 @@
 /**
- * @file arch-i386.hpp
+ * @file Arch.i386.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief i386 architecture implementation of arch.hpp
+ * @brief i386 architecture implementation of Arch.hpp
  * @version 0.1
  * @date 2021-08-24
  *
@@ -55,24 +55,3 @@ struct stackframe {
     struct stackframe* ebp;
     size_t eip;
 };
-
-namespace i386 {
-
-// Inline CPUID functions
-static inline void cpuid(int flag, unsigned long eax, unsigned long ebx, unsigned long ecx, unsigned long edx)
-{
-    __asm__ volatile("cpuid"
-                     : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
-                     : "a"(flag));
-}
-
-static inline int cpuid(int flag, int regs[4])
-{
-    // ECX and EDX are swapped in order to make the strings readable
-    __asm__ volatile("cpuid"
-                     : "=a"(*regs), "=b"(*(regs + 1)), "=c"(*(regs + 2)), "=d"(*(regs + 3))
-                     : "a"(flag));
-    return (int)regs[0];
-}
-
-} // !namespace i386

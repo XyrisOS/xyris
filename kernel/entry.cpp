@@ -17,7 +17,7 @@
 // Bootloader
 #include <boot/Handoff.hpp>
 // Architecture specific code
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 // Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
@@ -40,15 +40,6 @@
 
 static void printSplash();
 static void bootTone();
-
-// TODO: Rename this? bootInit is a bit much for what this does...
-//       Maybe we should have a bootServiceInit or something elsewhere.
-static void bootInit(void* boot_info, uint32_t magic, Boot::Handoff* handoff)
-{
-    // Ensure handoff is no longer default initialized
-    *handoff = Boot::Handoff(boot_info, magic);
-    assert(handoff->getHandle());
-}
 
 // TODO: Find a better way of doing this in the future
 //       Maybe some sort of way to register driver init
@@ -94,17 +85,14 @@ static void bootTone()
  * from the assembly written in boot.S located in arch/i386/boot.S. The pragma
  * allows this function to be declared without needing a former declaration.
  */
-#pragma GCC diagnostic ignored "-Wmissing-declarations"
-extern "C" void kernelEntry(void* boot_info, uint32_t magic)
+extern "C" void kernelEntry(void* info, uint32_t magic)
 {
-    Boot::Handoff handoff;
-
     // Initialize the CPU
     Arch::cpuInit();
     // Initialize devices
     Arch::criticalRegion(devInit);
     // Initialize info from bootloader
-    bootInit(boot_info, magic, &handoff);
+    Boot::Handoff handoff(info, magic);
     paging_init(0);
     Graphics::init();
     // Print the splash screen to show we've booted into the kernel properly.

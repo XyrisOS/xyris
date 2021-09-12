@@ -1,7 +1,8 @@
 /**
- * @file early_panic.cpp
+ * @file panic.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @author Micah Switzer (mswitzer@cedarville.edu)
+ * @brief Early CGA-mode panic (no framebuffer)
  * @version 0.3
  * @date 2020-10-11
  *
@@ -9,7 +10,7 @@
  *
  */
 
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <meta/sections.hpp>
 #include <meta/compiler.hpp>
 #include <dev/graphics/console.hpp>

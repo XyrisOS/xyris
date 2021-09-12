@@ -10,46 +10,49 @@
  */
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
-#include <arch/arch.hpp>
+#include <arch/Arch.hpp>
 #include <mem/heap.hpp>
 #include <meta/sections.hpp>
+#include <stddef.h>
+#include <stdint.h>
 
-extern "C" void invalidate_page(void *page_addr);
-
-// Thanks to Grant Hernandez for uOS and the absolutely amazing code
-// that he wrote. It helped us fix a lot of bugs and has provided a
-// lot of quality of life defines such as the ones below that we would
-// not have thought to use otherwise.
-#define ADDRESS_SPACE_SIZE  0x100000000
-#define PAGE_SIZE           0x1000
-#define PAGE_ALIGN          0xfffff000
-#define NOT_PAGE_ALIGN      ~(PAGE_ALIGN)
-#define PAGE_ALIGN_UP(addr) (((addr) & NOT_PAGE_ALIGN) ? (((addr) & PAGE_ALIGN) + PAGE_SIZE) : ((addr)))
-#define PAGE_ENTRY_PRESENT  0x1
-#define PAGE_ENTRY_RW       0x2
-#define PAGE_ENTRY_ACCESS   0x20
-#define PAGE_ENTRIES        1024
-#define PAGE_TABLE_SIZE     (sizeof(uint32)*PAGE_ENTRIES)
-#define PAGES_PER_KB(kb)    (PAGE_ALIGN_UP((kb) * 1024) / PAGE_SIZE)
-#define PAGES_PER_MB(mb)    (PAGE_ALIGN_UP((mb) * 1024 * 1024) / PAGE_SIZE)
-#define PAGES_PER_GB(gb)    (PAGE_ALIGN_UP((gb) * 1024 * 1024 * 1024) / PAGE_SIZE)
-#define VADDR(ADDR)         ((virtual_address_t){ .val = (ADDR) })
+#define PAGE_SIZE   0x1000
+#define PAGE_ALIGN  0xfffff000
 
 /**
- * @brief Provides a structure for defining the necessary fields
- * which comprise a virtual address.
+ * @brief Page frame structure. This represents a the
+ * address to a single unit of memory in RAM.
+ * (Chunk of physical memory)
+ *
  */
-typedef union virtual_address
-{
-    struct {
-        uint32_t page_offset       : 12;  // Page offset address
-        uint32_t page_table_index  : 10;  // Page table entry
-        uint32_t page_dir_index    : 10;  // Page directory entry
-    };
-    uint32_t val;
-} virtual_address_t;
+struct frame {
+    uint32_t offset : 12; // Page offset address
+    uint32_t index  : 20; // Page frame index
+};
+
+/**
+ * @brief Virtual address structure. Represents an address
+ * in virtual memory that redirects to a physical page frame.
+ * (Chunk of virtual memory)
+ */
+struct page {
+    uint32_t offset      : 12;  // Page offset address
+    uint32_t tableIndex  : 10;  // Page table entry
+    uint32_t dirIndex    : 10;  // Page directory entry
+};
+
+/**
+ * @brief Address union. Represents a memory address that can
+ * be used to address a page in virtual memory, a frame in
+ * physical memory. Allows setting the value of these addresses
+ * by also including an uintptr_t representation.
+ *
+ */
+union address {
+    struct page page;
+    struct frame frame;
+    uintptr_t val;
+};
 
 /**
  * @brief Page table entry defined in accordance to the
@@ -59,13 +62,13 @@ typedef union virtual_address
 struct page_table_entry
 {
     uint32_t present            : 1;  // Page present in memory
-    uint32_t read_write         : 1;  // Read-only if clear, readwrite if set
+    uint32_t readWrite          : 1;  // Read-only if clear, readwrite if set
     uint32_t usermode           : 1;  // Supervisor level only if clear
-    uint32_t write_through      : 1;  // Page level write through
-    uint32_t cache_disable      : 1;  // Disables TLB caching of page entry
+    uint32_t writeThrough       : 1;  // Page level write through
+    uint32_t cacheDisable       : 1;  // Disables TLB caching of page entry
     uint32_t accessed           : 1;  // Has the page been accessed since last refresh?
     uint32_t dirty              : 1;  // Has the page been written to since last refresh?
-    uint32_t page_att_table     : 1;  // Page attribute table (memory cache control)
+    uint32_t pageAttrTable      : 1;  // Page attribute table (memory cache control)
     uint32_t global             : 1;  // Prevents the TLB from updating the address
     uint32_t unused             : 3;  // Amalgamation of unused and reserved bits
     uint32_t frame              : 20; // Frame address (shifted right 12 bits)
@@ -89,15 +92,15 @@ struct page_table
 struct page_directory_entry
 {
     uint32_t present            : 1;  // Is the page present in physical memory?
-    uint32_t read_write         : 1;  // Is the page read/write or read-only?
+    uint32_t readWrite          : 1;  // Is the page read/write or read-only?
     uint32_t usermode           : 1;  // Can the page be accessed in usermode?
-    uint32_t write_through      : 1;  // Is write-through cache enabled?
-    uint32_t cache_disable      : 1;  // Can the page be cached?
+    uint32_t writeThrough       : 1;  // Is write-through cache enabled?
+    uint32_t cacheDisable       : 1;  // Can the page be cached?
     uint32_t accessed           : 1;  // Has the page been accessed?
-    uint32_t ignored_a          : 1;  // Ignored
-    uint32_t page_size          : 1;  // Is the page 4 Mb (enabled) or 4 Kb (disabled)?
-    uint32_t ignored_b          : 4;  // Ignored
-    uint32_t table_addr         : 20; // Physical address of the table
+    uint32_t ignoredA           : 1;  // Ignored
+    uint32_t size               : 1;  // Is the page 4 Mb (enabled) or 4 Kb (disabled)?
+    uint32_t ignoredB           : 4;  // Ignored
+    uint32_t tableAddr          : 20; // Physical address of the table
 };
 
 /**
@@ -108,9 +111,9 @@ struct page_directory_entry
  */
 struct page_directory
 {
-    struct page_table *tables[1024];                    // Pointers that Xyris uses to access the pages in memory
+    struct page_table* tablesVirtual[1024];             // Pointers that Xyris uses to access the pages in memory
     struct page_directory_entry tablesPhysical[1024];   // Pointers that the Intel CPU uses to access pages in memory
-    uint32_t physical_addr;                             // Physical address of this 4Kb aligned page table referenced by this entry
+    uint32_t physAddr;                                  // Physical address of this 4Kb aligned page table referenced by this entry
 };
 
 /**
@@ -133,7 +136,7 @@ void* get_new_page(uint32_t size);
  * @param page Starting location of page(s) to be freed
  * @param size Number of bytes to be freed
  */
-void  free_page(void *page, uint32_t size);
+void free_page(void* page, uint32_t size);
 
 /**
  * @brief Checks whether an address is mapped into memory.
@@ -145,10 +148,41 @@ void  free_page(void *page, uint32_t size);
 bool page_is_present(size_t addr);
 
 /**
+ * @brief Aligns the provided address to the start of its corresponding
+ * page address.
+ *
+ * @param addr Address to be aligned
+ * @return uintptr_t Page aligned address value
+ */
+uintptr_t page_align_addr(uintptr_t addr);
+
+/**
  * @brief Gets the physical address of the current page directory.
  *
  * @returns the physical address of the current page directory.
  */
 uint32_t get_phys_page_dir();
 
-void map_kernel_page(virtual_address_t vaddr, uint32_t paddr);
+/**
+ * @brief Map a page into the kernel address space.
+ *
+ * @param vaddr Virtual address (in kernel space)
+ * @param paddr Physical address
+ */
+void map_kernel_page(union address vaddr, union address paddr);
+
+/**
+ * @brief Map an address range into the kernel virtual address space.
+ *
+ * @param begin Beginning address
+ * @param end Ending address
+ */
+void map_kernel_range_virtual(uintptr_t begin, uintptr_t end);
+
+/**
+ * @brief Map a kernel address range into physical memory.
+ *
+ * @param begin Beginning address
+ * @param end Ending address
+ */
+void map_kernel_range_physical(uintptr_t begin, uintptr_t end);

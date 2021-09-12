@@ -1,5 +1,5 @@
 /**
- * @file arch.hpp
+ * @file Arch.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief Computer architecture initialization definitions
  * @version 0.3
@@ -15,8 +15,18 @@
 #include <boot/Handoff.hpp>
 #include <meta/compiler.hpp>
 #if defined(__i386__)
-#    include <arch/i386/arch-i386.hpp>
+#    include <arch/i386/Arch.i386.hpp>
 #endif
+
+/**
+ * @brief Kernel entry point. Performs all kernel initialization
+ * and starts the init process(es). Should be called from bootloader
+ * entry points.
+ *
+ * @param info Bootloader information structure
+ * @param magic Bootloader magic
+ */
+extern "C" void kernelEntry(void* info, uint32_t magic);
 
 // Architecture types (forward declarations)
 struct registers;
@@ -60,6 +70,11 @@ void criticalRegion(Function critWork)
     critWork();
     interruptsEnable();
 }
+
+// Architecture common memory controls
+void pagingEnable();
+void pagingDisable();
+void pageInvalidate(void* pageAddr);
 
 // CPU Identification
 const char* cpuGetVendor();
