@@ -9,8 +9,6 @@
  *
  */
 #include <apps/spinner.hpp>
-#include <stdint.h>
-#include <lib/stdio.hpp>
 #include <dev/graphics/console.hpp>
 
 namespace Apps {

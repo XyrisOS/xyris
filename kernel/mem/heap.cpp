@@ -10,6 +10,7 @@
  */
 #include <lib/errno.h>
 #include <lib/mutex.hpp>
+#include <mem/heap.hpp>
 #include <mem/paging.hpp>
 #include <stddef.h>
 

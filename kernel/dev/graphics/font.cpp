@@ -12,7 +12,6 @@
  */
 #include <dev/graphics/font.hpp>
 #include <dev/graphics/graphics.hpp>
-#include <lib/stdio.hpp>
 #include <stdint.h>
 
 namespace Graphics {

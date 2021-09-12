@@ -13,7 +13,6 @@
  */
 #pragma once
 #include <stdint.h>
-#include <dev/graphics/framebuffer.hpp>
 
 namespace Graphics {
 

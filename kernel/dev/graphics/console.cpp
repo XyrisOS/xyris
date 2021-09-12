@@ -13,6 +13,7 @@
 #include <dev/graphics/framebuffer.hpp>
 #include <dev/graphics/graphics.hpp>
 #include <lib/stdio.hpp>
+#include <lib/mutex.hpp>
 #include <stdarg.h>
 #include <stddef.h>
 

@@ -11,7 +11,6 @@
 #pragma once
 
 #include <stddef.h>
-#include <boot/Arguments.hpp>
 
 // Kernel ELF Section Attribute
 #define SECTION(x) __attribute__((section(x)))
@@ -51,8 +50,3 @@ extern size_t _PAGE_TABLES_START;
 #define PAGE_TABLES_START ((uintptr_t)&_PAGE_TABLES_START)
 extern size_t _PAGE_TABLES_END;
 #define PAGE_TABLES_END ((uintptr_t)&_PAGE_TABLES_END)
-
-extern struct Boot::argument _ARGUMENTS_START[0];
-#define ARGUMENTS_START ((uintptr_t)&_ARGUMENTS_START)
-extern struct Boot::argument _ARGUMENTS_END[0];
-#define ARGUMENTS_END ((uintptr_t)&_ARGUMENTS_END)

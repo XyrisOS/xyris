@@ -15,16 +15,11 @@
  */
 #include <dev/graphics/framebuffer.hpp>
 #include <dev/graphics/graphics.hpp>
-// Types
 #include <stddef.h>
 #include <stdint.h>
-// Memory management & paging
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
-// System library functions
 #include <boot/Handoff.hpp>
-#include <dev/serial/rs232.hpp>
-#include <lib/assert.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 
@@ -43,7 +38,7 @@ void init()
     if (!info->getAddress())
         return;
     // Map in the framebuffer
-    RS232::printf("Mapping framebuffer...\n");
+    debugf("Mapping framebuffer...\n");
     map_kernel_range_virtual((uintptr_t)info->getAddress(), (uintptr_t)info->getAddress() + (info->getPitch() * info->getHeight()));
     // Alloc the backbuffer
     backbuffer = malloc(info->getPitch() * info->getHeight());

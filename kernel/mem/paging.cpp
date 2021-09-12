@@ -11,7 +11,6 @@
  */
 #include <arch/Arch.hpp>
 #include <boot/Arguments.hpp>
-#include <dev/serial/rs232.hpp>
 #include <lib/Bitset.hpp>
 #include <lib/mutex.hpp>
 #include <lib/stdio.hpp>

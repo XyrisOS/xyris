@@ -14,11 +14,9 @@
  * http://www.osdev.labedz.org/src/lib/stdio/printf.c
  *
  */
-#include <lib/stdio.hpp>
 #include <stdarg.h>
+#include <lib/stdio.hpp>
 #include <lib/string.hpp>
-#include <dev/graphics/graphics.hpp>
-#include <dev/graphics/console.hpp>
 
 /*****************************************************************************
 Stripped-down printf()

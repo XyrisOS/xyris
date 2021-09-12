@@ -10,7 +10,6 @@
  */
 #pragma once
 #include <stdint.h>
-#include <stdbool.h>
 // Generic devices
 #include <dev/graphics/framebuffer.hpp>
 

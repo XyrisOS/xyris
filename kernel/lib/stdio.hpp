@@ -10,9 +10,7 @@
  */
 #pragma once
 
-#include <stdint.h>
 #include <stdarg.h>
-#include <lib/mutex.hpp>
 
 #ifndef EOF
 #define EOF (-1)

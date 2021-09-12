@@ -11,8 +11,6 @@
 #pragma once
 
 #include <arch/Arch.hpp>
-#include <mem/heap.hpp>
-#include <meta/sections.hpp>
 #include <stddef.h>
 #include <stdint.h>
 

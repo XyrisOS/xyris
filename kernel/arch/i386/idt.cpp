@@ -9,8 +9,6 @@
  *
  */
 #include <arch/i386/idt.hpp>
-#include <lib/stdio.hpp>
-#include <dev/graphics/console.hpp>
 
 struct idt_gate idt[IDT_ENTRIES];
 struct idt_register idt_reg;

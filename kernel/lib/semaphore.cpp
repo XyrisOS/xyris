@@ -20,8 +20,6 @@
 
 #include <lib/errno.h>
 #include <lib/semaphore.hpp>
-#include <mem/heap.hpp>
-#include <stddef.h>
 
 // Can't make this an inline function due to compiler errors with failure_memorder
 // being too strong. Likely due to the fact that it doesn't know the value at
