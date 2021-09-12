@@ -10,7 +10,6 @@
  */
 #include <apps/animation.hpp>
 #include <dev/graphics/graphics.hpp>
-#include <dev/graphics/framebuffer.hpp>
 
 namespace Apps {
 

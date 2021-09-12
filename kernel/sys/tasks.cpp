@@ -16,8 +16,6 @@
 #include <stdint.h>         // Data type definitions
 #include <x86gprintrin.h>   // needed for __rdtsc
 
-#include <arch/Arch.hpp>
-
 /* forward declarations */
 static void _enqueue_task(struct tasklist *, task *);
 static struct task *_dequeue_task(struct tasklist *);

@@ -10,7 +10,6 @@
  */
 // System library functions
 #include <lib/stdio.hpp>
-#include <lib/string.hpp>
 #include <lib/time.hpp>
 #include <stdint.h>
 #include <sys/tasks.hpp>
@@ -19,22 +18,16 @@
 // Architecture specific code
 #include <arch/Arch.hpp>
 // Memory management & paging
-#include <mem/heap.hpp>
 #include <mem/paging.hpp>
 // Generic devices
-#include <dev/graphics/framebuffer.hpp>
-#include <dev/graphics/font.hpp>
 #include <dev/graphics/graphics.hpp>
 #include <dev/graphics/console.hpp>
 #include <dev/rtc/rtc.hpp>
 #include <dev/serial/rs232.hpp>
 #include <dev/spkr/spkr.hpp>
 // Apps
-#include <apps/animation.hpp>
 #include <apps/primes.hpp>
 #include <apps/spinner.hpp>
-// Debug
-#include <lib/assert.hpp>
 // Meta
 #include <meta/defines.hpp>
 

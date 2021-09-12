@@ -11,7 +11,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <arch/Arch.hpp>
 
 #define VGA_DEFAULT_BACK VGA_Black
 #define VGA_DEFAULT_FORE VGA_White

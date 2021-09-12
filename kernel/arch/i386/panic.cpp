@@ -10,6 +10,7 @@
  *
  */
 
+#include <arch/Arch.hpp>
 #include <arch/i386/panic.hpp>
 #include <dev/graphics/console.hpp>
 #include <dev/graphics/framebuffer.hpp>

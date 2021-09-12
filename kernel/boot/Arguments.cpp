@@ -11,7 +11,6 @@
 #include <boot/Arguments.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
-#include <meta/sections.hpp>
 
 namespace Boot {
 

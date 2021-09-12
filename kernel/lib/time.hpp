@@ -12,6 +12,7 @@
  *         https://www.oryx-embedded.com/doc/date__time_8c_source.html
  */
 #pragma once
+#include <stdint.h>
 
 namespace Time {
 

@@ -10,7 +10,6 @@
  */
 
 #include <lib/string.hpp>
-#include <mem/heap.hpp>
 
 int strlen(const char* s)
 {

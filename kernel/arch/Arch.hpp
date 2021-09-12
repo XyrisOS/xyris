@@ -12,7 +12,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <boot/Handoff.hpp>
 #include <meta/compiler.hpp>
 #if defined(__i386__)
 #    include <arch/i386/Arch.i386.hpp>

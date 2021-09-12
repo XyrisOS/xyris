@@ -32,3 +32,10 @@ struct argument {
 void parseCommandLine(char* cmdline);
 
 } // !namespace Boot
+
+/* Moved outside of sections.hpp since this is only desired
+   if creating a kernel argument */
+extern struct Boot::argument _ARGUMENTS_START[0];
+#define ARGUMENTS_START ((uintptr_t)&_ARGUMENTS_START)
+extern struct Boot::argument _ARGUMENTS_END[0];
+#define ARGUMENTS_END ((uintptr_t)&_ARGUMENTS_END)

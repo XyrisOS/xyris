@@ -20,8 +20,6 @@
 
 #include <lib/mutex.hpp>
 #include <lib/errno.h>
-#include <mem/heap.hpp>
-#include <stddef.h>
 
 Mutex::Mutex(const char* name)
     : locked(false)

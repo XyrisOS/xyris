@@ -8,9 +8,8 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
+#include <arch/Arch.hpp>
 #include <arch/i386/isr.hpp>
-#include <lib/stdio.hpp>
-#include <dev/graphics/console.hpp>
 
 // Private array of interrupt handlers
 isr_cb_t interrupt_handlers[256];
