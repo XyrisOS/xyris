@@ -11,11 +11,14 @@
 #pragma once
 
 #include <arch/Arch.hpp>
+#include <mem/MemoryMap.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
 #define PAGE_SIZE   0x1000
 #define PAGE_ALIGN  0xfffff000
+
+namespace Paging {
 
 /**
  * @brief Page frame structure. This represents a the
@@ -23,7 +26,7 @@
  * (Chunk of physical memory)
  *
  */
-struct frame {
+struct Frame {
     uint32_t offset : 12; // Page offset address
     uint32_t index  : 20; // Page frame index
 };
@@ -33,7 +36,7 @@ struct frame {
  * in virtual memory that redirects to a physical page frame.
  * (Chunk of virtual memory)
  */
-struct page {
+struct Page {
     uint32_t offset      : 12;  // Page offset address
     uint32_t tableIndex  : 10;  // Page table entry
     uint32_t dirIndex    : 10;  // Page directory entry
@@ -46,9 +49,9 @@ struct page {
  * by also including an uintptr_t representation.
  *
  */
-union address {
-    struct page page;
-    struct frame frame;
+union Address {
+    struct Page page;
+    struct Frame frame;
     uintptr_t val;
 };
 
@@ -57,7 +60,7 @@ union address {
  * Intel Developer Manual Vol. 3a p. 4-12
  *
  */
-struct page_table_entry
+struct TableEntry
 {
     uint32_t present            : 1;  // Page present in memory
     uint32_t readWrite          : 1;  // Read-only if clear, readwrite if set
@@ -77,9 +80,9 @@ struct page_table_entry
  * Intel Developer Manual Vol. 3a p. 4-12
  *
  */
-struct page_table
+struct Table
 {
-   struct page_table_entry pages[1024]; // All entries for the table
+   struct TableEntry pages[1024]; // All entries for the table
 };
 
 /**
@@ -87,7 +90,7 @@ struct page_table
  * Intel Developer Manual Vol. 3a p. 4-12
  *
  */
-struct page_directory_entry
+struct DirectoryEntry
 {
     uint32_t present            : 1;  // Is the page present in physical memory?
     uint32_t readWrite          : 1;  // Is the page read/write or read-only?
@@ -107,35 +110,30 @@ struct page_directory_entry
  * Page table entry defined in accordance to the Intel Developer Manual Vol. 3a p. 4-12.
  *
  */
-struct page_directory
+struct Directory
 {
-    struct page_table* tablesVirtual[1024];             // Pointers that Xyris uses to access the pages in memory
-    struct page_directory_entry tablesPhysical[1024];   // Pointers that the Intel CPU uses to access pages in memory
-    uint32_t physAddr;                                  // Physical address of this 4Kb aligned page table referenced by this entry
+    struct DirectoryEntry entries[1024];     // Pointers that the Intel CPU uses to access pages in memory
 };
 
 /**
  * @brief Sets up the environment, page directories etc and enables paging.
  *
  */
-void paging_init(uint32_t num_pages);
-
+void init(Memory::MemoryMap* map);
 /**
  * @brief Returns a new page in memory for use.
  *
  * @param size Page size in bytes
  * @return void* Page memory address
  */
-void* get_new_page(uint32_t size);
-
+void* newPage(uint32_t size);
 /**
  * @brief Frees pages starting at a given page address.
  *
  * @param page Starting location of page(s) to be freed
  * @param size Number of bytes to be freed
  */
-void free_page(void* page, uint32_t size);
-
+void freePage(void* page, uint32_t size);
 /**
  * @brief Checks whether an address is mapped into memory.
  *
@@ -143,8 +141,7 @@ void free_page(void* page, uint32_t size);
  * @return true The address is mapped in and valid.
  * @return false The address is not mapped into memory.
  */
-bool page_is_present(size_t addr);
-
+bool isPresent(size_t addr);
 /**
  * @brief Aligns the provided address to the start of its corresponding
  * page address.
@@ -152,35 +149,33 @@ bool page_is_present(size_t addr);
  * @param addr Address to be aligned
  * @return uintptr_t Page aligned address value
  */
-uintptr_t page_align_addr(uintptr_t addr);
-
+uintptr_t alignAddress(uintptr_t addr);
 /**
  * @brief Gets the physical address of the current page directory.
  *
  * @returns the physical address of the current page directory.
  */
-uint32_t get_phys_page_dir();
-
+uint32_t getPageDirPhysAddr();
 /**
  * @brief Map a page into the kernel address space.
  *
  * @param vaddr Virtual address (in kernel space)
  * @param paddr Physical address
  */
-void map_kernel_page(union address vaddr, union address paddr);
-
+void mapKernelPage(union Address vaddr, union Address paddr);
 /**
  * @brief Map an address range into the kernel virtual address space.
  *
  * @param begin Beginning address
  * @param end Ending address
  */
-void map_kernel_range_virtual(uintptr_t begin, uintptr_t end);
-
+void mapKernelRangeVirtual(uintptr_t begin, uintptr_t end);
 /**
  * @brief Map a kernel address range into physical memory.
  *
  * @param begin Beginning address
  * @param end Ending address
  */
-void map_kernel_range_physical(uintptr_t begin, uintptr_t end);
+void mapKernelRangePhysical(uintptr_t begin, uintptr_t end);
+
+} // !namespace Paging

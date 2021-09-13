@@ -13,6 +13,7 @@
  */
 #pragma once
 #include <stdint.h>
+#include <dev/graphics/framebuffer.hpp>
 
 namespace Graphics {
 
@@ -20,7 +21,7 @@ namespace Graphics {
  * @brief Initializes the framebuffer (if available)
  *
  */
-void init();
+void init(Framebuffer* fb);
 
 /**
  * @brief Draws a pixel at a given coordinate.

@@ -32,26 +32,26 @@ namespace Boot {
  */
 
 Handoff::Handoff()
-    : _handle(NULL)
-    , _magic(0)
+    : m_handle(NULL)
+    , m_magic(0)
 {
     // Initialize nothing.
 }
 
 Handoff::Handoff(void* handoff, uint32_t magic)
-    : _handle(handoff)
-    , _magic(magic)
+    : m_handle(handoff)
+    , m_magic(magic)
 {
     const char* bootProtoName;
     // Parse the handle based on the magic
     RS232::printf("Bootloader info at 0x%X\n", handoff);
     if (magic == 0x36d76289) {
         bootProtoName = "Multiboot2";
-        _bootType = Multiboot2;
+        m_bootType = Multiboot2;
         parseMultiboot2(this, handoff);
     } else if (magic == *(uint32_t*)"stv2") {
         bootProtoName = "Stivale2";
-        _bootType = Stivale2;
+        m_bootType = Stivale2;
         parseStivale2(this, handoff);
     } else {
         PANIC("Invalid bootloader information!");
@@ -73,48 +73,59 @@ Handoff::~Handoff()
 
 void Handoff::parseStivale2(Handoff* that, void* handoff)
 {
-    struct stivale2_struct* fixed = (struct stivale2_struct*)handoff;
     // Walk the list of tags in the header
+    struct stivale2_struct* fixed = (struct stivale2_struct*)handoff;
     struct stivale2_tag* tag = (struct stivale2_tag*)(fixed->tags);
     while (tag) {
-         // Follows the tag list order in stivale2.h
         switch (tag->identifier) {
-#ifdef DEBUG
         case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
             auto memmap = (struct stivale2_struct_tag_memmap*)tag;
             RS232::printf("Stivale2 memmap found...\n");
-            for (uint32_t i = 0; i < (uint32_t)memmap->entries; i++) {
-                switch ((uint32_t)memmap->memmap[i].type) {
+            if (memmap->entries > that->m_memoryMap.Count())
+                PANIC("Not enough space to add all memory map entries!");
+            // Follows the tag list order in stivale2.h
+            for (size_t i = 0; i < (uint32_t)memmap->entries; i++) {
+                auto entry = memmap->memmap[i];
+                that->m_memoryMap[i] = Memory::Section(entry.base, entry.length);
+                switch (entry.type) {
                 case STIVALE2_MMAP_USABLE:
                     RS232::printf("Stivale2 USABLE memory: ");
+                    that->m_memoryMap[i].SetType(Memory::Available);
                     break;
 
                 case STIVALE2_MMAP_RESERVED:
                     RS232::printf("Stivale2 RESERVED memory: ");
+                    that->m_memoryMap[i].SetType(Memory::Reserved);
                     break;
 
                 case STIVALE2_MMAP_ACPI_RECLAIMABLE:
                     RS232::printf("Stivale2 ACPI_RECLAIMABLE memory: ");
+                    that->m_memoryMap[i].SetType(Memory::ACPI);
                     break;
 
                 case STIVALE2_MMAP_ACPI_NVS:
                     RS232::printf("Stivale2 ACPI_NVS memory: ");
+                    that->m_memoryMap[i].SetType(Memory::NVS);
                     break;
 
                 case STIVALE2_MMAP_BAD_MEMORY:
                     RS232::printf("Stivale2 BAD memory: ");
+                    that->m_memoryMap[i].SetType(Memory::Bad);
                     break;
 
                 case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
                     RS232::printf("Stivale2 BOOTLOADER_RECLAIMABLE memory: ");
+                    that->m_memoryMap[i].SetType(Memory::Bootloader);
                     break;
 
                 case STIVALE2_MMAP_KERNEL_AND_MODULES:
                     RS232::printf("Stivale2 KERNEL_AND_MODULES memory: ");
+                    that->m_memoryMap[i].SetType(Memory::Kernel);
                     break;
 
                 default:
                     RS232::printf("Unknown Memory Type 0x%08X: ", memmap->memmap[i].type);
+                    that->m_memoryMap[i].SetType(Memory::Unknown);
                     break;
                 }
                 RS232::printf("Base: 0x%08X, Length: 0x%08X\n", (uint32_t)memmap->memmap[i].base,
@@ -122,12 +133,11 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
             }
             break;
         }
-#endif
         case STIVALE2_STRUCT_TAG_CMDLINE_ID: {
             auto cmdline = (struct stivale2_struct_tag_cmdline*)tag;
-            that->_cmdline = (char*)(cmdline->cmdline);
-            RS232::printf("Stivale2 cmdline: '%s'\n", that->_cmdline);
-            parseCommandLine(that->_cmdline);
+            that->m_cmdline = (char*)(cmdline->cmdline);
+            RS232::printf("Stivale2 cmdline: '%s'\n", that->m_cmdline);
+            parseCommandLine(that->m_cmdline);
             break;
         }
         case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID: {
@@ -152,7 +162,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                             framebuffer->blue_mask_size,
                             framebuffer->blue_mask_shift);
             // Initialize the framebuffer information
-            that->_framebuffer = Graphics::Framebuffer(
+            that->m_framebuffer = Graphics::Framebuffer(
                 framebuffer->framebuffer_width,
                 framebuffer->framebuffer_height,
                 framebuffer->framebuffer_bpp,
@@ -199,9 +209,46 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
         switch (tag->type) {
         case MULTIBOOT_TAG_TYPE_CMDLINE: {
             auto cmdline = (struct multiboot_tag_string*)tag;
-            that->_cmdline = (char*)(cmdline->string);
-            RS232::printf("Multiboot2 cmdline: '%s'\n", that->_cmdline);
-            parseCommandLine(that->_cmdline);
+            that->m_cmdline = (char*)(cmdline->string);
+            RS232::printf("Multiboot2 cmdline: '%s'\n", that->m_cmdline);
+            parseCommandLine(that->m_cmdline);
+            break;
+        }
+        case MULTIBOOT_TAG_TYPE_MMAP: {
+            size_t memMapIdx = 0;
+            auto memmap = (struct multiboot_tag_mmap *)tag;
+            RS232::printf("Multiboot2 memmap found...\n");
+            // Because the Multiboot2 header typedefs literally everything as something
+            // other than what's in stdint.h and stddef.h, we have to do a ton of casts
+            for (multiboot_memory_map_t *entry = memmap->entries;
+                 (uint8_t *)entry < (uint8_t *)tag + tag->size;
+                 entry = (multiboot_memory_map_t *)((uintptr_t)entry + memmap->entry_size))
+            {
+                if (memMapIdx > that->m_memoryMap.Count())
+                    PANIC("Not enough space to add all memory map entries!");
+
+                that->m_memoryMap[memMapIdx] = Memory::Section(entry->addr, entry->len);
+                switch (entry->type)
+                {
+                    case MULTIBOOT_MEMORY_AVAILABLE:
+                        that->m_memoryMap[memMapIdx].SetType(Memory::Available);
+                        break;
+                    case MULTIBOOT_MEMORY_ACPI_RECLAIMABLE:
+                        that->m_memoryMap[memMapIdx].SetType(Memory::ACPI);
+                        break;
+                    case MULTIBOOT_MEMORY_NVS:
+                        that->m_memoryMap[memMapIdx].SetType(Memory::NVS);
+                        break;
+                    case MULTIBOOT_MEMORY_BADRAM:
+                        that->m_memoryMap[memMapIdx].SetType(Memory::Bad);
+                        break;
+                    default:
+                        that->m_memoryMap[memMapIdx].SetType(Memory::Reserved);
+                        break;
+                }
+
+                memMapIdx++;
+            }
             break;
         }
         case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
@@ -226,7 +273,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
                             framebuffer->framebuffer_blue_mask_size,
                             framebuffer->framebuffer_blue_field_position);
             // Initialize the framebuffer information
-            that->_framebuffer = Graphics::Framebuffer(
+            that->m_framebuffer = Graphics::Framebuffer(
                 framebuffer->common.framebuffer_width,
                 framebuffer->common.framebuffer_height,
                 framebuffer->common.framebuffer_bpp,
