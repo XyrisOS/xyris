@@ -60,8 +60,8 @@ KERNEL_PARAM(enableMappingLogs, MAPPING_OUTPUT_FLAG, argumentsCallback);
 void init(Memory::MemoryMap* map)
 {
     for (size_t i = 0; i < map->Count(); i++) {
-        if (map[i].operator[](i).Initialized()) {
-            debugf("0x%08X - 0x%08X\n", map[i].operator[](i).Base(), map[i].operator[](i).Size());
+        if (map->Get(i).Initialized()) {
+            debugf("[%s]\t0x%08X - 0x%08X\n", map->Get(i).TypeString(), map->Get(i).Base(), map->Get(i).Size());
         }
     }
     // we can set breakpoints or make a futile attempt to recover.

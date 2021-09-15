@@ -84,52 +84,43 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
             if (memmap->entries > that->m_memoryMap.Count())
                 PANIC("Not enough space to add all memory map entries!");
             // Follows the tag list order in stivale2.h
-            for (size_t i = 0; i < (uint32_t)memmap->entries; i++) {
+            for (size_t i = 0; i < memmap->entries; i++) {
                 auto entry = memmap->memmap[i];
                 that->m_memoryMap[i] = Memory::Section(entry.base, entry.length);
+                // TODO: Make this a map that can be indexed
                 switch (entry.type) {
                 case STIVALE2_MMAP_USABLE:
-                    RS232::printf("Stivale2 USABLE memory: ");
                     that->m_memoryMap[i].SetType(Memory::Available);
                     break;
 
                 case STIVALE2_MMAP_RESERVED:
-                    RS232::printf("Stivale2 RESERVED memory: ");
                     that->m_memoryMap[i].SetType(Memory::Reserved);
                     break;
 
                 case STIVALE2_MMAP_ACPI_RECLAIMABLE:
-                    RS232::printf("Stivale2 ACPI_RECLAIMABLE memory: ");
                     that->m_memoryMap[i].SetType(Memory::ACPI);
                     break;
 
                 case STIVALE2_MMAP_ACPI_NVS:
-                    RS232::printf("Stivale2 ACPI_NVS memory: ");
                     that->m_memoryMap[i].SetType(Memory::NVS);
                     break;
 
                 case STIVALE2_MMAP_BAD_MEMORY:
-                    RS232::printf("Stivale2 BAD memory: ");
                     that->m_memoryMap[i].SetType(Memory::Bad);
                     break;
 
                 case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
-                    RS232::printf("Stivale2 BOOTLOADER_RECLAIMABLE memory: ");
                     that->m_memoryMap[i].SetType(Memory::Bootloader);
                     break;
 
                 case STIVALE2_MMAP_KERNEL_AND_MODULES:
-                    RS232::printf("Stivale2 KERNEL_AND_MODULES memory: ");
                     that->m_memoryMap[i].SetType(Memory::Kernel);
                     break;
 
                 default:
-                    RS232::printf("Unknown Memory Type 0x%08X: ", memmap->memmap[i].type);
                     that->m_memoryMap[i].SetType(Memory::Unknown);
                     break;
                 }
-                RS232::printf("Base: 0x%08X, Length: 0x%08X\n", (uint32_t)memmap->memmap[i].base,
-                    (uint32_t)memmap->memmap[i].length);
             }
             break;
         }
@@ -228,6 +219,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
                     PANIC("Not enough space to add all memory map entries!");
 
                 that->m_memoryMap[memMapIdx] = Memory::Section(entry->addr, entry->len);
+                // TODO: Make this a map that can be indexed
                 switch (entry->type)
                 {
                     case MULTIBOOT_MEMORY_AVAILABLE:

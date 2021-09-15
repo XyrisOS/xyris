@@ -57,6 +57,29 @@ public:
     {
         return m_type;
     }
+    const char* TypeString()
+    {
+        switch (Type()) {
+            case Available:
+                return "Available";
+            case Reserved:
+                return "Reserved";
+            case ACPI:
+                return "ACPI";
+            case NVS:
+                return "NVS";
+            case Bad:
+                return "Bad";
+            case Bootloader:
+                return "Bootloader";
+            case Kernel:
+                return "Kernel";
+            case Unknown:
+                return "Unknown";
+            default:
+                return "Invalid!";
+        }
+    }
     ALWAYS_INLINE void SetType(enum Type type)
     {
         m_type = type;

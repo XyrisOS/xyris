@@ -22,6 +22,10 @@ public:
     {
         return m_max_sections;
     }
+    Section& Get(size_t idx)
+    {
+        return m_sections[idx];
+    }
     Section operator[](size_t idx) const
     {
         return m_sections[idx];
