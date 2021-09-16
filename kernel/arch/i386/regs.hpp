@@ -12,6 +12,17 @@
 #include <stdint.h>
 #include <stddef.h>
 
+/**
+ * @brief A structure definining values for all x86 registers.
+ * Cannot be namespaced due to C linkage and ASM interoperability
+ */
+struct registers {
+    uint32_t ds;                                         /* Data segment selector */
+    uint32_t edi, esi, ebp, ignored, ebx, edx, ecx, eax; /* Pushed by pusha. */
+    uint32_t int_num, err_code;                          /* Interrupt number and error code (if applicable) */
+    uint32_t eip, cs, eflags, esp, ss;                   /* Pushed by the processor automatically */
+};
+
 namespace Registers {
 
 struct CR0
@@ -29,7 +40,12 @@ struct CR0
     uint32_t reservedC          : 10;   // Reserved
     uint32_t nonWriteThrough    : 1;    // Disable write through caching?
     uint32_t cacheDisable       : 1;    // Cache disabled?
-    uint32_t paging             : 1;    // Enable paging?
+    uint32_t pagingEnable       : 1;    // Enable paging
+};
+
+struct CR2
+{
+    uint32_t pageFaultAddr      : 32;   // Address where page fault occured
 };
 
 struct CR3
@@ -38,7 +54,7 @@ struct CR3
    uint32_t writeThrough        : 1;    // Page level write through
    uint32_t cacheDisable        : 1;    // Cache disable
    uint32_t ignoredB            : 7;    // Ignored
-   uint32_t pageDir             : 10;   // Page directory address
+   uint32_t pageDir             : 10;   // Page directory physical address
 };
 
 inline struct CR0 readCR0()
@@ -51,6 +67,13 @@ inline struct CR0 readCR0()
 inline void writeCR0(struct CR0 x)
 {
     asm volatile("mov %0, %%cr0":: "r"(x));
+}
+
+inline struct CR2 readCR2()
+{
+    struct CR2 x;
+    asm volatile("mov %%cr2, %0" : "=r"(x));
+    return x;
 }
 
 inline struct CR3 readCR3()

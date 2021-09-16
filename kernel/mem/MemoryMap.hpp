@@ -14,8 +14,7 @@
 
 namespace Memory {
 
-class MemoryMap
-{
+class MemoryMap {
 public:
     MemoryMap() = default;
     size_t Count()

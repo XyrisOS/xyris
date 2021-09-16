@@ -28,7 +28,7 @@ namespace Paging {
 
 static Mutex pagingLock("paging");
 
-#define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
+#define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / ARCH_PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
 
 // one bit for every page
 static Bitset<size_t, MEM_BITMAP_SIZE> mappedMemory;
@@ -60,8 +60,9 @@ KERNEL_PARAM(enableMappingLogs, MAPPING_OUTPUT_FLAG, argumentsCallback);
 void init(Memory::MemoryMap* map)
 {
     for (size_t i = 0; i < map->Count(); i++) {
-        if (map->Get(i).Initialized()) {
-            debugf("[%s]\t0x%08X - 0x%08X\n", map->Get(i).TypeString(), map->Get(i).Base(), map->Get(i).Size());
+        auto section = map->Get(i);
+        if (section.Initialized()) {
+            debugf("[%s]\t0x%08X - 0x%08X\n", section.TypeString(), section.Base(), section.Size());
         }
     }
     // we can set breakpoints or make a futile attempt to recover.
@@ -73,9 +74,9 @@ void init(Memory::MemoryMap* map)
     // map in our higher-half kernel
     mapKernel();
     // use our new set of page tables
-    setPageDirectory(pageDirectoryAddress & PAGE_ALIGN);
+    setPageDirectory(Arch::Memory::pageAlign(pageDirectoryAddress));
     // flush the tlb and we're off to the races!
-    Arch::pagingEnable();
+    Arch::Memory::pagingEnable();
 }
 
 static void pageFaultCallback(struct registers* regs)
@@ -169,7 +170,7 @@ void mapKernelPage(union Address vaddr, union Address paddr)
 void mapKernelRangeVirtual(uintptr_t begin, uintptr_t end)
 {
     union Address a;
-    for (a = ADDR(begin); a.val < end; a.val += PAGE_SIZE) {
+    for (a = ADDR(begin); a.val < end; a.val += ARCH_PAGE_SIZE) {
         mapKernelPage(a, a);
     }
 }
@@ -177,7 +178,7 @@ void mapKernelRangeVirtual(uintptr_t begin, uintptr_t end)
 void mapKernelRangePhysical(uintptr_t begin, uintptr_t end)
 {
     union Address a;
-    for (a = ADDR(begin); a.val < end; a.val += PAGE_SIZE) {
+    for (a = ADDR(begin); a.val < end; a.val += ARCH_PAGE_SIZE) {
         union Address phys {
             .val = KADDR_TO_PHYS(a.val)
         };
@@ -216,13 +217,10 @@ static uint32_t findNextFreePhysicalAddress()
     return mappedMemory.FindFirstBit(false);
 }
 
-/**
- * map in a new page. if you request less than one page, you will get exactly one page
- */
 void* newPage(uint32_t size)
 {
     pagingLock.Lock();
-    uint32_t page_count = (size / PAGE_SIZE) + 1;
+    uint32_t page_count = (size / ARCH_PAGE_SIZE) + 1;
     uint32_t free_idx = findNextFreeVirtualAddress(page_count);
     if (free_idx == SIZE_MAX)
         return NULL;
@@ -231,18 +229,18 @@ void* newPage(uint32_t size)
         if (phys_page_idx == SIZE_MAX)
             return NULL;
         union Address phys = {
-            .val = phys_page_idx * PAGE_SIZE,
+            .val = phys_page_idx * ARCH_PAGE_SIZE,
         };
-        mapKernelPage(ADDR((uint32_t)i * PAGE_SIZE), phys);
+        mapKernelPage(ADDR((uint32_t)i * ARCH_PAGE_SIZE), phys);
     }
     pagingLock.Unlock();
-    return (void*)(free_idx * PAGE_SIZE);
+    return (void*)(free_idx * ARCH_PAGE_SIZE);
 }
 
 void freePage(void* page, uint32_t size)
 {
     pagingLock.Lock();
-    uint32_t page_count = (size / PAGE_SIZE) + 1;
+    uint32_t page_count = (size / ARCH_PAGE_SIZE) + 1;
     uint32_t page_index = (uint32_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
         mappedPages.Reset(i);
@@ -254,7 +252,7 @@ void freePage(void* page, uint32_t size)
         // zero it out to unmap it
         *pte = { /* Zero */ };
         // clear that tlb
-        Arch::pageInvalidate(page);
+        Arch::Memory::pageInvalidate(page);
     }
     pagingLock.Unlock();
 }
@@ -264,11 +262,6 @@ bool isPresent(size_t addr)
     // Convert the address into an index and
     // check whether the page is in the bitmap
     return mappedPages[addr >> 12];
-}
-
-uintptr_t alignAddress(uintptr_t addr)
-{
-    return addr & PAGE_ALIGN;
 }
 
 // TODO: maybe enforce access control here in the future

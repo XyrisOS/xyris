@@ -294,10 +294,11 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
         }
     }
     // allocate a page for this stack (we might change this later)
-    uint8_t *stack = (uint8_t *)Paging::newPage(PAGE_SIZE - 1);
+    // TODO: Should more than one page be allocated / freed?
+    uint8_t *stack = (uint8_t *)Paging::newPage(1);
     if (stack == NULL) PANIC("Unable to allocate memory for new task stack.\n");
     // remember, the stack grows up
-    void *stack_pointer = stack + PAGE_SIZE;
+    void *stack_pointer = stack + ARCH_PAGE_SIZE;
     // a null stack frame to make the panic screen happy
     _stack_push_word(&stack_pointer, 0);
     // the last thing to happen is the task stopping function
@@ -522,9 +523,9 @@ void tasks_exit()
 static void _clean_stopped_task(struct task *task)
 {
     // free the stack page
-    uintptr_t page = Paging::alignAddress(task->stack_top);
-    // TODO: Rework this such that PAGE_SIZE is not needed
-    Paging::freePage((void *)page, PAGE_SIZE - 1);
+    uintptr_t page = Arch::Memory::pageAlign(task->stack_top);
+    // TODO: Should more than one page be allocated / freed?
+    Paging::freePage((void *)page, 1);
     // somehow determine if the task was dynamically allocated or not
     // just assume statically allocated tasks will never exit (bad idea)
     if (task->alloc == ALLOC_DYNAMIC) free(task);

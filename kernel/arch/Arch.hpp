@@ -10,9 +10,9 @@
  */
 #pragma once
 
+#include <meta/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>
-#include <meta/compiler.hpp>
 #if defined(__i386__)
 #    include <arch/i386/Arch.i386.hpp>
 #endif
@@ -27,42 +27,49 @@
  */
 extern "C" void kernelEntry(void* info, uint32_t magic);
 
-// Architecture types (forward declarations)
+// Cannot be namespaced since it has to be used by
+// functions with C linkage for ASM interoperability
 struct registers;
-
-// Kernel panic
-#define PANIC(x) panic((x), __FILE__, __LINE__, __FUNCTION__)
-
-/**
- * @brief Halts kernel execution and prints provided info.
- *
- * @param msg Explaination of what happened
- * @param file File causing the issue
- * @param line Line with the error
- * @param func Function containing error
- */
-NORET void panic(const char* msg, const char* file, uint32_t line, const char* func);
-
-/**
- * @brief Halts kernel execution and prints register info.
- *
- * @param regs Registers struct
- * @param file File causing the issue
- * @param line Line with the error
- * @param func Function containing error
- */
-NORET void panic(struct registers* regs, const char* file, uint32_t line, const char* func);
 
 namespace Arch {
 
+struct stackframe;
+
+namespace Memory {
+
+
+void pagingEnable();
+void pagingDisable();
+void pageInvalidate(void* pageAddr);
+/**
+ * @brief Aligns the provided address to the start of its corresponding page address.
+ *
+ * @param addr Address to be aligned
+ * @return uintptr_t Page aligned address value
+ */
+uintptr_t pageAlign(size_t addr);
+/**
+ * @brief Check if an address is aligned to a page boundary.
+ *
+ * @param addr Address to be checked
+ * @return true Address is aligned to page boundary
+ * @return false Address is not aligned to a page boundary
+ */
+bool pageIsAligned(size_t addr);
+
+} // !namespace Memory
+
+namespace CPU {
+
 // Architecture initialization
-void cpuInit();
+void init();
 
 // Architecture common CPU controls
 void interruptsDisable();
 void interruptsEnable();
+
 // Critical region lambda function
-template <typename Function>
+template<typename Function>
 void criticalRegion(Function critWork)
 {
     interruptsDisable();
@@ -70,13 +77,15 @@ void criticalRegion(Function critWork)
     interruptsEnable();
 }
 
-// Architecture common memory controls
-void pagingEnable();
-void pagingDisable();
-void pageInvalidate(void* pageAddr);
-
 // CPU Identification
-const char* cpuGetVendor();
-const char* cpuGetModel();
+const char* vendor();
+const char* model();
+
+} // !namespace CPU
+
+// Kernel panic
+NORET void panic(const char* msg, const char* file, uint32_t line, const char* func);
+NORET void panic(struct registers* regs, const char* file, uint32_t line, const char* func);
+#define PANIC(x) Arch::panic((x), __FILE__, __LINE__, __FUNCTION__)
 
 } // !namespace Arch

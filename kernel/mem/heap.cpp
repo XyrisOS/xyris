@@ -37,12 +37,12 @@ int liballoc_unlock()
 // TODO: Move PAGE_SIZE to architecture headers?
 void* liballoc_alloc(unsigned int count)
 {
-    return Paging::newPage(count * PAGE_SIZE - 1);
+    return Paging::newPage(count * ARCH_PAGE_SIZE - 1);
 }
 
 int liballoc_free(void* page, unsigned int count)
 {
-    Paging::freePage(page, count * PAGE_SIZE - 1);
+    Paging::freePage(page, count * ARCH_PAGE_SIZE - 1);
     return 0;
 }
 

@@ -2,6 +2,8 @@
 #include <arch/Arch.hpp>
 #include <catch2/catch.hpp>
 
+namespace Arch {
+
 // Provide a panic function for worse-case failure reporting
 void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     // Use the fail macro so that the error is recorded in the report XML.
@@ -17,4 +19,6 @@ void panic(const char* msg, const char *file, uint32_t line, const char *func) {
     // Force a no-return case
     // (TODO: Fix / rework this in the future?)
     exit(1);
+}
+
 }

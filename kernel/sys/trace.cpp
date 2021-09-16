@@ -19,7 +19,7 @@
 void stack_trace(size_t max)
 {
     // Define our stack
-    struct stackframe* stk;
+    struct Arch::stackframe* stk;
     asm volatile("movl %%ebp, %0"
                  : "=r"(stk)::);
     Console::printf("\033[0;%iH \033[31mStack trace:\033[0m\n", (X86_TTY_WIDTH - 16));

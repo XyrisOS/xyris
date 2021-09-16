@@ -15,9 +15,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define PAGE_SIZE   0x1000
-#define PAGE_ALIGN  0xfffff000
-
 namespace Paging {
 
 /**
@@ -122,6 +119,8 @@ struct Directory
 void init(Memory::MemoryMap* map);
 /**
  * @brief Returns a new page in memory for use.
+ * If less than one page is requested, exactly one page
+ * will be allocated and returned.
  *
  * @param size Page size in bytes
  * @return void* Page memory address
@@ -142,14 +141,6 @@ void freePage(void* page, uint32_t size);
  * @return false The address is not mapped into memory.
  */
 bool isPresent(size_t addr);
-/**
- * @brief Aligns the provided address to the start of its corresponding
- * page address.
- *
- * @param addr Address to be aligned
- * @return uintptr_t Page aligned address value
- */
-uintptr_t alignAddress(uintptr_t addr);
 /**
  * @brief Gets the physical address of the current page directory.
  *

@@ -15,6 +15,8 @@
 #include <arch/Arch.hpp>
 #include <cpuid.h>
 
+#define PAGE_ALIGN  0xFFFFF000
+
 const char* exception_descriptions[32][16] = {
     "Divide-By-Zero", "Debugging", "Non-Maskable", "Breakpoint",
     "Overflow", "Out Bound Range", "Invalid Opcode", "Device Not Avbl",
@@ -35,9 +37,42 @@ const char* exception_descriptions[32][16] = {
 
 namespace Arch {
 
-void cpuInit()
+namespace Memory {
+
+void pagingEnable() {
+    struct Registers::CR0 cr0 = Registers::readCR0();
+    cr0.pagingEnable = 1;
+    Registers::writeCR0(cr0);
+}
+
+void pagingDisable() {
+    struct Registers::CR0 cr0 = Registers::readCR0();
+    cr0.pagingEnable = 0;
+    Registers::writeCR0(cr0);
+}
+
+void pageInvalidate(void* pageAddr)
 {
-    Arch::criticalRegion([]() {
+   asm volatile("invlpg (%0)" ::"r" (pageAddr) : "memory");
+}
+
+uintptr_t pageAlign(size_t addr)
+{
+    return addr & PAGE_ALIGN;
+}
+
+bool pageIsAligned(size_t addr)
+{
+    return ((addr % ARCH_PAGE_SIZE) == 0);
+}
+
+} // !namespace Memory
+
+namespace CPU {
+
+void init()
+{
+    criticalRegion([]() {
         gdt_install();               // Initialize the Global Descriptor Table
         isr_install();               // Initialize Interrupt Service Requests
         timer_init(1000);            // Programmable Interrupt Timer (1ms)
@@ -52,31 +87,14 @@ void interruptsEnable() {
     asm volatile("sti");
 }
 
-void pagingEnable() {
-    struct Registers::CR0 cr0 = Registers::readCR0();
-    cr0.paging = 1;
-    Registers::writeCR0(cr0);
-}
-
-void pagingDisable() {
-    struct Registers::CR0 cr0 = Registers::readCR0();
-    cr0.paging = 0;
-    Registers::writeCR0(cr0);
-}
-
-void pageInvalidate(void* pageAddr)
-{
-   asm volatile("invlpg (%0)" ::"r" (pageAddr) : "memory");
-}
-
-const char* cpuGetVendor()
+const char* vendor()
 {
     static int vendor[4];
     __cpuid(0, vendor[0], vendor[1], vendor[2], vendor[3]);
     return (char*)vendor;
 }
 
-const char* cpuGetModel()
+const char* model()
 {
     static int model[12];
     __cpuid(0x80000002, model[0], model[1], model[2], model[3]);
@@ -84,5 +102,7 @@ const char* cpuGetModel()
     __cpuid(0x80000004, model[8], model[9], model[10], model[11]);
     return (char*)model;
 }
+
+} // !namespace CPU
 
 } // !namespace Arch

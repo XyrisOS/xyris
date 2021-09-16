@@ -9,6 +9,7 @@
  *
  */
 #pragma once
+#include <arch/i386/regs.hpp>
 #include <arch/i386/gdt.hpp>
 #include <arch/i386/idt.hpp>
 #include <arch/i386/isr.hpp>
@@ -18,6 +19,8 @@
 #include <cpuid.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#define ARCH_PAGE_SIZE  0x1000
 
 /**
  * @brief x86 BIOS based VGA pointers and data.
@@ -32,26 +35,11 @@ inline uint16_t* x86_bios_vga_mem = (uint16_t*)0x000B8000;
 // List of all exceptions and their associated english descriptions
 extern const char* exception_descriptions[32][16];
 
-/*
- *    _          _      _____
- *   /_\  _ _ __| |_   |_   _|  _ _ __  ___ ___
- *  / _ \| '_/ _| ' \    | || || | '_ \/ -_|_-<
- * /_/ \_\_| \__|_||_|   |_| \_, | .__/\___/__/
- *                           |__/|_|
- */
-
-/**
- * @brief A structure definining values for every since x86 register.
- * Used when in various x86 architecture functions and panic.
- */
-struct registers {
-    uint32_t ds;                                         /* Data segment selector */
-    uint32_t edi, esi, ebp, ignored, ebx, edx, ecx, eax; /* Pushed by pusha. */
-    uint32_t int_num, err_code;                          /* Interrupt number and error code (if applicable) */
-    uint32_t eip, cs, eflags, esp, ss;                   /* Pushed by the processor automatically */
-};
+namespace Arch {
 
 struct stackframe {
     struct stackframe* ebp;
     size_t eip;
 };
+
+}

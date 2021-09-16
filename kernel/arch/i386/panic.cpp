@@ -23,6 +23,8 @@
 #define PANIC_COLOR_FORE 0x000000
 #define PANIC_COLOR_BACK 0xFFFFFF
 
+namespace Arch {
+
 // Function prototypes
 static void printPanicScreen();
 static void panicPrintSource(const char* file, uint32_t line, const char* func);
@@ -45,8 +47,7 @@ static void printPanicScreen()
         "            (__)\\       )\\/\\\n"
         "             U  ||----w |\n"
         "                ||     ||\n"
-        "< OH NO! Xyris panicked! >\n"
-    );
+        "< OH NO! Xyris panicked! >\n");
     // Print to VGA and serial
     Console::printf("%s", cow);
     RS232::printf("%s", cow);
@@ -97,9 +98,7 @@ NORET void panic(struct registers* regs, const char* file, uint32_t line, const 
     panicPrintRegister(regs);
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
-    size_t faulting_address;
-    asm volatile("mov %%cr2, %0"
-                 : "=r"(faulting_address));
+    Registers::CR2 cr2 = Registers::readCR2();
     // The error code gives us details of what happened.
     int present = !(regs->err_code & 0x1); // Page not present
     int rw = regs->err_code & 0x2;         // Write operation?
@@ -121,7 +120,7 @@ NORET void panic(struct registers* regs, const char* file, uint32_t line, const 
             rws,
             uss,
             avail,
-            faulting_address,
+            cr2.pageFaultAddr,
             id);
         // Print to VGA and serial
         Console::printf("%s", msg);
@@ -153,7 +152,6 @@ static void panicPrintSource(const char* file, uint32_t line, const char* func)
 static void panicPrintRegister(struct registers* regs)
 {
     char msg[512];
-#if defined(__i386__) | defined(__i686__)
     ksprintf(
         msg,
         "\033[31m DS:\033[0m 0x%08X\n"
@@ -166,8 +164,9 @@ static void panicPrintRegister(struct registers* regs)
         regs->eax, regs->ebx, regs->ecx, regs->edx,
         regs->err_code, regs->eip, regs->cs, regs->eflags,
         regs->ss);
-#endif
     // Print to VGA and serial
     Console::printf("%s", msg);
     RS232::printf("%s", msg);
+}
+
 }
