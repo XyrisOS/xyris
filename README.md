@@ -31,3 +31,5 @@ See [LICENSE](https://github.com/XyrisOS/xyris/blob/stable/LICENSE) for details.
 
 ## Third Party Projects
 * [Limine Bootloader](https://github.com/limine-bootloader/limine)
+* [Liballoc](https://github.com/blanham/liballoc)
+* [Catch2](https://github.com/catchorg/Catch2)

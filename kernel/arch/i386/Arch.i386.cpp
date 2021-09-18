@@ -11,8 +11,17 @@
 // Architecture (i386) specific header
 #include <arch/i386/Arch.i386.hpp>
 #include <arch/i386/regs.hpp>
+#include <arch/i386/gdt.hpp>
+#include <arch/i386/idt.hpp>
+#include <arch/i386/isr.hpp>
+#include <arch/i386/ports.hpp>
+#include <arch/i386/timer.hpp>
+#include <cpuid.h>
+#include <stddef.h>
+#include <stdint.h>
 // Architecture agnostic header
 #include <arch/Arch.hpp>
+#include <arch/Memory.hpp>
 #include <cpuid.h>
 
 #define PAGE_ALIGN  0xFFFFF000
@@ -24,9 +33,7 @@
  * /_/ \_\_| \__|_||_| |___|_||_\__\___|_| |_| \__,_\__\___|
  */
 
-namespace Arch {
-
-namespace Memory {
+namespace Arch::Memory {
 
 void pagingEnable() {
     struct Registers::CR0 cr0 = Registers::readCR0();
@@ -55,9 +62,9 @@ bool pageIsAligned(size_t addr)
     return ((addr % ARCH_PAGE_SIZE) == 0);
 }
 
-} // !namespace Memory
+} // !namespace Arch::Memory
 
-namespace CPU {
+namespace Arch::CPU {
 
 void init()
 {
@@ -92,6 +99,4 @@ const char* model()
     return (char*)model;
 }
 
-} // !namespace CPU
-
-} // !namespace Arch
+} // !namespace Arch::CPU

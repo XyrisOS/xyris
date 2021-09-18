@@ -10,7 +10,6 @@
  */
 #pragma once
 
-#include <arch/Arch.hpp>
 #include <mem/MemoryMap.hpp>
 #include <stddef.h>
 #include <stdint.h>

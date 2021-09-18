@@ -9,9 +9,9 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-
 #include <arch/Arch.hpp>
-#include <arch/i386/panic.hpp>
+#include <arch/i386/Arch.i386.hpp>
+#include <arch/i386/isr.hpp>
 #include <dev/graphics/console.hpp>
 #include <dev/graphics/framebuffer.hpp>
 #include <dev/graphics/graphics.hpp>

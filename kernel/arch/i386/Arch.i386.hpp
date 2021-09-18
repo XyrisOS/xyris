@@ -10,15 +10,8 @@
  */
 #pragma once
 #include <arch/i386/regs.hpp>
-#include <arch/i386/gdt.hpp>
-#include <arch/i386/idt.hpp>
-#include <arch/i386/isr.hpp>
-#include <arch/i386/panic.hpp>
 #include <arch/i386/ports.hpp>
-#include <arch/i386/timer.hpp>
-#include <cpuid.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <arch/i386/isr.hpp>
 
 #define ARCH_PAGE_SIZE  0x1000
 

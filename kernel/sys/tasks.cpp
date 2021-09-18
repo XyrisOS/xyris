@@ -9,12 +9,14 @@
  *
  */
 #include <arch/Arch.hpp>
+#include <arch/Memory.hpp>
 #include <sys/tasks.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
 #include <dev/serial/rs232.hpp>
 #include <stdint.h>         // Data type definitions
 #include <x86gprintrin.h>   // needed for __rdtsc
+#include <arch/i386/timer.hpp> // TODO: Remove ASAP
 
 /* forward declarations */
 static void _enqueue_task(struct tasklist *, task *);

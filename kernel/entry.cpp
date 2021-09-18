@@ -61,7 +61,6 @@ static void bootTone()
 {
     // Beep beep!
     spkr_beep(1000, 50);
-    sleep(100);
     spkr_beep(1000, 50);
 }
 

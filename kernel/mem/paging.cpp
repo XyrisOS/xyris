@@ -10,6 +10,7 @@
  *
  */
 #include <arch/Arch.hpp>
+#include <arch/Memory.hpp>
 #include <boot/Arguments.hpp>
 #include <lib/Bitset.hpp>
 #include <lib/mutex.hpp>

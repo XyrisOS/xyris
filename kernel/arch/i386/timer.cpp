@@ -9,6 +9,7 @@
  *
  */
 #include <arch/i386/timer.hpp>
+#include <arch/i386/isr.hpp>
 
 static void timer_callback(struct registers *regs);
 volatile uint32_t timer_tick;
