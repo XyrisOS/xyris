@@ -216,17 +216,19 @@ static int putchar(unsigned c, void** ptr)
     }
 
     // Move to the next line
-    if (cursorX >= X86_TTY_WIDTH) {
+    // TODO: Get width of "screen" (replace 80 with width) (#275)
+    if (cursorX >= 80) {
         debugf("Move to the next line\n");
         cursorX = 0;
         cursorY++;
     }
     // Clear the screen
-    if (cursorY >= X86_TTY_HEIGHT) {
+    // TODO: Get height of "screen" (replace 25 with height) (#275)
+    if (cursorY >= 25) {
         debugf("Shift up the screen\n");
         //TODO: Shift text up and reset the bottom line
         cursorX = 0;
-        cursorY = X86_TTY_HEIGHT - 1;
+        cursorY = 25 - 1;
     }
     goto end;
 error:

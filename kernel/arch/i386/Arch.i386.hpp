@@ -22,19 +22,6 @@
 
 #define ARCH_PAGE_SIZE  0x1000
 
-/**
- * @brief x86 BIOS based VGA pointers and data.
- * Used for printing to the VGA screen via BIOS memory.
- */
-#define X86_TTY_WIDTH 80
-#define X86_TTY_HEIGHT 25
-#define X86_IND_X 79
-#define X86_IND_Y 0
-inline uint16_t* x86_bios_vga_mem = (uint16_t*)0x000B8000;
-
-// List of all exceptions and their associated english descriptions
-extern const char* exception_descriptions[32][16];
-
 namespace Arch {
 
 struct stackframe {

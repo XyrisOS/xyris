@@ -17,17 +17,6 @@
 
 #define PAGE_ALIGN  0xFFFFF000
 
-const char* exception_descriptions[32][16] = {
-    "Divide-By-Zero", "Debugging", "Non-Maskable", "Breakpoint",
-    "Overflow", "Out Bound Range", "Invalid Opcode", "Device Not Avbl",
-    "Double Fault", "Co-CPU Overrun", "Invalid TSS", "Sgmnt !Present",
-    "Seg Fault", "Protection Flt", "Page Fault", "RESERVED",
-    "Floating Pnt", "Alignment Check", "Machine Check", "SIMD Flt Pnt",
-    "Virtualization", "RESERVED", "RESERVED", "RESERVED",
-    "RESERVED", "RESERVED", "RESERVED", "RESERVED",
-    "RESERVED", "Security Excptn", "RESERVED", "Triple Fault", "FPU Error"
-};
-
 /*
  *    _          _      ___     _            __
  *   /_\  _ _ __| |_   |_ _|_ _| |_ ___ _ _ / _|__ _ __ ___

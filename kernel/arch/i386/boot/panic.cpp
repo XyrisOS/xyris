@@ -14,8 +14,12 @@
 #include <meta/sections.hpp>
 #include <meta/compiler.hpp>
 
+#define TTY_WIDTH 80
+#define TTY_HEIGHT 25
 #define VGA_COLOR(bg, fg) (uint16_t)(((bg)<<4)|((fg)&0xF))
 #define VGA_CHAR(ch, co) (uint16_t)((ch)|((co)<<8))
+
+inline uint16_t* biosVGABuffer = (uint16_t*)0x000B8000;
 
 enum bios_color : uint16_t {
     BIOS_Black           = 0,
@@ -48,9 +52,9 @@ early_panic(const char *str) {
     int x = 0;
 	int y = 0;
     // Clear the screen
-    for (int i = 0; i < X86_TTY_WIDTH; i++) {
-        for (int j = 0; j < X86_TTY_HEIGHT; j ++) {
-            where = x86_bios_vga_mem + (j * X86_TTY_WIDTH + i);
+    for (int i = 0; i < TTY_WIDTH; i++) {
+        for (int j = 0; j < TTY_HEIGHT; j ++) {
+            where = biosVGABuffer + (j * TTY_WIDTH + i);
             *where = VGA_CHAR(' ', VGA_COLOR(BIOS_Black, BIOS_White));
         }
     }
@@ -64,7 +68,7 @@ early_panic(const char *str) {
                 break;
             // Anything else
             default:
-                where = x86_bios_vga_mem + (y * X86_TTY_WIDTH + x);
+                where = biosVGABuffer + (y * TTY_WIDTH + x);
                 *where = VGA_CHAR(str[i], VGA_COLOR(BIOS_Red, BIOS_White));
                 x++;
                 break;

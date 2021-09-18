@@ -25,6 +25,17 @@
 
 namespace Arch {
 
+const char* descriptions[32][32] = {
+    "Divide-By-Zero", "Debugging", "Non-Maskable Interrupt", "Breakpoint",
+    "Overflow", "Bound Range Exceeded", "Invalid Opcode", "Device Not Available",
+    "Double Fault", "Coprocessor Overrun", "Invalid TSS", "Segment Not Present",
+    "Segmentation Fault", "Protection Fault", "Page Fault", "RESERVED",
+    "Floating Point Exception", "Alignment Check", "Machine Check", "SIMD Floating Point Exception",
+    "Virtualization Exception", "RESERVED", "RESERVED", "RESERVED",
+    "RESERVED", "RESERVED", "RESERVED", "RESERVED",
+    "RESERVED", "Security Exception", "RESERVED", "Triple Fault", "FPU Error"
+};
+
 // Function prototypes
 static void printPanicScreen();
 static void panicPrintSource(const char* file, uint32_t line, const char* func);
@@ -80,7 +91,7 @@ NORET void panic(struct registers* regs, const char* file, uint32_t line, const 
         msg,
         "Exception: %i (%s)\n\n",
         regs->int_num,
-        exception_descriptions[regs->int_num]);
+        descriptions[regs->int_num]);
     // Print to VGA and serial
     Console::printf("%s", msg);
     RS232::printf("%s", msg);
