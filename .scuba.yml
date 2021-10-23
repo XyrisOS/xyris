@@ -1,5 +1,7 @@
+# Note: All running tasks have been removed and were migrated to VSCode tasks that
+#       require Qemu to be installed on the host system. This helps reduce the total
+#       size of the Docker image and provide you with more choice.
 image: ghcr.io/xyrisos/xyris-build/xyris-build:3.2.0
-
 aliases:
     # Building
     build: make -j$(nproc) all
@@ -40,21 +42,6 @@ aliases:
         IMGTYPE: iso
         MODE: release
       script: make dist
-    # Running
-    run:
-      environment:
-        MODE: debug
-      script: make run
-    run-debug:
-      environment:
-        MODE: debug
-      script:
-        - make run-debug &
-        - i686-elf-gdb -x gdb.commands
-    run-release:
-      environment:
-        MODE: release
-      script: make run
     # Documentation
     docs:
       script: make docs
