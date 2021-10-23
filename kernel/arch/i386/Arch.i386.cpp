@@ -47,9 +47,9 @@ void pagingDisable() {
     Registers::writeCR0(cr0);
 }
 
-void pageInvalidate(void* pageAddr)
+void pageInvalidate(void* addr)
 {
-   asm volatile("invlpg (%0)" ::"r" (pageAddr) : "memory");
+   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
 }
 
 uintptr_t pageAlign(size_t addr)
@@ -69,9 +69,9 @@ namespace Arch::CPU {
 void init()
 {
     criticalRegion([]() {
-        gdt_install();               // Initialize the Global Descriptor Table
-        isr_install();               // Initialize Interrupt Service Requests
-        timer_init(1000);            // Programmable Interrupt Timer (1ms)
+        gdt_install();      // Initialize the Global Descriptor Table
+        isr_install();      // Initialize Interrupt Service Requests
+        timer_init(1000);   // Programmable Interrupt Timer (1ms)
     });
 }
 

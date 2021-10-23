@@ -98,11 +98,9 @@ static inline void mapKernelPageTable(uint32_t idx, struct Table* table)
         .ignoredA = 0,
         .size = 0,
         .ignoredB = 0,
-        // compute the physical address of this page table
-        // the virtual address is obtained with the & operator and
-        // the offset is applied from the load address of the kernel
-        // we must shift it over 12 bits because we only care about
-        // the highest 20 bits for the page table
+        // compute the physical address of this page table the virtual address is obtained with the & operator and
+        // the offset is applied from the load address of the kernel we must shift it over 12 bits because we only
+        // care about the highest 20 bits for the page table
         .tableAddr = KADDR_TO_PHYS((uint32_t)table) >> 12
     };
 }
@@ -247,8 +245,7 @@ void freePage(void* page, uint32_t size)
         mappedPages.Reset(i);
         // this is the same as the line above
         struct TableEntry* pte = &(pageTables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
-        // the frame field is actually the page frame's index
-        // basically it's frame 0, 1...(2^21-1)
+        // the frame field is actually the page frame's index basically it's frame 0, 1...(2^21-1)
         mappedMemory.Reset(pte->frame);
         // zero it out to unmap it
         *pte = { /* Zero */ };
@@ -260,8 +257,7 @@ void freePage(void* page, uint32_t size)
 
 bool isPresent(size_t addr)
 {
-    // Convert the address into an index and
-    // check whether the page is in the bitmap
+    // Convert the address into an index and check whether the page is in the bitmap
     return mappedPages[addr >> 12];
 }
 

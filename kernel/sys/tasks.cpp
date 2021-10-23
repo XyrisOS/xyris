@@ -14,7 +14,7 @@
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
 #include <dev/serial/rs232.hpp>
-#include <stdint.h>         // Data type definitions
+#include <stdint.h>
 #include <x86gprintrin.h>   // needed for __rdtsc
 #include <arch/i386/timer.hpp> // TODO: Remove ASAP
 

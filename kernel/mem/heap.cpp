@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <lib/errno.h>
+#include <lib/errno.hpp>
 #include <lib/mutex.hpp>
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
@@ -20,21 +20,14 @@ extern "C" {
 
 int liballoc_lock()
 {
-    int old_errno = errno;
-    int result = lock.Lock();
-    errno = old_errno;
-    return result;
+    return lock.Lock();
 }
 
 int liballoc_unlock()
 {
-    int old_errno = errno;
-    int result = lock.Unlock();
-    errno = old_errno;
-    return result;
+    return lock.Unlock();
 }
 
-// TODO: Move PAGE_SIZE to architecture headers?
 void* liballoc_alloc(unsigned int count)
 {
     return Paging::newPage(count * ARCH_PAGE_SIZE - 1);

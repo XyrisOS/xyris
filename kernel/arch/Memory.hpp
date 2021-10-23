@@ -15,9 +15,23 @@
 
 namespace Arch::Memory {
 
+/**
+ * @brief Enable hardware paging
+ *
+ */
 void pagingEnable();
+/**
+ * @brief Disable hardware paging
+ *
+ */
 void pagingDisable();
-void pageInvalidate(void* pageAddr);
+/**
+ * @brief Invalidate the page at the given address. Implementations are architecture
+ * specific.
+ *
+ * @param addr Address of page to be invalidated
+ */
+void pageInvalidate(void* addr);
 /**
  * @brief Aligns the provided address to the start of its corresponding page address.
  *

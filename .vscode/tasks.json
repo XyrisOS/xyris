@@ -37,7 +37,8 @@
             "command": "make",
             "args": [
                 "clean"
-            ]
+            ],
+            "problemMatcher": []
         },
         {
             "type": "shell",

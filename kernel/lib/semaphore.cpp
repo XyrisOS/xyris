@@ -18,7 +18,7 @@
 // Reference:
 // https://gcc.gnu.org/onlinedocs/gcc-8.3.0/gcc/_005f_005fatomic-Builtins.html
 
-#include <lib/errno.h>
+#include <lib/errno.hpp>
 #include <lib/semaphore.hpp>
 
 // Can't make this an inline function due to compiler errors with failure_memorder
@@ -69,10 +69,8 @@ int Semaphore::TryWait()
     // Compare the semaphore's current value to the value recorded earlier.
     // If the semaphore counter is already 0 then just skip the compare and exhange.
     do {
-        // If the value is 0 then go ahead and return after setting errno.
         if (curVal == 0) {
-            // Set errno and return 0.
-            errno = EAGAIN;
+            errno = LockTaken;
             return -1;
         }
         // We need to fail on an Atomic Acquire Release because it will fail less often (i.e. fewer loop iterations)
