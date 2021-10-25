@@ -112,7 +112,7 @@ static void initDirectory()
         mapKernelPageTable(i, &pageTables[i]);
         // clear out the page tables
         for (int j = 0; j < PAGE_ENTRIES; j++) {
-            pageTables[i].pages[j] = (struct TableEntry) { /* ZERO */ };
+            memset(&pageTables[i].pages[j], 0, sizeof(struct TableEntry));
         }
     }
     // recursively map the last page table to the page directory

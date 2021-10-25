@@ -24,8 +24,6 @@
 #include <arch/Memory.hpp>
 #include <cpuid.h>
 
-#define PAGE_ALIGN  0xFFFFF000
-
 /*
  *    _          _      ___     _            __
  *   /_\  _ _ __| |_   |_ _|_ _| |_ ___ _ _ / _|__ _ __ ___
@@ -45,21 +43,6 @@ void pagingDisable() {
     struct Registers::CR0 cr0 = Registers::readCR0();
     cr0.pagingEnable = 0;
     Registers::writeCR0(cr0);
-}
-
-void pageInvalidate(void* addr)
-{
-   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
-}
-
-uintptr_t pageAlign(size_t addr)
-{
-    return addr & PAGE_ALIGN;
-}
-
-bool pageIsAligned(size_t addr)
-{
-    return ((addr % ARCH_PAGE_SIZE) == 0);
 }
 
 } // !namespace Arch::Memory

@@ -257,6 +257,16 @@ public:
     {
         return count;
     }
+    /**
+     * @brief Check if the linked list is empty
+     *
+     * @return true The list is empty
+     * @return false The list is not empty
+     */
+    bool IsEmpty()
+    {
+        return Count() == 0;
+    }
 
 private:
     LinkedListNode<T>* head;
