@@ -14,8 +14,7 @@
 #define FONT_WIDTH 8
 #define FONT_HEIGHT 8
 
-namespace Graphics {
-namespace Font {
+namespace Graphics::Font {
 
 /**
  * @brief Draw the character at the given coordinates in the given color.
@@ -38,5 +37,4 @@ void Draw(char c, uint32_t x, uint32_t y, uint32_t fore);
  */
 void Draw(char c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back);
 
-}
-}
+} // !namespace Font

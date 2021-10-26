@@ -9,9 +9,9 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-
 #include <arch/Arch.hpp>
-#include <arch/i386/panic.hpp>
+#include <arch/i386/Arch.i386.hpp>
+#include <arch/i386/isr.hpp>
 #include <dev/graphics/console.hpp>
 #include <dev/graphics/framebuffer.hpp>
 #include <dev/graphics/graphics.hpp>
@@ -22,6 +22,19 @@
 
 #define PANIC_COLOR_FORE 0x000000
 #define PANIC_COLOR_BACK 0xFFFFFF
+
+namespace Arch {
+
+const char* descriptions[32][32] = {
+    "Divide-By-Zero", "Debugging", "Non-Maskable Interrupt", "Breakpoint",
+    "Overflow", "Bound Range Exceeded", "Invalid Opcode", "Device Not Available",
+    "Double Fault", "Coprocessor Overrun", "Invalid TSS", "Segment Not Present",
+    "Segmentation Fault", "Protection Fault", "Page Fault", "RESERVED",
+    "Floating Point Exception", "Alignment Check", "Machine Check", "SIMD Floating Point Exception",
+    "Virtualization Exception", "RESERVED", "RESERVED", "RESERVED",
+    "RESERVED", "RESERVED", "RESERVED", "RESERVED",
+    "RESERVED", "Security Exception", "RESERVED", "Triple Fault", "FPU Error"
+};
 
 // Function prototypes
 static void printPanicScreen();
@@ -45,8 +58,7 @@ static void printPanicScreen()
         "            (__)\\       )\\/\\\n"
         "             U  ||----w |\n"
         "                ||     ||\n"
-        "< OH NO! Xyris panicked! >\n"
-    );
+        "< OH NO! Xyris panicked! >\n");
     // Print to VGA and serial
     Console::printf("%s", cow);
     RS232::printf("%s", cow);
@@ -79,7 +91,7 @@ NORET void panic(struct registers* regs, const char* file, uint32_t line, const 
         msg,
         "Exception: %i (%s)\n\n",
         regs->int_num,
-        exception_descriptions[regs->int_num]);
+        descriptions[regs->int_num]);
     // Print to VGA and serial
     Console::printf("%s", msg);
     RS232::printf("%s", msg);
@@ -97,9 +109,7 @@ NORET void panic(struct registers* regs, const char* file, uint32_t line, const 
     panicPrintRegister(regs);
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.
-    size_t faulting_address;
-    asm volatile("mov %%cr2, %0"
-                 : "=r"(faulting_address));
+    Registers::CR2 cr2 = Registers::readCR2();
     // The error code gives us details of what happened.
     int present = !(regs->err_code & 0x1); // Page not present
     int rw = regs->err_code & 0x2;         // Write operation?
@@ -121,7 +131,7 @@ NORET void panic(struct registers* regs, const char* file, uint32_t line, const 
             rws,
             uss,
             avail,
-            faulting_address,
+            cr2.pageFaultAddr,
             id);
         // Print to VGA and serial
         Console::printf("%s", msg);
@@ -153,7 +163,6 @@ static void panicPrintSource(const char* file, uint32_t line, const char* func)
 static void panicPrintRegister(struct registers* regs)
 {
     char msg[512];
-#if defined(__i386__) | defined(__i686__)
     ksprintf(
         msg,
         "\033[31m DS:\033[0m 0x%08X\n"
@@ -166,8 +175,9 @@ static void panicPrintRegister(struct registers* regs)
         regs->eax, regs->ebx, regs->ecx, regs->edx,
         regs->err_code, regs->eip, regs->cs, regs->eflags,
         regs->ss);
-#endif
     // Print to VGA and serial
     Console::printf("%s", msg);
     RS232::printf("%s", msg);
+}
+
 }

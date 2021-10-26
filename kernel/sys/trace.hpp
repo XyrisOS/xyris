@@ -11,4 +11,5 @@
 #pragma once
 #include <stddef.h>
 
+// TODO: Take function to call for each frame
 void stack_trace(size_t max);

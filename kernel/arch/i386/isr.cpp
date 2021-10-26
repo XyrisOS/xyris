@@ -9,6 +9,7 @@
  *
  */
 #include <arch/Arch.hpp>
+#include <arch/i386/idt.hpp>
 #include <arch/i386/isr.hpp>
 
 // Private array of interrupt handlers

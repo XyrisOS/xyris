@@ -11,9 +11,8 @@
  * References:
  *     https://wiki.osdev.org/Double_Buffering
  *     https://github.com/skiftOS/skift/blob/main/kernel/system/graphics/Graphics.cpp
- * 
+ *
  */
-#include <dev/graphics/framebuffer.hpp>
 #include <dev/graphics/graphics.hpp>
 #include <stddef.h>
 #include <stdint.h>
@@ -29,17 +28,17 @@ static Framebuffer* info = NULL;
 static void* backbuffer = NULL;
 static bool initialized = false;
 
-void init()
+void init(Framebuffer* fb)
 {
     // Get the framebuffer info
-    if (!(info = getFramebuffer()))
+    if (!(info = fb))
         return;
     // Ensure valid info is provided
     if (!info->getAddress())
         return;
     // Map in the framebuffer
     debugf("Mapping framebuffer...\n");
-    map_kernel_range_virtual((uintptr_t)info->getAddress(), (uintptr_t)info->getAddress() + (info->getPitch() * info->getHeight()));
+    Paging::mapKernelRangeVirtual((uintptr_t)info->getAddress(), (uintptr_t)info->getAddress() + (info->getPitch() * info->getHeight()));
     // Alloc the backbuffer
     backbuffer = malloc(info->getPitch() * info->getHeight());
     memcpy(backbuffer, info->getAddress(), info->getPitch() * info->getHeight());

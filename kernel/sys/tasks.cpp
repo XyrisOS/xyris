@@ -9,12 +9,14 @@
  *
  */
 #include <arch/Arch.hpp>
+#include <arch/Memory.hpp>
 #include <sys/tasks.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
 #include <dev/serial/rs232.hpp>
-#include <stdint.h>         // Data type definitions
+#include <stdint.h>
 #include <x86gprintrin.h>   // needed for __rdtsc
+#include <arch/i386/timer.hpp> // TODO: Remove ASAP
 
 /* forward declarations */
 static void _enqueue_task(struct tasklist *, task *);
@@ -154,7 +156,7 @@ void tasks_init()
         // this will be filled in when we switch to another task for the first time
         .stack_top = 0,
         // this will be the same for kernel tasks
-        .page_dir = get_phys_page_dir(),
+        .page_dir = Paging::getPageDirPhysAddr(),
         // this is a linked list with only this task
         .next = NULL,
         // this task is currently running
@@ -294,10 +296,11 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
         }
     }
     // allocate a page for this stack (we might change this later)
-    uint8_t *stack = (uint8_t *)get_new_page(PAGE_SIZE - 1);
+    // TODO: Should more than one page be allocated / freed?
+    uint8_t *stack = (uint8_t *)Paging::newPage(1);
     if (stack == NULL) PANIC("Unable to allocate memory for new task stack.\n");
     // remember, the stack grows up
-    void *stack_pointer = stack + PAGE_SIZE;
+    void *stack_pointer = stack + ARCH_PAGE_SIZE;
     // a null stack frame to make the panic screen happy
     _stack_push_word(&stack_pointer, 0);
     // the last thing to happen is the task stopping function
@@ -313,7 +316,7 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
     _stack_push_word(&stack_pointer, 0);
     _stack_push_word(&stack_pointer, 0);
     new_task->stack_top = (uintptr_t)stack_pointer;
-    new_task->page_dir = get_phys_page_dir();
+    new_task->page_dir = Paging::getPageDirPhysAddr();
     new_task->next = NULL;
     new_task->state = state;
     new_task->time_used = 0;
@@ -390,10 +393,6 @@ static void _schedule()
     }
     // reset the time slice because a new task is being scheduled
     _time_slice_remaining = TIME_SLICE_SIZE;
-#ifdef DEBUG
-    RS232::printf("switching to ");
-    _print_task(task);
-#endif
     // reset the last "timer time" since the time slice was reset
     _last_timer_time = _get_cpu_time_ns();
     // switch to the task
@@ -526,8 +525,9 @@ void tasks_exit()
 static void _clean_stopped_task(struct task *task)
 {
     // free the stack page
-    uintptr_t page = page_align_addr(task->stack_top);
-    free_page((void *)page, PAGE_SIZE - 1);
+    uintptr_t page = Arch::Memory::pageAlign(task->stack_top);
+    // TODO: Should more than one page be allocated / freed?
+    Paging::freePage((void *)page, 1);
     // somehow determine if the task was dynamically allocated or not
     // just assume statically allocated tasks will never exit (bad idea)
     if (task->alloc == ALLOC_DYNAMIC) free(task);

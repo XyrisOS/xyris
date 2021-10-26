@@ -19,7 +19,7 @@
 // https://gcc.gnu.org/onlinedocs/gcc-8.3.0/gcc/_005f_005fatomic-Builtins.html
 
 #include <lib/mutex.hpp>
-#include <lib/errno.h>
+#include <lib/errno.hpp>
 
 Mutex::Mutex(const char* name)
     : locked(false)
@@ -48,7 +48,7 @@ int Mutex::Trylock()
 {
     // If we cannot immediately acquire the lock then just return an error
     if (__atomic_test_and_set(&locked, __ATOMIC_RELEASE)) {
-        errno = EINVAL;
+        errno = InvalidValue;
         return -1;
     }
     // Success, return 0

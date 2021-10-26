@@ -13,7 +13,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <lib/errno.h>
+#include <lib/errno.hpp>
 
 template <typename T, size_t S>
 class RingBuffer {
@@ -41,7 +41,7 @@ public:
         // Check if the buffer is full. If so, we can't enqueue.
         if (IsFull()) {
             status = -1;
-            error = ENOBUFS;
+            error = BufferFull;
         } else {
             // Write the data at the write index
             this->data[this->head] = val;
@@ -64,7 +64,7 @@ public:
         // Check if the buffer is empty. If so, we can't dequeue
         if (IsEmpty()) {
             status = -1;
-            error = EINVAL;
+            error = InvalidValue;
         } else {
             // Read out the data and decrement the position
             *buf = this->data[this->tail];
@@ -85,7 +85,7 @@ public:
         T val = 0;
         // Check if the buffer is empty. If so, we can't dequeue
         if (IsEmpty()) {
-            error = EINVAL;
+            error = InvalidValue;
         } else {
             // Read out the data and decrement the position
             val = this->data[this->tail];
@@ -108,7 +108,7 @@ public:
         // Check if the buffer is empty. If so, we can't dequeue
         if (IsEmpty()) {
             status = -1;
-            error = EINVAL;
+            error = InvalidValue;
         } else {
             // Read out the data and don't decrement the position
             *buf = this->data[this->tail];

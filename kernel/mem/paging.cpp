@@ -10,6 +10,7 @@
  *
  */
 #include <arch/Arch.hpp>
+#include <arch/Memory.hpp>
 #include <boot/Arguments.hpp>
 #include <lib/Bitset.hpp>
 #include <lib/mutex.hpp>
@@ -19,70 +20,75 @@
 #include <meta/sections.hpp>
 #include <stddef.h>
 
+namespace Paging {
+
 #define PAGE_ENTRIES        1024
 #define ADDRESS_SPACE_SIZE  0x100000000
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
-#define ADDR(addr)          ((union address) { .val = (addr) })
+#define ADDR(addr)          ((union Address) { .val = (addr) })
 
-static uint32_t machine_page_count;
-static Mutex mutex_paging("paging");
+static Mutex pagingLock("paging");
 
-#define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
+#define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / ARCH_PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
 
 // one bit for every page
-static Bitset<size_t, MEM_BITMAP_SIZE> mapped_mem;
-static Bitset<size_t, MEM_BITMAP_SIZE> mapped_pages;
+static Bitset<size_t, MEM_BITMAP_SIZE> mappedMemory;
+static Bitset<size_t, MEM_BITMAP_SIZE> mappedPages;
 
-static uint32_t page_dir_addr;
-static struct page_table* page_dir_virt[PAGE_ENTRIES];
+static uint32_t pageDirectoryAddress;
+static struct Table* pageDirectoryVirtual[PAGE_ENTRIES];
 
 // both of these must be page aligned for anything to work right at all
-static struct page_directory_entry page_dir_phys[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
-static struct page_table page_tables[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
+static struct DirectoryEntry pageDirectoryPhysical[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
+static struct Table pageTables[PAGE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
 
 // Function prototypes
-static void mem_page_fault(struct registers* regs);
-static void paging_init_dir();
-static void paging_map_early_mem();
-static void paging_map_hh_kernel();
-static uint32_t find_next_free_virt_addr(int seq);
-static uint32_t find_next_free_phys_page();
-static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table* table);
-static inline void set_page_dir(uint32_t page_directory);
-static void paging_args_cb(const char* arg);
+static void pageFaultCallback(struct registers* regs);
+static void initDirectory();
+static void mapEarlyMem();
+static void mapKernel();
+static uint32_t findNextFreeVirtualAddress(int seq);
+static uint32_t findNextFreePhysicalAddress();
+static inline void mapKernelPageTable(uint32_t idx, struct Table* table);
+static inline void setPageDirectory(uint32_t Directory);
+static void argumentsCallback(const char* arg);
 
 // Kernel cmdline arguments
 static bool is_mapping_output_enabled = false;
 #define MAPPING_OUTPUT_FLAG "--enable-mapping-output"
-KERNEL_PARAM(enable_mapping_output, MAPPING_OUTPUT_FLAG, paging_args_cb);
+KERNEL_PARAM(enableMappingLogs, MAPPING_OUTPUT_FLAG, argumentsCallback);
 
-void paging_init(uint32_t page_count)
+void init(Memory::MemoryMap* map)
 {
-    // TODO: Get total RAM size / page count from bootloader
-    machine_page_count = page_count;
+    for (size_t i = 0; i < map->Count(); i++) {
+        auto section = map->Get(i);
+        if (section.Initialized()) {
+            debugf("[%s]\t0x%08X - 0x%08X\n", section.TypeString(), section.Base(), section.Size());
+        }
+    }
     // we can set breakpoints or make a futile attempt to recover.
-    register_interrupt_handler(ISR_PAGE_FAULT, mem_page_fault);
+    register_interrupt_handler(ISR_PAGE_FAULT, pageFaultCallback);
     // init our structures
-    paging_init_dir();
+    initDirectory();
     // identity map the first 1 MiB of RAM
-    paging_map_early_mem();
+    mapEarlyMem();
     // map in our higher-half kernel
-    paging_map_hh_kernel();
+    mapKernel();
     // use our new set of page tables
-    set_page_dir(page_dir_addr & PAGE_ALIGN);
+    setPageDirectory(Arch::Memory::pageAlign(pageDirectoryAddress));
     // flush the tlb and we're off to the races!
-    Arch::pagingEnable();
+    Arch::Memory::pagingEnable();
 }
 
-static void mem_page_fault(struct registers* regs)
+static void pageFaultCallback(struct registers* regs)
 {
     PANIC(regs);
 }
 
-static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table* table)
+static inline void mapKernelPageTable(uint32_t idx, struct Table* table)
 {
-    page_dir_virt[pd_idx] = table;
-    page_dir_phys[pd_idx] = {
+    pageDirectoryVirtual[idx] = table;
+    pageDirectoryPhysical[idx] = {
         .present = 1,
         .readWrite = 1,
         .usermode = 0,
@@ -92,35 +98,33 @@ static inline void map_kernel_page_table(uint32_t pd_idx, struct page_table* tab
         .ignoredA = 0,
         .size = 0,
         .ignoredB = 0,
-        // compute the physical address of this page table
-        // the virtual address is obtained with the & operator and
-        // the offset is applied from the load address of the kernel
-        // we must shift it over 12 bits because we only care about
-        // the highest 20 bits for the page table
+        // compute the physical address of this page table the virtual address is obtained with the & operator and
+        // the offset is applied from the load address of the kernel we must shift it over 12 bits because we only
+        // care about the highest 20 bits for the page table
         .tableAddr = KADDR_TO_PHYS((uint32_t)table) >> 12
     };
 }
 
-static void paging_init_dir()
+static void initDirectory()
 {
     // For every page in kernel memory
     for (int i = 0; i < PAGE_ENTRIES - 1; i++) {
-        map_kernel_page_table(i, &page_tables[i]);
+        mapKernelPageTable(i, &pageTables[i]);
         // clear out the page tables
         for (int j = 0; j < PAGE_ENTRIES; j++) {
-            page_tables[i].pages[j] = (struct page_table_entry) { /* ZERO */ };
+            memset(&pageTables[i].pages[j], 0, sizeof(struct TableEntry));
         }
     }
     // recursively map the last page table to the page directory
-    map_kernel_page_table(PAGE_ENTRIES - 1, (struct page_table*)&page_dir_phys[0]);
+    mapKernelPageTable(PAGE_ENTRIES - 1, (struct Table*)&pageDirectoryPhysical[0]);
     for (uint32_t i = PAGE_ENTRIES * (PAGE_ENTRIES - 1); i < PAGE_ENTRIES * PAGE_ENTRIES; i++) {
-        mapped_pages.Set(i);
+        mappedPages.Set(i);
     }
     // store the physical address of the page directory for quick access
-    page_dir_addr = KADDR_TO_PHYS((uint32_t)&page_dir_phys[0]);
+    pageDirectoryAddress = KADDR_TO_PHYS((uint32_t)&pageDirectoryPhysical[0]);
 }
 
-void map_kernel_page(union address vaddr, union address paddr)
+void mapKernelPage(union Address vaddr, union Address paddr)
 {
     // Set the page directory entry (pde) and page table entry (pte)
     uint32_t pde = vaddr.page.dirIndex;
@@ -129,7 +133,7 @@ void map_kernel_page(union address vaddr, union address paddr)
     if (vaddr.page.offset != 0) {
         PANIC("Attempted to map a non-page-aligned virtual address.\n");
     }
-    page_table_entry* entry = &(page_tables[pde].pages[pte]);
+    TableEntry* entry = &(pageTables[pde].pages[pte]);
     // Print a debug message to serial
     if (is_mapping_output_enabled) {
         debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr.val, vaddr.val, pde, pte);
@@ -144,7 +148,7 @@ void map_kernel_page(union address vaddr, union address paddr)
         PANIC("Attempted to map already mapped page.\n");
     }
     // Set the page information
-    page_tables[pde].pages[pte] = {
+    pageTables[pde].pages[pte] = {
         .present = 1,               // The page is present
         .readWrite = 1,             // The page has r/w permissions
         .usermode = 0,              // These are kernel pages
@@ -158,42 +162,42 @@ void map_kernel_page(union address vaddr, union address paddr)
         .frame = paddr.frame.index, // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
-    mapped_mem.Set(paddr.frame.index);
-    mapped_pages.Set(vaddr.frame.index);
+    mappedMemory.Set(paddr.frame.index);
+    mappedPages.Set(vaddr.frame.index);
 }
 
-void map_kernel_range_virtual(uintptr_t begin, uintptr_t end)
+void mapKernelRangeVirtual(uintptr_t begin, uintptr_t end)
 {
-    union address a;
-    for (a = ADDR(begin); a.val < end; a.val += PAGE_SIZE) {
-        map_kernel_page(a, a);
+    union Address a;
+    for (a = ADDR(begin); a.val < end; a.val += ARCH_PAGE_SIZE) {
+        mapKernelPage(a, a);
     }
 }
 
-void map_kernel_range_physical(uintptr_t begin, uintptr_t end)
+void mapKernelRangePhysical(uintptr_t begin, uintptr_t end)
 {
-    union address a;
-    for (a = ADDR(begin); a.val < end; a.val += PAGE_SIZE) {
-        union address phys {
+    union Address a;
+    for (a = ADDR(begin); a.val < end; a.val += ARCH_PAGE_SIZE) {
+        union Address phys {
             .val = KADDR_TO_PHYS(a.val)
         };
-        map_kernel_page(a, phys);
+        mapKernelPage(a, phys);
     }
 }
 
-static void paging_map_early_mem()
+static void mapEarlyMem()
 {
     debugf("==== MAP EARLY MEM ====\n");
-    map_kernel_range_virtual(0x0, 0x100000);
+    mapKernelRangeVirtual(0x0, 0x100000);
 }
 
-static void paging_map_hh_kernel()
+static void mapKernel()
 {
     debugf("==== MAP HH KERNEL ====\n");
-    map_kernel_range_physical(KERNEL_START, KERNEL_END);
+    mapKernelRangePhysical(KERNEL_START, KERNEL_END);
 }
 
-static inline void set_page_dir(size_t page_dir)
+static inline void setPageDirectory(size_t page_dir)
 {
     asm volatile("mov %0, %%cr3" ::"b"(page_dir));
 }
@@ -202,81 +206,73 @@ static inline void set_page_dir(size_t page_dir)
  * note: this can't find more than 32 sequential pages
  * @param seq the number of sequential pages to get
  */
-static uint32_t find_next_free_virt_addr(int seq)
+static uint32_t findNextFreeVirtualAddress(int seq)
 {
-    return mapped_pages.FindFirstRange(seq, false);
+    return mappedPages.FindFirstRange(seq, false);
 }
 
-static uint32_t find_next_free_phys_page()
+static uint32_t findNextFreePhysicalAddress()
 {
-    return mapped_mem.FindFirstBit(false);
+    return mappedMemory.FindFirstBit(false);
 }
 
-/**
- * map in a new page. if you request less than one page, you will get exactly one page
- */
-void* get_new_page(uint32_t size)
+void* newPage(uint32_t size)
 {
-    mutex_paging.Lock();
-    uint32_t page_count = (size / PAGE_SIZE) + 1;
-    uint32_t free_idx = find_next_free_virt_addr(page_count);
+    pagingLock.Lock();
+    uint32_t page_count = (size / ARCH_PAGE_SIZE) + 1;
+    uint32_t free_idx = findNextFreeVirtualAddress(page_count);
     if (free_idx == SIZE_MAX)
         return NULL;
     for (uint32_t i = free_idx; i < free_idx + page_count; i++) {
-        uint32_t phys_page_idx = find_next_free_phys_page();
+        uint32_t phys_page_idx = findNextFreePhysicalAddress();
         if (phys_page_idx == SIZE_MAX)
             return NULL;
-        union address phys = {
-            .val = phys_page_idx * PAGE_SIZE,
+        union Address phys = {
+            .val = phys_page_idx * ARCH_PAGE_SIZE,
         };
-        map_kernel_page(ADDR((uint32_t)i * PAGE_SIZE), phys);
+        mapKernelPage(ADDR((uint32_t)i * ARCH_PAGE_SIZE), phys);
     }
-    mutex_paging.Unlock();
-    return (void*)(free_idx * PAGE_SIZE);
+    pagingLock.Unlock();
+    return (void*)(free_idx * ARCH_PAGE_SIZE);
 }
 
-void free_page(void* page, uint32_t size)
+void freePage(void* page, uint32_t size)
 {
-    mutex_paging.Lock();
-    uint32_t page_count = (size / PAGE_SIZE) + 1;
+    pagingLock.Lock();
+    uint32_t page_count = (size / ARCH_PAGE_SIZE) + 1;
     uint32_t page_index = (uint32_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
-        mapped_pages.Reset(i);
+        mappedPages.Reset(i);
         // this is the same as the line above
-        struct page_table_entry* pte = &(page_tables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
-        // the frame field is actually the page frame's index
-        // basically it's frame 0, 1...(2^21-1)
-        mapped_mem.Reset(pte->frame);
+        struct TableEntry* pte = &(pageTables[i / PAGE_ENTRIES].pages[i % PAGE_ENTRIES]);
+        // the frame field is actually the page frame's index basically it's frame 0, 1...(2^21-1)
+        mappedMemory.Reset(pte->frame);
         // zero it out to unmap it
         *pte = { /* Zero */ };
         // clear that tlb
-        Arch::pageInvalidate(page);
+        Arch::Memory::pageInvalidate(page);
     }
-    mutex_paging.Unlock();
+    pagingLock.Unlock();
 }
 
-bool page_is_present(size_t addr)
+bool isPresent(size_t addr)
 {
-    // Convert the address into an index and
-    // check whether the page is in the bitmap
-    return mapped_pages[addr >> 12];
-}
-
-uintptr_t page_align_addr(uintptr_t addr)
-{
-    return addr & PAGE_ALIGN;
+    // Convert the address into an index and check whether the page is in the bitmap
+    return mappedPages[addr >> 12];
 }
 
 // TODO: maybe enforce access control here in the future
-uint32_t get_phys_page_dir()
+uint32_t getPageDirPhysAddr()
 {
-    return page_dir_addr;
+    return pageDirectoryAddress;
 }
 
-static void paging_args_cb(const char* arg)
+static void argumentsCallback(const char* arg)
 {
     if (strcmp(arg, MAPPING_OUTPUT_FLAG) == 0) {
         debugf("is_mapping_output_enabled = true");
         is_mapping_output_enabled = true;
     }
 }
+
+} // !namespace Paging

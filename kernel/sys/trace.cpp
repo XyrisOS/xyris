@@ -19,19 +19,20 @@
 void stack_trace(size_t max)
 {
     // Define our stack
-    struct stackframe* stk;
+    struct Arch::stackframe* stk;
     asm volatile("movl %%ebp, %0"
                  : "=r"(stk)::);
-    Console::printf("\033[0;%iH \033[31mStack trace:\033[0m\n", (X86_TTY_WIDTH - 16));
+    // TODO: Get width of "screen" (replace 80 with width) (#275)
+    Console::printf("\033[0;%iH \033[31mStack trace:\033[0m\n", (80 - 16));
     RS232::printf("%s", "\n\033[31mStack trace:\033[0m\n");
     char buf[32];
     for (size_t frame = 0; stk != NULL && frame < max; ++frame) {
         // Unwind to previous stack frame
         ksprintf(buf, "0x%08X\n", stk->eip);
-        Console::printf("\033[%i;%iH  %s", (frame + 1), (X86_TTY_WIDTH - 16), buf);
+        Console::printf("\033[%i;%iH  %s", (frame + 1), (80 - 16), buf);
         RS232::printf("%s", buf);
         // Check whether the address is in memory or not
-        if (!page_is_present((size_t)stk->ebp))
+        if (!Paging::isPresent((size_t)stk->ebp))
             break;
         stk = stk->ebp;
     }

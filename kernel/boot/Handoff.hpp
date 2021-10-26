@@ -9,9 +9,9 @@
  *
  */
 #pragma once
-#include <stdint.h>
-// Generic devices
 #include <dev/graphics/framebuffer.hpp>
+#include <mem/MemoryMap.hpp>
+#include <stdint.h>
 
 namespace Boot {
 
@@ -28,18 +28,18 @@ public:
     HandoffRSDPDescriptor();
     ~HandoffRSDPDescriptor();
     // Getters
-    const char* getSignature()          { return _signature; }
-    uint8_t getChecksum()               { return _checksum; }
-    const char* getOEMID()              { return _OEMID; }
-    uint8_t getRevision()               { return _revision; }
-    uint32_t getRSDTAddress()           { return _rsdtAddress; }
+    const char* getSignature()          { return m_signature; }
+    uint8_t getChecksum()               { return m_checksum; }
+    const char* getOEMID()              { return m_OEMID; }
+    uint8_t getRevision()               { return m_revision; }
+    uint32_t getRSDTAddress()           { return m_rsdtAddress; }
 
 private:
-    char _signature[8];
-    uint8_t _checksum;
-    char _OEMID[6];
-    uint8_t _revision;
-    uint32_t _rsdtAddress;
+    char m_signature[8];
+    uint8_t m_checksum;
+    char m_OEMID[6];
+    uint8_t m_revision;
+    uint32_t m_rsdtAddress;
 };
 
 // Unused for now.
@@ -50,18 +50,18 @@ public:
     HandoffCPUDescriptor();
     ~HandoffCPUDescriptor();
     // Getters
-    uint32_t getCPUID()                 { return _cpuID; }
-    uint32_t getLAPICID()               { return _lapicID; }
-    void* getStackAddr()                { return _stackAddr; }
-    void* getGotoAddr()                 { return _gotoAddr; }
-    void* getArguments()                { return _arguments; }
+    uint32_t getCPUID()                 { return m_cpuID; }
+    uint32_t getLAPICID()               { return m_lapicID; }
+    void* getStackAddr()                { return m_stackAddr; }
+    void* getGotoAddr()                 { return m_gotoAddr; }
+    void* getArguments()                { return m_arguments; }
 
 private:
-    uint32_t _cpuID;
-    uint32_t _lapicID;
-    void* _stackAddr;
-    void* _gotoAddr;
-    void* _arguments;
+    uint32_t m_cpuID;
+    uint32_t m_lapicID;
+    void* m_stackAddr;
+    void* m_gotoAddr;
+    void* m_arguments;
 };
 
 // Unused for now.
@@ -72,19 +72,18 @@ public:
     HandoffSMPDescriptor();
     ~HandoffSMPDescriptor();
     // Getters
-    bool getX2Available()               { return _x2Available; }
-    uint32_t getLAPICID()               { return _lapicID; }
-    uint64_t getCPUCount()              { return _cpuCount; }
+    bool getX2Available()               { return m_x2Available; }
+    uint32_t getLAPICID()               { return m_lapicID; }
+    uint64_t getCPUCount()              { return m_cpuCount; }
 
 private:
-    bool _x2Available;
-    uint32_t _lapicID;
-    uint64_t _cpuCount;
+    bool m_x2Available;
+    uint32_t m_lapicID;
+    uint64_t m_cpuCount;
 };
 
 // TODO: Remaining information to be made obtainable
 //  * PXE IP address (once we have a nice IP struct)
-//  * Memory map layout (once we have new memory manager)
 //  * Update Stivale2 to latest version & add missing
 //  * Kernel modules (linked list of some sort?)
 class Handoff {
@@ -94,20 +93,22 @@ public:
     Handoff(void* handoff, uint32_t magic);
     ~Handoff();
     // Getters
-    const char* getCmdLine()                    { return _cmdline; }
-    const void* getHandle()                     { return _handle; }
-    Graphics::Framebuffer getFramebufferInfo()  { return _framebuffer; }
-    HandoffBootloaderType getBootType()         { return _bootType; }
+    const char* CmdLine()                       { return m_cmdline; }
+    const void* Handle()                        { return m_handle; }
+    Graphics::Framebuffer* FramebufferInfo()    { return &m_framebuffer; }
+    HandoffBootloaderType* BootType()           { return &m_bootType; }
+    Memory::MemoryMap* MemoryMap()              { return &m_memoryMap; }
 
 private:
     static void parseStivale2(Handoff* that, void* handoff);
     static void parseMultiboot2(Handoff* that, void* handoff);
 
-    void* _handle;
-    char* _cmdline;
-    uint32_t _magic;
-    Graphics::Framebuffer _framebuffer;
-    HandoffBootloaderType _bootType;
+    void* m_handle;
+    char* m_cmdline;
+    uint32_t m_magic;
+    Graphics::Framebuffer m_framebuffer;
+    HandoffBootloaderType m_bootType;
+    Memory::MemoryMap m_memoryMap;
 };
 
 }; // !namespace Boot

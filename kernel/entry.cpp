@@ -61,7 +61,6 @@ static void bootTone()
 {
     // Beep beep!
     spkr_beep(1000, 50);
-    sleep(100);
     spkr_beep(1000, 50);
 }
 
@@ -81,13 +80,13 @@ static void bootTone()
 extern "C" void kernelEntry(void* info, uint32_t magic)
 {
     // Initialize the CPU
-    Arch::cpuInit();
+    Arch::CPU::init();
     // Initialize devices
-    Arch::criticalRegion(devInit);
+    Arch::CPU::criticalRegion(devInit);
     // Initialize info from bootloader
     Boot::Handoff handoff(info, magic);
-    paging_init(0);
-    Graphics::init();
+    Paging::init(handoff.MemoryMap());
+    Graphics::init(handoff.FramebufferInfo());
     // Print the splash screen to show we've booted into the kernel properly.
     printSplash();
     // Print some info to show we did things right
@@ -99,8 +98,8 @@ extern "C" void kernelEntry(void* info, uint32_t magic)
         time.getHour(),
         time.getMinutes());
     // Get the CPU vendor and model data to print
-    const char* vendor = Arch::cpuGetVendor();
-    const char* model = Arch::cpuGetModel();
+    const char* vendor = Arch::CPU::vendor();
+    const char* model = Arch::CPU::model();
     Console::printf(DBG_INFO "%s %s\n", vendor, model);
     RS232::printf("%s\n%s\n", vendor, model);
 
