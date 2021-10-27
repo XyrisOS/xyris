@@ -1,7 +1,7 @@
 /**
  * @file Arch.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief Computer architecture initialization definitions
+ * @brief Architecture control and initialization
  * @version 0.3
  * @date 2020-06-01
  *

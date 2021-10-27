@@ -1,7 +1,7 @@
 /**
  * @file Memory.hpp
  * @author Keeton Feavel (keeton@xyr.is)
- * @brief Architecture memory management API
+ * @brief Architecture memory management & paging API
  * @version 0.1
  * @date 2021-09-18
  * 
@@ -12,6 +12,9 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#if defined(__i386__)
+#    include <arch/i386/Memory.i386.hpp>
+#endif
 
 namespace Arch::Memory {
 
