@@ -20,7 +20,7 @@ namespace Apps {
 #define PRIME_MAX_SQRT 4000
 #define PRIME_MAX (PRIME_MAX_SQRT * PRIME_MAX_SQRT)
 #define PRIMES_SIZE (PRIME_MAX / (sizeof(size_t) * CHAR_BIT))
-static Bitset<size_t, PRIMES_SIZE> map(SIZE_MAX);
+static Bitset<PRIMES_SIZE> map(SIZE_MAX);
 
 static size_t prime_current;
 

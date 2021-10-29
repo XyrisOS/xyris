@@ -85,7 +85,7 @@ extern "C" void kernelEntry(void* info, uint32_t magic)
     Arch::CPU::criticalRegion(devInit);
     // Initialize info from bootloader
     Boot::Handoff handoff(info, magic);
-    Paging::init(handoff.MemoryMap());
+    Memory::init(handoff.MemoryMap());
     Graphics::init(handoff.FramebufferInfo());
     // Print the splash screen to show we've booted into the kernel properly.
     printSplash();

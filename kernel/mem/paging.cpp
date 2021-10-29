@@ -20,7 +20,7 @@
 #include <meta/sections.hpp>
 #include <stddef.h>
 
-namespace Paging {
+namespace Memory {
 
 #define PAGE_ENTRIES        1024
 #define ADDRESS_SPACE_SIZE  0x100000000
@@ -32,8 +32,8 @@ static Mutex pagingLock("paging");
 #define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / ARCH_PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
 
 // one bit for every page
-static Bitset<size_t, MEM_BITMAP_SIZE> mappedMemory;
-static Bitset<size_t, MEM_BITMAP_SIZE> mappedPages;
+static Bitset<MEM_BITMAP_SIZE> mappedMemory;
+static Bitset<MEM_BITMAP_SIZE> mappedPages;
 
 static uint32_t pageDirectoryAddress;
 static struct Arch::Memory::Table* pageDirectoryVirtual[PAGE_ENTRIES];
@@ -58,7 +58,7 @@ static bool is_mapping_output_enabled = false;
 #define MAPPING_OUTPUT_FLAG "--enable-mapping-output"
 KERNEL_PARAM(enableMappingLogs, MAPPING_OUTPUT_FLAG, argumentsCallback);
 
-void init(Memory::MemoryMap* map)
+void init(MemoryMap* map)
 {
     for (size_t i = 0; i < map->Count(); i++) {
         auto section = map->Get(i);

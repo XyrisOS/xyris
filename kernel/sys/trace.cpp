@@ -32,7 +32,7 @@ void stack_trace(size_t max)
         Console::printf("\033[%i;%iH  %s", (frame + 1), (80 - 16), buf);
         RS232::printf("%s", buf);
         // Check whether the address is in memory or not
-        if (!Paging::isPresent((size_t)stk->ebp))
+        if (!Memory::isPresent((size_t)stk->ebp))
             break;
         stk = stk->ebp;
     }

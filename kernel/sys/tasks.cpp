@@ -156,7 +156,7 @@ void tasks_init()
         // this will be filled in when we switch to another task for the first time
         .stack_top = 0,
         // this will be the same for kernel tasks
-        .page_dir = Paging::getPageDirPhysAddr(),
+        .page_dir = Memory::getPageDirPhysAddr(),
         // this is a linked list with only this task
         .next = NULL,
         // this task is currently running
@@ -297,7 +297,7 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
     }
     // allocate a page for this stack (we might change this later)
     // TODO: Should more than one page be allocated / freed?
-    uint8_t *stack = (uint8_t *)Paging::newPage(1);
+    uint8_t *stack = (uint8_t *)Memory::newPage(1);
     if (stack == NULL) PANIC("Unable to allocate memory for new task stack.\n");
     // remember, the stack grows up
     void *stack_pointer = stack + ARCH_PAGE_SIZE;
@@ -316,7 +316,7 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
     _stack_push_word(&stack_pointer, 0);
     _stack_push_word(&stack_pointer, 0);
     new_task->stack_top = (uintptr_t)stack_pointer;
-    new_task->page_dir = Paging::getPageDirPhysAddr();
+    new_task->page_dir = Memory::getPageDirPhysAddr();
     new_task->next = NULL;
     new_task->state = state;
     new_task->time_used = 0;
@@ -527,7 +527,7 @@ static void _clean_stopped_task(struct task *task)
     // free the stack page
     uintptr_t page = Arch::Memory::pageAlign(task->stack_top);
     // TODO: Should more than one page be allocated / freed?
-    Paging::freePage((void *)page, 1);
+    Memory::freePage((void *)page, 1);
     // somehow determine if the task was dynamically allocated or not
     // just assume statically allocated tasks will never exit (bad idea)
     if (task->alloc == ALLOC_DYNAMIC) free(task);
