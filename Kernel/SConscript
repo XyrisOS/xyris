@@ -1,0 +1,8 @@
+from os import walk
+Import('env')
+
+sources = [Glob(path + '/*.cpp') + Glob(path + '/*.s') for (path, name, files) in walk('.')]
+
+objs = env.Object(sources)
+
+Return('objs')

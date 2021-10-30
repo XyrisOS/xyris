@@ -1,13 +1,14 @@
 import os
 
-VariantDir('build', 'kernel', duplicate=0)
 env = Environment(
     ENV={'PATH': os.environ['PATH']},
+    BUILD_DIR='#build/$ARCH/$MODE',
+    INSTALL_DIR='#dist/$ARCH/$MODE',
     REPO_URL='https://github.com/XyrisOS/xyris',
     GIT_COMMIT='TODO',
-    VERSION_ID=(1, 0, 0),
+    VERSION_ID=(0, 5, 0),
     VERSION_NAME='Pheonix',
-    CFLAGS=[
+    CCFLAGS=[
         '-nostdlib', '-nodefaultlibs', '-ffreestanding', '-fstack-protector-all',
         '-fno-builtin', '-fno-omit-frame-pointer'
     ],
@@ -26,30 +27,34 @@ env = Environment(
         '#kernel',
         '#thirdparty',
     ],
-    CXX='i686-elf-g++',
-    CC='i686-elf-gcc',
     CXXCOMSTR='  (CXX) $SOURCE',
+    ASCOMSTR='  (AS) $SOURCE',
 )
 
 env.Append(
-        CPPDEFINES={'DEBUG': None},
-        CXXFLAGS=['$CFLAGS'],
+    CPPDEFINES={'DEBUG': None},
 )
 
-objs = env.Object([
-    Glob('build/*.cpp'),
-    Glob('build/apps/*.cpp'),
-    Glob('build/arch/*.cpp'),
-    Glob('build/arch/i386/*.cpp'),
-    Glob('build/arch/i386/asm/*.cpp'),
-    Glob('build/arch/i386/boot/*.cpp'),
-    Glob('build/boot/*.cpp'),
-    Glob('build/dev/graphics/*.cpp'),
-    Glob('build/dev/rtc/*.cpp'),
-    Glob('build/dev/serial/*.cpp'),
-    Glob('build/dev/spkr/*.cpp'),
-    Glob('build/lib/*.cpp'),
-    Glob('build/mem/*.cpp'),
-    Glob('build/meta/*.cpp'),
-    Glob('build/sys/*.cpp'),
-])
+x86 = env.Clone(
+    tools=['nasm'],
+    ARCH='i686',
+    CXX='i686-elf-g++',
+    CC='i686-elf-gcc',
+)
+
+x86.Append(
+    ASFLAGS='-f elf32',
+)
+
+targets = [
+    x86.Clone(MODE='debug'),
+    #x86.Clone(MODE='release'),
+]
+
+for target_env in targets:
+    target_env.SConscript(
+        'kernel/SConscript',
+        variant_dir='$BUILD_DIR/kernel',
+        duplicate=0,
+        exports={'env': target_env},
+    )
