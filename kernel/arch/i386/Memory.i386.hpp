@@ -10,6 +10,9 @@
  */
 #pragma once
 
+#define ARCH_PAGE_ALIGN 0xFFFFF000
+#define ARCH_PAGE_SIZE  0x1000
+
 namespace Arch::Memory {
 
 /**
@@ -106,5 +109,39 @@ struct Directory
 {
     struct DirectoryEntry entries[1024];     // Pointers that the Intel CPU uses to access pages in memory
 };
+
+/**
+ * @brief Invalidate the page at the given address. Implementations are architecture
+ * specific.
+ *
+ * @param addr Address of page to be invalidated
+ */
+inline void pageInvalidate(void* addr)
+{
+   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
+}
+
+/**
+ * @brief Aligns the provided address to the start of its corresponding page address.
+ *
+ * @param addr Address to be aligned
+ * @return uintptr_t Page aligned address value
+ */
+inline uintptr_t pageAlign(size_t addr)
+{
+    return addr & ARCH_PAGE_ALIGN;
+}
+
+/**
+ * @brief Check if an address is aligned to a page boundary.
+ *
+ * @param addr Address to be checked
+ * @return true Address is aligned to page boundary
+ * @return false Address is not aligned to a page boundary
+ */
+inline bool pageIsAligned(size_t addr)
+{
+    return ((addr % ARCH_PAGE_SIZE) == 0);
+}
 
 }

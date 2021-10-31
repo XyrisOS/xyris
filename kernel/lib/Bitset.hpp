@@ -12,6 +12,7 @@
 #pragma once
 
 #include <arch/Arch.hpp>
+#include <lib/string.hpp>
 #include <limits.h>
 #include <meta/compiler.hpp>
 #include <stddef.h>
@@ -21,10 +22,14 @@ template<size_t S>
 class Bitset {
 public:
     /**
-     * @brief Construct a new Bitset object
+     * @brief Construct a new Bitset object and initalize
+     * the bitmap to zero.
      *
      */
-    Bitset() = default;
+    Bitset()
+    {
+        memset(&map, 0, S);
+    }
 
     /**
      * @brief Construct a new Bitset object and initialize

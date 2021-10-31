@@ -91,35 +91,35 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 // TODO: Make this a map that can be indexed
                 switch (entry.type) {
                 case STIVALE2_MMAP_USABLE:
-                    that->m_memoryMap[i].SetType(Memory::Available);
+                    that->m_memoryMap[i].setType(Memory::Available);
                     break;
 
                 case STIVALE2_MMAP_RESERVED:
-                    that->m_memoryMap[i].SetType(Memory::Reserved);
+                    that->m_memoryMap[i].setType(Memory::Reserved);
                     break;
 
                 case STIVALE2_MMAP_ACPI_RECLAIMABLE:
-                    that->m_memoryMap[i].SetType(Memory::ACPI);
+                    that->m_memoryMap[i].setType(Memory::ACPI);
                     break;
 
                 case STIVALE2_MMAP_ACPI_NVS:
-                    that->m_memoryMap[i].SetType(Memory::NVS);
+                    that->m_memoryMap[i].setType(Memory::NVS);
                     break;
 
                 case STIVALE2_MMAP_BAD_MEMORY:
-                    that->m_memoryMap[i].SetType(Memory::Bad);
+                    that->m_memoryMap[i].setType(Memory::Bad);
                     break;
 
                 case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
-                    that->m_memoryMap[i].SetType(Memory::Bootloader);
+                    that->m_memoryMap[i].setType(Memory::Bootloader);
                     break;
 
                 case STIVALE2_MMAP_KERNEL_AND_MODULES:
-                    that->m_memoryMap[i].SetType(Memory::Kernel);
+                    that->m_memoryMap[i].setType(Memory::Kernel);
                     break;
 
                 default:
-                    that->m_memoryMap[i].SetType(Memory::Unknown);
+                    that->m_memoryMap[i].setType(Memory::Unknown);
                     break;
                 }
             }
@@ -224,19 +224,19 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
                 switch (entry->type)
                 {
                     case MULTIBOOT_MEMORY_AVAILABLE:
-                        that->m_memoryMap[memMapIdx].SetType(Memory::Available);
+                        that->m_memoryMap[memMapIdx].setType(Memory::Available);
                         break;
                     case MULTIBOOT_MEMORY_ACPI_RECLAIMABLE:
-                        that->m_memoryMap[memMapIdx].SetType(Memory::ACPI);
+                        that->m_memoryMap[memMapIdx].setType(Memory::ACPI);
                         break;
                     case MULTIBOOT_MEMORY_NVS:
-                        that->m_memoryMap[memMapIdx].SetType(Memory::NVS);
+                        that->m_memoryMap[memMapIdx].setType(Memory::NVS);
                         break;
                     case MULTIBOOT_MEMORY_BADRAM:
-                        that->m_memoryMap[memMapIdx].SetType(Memory::Bad);
+                        that->m_memoryMap[memMapIdx].setType(Memory::Bad);
                         break;
                     default:
-                        that->m_memoryMap[memMapIdx].SetType(Memory::Reserved);
+                        that->m_memoryMap[memMapIdx].setType(Memory::Reserved);
                         break;
                 }
 

@@ -16,6 +16,7 @@
 #include <lib/mutex.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
+#include <mem/Physical.hpp>
 #include <mem/paging.hpp>
 #include <meta/sections.hpp>
 #include <stddef.h>
@@ -23,13 +24,12 @@
 namespace Memory {
 
 #define PAGE_ENTRIES        1024
-#define ADDRESS_SPACE_SIZE  0x100000000
 #define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
 #define ADDR(addr)          ((union Arch::Memory::Address) { .val = (addr) })
 
 static Mutex pagingLock("paging");
 
-#define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / ARCH_PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
+static Physical::PhysicalManager physical;
 
 // one bit for every page
 static Bitset<MEM_BITMAP_SIZE> mappedMemory;
@@ -62,8 +62,9 @@ void init(MemoryMap* map)
 {
     for (size_t i = 0; i < map->Count(); i++) {
         auto section = map->Get(i);
-        if (section.Initialized()) {
-            debugf("[%s]\t0x%08X - 0x%08X\n", section.TypeString(), section.Base(), section.Size());
+        if (section.initialized()) {
+            debugf("[%s]\t0x%08X - 0x%08X\n", section.typeString(), section.base(), section.size());
+            //physical.setUsed(section);
         }
     }
     // we can set breakpoints or make a futile attempt to recover.

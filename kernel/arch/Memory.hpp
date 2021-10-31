@@ -16,6 +16,11 @@
 #    include <arch/i386/Memory.i386.hpp>
 #endif
 
+#define ADDRESS_SPACE_SIZE  0x100000000
+// TODO: Add this to memory class (#326)
+#define ADDRESS_TO_PAGE_IDX(addr) ((addr) / ARCH_PAGE_SIZE)
+#define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / ARCH_PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
+
 namespace Arch::Memory {
 
 /**
@@ -29,30 +34,5 @@ void pagingEnable();
  *
  */
 void pagingDisable();
-
-/**
- * @brief Invalidate the page at the given address. Implementations are architecture
- * specific.
- *
- * @param addr Address of page to be invalidated
- */
-inline void pageInvalidate(void* addr);
-
-/**
- * @brief Aligns the provided address to the start of its corresponding page address.
- *
- * @param addr Address to be aligned
- * @return uintptr_t Page aligned address value
- */
-inline uintptr_t pageAlign(size_t addr);
-
-/**
- * @brief Check if an address is aligned to a page boundary.
- *
- * @param addr Address to be checked
- * @return true Address is aligned to page boundary
- * @return false Address is not aligned to a page boundary
- */
-inline bool pageIsAligned(size_t addr);
 
 } // !namespace Arch::Memory
