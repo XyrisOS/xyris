@@ -1,8 +1,28 @@
 from os import walk
+import subprocess
 Import('env')
 
-sources = [Glob(path + '/*.cpp') + Glob(path + '/*.s') for (path, name, files) in walk('.')]
+env = env.Clone()
+env.Append(
+    LINKSCRIPT=env.File('arch/$ARCH/linker.ld'),
+    CXXFLAGS='-fanalyzer',
+    LINKFLAGS='-T${LINKSCRIPT}',
+)
 
-objs = env.Object(sources)
+crti = env.File('arch/$ARCH/Assembly/crti.s')
+crtn = env.File('arch/$ARCH/Assembly/crtn.s')
+crtbegin = subprocess.check_output(
+        [env.subst('$CC'), '-print-file-name=crtbegin.o']
+).decode().rstrip()
+crtend = subprocess.check_output(
+        [env.subst('$CC'), '-print-file-name=crtend.o']
+).decode().rstrip()
+sources = [Glob(path + '/*.cpp') + Glob(path + '/*.s', exclude=path + '/crt?.s') for (path, name, files) in walk('.')]
 
-Return('objs')
+kernel = env.Program(
+    'kernel',
+    Flatten([crti, crtbegin, Flatten(sources), crtend, crtn]),
+    LIBS=['gcc', 'alloc'],
+)
+
+Return('kernel')
