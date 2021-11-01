@@ -218,7 +218,7 @@ QEMU_FLAGS =        \
     -rtc clock=host \
     -vga std        \
     -serial stdio
-QEMU_ARCH = i386
+QEMU_ARCH = x86_64
 # Virtualbox flags
 VM_NAME = $(PROJ_NAME)-box
 VBOX_VM_FILE = $(PRODUCTS_DIR)/$(VM_NAME)/$(VM_NAME).vbox
