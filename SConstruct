@@ -1,6 +1,7 @@
 import os
 
 env = Environment(
+    tools=['default', 'echfs'],
     ENV={'PATH': os.environ['PATH']},
     BUILD_DIR='#Build/$ARCH/$MODE',
     INSTALL_DIR='#Distribution/$ARCH/$MODE',
@@ -52,7 +53,7 @@ x86 = env.Clone(
 )
 
 x86.Append(
-    ASFLAGS='-f elf32',
+    ASFLAGS='-felf32',
 )
 
 targets = [
@@ -74,4 +75,4 @@ for target_env in targets:
         duplicate=0,
         exports={'env': target_env},
     )
-    target_env.Install('$INSTALL_DIR', kernel)
+    target_env.EchfsImage('$INSTALL_DIR/xyris', [kernel])

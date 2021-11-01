@@ -3,8 +3,9 @@ import subprocess
 Import('env')
 
 env = env.Clone()
+linkerscript = env.File('arch/$ARCH/linker.ld')
 env.Append(
-    LINKSCRIPT=env.File('arch/$ARCH/linker.ld'),
+    LINKSCRIPT=linkerscript,
     CXXFLAGS='-fanalyzer',
     LINKFLAGS='-T${LINKSCRIPT}',
 )
@@ -24,5 +25,7 @@ kernel = env.Program(
     Flatten([crti, crtbegin, Flatten(sources), crtend, crtn]),
     LIBS=['gcc', 'alloc'],
 )
+
+env.Depends(kernel, linkerscript)
 
 Return('kernel')
