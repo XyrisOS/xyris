@@ -63,7 +63,7 @@ void init(MemoryMap* map)
     for (size_t i = 0; i < map->Count(); i++) {
         auto section = map->Get(i);
         if (section.initialized()) {
-            debugf("[%s]\t0x%08X - 0x%08X\n", section.typeString(), section.base(), section.size());
+            debugf("0x%08X-0x%08X [%s] 0x%08X\n", section.base(), section.end(), section.typeString(), section.size());
             //physical.setUsed(section);
         }
     }

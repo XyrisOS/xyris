@@ -8,10 +8,10 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <stdint.h>
-#include <meta/sections.hpp>
 #include <meta/compiler.hpp>
+#include <meta/sections.hpp>
 #include <multiboot/multiboot2.h>
+#include <stdint.h>
 #include <stivale/stivale2.h>
 
 extern "C" uint32_t stivale2_mmap_helper(void* baseaddr);
@@ -38,23 +38,23 @@ stivale2_mmap_helper(void* baseaddr)
 
     while (tag) {
         switch (tag->identifier) {
-        case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
-            auto memmap = (struct stivale2_struct_tag_memmap*)tag;
-            for (uint32_t i = 0; i < (uint32_t)memmap->entries; i++) {
-                switch ((uint32_t)memmap->memmap[i].type) {
-                case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
-                    if (((uint32_t)memmap->memmap[i].base) == (uint32_t)baseaddr) {
-                        return (uint32_t)memmap->memmap[i].length;
-                    }
-                    break;
+            case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
+                auto memmap = (struct stivale2_struct_tag_memmap*)tag;
+                for (size_t i = 0; i < memmap->entries; i++) {
+                    switch (memmap->memmap[i].type) {
+                        case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
+                            if (((uint32_t)memmap->memmap[i].base) == (uint32_t)baseaddr) {
+                                return (uint32_t)memmap->memmap[i].length;
+                            }
+                            break;
 
-                default:
-                    break;
+                        default:
+                            break;
+                    }
                 }
             }
-        }
-        default:
-            break;
+            default:
+                break;
         }
         tag = (struct stivale2_tag*)tag->next;
     }

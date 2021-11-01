@@ -217,7 +217,8 @@ QEMU_FLAGS =        \
     -m 4G           \
     -rtc clock=host \
     -vga std        \
-    -serial stdio
+    -serial stdio   \
+	-monitor telnet:127.0.0.1:1234,server,nowait
 QEMU_ARCH = x86_64
 # Virtualbox flags
 VM_NAME = $(PROJ_NAME)-box
