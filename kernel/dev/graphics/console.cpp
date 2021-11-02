@@ -14,7 +14,6 @@
 #include <dev/graphics/graphics.hpp>
 #include <lib/stdio.hpp>
 #include <lib/mutex.hpp>
-#include <stdarg.h>
 #include <stddef.h>
 
 namespace Console {
@@ -245,7 +244,7 @@ end:
     return 0;
 }
 
-static int vprintf(const char* fmt, va_list args)
+int vprintf(const char* fmt, va_list args)
 {
     int retval;
     Lock();

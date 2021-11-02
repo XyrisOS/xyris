@@ -29,7 +29,7 @@ void stack_trace(size_t max)
     for (size_t frame = 0; stk != NULL && frame < max; ++frame) {
         // Unwind to previous stack frame
         ksprintf(buf, "0x%08X\n", stk->eip);
-        Console::printf("\033[%i;%iH  %s", (frame + 1), (80 - 16), buf);
+        Console::printf("\033[%lu;%iH  %s", (frame + 1), (80 - 16), buf);
         RS232::printf("%s", buf);
         // Check whether the address is in memory or not
         if (!Memory::isPresent((size_t)stk->ebp))

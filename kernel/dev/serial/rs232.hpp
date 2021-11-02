@@ -53,6 +53,7 @@ size_t write(const char* buf, size_t count);
  * @param ... Arguments
  * @return int Number of characters printed
  */
+__attribute__ ((format (printf, 1, 2)))
 int printf(const char *format, ...);
 
 /**
@@ -63,6 +64,7 @@ int printf(const char *format, ...);
  * @param args Arguments list
  * @return int Number of characters printed
  */
+__attribute__ ((format (printf, 1, 0)))
 int vprintf(const char* fmt, va_list args);
 
 /**

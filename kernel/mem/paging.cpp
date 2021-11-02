@@ -63,7 +63,7 @@ void init(MemoryMap* map)
     for (size_t i = 0; i < map->Count(); i++) {
         auto section = map->Get(i);
         if (section.initialized()) {
-            debugf("0x%08X-0x%08X [%s] 0x%08X\n", section.base(), section.end(), section.typeString(), section.size());
+            debugf("0x%08lX-0x%08lX [%s] 0x%08lX\n", (uint32_t)section.base(), (uint32_t)section.end(), section.typeString(), (uint32_t)section.size());
             //physical.setUsed(section);
         }
     }
@@ -137,7 +137,7 @@ void mapKernelPage(union Arch::Memory::Address vaddr, union Arch::Memory::Addres
     Arch::Memory::TableEntry* entry = &(pageTables[pde].pages[pte]);
     // Print a debug message to serial
     if (is_mapping_output_enabled) {
-        debugf("map 0x%08x to 0x%08x, pde = 0x%08x, pte = 0x%08x\n", paddr.val, vaddr.val, pde, pte);
+        debugf("map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx\n", paddr.val, vaddr.val, pde, pte);
     }
     // If the page is already mapped into memory
     if (entry->present) {

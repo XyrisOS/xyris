@@ -40,7 +40,7 @@ public:
 
     ALWAYS_INLINE void setUsed(Section& sect)
     {
-        debugf("Pages: %d\n", sect.pages());
+        debugf("Pages: %lu\n", (uint32_t)sect.pages());
         for (size_t i = 0; i < sect.pages(); i++) {
             setUsed(ADDRESS_TO_PAGE_IDX(sect.base()) + i);
         }

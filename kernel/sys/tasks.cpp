@@ -507,7 +507,7 @@ void tasks_nano_sleep(uint64_t time)
 void tasks_exit()
 {
     // userspace cleanup can happen here
-    RS232::printf("task \"%s\" (0x%08x) exiting\n", current_task->name, (uint32_t)current_task);
+    RS232::printf("task \"%s\" (0x%08lx) exiting\n", current_task->name, (uint32_t)current_task);
 
     _aquire_scheduler_lock();
     // all scheduling-specific operations must happen here
@@ -541,7 +541,7 @@ static void _cleaner_task_impl()
 
         while (tasks_stopped.head != NULL) {
             task = _dequeue_stopped();
-            RS232::printf("cleaning up task %s (0x%08x)\n", task->name ? task->name : "N/A", (uint32_t)task);
+            RS232::printf("cleaning up task %s (0x%08lx)\n", task->name ? task->name : "N/A", (uint32_t)task);
             _clean_stopped_task(task);
         }
 
