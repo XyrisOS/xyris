@@ -29,7 +29,12 @@ enum Type {
 
 class Section {
 public:
-    Section() = default;
+    Section()
+        : m_base(0)
+        , m_size(0)
+        , m_type(Unknown)
+    {
+    }
 
     Section(const size_t base, const size_t size)
         : m_base(base)

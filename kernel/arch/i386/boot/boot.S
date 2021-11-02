@@ -256,6 +256,7 @@ lowmem_pt: resd 1024         ; lowmem identity mappings
 kernel_pt: resd 1024         ; our kernel page table mappings
 pages_pt: resd 1024          ; a page table that maps pages that contain page tables
 bootld_pt: resd 1024         ; a page table to hold bootloader structures
+stack_pt: resd 1024          ; a stack for C/C++ runtime
 
 section .early_data alloc write
 align 4

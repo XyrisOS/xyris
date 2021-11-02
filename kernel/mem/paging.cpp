@@ -60,11 +60,11 @@ KERNEL_PARAM(enableMappingLogs, MAPPING_OUTPUT_FLAG, argumentsCallback);
 
 void init(MemoryMap* map)
 {
-    for (size_t i = 0; i < map->Count(); i++) {
+    for (uint32_t i = 0; i < map->Count(); i++) {
         auto section = map->Get(i);
         if (section.initialized()) {
-            debugf("0x%08lX-0x%08lX [%s] 0x%08lX\n", (uint32_t)section.base(), (uint32_t)section.end(), section.typeString(), (uint32_t)section.size());
-            //physical.setUsed(section);
+            debugf("[%lu] 0x%08lX-0x%08lX [%s] 0x%08lX\n", i, (uint32_t)section.base(), (uint32_t)section.end(), section.typeString(), (uint32_t)section.size());
+            physical.setUsed(section);
         }
     }
     // we can set breakpoints or make a futile attempt to recover.

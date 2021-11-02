@@ -35,6 +35,7 @@ public:
     }
 
 private:
+    // TODO: Set some sort of counter that indicates how many were inserted
     static const size_t m_max_sections = 32;
     Section m_sections[m_max_sections];
 };
