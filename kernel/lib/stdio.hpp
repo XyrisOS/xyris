@@ -16,6 +16,11 @@
 #define EOF (-1)
 #endif
 
+#define DBG_INFO "[ \033[37mINFO \033[0m] "
+#define DBG_WARN "[ \033[93mWARN \033[0m] "
+#define DBG_FAIL "[ \033[91mFAIL \033[0m] "
+#define DBG_OKAY "[ \033[92m OK  \033[0m] "
+
 typedef int (*printf_cb_fnptr_t)(unsigned c, void** helper);
 /**
  * @brief Perform all printf operations on the format string using the provided

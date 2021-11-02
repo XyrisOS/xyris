@@ -43,21 +43,19 @@ Handoff::Handoff(void* handoff, uint32_t magic)
     : m_handle(handoff)
     , m_magic(magic)
 {
-    const char* bootProtoName;
     // Parse the handle based on the magic
-    RS232::printf("Bootloader info at 0x%X\n", handoff);
+    debugf("Bootloader info at 0x%X\n", handoff);
     if (magic == 0x36d76289) {
-        bootProtoName = "Multiboot2";
+        debugf("Booted via Multiboot2\n");
         m_bootType = Multiboot2;
         parseMultiboot2(this, handoff);
     } else if (magic == *(uint32_t*)"stv2") {
-        bootProtoName = "Stivale2";
+        debugf("Booted via Stivale2\n");
         m_bootType = Stivale2;
         parseStivale2(this, handoff);
     } else {
         PANIC("Invalid bootloader information!");
     }
-    RS232::printf("Booted via %s\n", bootProtoName);
 }
 
 Handoff::~Handoff()
@@ -81,13 +79,14 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
         switch (tag->identifier) {
         case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
             auto memmap = (struct stivale2_struct_tag_memmap*)tag;
-            RS232::printf("Stivale2 memmap found...\n");
+            debugf("Found %d Stivale2 memmap entries.\n", memmap->entries);
             if (memmap->entries > that->m_memoryMap.Count())
                 PANIC("Not enough space to add all memory map entries!");
             // Follows the tag list order in stivale2.h
             for (size_t i = 0; i < memmap->entries; i++) {
                 auto entry = memmap->memmap[i];
                 that->m_memoryMap[i] = Memory::Section(entry.base, entry.length);
+                debugf("[%d] 0x%08X-0x%08X [%s]\n", i, entry.base, (entry.base + entry.length - 1), "AAAAAAAAAA");
                 // TODO: Make this a map that can be indexed
                 switch (entry.type) {
                 case STIVALE2_MMAP_USABLE:
@@ -128,19 +127,19 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
         case STIVALE2_STRUCT_TAG_CMDLINE_ID: {
             auto cmdline = (struct stivale2_struct_tag_cmdline*)tag;
             that->m_cmdline = (char*)(cmdline->cmdline);
-            RS232::printf("Stivale2 cmdline: '%s'\n", that->m_cmdline);
+            debugf("Stivale2 cmdline: '%s'\n", that->m_cmdline);
             parseCommandLine(that->m_cmdline);
             break;
         }
         case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID: {
             auto framebuffer = (struct stivale2_struct_tag_framebuffer*)tag;
-            RS232::printf("Stivale2 framebuffer:\n");
-            RS232::printf("\tAddress: 0x%08X\n", framebuffer->framebuffer_addr);
-            RS232::printf("\tResolution: %ix%ix%i\n",
+            debugf("Stivale2 framebuffer:\n");
+            debugf("\tAddress: 0x%08X\n", framebuffer->framebuffer_addr);
+            debugf("\tResolution: %ix%ix%i\n",
                 framebuffer->framebuffer_width,
                 framebuffer->framebuffer_height,
                 framebuffer->framebuffer_bpp);
-            RS232::printf("\tPixel format:\n"
+            debugf("\tPixel format:\n"
                             "\t\tRed size:    %u\n"
                             "\t\tRed shift:   %u\n"
                             "\t\tGreen size:  %u\n"
@@ -171,14 +170,14 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
             break;
         }
         default: {
-            //RS232::printf("Unknown Stivale2 tag: 0x%016X\n", tag->identifier);
+            //debugf("Unknown Stivale2 tag: 0x%016X\n", tag->identifier);
             break;
         }
         }
 
         tag = (struct stivale2_tag*)tag->next;
     }
-    RS232::printf("Done\n");
+    debugf("Done\n");
 }
 
 /*
@@ -202,14 +201,14 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
         case MULTIBOOT_TAG_TYPE_CMDLINE: {
             auto cmdline = (struct multiboot_tag_string*)tag;
             that->m_cmdline = (char*)(cmdline->string);
-            RS232::printf("Multiboot2 cmdline: '%s'\n", that->m_cmdline);
+            debugf("Multiboot2 cmdline: '%s'\n", that->m_cmdline);
             parseCommandLine(that->m_cmdline);
             break;
         }
         case MULTIBOOT_TAG_TYPE_MMAP: {
             size_t memMapIdx = 0;
             auto memmap = (struct multiboot_tag_mmap *)tag;
-            RS232::printf("Multiboot2 memmap found...\n");
+            debugf("Multiboot2 memmap found...\n");
             // Because the Multiboot2 header typedefs literally everything as something
             // other than what's in stdint.h and stddef.h, we have to do a ton of casts
             for (multiboot_memory_map_t *entry = memmap->entries;
@@ -246,13 +245,13 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
         }
         case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
             auto framebuffer = (struct multiboot_tag_framebuffer *)tag;
-            RS232::printf("Multiboot2 framebuffer:\n");
-            RS232::printf("\tAddress: 0x%08X\n", framebuffer->common.framebuffer_addr);
-            RS232::printf("\tResolution: %ix%ix%i\n",
+            debugf("Multiboot2 framebuffer:\n");
+            debugf("\tAddress: 0x%08X\n", framebuffer->common.framebuffer_addr);
+            debugf("\tResolution: %ix%ix%i\n",
                 framebuffer->common.framebuffer_width,
                 framebuffer->common.framebuffer_height,
                 (framebuffer->common.framebuffer_bpp));
-            RS232::printf("\tPixel format:\n"
+            debugf("\tPixel format:\n"
                             "\t\tRed size:    %u\n"
                             "\t\tRed shift:   %u\n"
                             "\t\tGreen size:  %u\n"
@@ -283,7 +282,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
             break;
         }
         default: {
-            //RS232::printf("Unknown Multiboot2 tag: 0x%08X\n", tag->type);
+            //debugf("Unknown Multiboot2 tag: 0x%08X\n", tag->type);
             break;
         }
         }

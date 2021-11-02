@@ -99,7 +99,7 @@
             "problemMatcher": [],
             "dependsOn": [
                 "Build (Debug)"
-            ]
+            ],
         },
         {
             "type": "shell",

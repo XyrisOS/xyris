@@ -247,7 +247,7 @@ run-debug:
 	-S -s      \
 	-drive file=$(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG),\
 	index=0,media=disk,format=raw \
-	$(QEMU_FLAGS) > /dev/null
+	$(QEMU_FLAGS) > /dev/null &; true
 
 # Create Virtualbox VM
 .PHONY: vbox-create
