@@ -21,11 +21,13 @@ public:
      * @param name Mutex name (for debugging / printing)
      */
     Mutex(const char* name = nullptr);
+
     /**
      * @brief Destroys a mutex and removes it from memory.
      *
      */
     ~Mutex();
+
     /**
      * @brief Locks a provided mutex. This call will block
      * if the mutex is already locked.
@@ -33,6 +35,7 @@ public:
      * @return int Returns 0 on success and -1 on error.
      */
     int Lock();
+
     /**
      * @brief Attempts to lock a mutex. If the mutex is
      * currently locked then the function will return and
@@ -41,6 +44,7 @@ public:
      * @return int Returns 0 on success and -1 on error.
      */
     int Trylock();
+
     /**
      * @brief Unlocks a mutex for others to use.
      *

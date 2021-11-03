@@ -21,7 +21,6 @@ namespace Memory::Physical {
 
 class PhysicalManager {
 public:
-    PhysicalManager() = default;
 
     ALWAYS_INLINE void alloc(Section& sect)
     {

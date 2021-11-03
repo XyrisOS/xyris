@@ -1,7 +1,7 @@
 /**
  * @file linker.ld
  * @author Micah Switzer (mswitzer@cedarville.edu)
- *         Keeton Feavel (keetonfeavel@cedarville.edu)
+ * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief i386 kernel linker script
  * @version 0.1
  * @date 2021-06-27
@@ -75,4 +75,3 @@ SECTIONS
 }
 
 ASSERT(_KERNEL_SIZE < 0x700000, "Kernel exceeds the 7 MB limit. boot.s must be updated to work a larger kernel.");
-

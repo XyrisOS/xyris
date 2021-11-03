@@ -1,8 +1,7 @@
 /**
  * @file panic.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief A set of panic functions that are called when the kernel
- * encounters an error from which it cannot recover.
+ * @brief A set of panic functions that are called when the kernel encounters an error from which it cannot recover.
  * @version 0.3
  * @date 2019-11-15
  *
@@ -111,7 +110,7 @@ NORET void panic(struct registers* regs, const char* file, uint32_t line, const 
     // The faulting address is stored in the CR2 register.
     Registers::CR2 cr2 = Registers::readCR2();
     // The error code gives us details of what happened.
-    int present = !(regs->err_code & 0x1); // Page not present
+    int missing = regs->err_code & 0x1;    // Page not present
     int rw = regs->err_code & 0x2;         // Write operation?
     int us = regs->err_code & 0x4;         // Processor was in user-mode?
     int reserved = regs->err_code & 0x8;   // Overwritten CPU-reserved bits of page entry?
@@ -119,7 +118,7 @@ NORET void panic(struct registers* regs, const char* file, uint32_t line, const 
     // If we have a page fault, print out page fault info
     if (regs->int_num == ISR_PAGE_FAULT) {
         // Output an error message.
-        const char* real = (present ? "present " : "missing ");
+        const char* real = (missing ? "missing " : "present ");
         const char* rws = (rw ? "reading " : "writing ");
         const char* uss = (us ? "user-mode " : "kernel ");
         const char* avail = (reserved ? "reserved" : "available");

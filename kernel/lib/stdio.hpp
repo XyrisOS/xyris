@@ -22,6 +22,7 @@
 #define DBG_OKAY "[ \033[92m OK  \033[0m] "
 
 typedef int (*printf_cb_fnptr_t)(unsigned c, void** helper);
+
 /**
  * @brief Perform all printf operations on the format string using the provided
  * argument list and uses the callback function to perform the character printing
@@ -36,6 +37,7 @@ typedef int (*printf_cb_fnptr_t)(unsigned c, void** helper);
  * @return int Returns number of characters written
  */
 int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr);
+
 /**
  * @brief Sends formatted output to a string using an argument list.
  *
@@ -46,6 +48,7 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
  * The number of characters not written if negative.
  */
 int kvsprintf(char* buf, const char* fmt, va_list args);
+
 /**
  * @brief Sends formatted output to a string.
  *
@@ -56,6 +59,7 @@ int kvsprintf(char* buf, const char* fmt, va_list args);
  * The number of characters not written if negative.
  */
 int ksprintf(char* buf, const char* fmt, ...);
+
 /**
  * @brief Prints a statement to serial debugger if the kernel
  * is built with the debug flag defined. Max message size is

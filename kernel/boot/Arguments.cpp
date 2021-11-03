@@ -1,7 +1,7 @@
 /**
  * @file Arguments.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief
+ * @brief Kernel command argument parsing
  * @version 0.1
  * @date 2021-08-10
  *
