@@ -63,7 +63,6 @@ void init(MemoryMap* map)
     for (uint32_t i = 0; i < map->Count(); i++) {
         auto section = map->Get(i);
         if (section.initialized()) {
-            debugf("[%lu] 0x%08lX-0x%08lX [%s] 0x%08lX\n", i, (uint32_t)section.base(), (uint32_t)section.end(), section.typeString(), (uint32_t)section.size());
             physical.setUsed(section);
         }
     }
@@ -102,7 +101,7 @@ static inline void mapKernelPageTable(uint32_t idx, struct Arch::Memory::Table* 
         // compute the physical address of this page table the virtual address is obtained with the & operator and
         // the offset is applied from the load address of the kernel we must shift it over 12 bits because we only
         // care about the highest 20 bits for the page table
-        .tableAddr = KADDR_TO_PHYS((uint32_t)table) >> 12
+        .tableAddr = KADDR_TO_PHYS((uintptr_t)table) >> 12
     };
 }
 
@@ -122,7 +121,7 @@ static void initDirectory()
         mappedPages.Set(i);
     }
     // store the physical address of the page directory for quick access
-    pageDirectoryAddress = KADDR_TO_PHYS((uint32_t)&pageDirectoryPhysical[0]);
+    pageDirectoryAddress = KADDR_TO_PHYS((uintptr_t)&pageDirectoryPhysical[0]);
 }
 
 void mapKernelPage(union Arch::Memory::Address vaddr, union Arch::Memory::Address paddr)
@@ -224,14 +223,14 @@ void* newPage(uint32_t size)
     uint32_t free_idx = findNextFreeVirtualAddress(page_count);
     if (free_idx == SIZE_MAX)
         return NULL;
-    for (uint32_t i = free_idx; i < free_idx + page_count; i++) {
+    for (size_t i = free_idx; i < free_idx + page_count; i++) {
         uint32_t phys_page_idx = findNextFreePhysicalAddress();
         if (phys_page_idx == SIZE_MAX)
             return NULL;
         union Arch::Memory::Address phys = {
             .val = phys_page_idx * ARCH_PAGE_SIZE,
         };
-        mapKernelPage(ADDR((uint32_t)i * ARCH_PAGE_SIZE), phys);
+        mapKernelPage(ADDR(i * ARCH_PAGE_SIZE), phys);
     }
     pagingLock.Unlock();
     return (void*)(free_idx * ARCH_PAGE_SIZE);
@@ -241,7 +240,7 @@ void freePage(void* page, uint32_t size)
 {
     pagingLock.Lock();
     uint32_t page_count = (size / ARCH_PAGE_SIZE) + 1;
-    uint32_t page_index = (uint32_t)page >> 12;
+    uint32_t page_index = (uintptr_t)page >> 12;
     for (uint32_t i = page_index; i < page_index + page_count; i++) {
         mappedPages.Reset(i);
         // this is the same as the line above

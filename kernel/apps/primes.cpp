@@ -38,15 +38,15 @@ void show_primes(void)
 {
     do {
         tasks_nano_sleep(1000ULL * 1000 * 1000);
-        uint32_t pct = (prime_current * 100) / PRIME_MAX_SQRT;
-        Console::printf("\e[s\e[23;0fComputing primes: %%%lu\e[u", pct);
+        size_t pct = (prime_current * 100) / PRIME_MAX_SQRT;
+        Console::printf("\e[s\e[23;0fComputing primes: %%%zu\e[u", pct);
     } while (prime_current < PRIME_MAX_SQRT);
 
-    uint32_t count = 0;
+    size_t count = 0;
     for (size_t i = 2; i < PRIME_MAX; i++) {
         count += map.Test(i);
     }
-    Console::printf("\e[s\e[23;0fFound %lu primes between 2 and %u.\e[u", count, PRIME_MAX);
+    Console::printf("\e[s\e[23;0fFound %zu primes between 2 and %u.\e[u", count, PRIME_MAX);
 }
 
 }

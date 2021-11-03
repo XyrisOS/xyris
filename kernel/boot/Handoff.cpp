@@ -83,10 +83,10 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
             if (memmap->entries > that->m_memoryMap.Count())
                 PANIC("Not enough space to add all memory map entries!");
             // Follows the tag list order in stivale2.h
-            for (uint32_t i = 0; i < memmap->entries; i++) {
+            for (size_t i = 0; i < memmap->entries; i++) {
                 auto entry = memmap->memmap[i];
                 that->m_memoryMap[i] = Memory::Section(entry.base, entry.length);
-                debugf("[%lu] 0x%08lX-0x%08lX 0x%08lX\n", i, (uint32_t)entry.base, (uint32_t)(entry.base + entry.length - 1), (uint32_t)entry.length);
+                debugf("[%zu] 0x%08lX-0x%08lX 0x%08lX\n", i, (uint32_t)entry.base, (uint32_t)(entry.base + entry.length - 1), (uint32_t)entry.length);
                 // TODO: Make this a map that can be indexed
                 switch (entry.type) {
                 case STIVALE2_MMAP_USABLE:
