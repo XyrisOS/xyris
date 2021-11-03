@@ -60,14 +60,14 @@ conv:
     c    char                                   DONE
     s    string                                 DONE
     p    ptr                                    DONE
-    z    size_t                                 PARTIAL
+    z    size_t                                 DONE
 
 mod:
     N    near ptr                               DONE
     F    far ptr                                no
     h    short (16-bit) int                     DONE
     l    long (32-bit) int                      DONE
-    L    long long (64-bit) int                 no
+    L    long long (64-bit) int                 DONE
 *****************************************************************************/
 
 /* Assume: width of stack == width of int. Don't use sizeof(char *) or
@@ -77,21 +77,24 @@ Assume: width is a power of 2 */
 
 /* Round up object width so it's an even multiple of STACK_WIDTH.
 Using & for division here, so STACK_WIDTH must be a power of 2. */
-#define TYPE_WIDTH(TYPE) \
-    ((sizeof(TYPE) + STACK_WIDTH - 1) & ~(STACK_WIDTH - 1))
+#define TYPE_WIDTH(TYPE) ((sizeof(TYPE) + STACK_WIDTH - 1) & ~(STACK_WIDTH - 1))
 
 /* flags used in processing format string */
-#define PR_LJ 0x01 /* left justify */
-#define PR_CA 0x02 /* use A-F instead of a-f for hex */
-#define PR_SG 0x04 /* signed numeric conversion (%d vs. %u) */
-#define PR_32 0x08 /* long (32-bit) numeric conversion */
-#define PR_16 0x10 /* short (16-bit) numeric conversion */
-#define PR_WS 0x20 /* PR_SG set and num was < 0 */
-#define PR_LZ 0x40 /* pad left with '0' instead of ' ' */
-#define PR_FP 0x80 /* pointers are far */
+enum printf_state {
+    PR_LJ = 0b000000001, /* left justify */
+    PR_CA = 0b000000010, /* use A-F instead of a-f for hex */
+    PR_SG = 0b000000100, /* signed numeric conversion (%d vs. %u) */
+    PR_64 = 0b000001000, /* long long (64-bit) numeric conversion*/
+    PR_32 = 0b000010000, /* long (32-bit) numeric conversion */
+    PR_16 = 0b000100000, /* short (16-bit) numeric conversion */
+    PR_WS = 0b001000000, /* PR_SG set and num was < 0 */
+    PR_LZ = 0b010000000, /* pad left with '0' instead of ' ' */
+    PR_FP = 0b100000000, /* pointers are far */
+};
 /* largest number handled is 2^32-1, lowest radix handled is 8.
-2^32-1 in base 8 has 11 digits (add 5 for trailing NUL and for slop) */
-#define PR_BUFLEN 16
+2^64-1 in base 8 has 22 digits (add 5 for trailing NUL and for slop)
+round to 32 so that it's on a byte boundary */
+#define PR_BUFLEN 32
 
 /*****************************************************************************
 name:    printf_helper
@@ -166,13 +169,19 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                 if (*fmt == 'z') {
 #if (UINTPTR_MAX == 0xFFFFFFFF)
                     flags |= PR_32;
+#elif (UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF)
+                    flags |= PR_64;
 #else
-#error "printf_helper doesn't support 64 bit values!"
+#error "Unknown UINTPTR_MAX value! Cannot compile printf_helper!"
 #endif
                     break;
                 }
                 if (*fmt == 'l') {
                     flags |= PR_32;
+                    break;
+                }
+                if (*fmt == 'L') {
+                    flags |= PR_64;
                     break;
                 }
                 if (*fmt == 'h') {
@@ -207,7 +216,9 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                         radix = 8;
                     /* load the value to be printed. l=long=32 bits: */
                     DO_NUM:
-                        if (flags & PR_32)
+                        if (flags & PR_64)
+                            num = va_arg(args, unsigned long long);
+                        else if (flags & PR_32)
                             num = va_arg(args, unsigned long);
                         /* h=short=16 bits (signed or unsigned) */
                         else if (flags & PR_16) {

@@ -79,14 +79,14 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
         switch (tag->identifier) {
         case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
             auto memmap = (struct stivale2_struct_tag_memmap*)tag;
-            debugf("Found %lu Stivale2 memmap entries.\n", (uint32_t)memmap->entries);
+            debugf("Found %Lu Stivale2 memmap entries.\n", memmap->entries);
             if (memmap->entries > that->m_memoryMap.Count())
                 PANIC("Not enough space to add all memory map entries!");
             // Follows the tag list order in stivale2.h
             for (size_t i = 0; i < memmap->entries; i++) {
                 auto entry = memmap->memmap[i];
                 that->m_memoryMap[i] = Memory::Section(entry.base, entry.length);
-                debugf("[%zu] 0x%08lX-0x%08lX 0x%08lX\n", i, (uint32_t)entry.base, (uint32_t)(entry.base + entry.length - 1), (uint32_t)entry.length);
+                debugf("[%zu] 0x%08LX-0x%08LX 0x%08LX\n", i, entry.base, (entry.base + entry.length - 1), entry.length);
                 // TODO: Make this a map that can be indexed
                 switch (entry.type) {
                 case STIVALE2_MMAP_USABLE:
@@ -134,7 +134,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
         case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID: {
             auto framebuffer = (struct stivale2_struct_tag_framebuffer*)tag;
             debugf("Stivale2 framebuffer:\n");
-            debugf("\tAddress: 0x%08lX\n", (uint32_t)framebuffer->framebuffer_addr);
+            debugf("\tAddress: 0x%08LX\n", framebuffer->framebuffer_addr);
             debugf("\tResolution: %ux%ux%u\n",
                 framebuffer->framebuffer_width,
                 framebuffer->framebuffer_height,
@@ -246,7 +246,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
         case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
             auto framebuffer = (struct multiboot_tag_framebuffer *)tag;
             debugf("Multiboot2 framebuffer:\n");
-            debugf("\tAddress: 0x%08lX\n", (uint32_t)framebuffer->common.framebuffer_addr);
+            debugf("\tAddress: 0x%08LX\n", framebuffer->common.framebuffer_addr);
             debugf("\tResolution: %ux%ux%u\n",
                 framebuffer->common.framebuffer_width,
                 framebuffer->common.framebuffer_height,
