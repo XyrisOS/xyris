@@ -31,43 +31,48 @@ class Section {
 public:
     Section()
         : m_base(0)
-        , m_size(0)
+        , m_end(0)
         , m_type(Unknown)
     {
     }
 
-    Section(const size_t base, const size_t size)
+    Section(const uintptr_t base, const uintptr_t end)
         : m_base(base)
-        , m_size(size)
+        , m_end(end)
         , m_type(Unknown)
     {
     }
 
-    Section(const size_t base, const size_t size, const Type type)
+    Section(const uintptr_t base, const uintptr_t end, const Type type)
         : m_base(base)
-        , m_size(size)
+        , m_end(end)
         , m_type(type)
     {
     }
 
     ALWAYS_INLINE bool initialized()
     {
-        return m_base && m_size;
+        return m_base && size();
     }
 
-    ALWAYS_INLINE size_t base()
+    ALWAYS_INLINE uintptr_t base()
     {
         return m_base;
     }
 
-    ALWAYS_INLINE size_t size()
+    ALWAYS_INLINE uintptr_t end()
     {
-        return m_size;
+        return m_end;
     }
 
-    ALWAYS_INLINE size_t pages()
+    ALWAYS_INLINE uintptr_t size()
     {
-        return m_size / ARCH_PAGE_SIZE;
+        return m_end - m_base;
+    }
+
+    ALWAYS_INLINE uintptr_t pages()
+    {
+        return size() / ARCH_PAGE_SIZE;
     }
 
     ALWAYS_INLINE enum Type type()
@@ -104,14 +109,9 @@ public:
         m_type = type;
     }
 
-    ALWAYS_INLINE size_t end()
-    {
-        return m_base + m_size - 1;
-    }
-
     ALWAYS_INLINE bool empty()
     {
-        return m_size == 0;
+        return size() == 0;
     }
 
     ALWAYS_INLINE bool contains(uintptr_t addr)
@@ -120,8 +120,8 @@ public:
     }
 
 private:
-    size_t m_base;
-    size_t m_size;
+    uintptr_t m_base;
+    uintptr_t m_end;
     enum Type m_type;
 };
 

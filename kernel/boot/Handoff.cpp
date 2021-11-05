@@ -79,8 +79,9 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 // Follows the tag list order in stivale2.h
                 for (size_t i = 0; i < memmap->entries; i++) {
                     auto entry = memmap->memmap[i];
-                    that->m_memoryMap[i] = Memory::Section(entry.base, entry.length);
-                    debugf("[%zu] 0x%08LX-0x%08LX 0x%08LX\n", i, entry.base, (entry.base + entry.length - 1), entry.length);
+                    uint64_t end = entry.base + entry.length - 1;
+                    that->m_memoryMap[i] = Memory::Section(entry.base, end);
+                    debugf("[%zu] 0x%08LX-0x%08LX 0x%08LX\n", i, entry.base, end, entry.length);
                     // TODO: Make this a map that can be indexed
                     switch (entry.type) {
                         case STIVALE2_MMAP_USABLE:
@@ -212,7 +213,8 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
                         PANIC("Not enough space to add all memory map entries!");
                     }
 
-                    that->m_memoryMap[memMapIdx] = Memory::Section(entry->addr, entry->len);
+                    uintptr_t end = entry->addr + entry->len - 1;
+                    that->m_memoryMap[memMapIdx] = Memory::Section(entry->addr, end);
                     // TODO: Make this a map that can be indexed
                     switch (entry->type) {
                         case MULTIBOOT_MEMORY_AVAILABLE:

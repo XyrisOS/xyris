@@ -10,8 +10,10 @@
  */
 #pragma once
 
-#define ARCH_PAGE_ALIGN 0xFFFFF000
-#define ARCH_PAGE_SIZE  0x1000
+#define ARCH_PAGE_DIR_ENTRIES   1024
+#define ARCH_PAGE_TABLE_ENTRIES 1024
+#define ARCH_PAGE_ALIGN         0xFFFFF000
+#define ARCH_PAGE_SIZE          0x1000
 
 namespace Arch::Memory {
 
@@ -143,5 +145,7 @@ inline bool pageIsAligned(size_t addr)
 {
     return ((addr % ARCH_PAGE_SIZE) == 0);
 }
+
+#define ADDR(addr) ((union Arch::Memory::Address) { .val = (addr) })
 
 }

@@ -17,24 +17,24 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define KADDR_TO_PHYS(addr) ((addr) - KERNEL_BASE)
+
 namespace Memory::Physical {
 
 class PhysicalManager {
 public:
-
-    ALWAYS_INLINE void alloc(Section& sect)
+/*
+    PhysicalManager()
+        : m_memory(SIZE_MAX)
     {
-        (void)sect;
+        // Always assume memory is reserved until proven otherwise
     }
-
-    ALWAYS_INLINE void free(Section& sect)
-    {
-        (void)sect;
-    }
-
+*/
     ALWAYS_INLINE void setFree(Section& sect)
     {
-        (void)sect;
+        for (size_t i = 0; i < sect.pages(); i++) {
+            setFree(ADDRESS_TO_PAGE_IDX(sect.base()) + i);
+        }
     }
 
     ALWAYS_INLINE void setUsed(Section& sect)
@@ -46,41 +46,59 @@ public:
             sect.size(),
             sect.pages(),
             sect.typeString());
+        // TODO: Optimize bitmap library to take number of bits to set
         for (size_t i = 0; i < sect.pages(); i++) {
             setUsed(ADDRESS_TO_PAGE_IDX(sect.base()) + i);
         }
     }
 
-    ALWAYS_INLINE bool isUsed(Section& sect)
+    ALWAYS_INLINE void setFree(union Arch::Memory::Address addr)
     {
-        (void)sect;
-        return false;
+        if (!isFree(addr.val)) {
+            m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr.val));
+        }
     }
 
-    ALWAYS_INLINE void alloc(uintptr_t addr)
+    ALWAYS_INLINE void setUsed(union Arch::Memory::Address addr)
     {
-        (void)addr;
-    }
-
-    ALWAYS_INLINE void free(uintptr_t addr)
-    {
-        (void)addr;
+        if (isFree(addr.val)) {
+            m_memory.Set(ADDRESS_TO_PAGE_IDX(addr.val));
+        }
     }
 
     ALWAYS_INLINE void setFree(uintptr_t addr)
     {
-        m_memory.Reset(addr);
+        if (!isFree(addr)) {
+            m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr));
+        }
     }
 
     ALWAYS_INLINE void setUsed(uintptr_t addr)
     {
-        m_memory.Set(addr);
+        if (isFree(addr)) {
+            m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
+        }
     }
 
-    ALWAYS_INLINE bool isUsed(uintptr_t addr)
+    ALWAYS_INLINE bool isFree(uintptr_t addr)
     {
-        (void)addr;
-        return false;
+        return m_memory.Test(ADDRESS_TO_PAGE_IDX(addr)) == 0;
+    }
+
+    ALWAYS_INLINE bool isFree(Section& sect)
+    {
+        // TODO: Optimize bitmap library to take number of bits to set
+        for (size_t i = 0; i < sect.pages(); i++) {
+            if (!isFree(ADDRESS_TO_PAGE_IDX(sect.base()) + i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    ALWAYS_INLINE uintptr_t findNextFreePhysicalAddress()
+    {
+        return m_memory.FindFirstBit(false);
     }
 
 private:

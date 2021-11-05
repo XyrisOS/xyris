@@ -31,7 +31,7 @@ void init(MemoryMap* map);
  * @param size Page size in bytes
  * @return void* Page memory address
  */
-void* newPage(uint32_t size);
+void* newPage(size_t size);
 
 /**
  * @brief Frees pages starting at a given page address.
@@ -39,7 +39,7 @@ void* newPage(uint32_t size);
  * @param page Starting location of page(s) to be freed
  * @param size Number of bytes to be freed
  */
-void freePage(void* page, uint32_t size);
+void freePage(void* page, size_t size);
 
 /**
  * @brief Checks whether an address is mapped into memory.
@@ -48,14 +48,14 @@ void freePage(void* page, uint32_t size);
  * @return true The address is mapped in and valid.
  * @return false The address is not mapped into memory.
  */
-bool isPresent(size_t addr);
+bool isPresent(uintptr_t addr);
 
 /**
  * @brief Gets the physical address of the current page directory.
  *
  * @returns the physical address of the current page directory.
  */
-uint32_t getPageDirPhysAddr();
+uintptr_t getPageDirPhysAddr();
 
 /**
  * @brief Map a page into the kernel address space.
@@ -68,17 +68,15 @@ void mapKernelPage(union Arch::Memory::Address vaddr, union Arch::Memory::Addres
 /**
  * @brief Map an address range into the kernel virtual address space.
  *
- * @param begin Beginning address
- * @param end Ending address
+ * @param sect Memory section
  */
-void mapKernelRangeVirtual(uintptr_t begin, uintptr_t end);
+void mapKernelRangeVirtual(Section sect);
 
 /**
  * @brief Map a kernel address range into physical memory.
  *
- * @param begin Beginning address
- * @param end Ending address
+ * @param sect Memory section
  */
-void mapKernelRangePhysical(uintptr_t begin, uintptr_t end);
+void mapKernelRangePhysical(Section sect);
 
 } // !namespace Paging
