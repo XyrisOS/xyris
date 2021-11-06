@@ -43,8 +43,8 @@ stivale2_mmap_helper(void* baseaddr)
                 for (size_t i = 0; i < memmap->entries; i++) {
                     switch (memmap->memmap[i].type) {
                         case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
-                            if (((uint32_t)memmap->memmap[i].base) == (uint32_t)baseaddr) {
-                                return (uint32_t)memmap->memmap[i].length;
+                            if (((uintptr_t)memmap->memmap[i].base) == (uintptr_t)baseaddr) {
+                                return (uintptr_t)memmap->memmap[i].length;
                             }
                             break;
 
