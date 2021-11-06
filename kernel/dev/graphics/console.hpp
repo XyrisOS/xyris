@@ -11,21 +11,25 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdarg.h>
 
 #define VGA_DEFAULT_BACK VGA_Black
 #define VGA_DEFAULT_FORE VGA_White
 
-#define DBG_INFO "[ \033[37mINFO \033[0m] "
-#define DBG_WARN "[ \033[93mWARN \033[0m] "
-#define DBG_FAIL "[ \033[91mFAIL \033[0m] "
-#define DBG_OKAY "[ \033[92m OK  \033[0m] "
-
 namespace Console {
 
 void write(const char c);
+
 void write(const char* str);
+
+__attribute__ ((format (printf, 1, 0)))
+int vprintf(const char* fmt, va_list args);
+
+__attribute__ ((format (printf, 1, 2)))
 int printf(const char* fmt, ...);
+
 void reset(uint32_t fore, uint32_t back);
+
 void reset();
 
 }

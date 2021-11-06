@@ -1,7 +1,7 @@
 /**
  * @file Arch.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief Computer architecture initialization definitions
+ * @brief Architecture control and initialization
  * @version 0.3
  * @date 2020-06-01
  *
@@ -35,10 +35,10 @@ namespace Arch {
 
 struct stackframe;
 
-// Kernel panic
-NORET void panic(const char* msg, const char* file, uint32_t line, const char* func);
-NORET void panic(struct registers* regs, const char* file, uint32_t line, const char* func);
-#define PANIC(x) Arch::panic((x), __FILE__, __LINE__, __FUNCTION__)
+NORET void haltAndCatchFire();
+
+void registersToString(char* buf, struct registers* regs);
+void registersPrintInformation(struct registers* regs);
 
 }
 

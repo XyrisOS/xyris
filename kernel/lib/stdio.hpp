@@ -16,7 +16,13 @@
 #define EOF (-1)
 #endif
 
+#define DBG_INFO "[ \033[37mINFO \033[0m] "
+#define DBG_WARN "[ \033[93mWARN \033[0m] "
+#define DBG_FAIL "[ \033[91mFAIL \033[0m] "
+#define DBG_OKAY "[ \033[92m OK  \033[0m] "
+
 typedef int (*printf_cb_fnptr_t)(unsigned c, void** helper);
+
 /**
  * @brief Perform all printf operations on the format string using the provided
  * argument list and uses the callback function to perform the character printing
@@ -31,6 +37,7 @@ typedef int (*printf_cb_fnptr_t)(unsigned c, void** helper);
  * @return int Returns number of characters written
  */
 int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr);
+
 /**
  * @brief Sends formatted output to a string using an argument list.
  *
@@ -41,6 +48,7 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
  * The number of characters not written if negative.
  */
 int kvsprintf(char* buf, const char* fmt, va_list args);
+
 /**
  * @brief Sends formatted output to a string.
  *
@@ -51,6 +59,7 @@ int kvsprintf(char* buf, const char* fmt, va_list args);
  * The number of characters not written if negative.
  */
 int ksprintf(char* buf, const char* fmt, ...);
+
 /**
  * @brief Prints a statement to serial debugger if the kernel
  * is built with the debug flag defined. Max message size is
@@ -64,3 +73,14 @@ int ksprintf(char* buf, const char* fmt, ...);
 #else
 #define debugf(fmt, ...)
 #endif
+
+/**
+ * @brief Prints a statement to serial debugger and the kernel framebuffer.
+ * Max message size is 1024 (including null terminator).
+ * @param fmt Formatted C string
+ * @param ... Sequence of additional arguments
+ */
+#define log_all(fmt, ...) do { \
+    RS232::printf(fmt, ##__VA_ARGS__); \
+    Console::printf(fmt, ##__VA_ARGS__); \
+} while (0)

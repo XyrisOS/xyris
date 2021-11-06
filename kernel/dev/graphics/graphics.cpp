@@ -37,8 +37,11 @@ void init(Framebuffer* fb)
     if (!info->getAddress())
         return;
     // Map in the framebuffer
-    debugf("Mapping framebuffer...\n");
-    Paging::mapKernelRangeVirtual((uintptr_t)info->getAddress(), (uintptr_t)info->getAddress() + (info->getPitch() * info->getHeight()));
+    debugf("==== MAP FRAMEBUFFER ====\n");
+    Memory::mapKernelRangeVirtual(Memory::Section(
+        (uintptr_t)info->getAddress(),
+        (uintptr_t)info->getAddress() + (info->getPitch() * info->getHeight())
+    ));
     // Alloc the backbuffer
     backbuffer = malloc(info->getPitch() * info->getHeight());
     memcpy(backbuffer, info->getAddress(), info->getPitch() * info->getHeight());

@@ -91,7 +91,6 @@ public:
     // Constructors
     Handoff();
     Handoff(void* handoff, uint32_t magic);
-    ~Handoff();
     // Getters
     const char* CmdLine()                       { return m_cmdline; }
     const void* Handle()                        { return m_handle; }

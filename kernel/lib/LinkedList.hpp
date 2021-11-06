@@ -28,6 +28,7 @@ public:
     {
         // Default constructor
     }
+
     /**
      * @brief Construct a new Linked List Node object
      *
@@ -40,6 +41,7 @@ public:
     {
         // Value constructor
     }
+
     /**
      * @brief Construct a new Linked List Node object
      *
@@ -54,6 +56,7 @@ public:
     {
         // Complete constructor
     }
+
     /**
      * @brief Return the data stored by the node
      *
@@ -63,6 +66,7 @@ public:
     {
         return data;
     }
+
     /**
      * @brief Get the next node in the linked list
      *
@@ -72,6 +76,7 @@ public:
     {
         return next;
     }
+
     /**
      * @brief Get the previous node in the linked list
      *
@@ -81,6 +86,7 @@ public:
     {
         return prev;
     }
+
     /**
      * @brief Set the node's data
      *
@@ -89,6 +95,7 @@ public:
     {
         data = v;
     }
+
     /**
      * @brief Set the node's next pointer
      *
@@ -98,6 +105,7 @@ public:
     {
         next = n;
     }
+
     /**
      * @brief Set the node's previous pointer
      *
@@ -124,11 +132,13 @@ public:
     {
         // Default constructor
     }
+
     LinkedList(T val)
         : LinkedList()
     {
         InsertFront(val);
     }
+
     ~LinkedList()
     {
         LinkedListNode<T>* back;
@@ -136,6 +146,7 @@ public:
             delete back;
         }
     }
+
     void InsertFront(T val)
     {
         if (head) {
@@ -146,6 +157,7 @@ public:
             ++count;
         }
     }
+
     void InsertBack(T val)
     {
         if (tail) {
@@ -156,6 +168,7 @@ public:
             ++count;
         }
     }
+
     void InsertBefore(LinkedListNode<T>* next, T val)
     {
         if (!next)
@@ -171,6 +184,7 @@ public:
         }
         ++count;
     }
+
     void InsertAfter(LinkedListNode<T>* prev, T val)
     {
         if (!prev)
@@ -186,6 +200,7 @@ public:
         }
         ++count;
     }
+
     void Remove(LinkedListNode<T>* del)
     {
         if (del == head)
@@ -198,6 +213,7 @@ public:
             del->Previous()->SetNext(del->Next());
         count--;
     }
+
     LinkedListNode<T>* RemoveFront()
     {
         if (!head)
@@ -206,6 +222,7 @@ public:
         Remove(currHead);
         return currHead;
     }
+
     LinkedListNode<T>* RemoveBack()
     {
         if (!tail)
@@ -214,6 +231,7 @@ public:
         Remove(currTail);
         return currTail;
     }
+
     LinkedListNode<T>* RemoveBefore(LinkedListNode<T>* node)
     {
         if (!node)
@@ -222,6 +240,7 @@ public:
         Remove(before);
         return before;
     }
+
     LinkedListNode<T>* RemoveAfter(LinkedListNode<T>* node)
     {
         if (!node)
@@ -230,6 +249,7 @@ public:
         Remove(after);
         return after;
     }
+
     /**
      * @brief Get pointer to the head node
      *
@@ -239,6 +259,7 @@ public:
     {
         return head;
     }
+
     /**
      * @brief Get pointer to the tail node
      *
@@ -248,6 +269,7 @@ public:
     {
         return tail;
     }
+
     /**
      * @brief Get the number of items in the linked list
      *
@@ -257,6 +279,7 @@ public:
     {
         return count;
     }
+
     /**
      * @brief Check if the linked list is empty
      *

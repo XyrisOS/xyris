@@ -28,24 +28,24 @@ char* strcat(char* dest, const char* src)
     return dest;
 }
 
-void strcpy(char* destination, const char* source)
+void strcpy(char* dest, const char* src)
 {
-    while (*source) {
-        *destination = *source;
-        destination++;
-        source++;
+    while (*src) {
+        *dest = *src;
+        dest++;
+        src++;
     }
-    *destination = '\0';
+    *dest = '\0';
 }
 
-void strncpy(char* destination, const char* source, size_t len)
+void strncpy(char* dest, const char* src, size_t len)
 {
-    while (*source && len--) {
-        *destination = *source;
-        destination++;
-        source++;
+    while (*src && len--) {
+        *dest = *src;
+        dest++;
+        src++;
     }
-    *destination = '\0';
+    *dest = '\0';
 }
 
 int strcmp(const char *s1, const char *s2)
@@ -124,10 +124,10 @@ int memcmp(const void* ptr1, const void* ptr2, size_t num)
     return 0;
 }
 
-void* memmove(void* destination, const void* source, size_t size)
+void* memmove(void* destptr, const void* srcptr, size_t size)
 {
-    unsigned char* dst = (unsigned char*)destination;
-    const unsigned char* src = (const unsigned char*)source;
+    unsigned char* dst = (unsigned char*)destptr;
+    const unsigned char* src = (const unsigned char*)srcptr;
     if (dst < src) {
         for (size_t i = 0; i < size; i++)
             dst[i] = src[i];
@@ -135,7 +135,7 @@ void* memmove(void* destination, const void* source, size_t size)
         for (size_t i = size; i != 0; i--)
             dst[i - 1] = src[i - 1];
     }
-    return destination;
+    return destptr;
 }
 
 void* memcpy(void* dstptr, const void* srcptr, size_t size)

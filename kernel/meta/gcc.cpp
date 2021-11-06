@@ -12,15 +12,39 @@
  *
  */
 #include <arch/Arch.hpp>
+#include <sys/Panic.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
 // Function prototypes
 extern "C" void __cxa_pure_virtual();
+extern "C" void __stack_chk_fail(void);
 
-// These static variable guard functions are only used by
-// GCC (according to the Wiki). If Xyris ever switches to
-// or supports Clang, we want to be prepared.
+/**
+ * @brief This function is the global handler for all stack protection. GCC will automatically
+ * write the canary code and use this function as the handler for when a smashed stack is detected.
+ *
+ */
+#if UINT32_MAX == UINTPTR_MAX
+uintptr_t __stack_chk_guard = 0xDEADC0DE;
+#else
+uintptr_t __stack_chk_guard = 0xBADBADBADBADBAD1;
+#endif
+
+extern "C" void __stack_chk_fail(void)
+{
+    panic("Smashed stack detected.");
+}
+
+extern "C" void __cxa_pure_virtual()
+{
+    panic("Pure virtual called!");
+}
+
+/**
+ * These static variable guard functions are only used by GCC (according to the Wiki). If Xyris ever
+ * switches to or supports Clang, we want to be prepared.
+ */
 #ifdef __GNUG__
 namespace __cxxabiv1 {
 
@@ -49,8 +73,3 @@ extern "C" void __cxa_guard_abort(__guard* g)
 
 } // !namespace __cxxabiv1
 #endif
-
-extern "C" void __cxa_pure_virtual()
-{
-    PANIC("Pure virtual called!");
-}

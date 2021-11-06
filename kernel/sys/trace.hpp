@@ -11,5 +11,9 @@
 #pragma once
 #include <stddef.h>
 
+namespace Stack {
+
 // TODO: Take function to call for each frame
-void stack_trace(size_t max);
+void printTrace(size_t max);
+
+} // !namespace Stack

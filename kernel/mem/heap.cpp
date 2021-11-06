@@ -30,12 +30,12 @@ int liballoc_unlock()
 
 void* liballoc_alloc(unsigned int count)
 {
-    return Paging::newPage(count * ARCH_PAGE_SIZE - 1);
+    return Memory::newPage(count * ARCH_PAGE_SIZE - 1);
 }
 
 int liballoc_free(void* page, unsigned int count)
 {
-    Paging::freePage(page, count * ARCH_PAGE_SIZE - 1);
+    Memory::freePage(page, count * ARCH_PAGE_SIZE - 1);
     return 0;
 }
 

@@ -30,6 +30,7 @@ public:
     {
         // Default constructor
     }
+
     /**
      * @brief Writes a byte into the circular buffer.
      *
@@ -51,6 +52,7 @@ public:
         // Return the status code
         return status;
     }
+
     /**
      * @brief Dequeues from the circular buffer and writes
      * the value to the data pointer.
@@ -74,6 +76,7 @@ public:
         // Return the status code
         return status;
     }
+
     /**
      * @brief Dequeues from the circular buffer and returns
      * the data.
@@ -95,6 +98,7 @@ public:
         // Return the status code
         return val;
     }
+
     /**
      * @brief Grab the latest bytes of data from the buffer without
      * removing it.
@@ -116,7 +120,9 @@ public:
         // Return the status code
         return status;
     }
+
     /**
+     *
      * @brief Query whether the circular buffer is empty.
      *
      * @return true The buffer is empty
@@ -126,6 +132,7 @@ public:
     {
         return this->length == 0;
     }
+
     /**
      * @brief Query whether the circular buffer is full.
      *
@@ -136,6 +143,7 @@ public:
     {
         return this->length == S;
     }
+
     /**
      * @brief Returns the number of items (bytes) in the buffer.
      *
@@ -145,6 +153,7 @@ public:
     {
         return this->length;
     }
+
     /**
      * @brief Returns the buffer capacity (in number of bytes).
      *
@@ -154,6 +163,7 @@ public:
     {
         return S;
     }
+
     /**
      * @brief Returns the ring buffer error code.
      *

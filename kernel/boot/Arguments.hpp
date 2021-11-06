@@ -1,7 +1,7 @@
 /**
  * @file Arguments.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief
+ * @brief Kernel command argument parsing
  * @version 0.1
  * @date 2021-08-10
  *
@@ -33,8 +33,7 @@ void parseCommandLine(char* cmdline);
 
 } // !namespace Boot
 
-/* Moved outside of sections.hpp since this is only desired
-   if creating a kernel argument */
+/* Moved outside of sections.hpp since this is only desired if creating a kernel argument */
 extern struct Boot::argument _ARGUMENTS_START[0];
 #define ARGUMENTS_START ((uintptr_t)&_ARGUMENTS_START)
 extern struct Boot::argument _ARGUMENTS_END[0];

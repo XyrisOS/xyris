@@ -24,6 +24,7 @@
                 { "text": "-enable-pretty-printing" },
                 { "text": "file ${workspaceRoot}/dist/debug/kernel" }
             ],
+            "preLaunchTask": "Run (Debug + GDB)"
         }
     ]
 }

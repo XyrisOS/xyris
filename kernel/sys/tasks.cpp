@@ -11,6 +11,7 @@
 #include <arch/Arch.hpp>
 #include <arch/Memory.hpp>
 #include <sys/tasks.hpp>
+#include <sys/Panic.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
 #include <dev/serial/rs232.hpp>
@@ -156,7 +157,7 @@ void tasks_init()
         // this will be filled in when we switch to another task for the first time
         .stack_top = 0,
         // this will be the same for kernel tasks
-        .page_dir = Paging::getPageDirPhysAddr(),
+        .page_dir = Memory::getPageDirPhysAddr(),
         // this is a linked list with only this task
         .next = NULL,
         // this task is currently running
@@ -203,7 +204,7 @@ static void _task_stopping()
     // it is run in the context of the stopping task
     tasks_exit();
     // prevent undefined behavior from returning to a random address
-    PANIC("Attempted to schedule a stopped task\n");
+    panic("Attempted to schedule a stopped task\n");
 }
 
 // emulate a stack push
@@ -256,7 +257,7 @@ static void _remove_task(struct tasklist *list, struct task *task, struct task *
 {
     // if this is true, something's not right...
     if (previous != NULL && previous->next != task) {
-        PANIC("Bogus arguments to _remove_task.\n");
+        panic("Bogus arguments to _remove_task.\n");
     }
     // update the head if necessary
     if (list->head == task) {
@@ -292,13 +293,15 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
         new_task = (struct task*)malloc(sizeof(struct task));
         // panic if the alloc fails (we have no fallback)
         if (new_task == NULL) {
-            PANIC("Unable to allocate memory for new task struct.\n");
+            panic("Unable to allocate memory for new task struct.\n");
         }
     }
     // allocate a page for this stack (we might change this later)
     // TODO: Should more than one page be allocated / freed?
-    uint8_t *stack = (uint8_t *)Paging::newPage(1);
-    if (stack == NULL) PANIC("Unable to allocate memory for new task stack.\n");
+    uint8_t *stack = (uint8_t *)Memory::newPage(1);
+    if (stack == NULL) {
+        panic("Unable to allocate memory for new task stack.\n");
+    }
     // remember, the stack grows up
     void *stack_pointer = stack + ARCH_PAGE_SIZE;
     // a null stack frame to make the panic screen happy
@@ -316,7 +319,7 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
     _stack_push_word(&stack_pointer, 0);
     _stack_push_word(&stack_pointer, 0);
     new_task->stack_top = (uintptr_t)stack_pointer;
-    new_task->page_dir = Paging::getPageDirPhysAddr();
+    new_task->page_dir = Memory::getPageDirPhysAddr();
     new_task->next = NULL;
     new_task->state = state;
     new_task->time_used = 0;
@@ -507,7 +510,7 @@ void tasks_nano_sleep(uint64_t time)
 void tasks_exit()
 {
     // userspace cleanup can happen here
-    RS232::printf("task \"%s\" (0x%08x) exiting\n", current_task->name, (uint32_t)current_task);
+    RS232::printf("task \"%s\" (0x%08lx) exiting\n", current_task->name, (uint32_t)current_task);
 
     _aquire_scheduler_lock();
     // all scheduling-specific operations must happen here
@@ -527,7 +530,7 @@ static void _clean_stopped_task(struct task *task)
     // free the stack page
     uintptr_t page = Arch::Memory::pageAlign(task->stack_top);
     // TODO: Should more than one page be allocated / freed?
-    Paging::freePage((void *)page, 1);
+    Memory::freePage((void *)page, 1);
     // somehow determine if the task was dynamically allocated or not
     // just assume statically allocated tasks will never exit (bad idea)
     if (task->alloc == ALLOC_DYNAMIC) free(task);
@@ -541,7 +544,7 @@ static void _cleaner_task_impl()
 
         while (tasks_stopped.head != NULL) {
             task = _dequeue_stopped();
-            RS232::printf("cleaning up task %s (0x%08x)\n", task->name ? task->name : "N/A", (uint32_t)task);
+            RS232::printf("cleaning up task %s (0x%08lx)\n", task->name ? task->name : "N/A", (uint32_t)task);
             _clean_stopped_task(task);
         }
 

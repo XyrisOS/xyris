@@ -1,7 +1,7 @@
 /**
  * @file linker.ld
  * @author Micah Switzer (mswitzer@cedarville.edu)
- *         Keeton Feavel (keetonfeavel@cedarville.edu)
+ * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief i386 kernel linker script
  * @version 0.1
  * @date 2021-06-27
@@ -16,6 +16,7 @@ OUTPUT_ARCH(i386:i386)
 SECTIONS
 {
     /* Early kernel section, linked at 1MB */
+    _EARLY_MEM_START = .;
     . = 0x00100000;
     _EARLY_KERNEL_START = .;
 
@@ -75,4 +76,3 @@ SECTIONS
 }
 
 ASSERT(_KERNEL_SIZE < 0x700000, "Kernel exceeds the 7 MB limit. boot.s must be updated to work a larger kernel.");
-

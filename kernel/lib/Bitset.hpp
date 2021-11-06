@@ -12,30 +12,37 @@
 #pragma once
 
 #include <arch/Arch.hpp>
+#include <lib/string.hpp>
 #include <limits.h>
 #include <meta/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
-template<typename T, size_t S>
+template<size_t S>
 class Bitset {
 public:
     /**
-     * @brief Construct a new Bitset object
+     * @brief Construct a new Bitset object and initalize
+     * the bitmap to zero.
      *
      */
-    Bitset() = default;
+    Bitset()
+    {
+        memset(&map, 0, S);
+    }
+
     /**
      * @brief Construct a new Bitset object and initialize
      * the bitmap with the desired value
      *
      * @param val Initialization value
      */
-    Bitset(T val)
+    Bitset(size_t val)
     {
         for (size_t i = 0; i < S; i++)
             map[i] = val;
     }
+
     /**
      * @brief Returns the size of the bitset in bytes
      *
@@ -45,6 +52,7 @@ public:
     {
         return S;
     }
+
     /**
      * @brief Set the bit for a given position
      *
@@ -54,6 +62,7 @@ public:
     {
         map[Index(pos)] |= 1UL << Offset(pos);
     }
+
     /**
      * @brief Reset (clear) the bit at the given position
      *
@@ -63,6 +72,7 @@ public:
     {
         map[Index(pos)] &= ~(1UL << Offset(pos));
     }
+
     /**
      * @brief Flip the bit at the given position
      *
@@ -72,6 +82,7 @@ public:
     {
         Test(pos) ? Reset(pos) : Set(pos);
     }
+
     /**
      * @brief Return the value of the bit at the given position
      *
@@ -82,6 +93,7 @@ public:
     {
         return map[Index(pos)] >> Offset(pos) & 1;
     }
+
     /**
      * @brief Return the value of the bit at the given position
      * Same functionality as Test() as an operator
@@ -94,6 +106,7 @@ public:
     {
         return Test(pos);
     }
+
     /**
      * @brief Finds and returns the position of the first clear bit.
      *
@@ -109,6 +122,7 @@ public:
         }
         return SIZE_MAX;
     }
+
     /**
      * @brief Finds a range of `count` clear bits and returns the starting position.
      *
@@ -135,15 +149,17 @@ public:
     }
 
 private:
-    T map[S];
+    size_t map[S];
     ALWAYS_INLINE size_t TypeSize()
     {
-        return sizeof(T) * CHAR_BIT;
+        return sizeof(size_t) * CHAR_BIT;
     }
+
     ALWAYS_INLINE size_t Index(size_t bit)
     {
         return bit / TypeSize();
     }
+
     ALWAYS_INLINE size_t Offset(size_t bit)
     {
         return bit % TypeSize();

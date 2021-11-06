@@ -29,11 +29,13 @@ public:
      * @param name Semaphore name (for debugging / printing)
      */
     Semaphore(uint32_t val, bool share, const char* name = nullptr);
+
     /**
      * @brief Destroys a semaphore by removing it from memory.
      *
      */
     ~Semaphore();
+
     /**
      * @brief Waiting on a semaphore decrements the count value. When a
      * count value is 0, the semaphore is locked and the process or thread
@@ -43,6 +45,7 @@ public:
      * When an error occurs errno is set.
      */
     int Wait();
+
     /**
      * @brief Functionally the same as sem_wait except that instead of
      * blocking when the semaphore is locked, errno is set instead.
@@ -51,6 +54,7 @@ public:
      * When an error occurs errno is set.
      */
     int TryWait();
+
     /**
      * @brief Functionally the same as sem_wait but with a timeout. This
      * timeout does not mean that within the given period of time the
@@ -64,6 +68,7 @@ public:
      * When an error occurs errno is set.
      */
     int TimedWait(const uint32_t* usec);
+
     /**
      * @brief Increments the semaphore's counter. This is used to indicate
      * that the thread or process is done utilizing the reference variable
@@ -73,6 +78,7 @@ public:
      * When an error occurs errno is set.
      */
     int Post();
+
     /**
      * @brief Gets the counter value from a semaphore structure.
      *

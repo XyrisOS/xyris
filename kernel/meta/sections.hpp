@@ -18,6 +18,9 @@
 // Kernel ELF Sections
 // Externs (address values) are prefixed with an underscore
 // Pointers to sections have the underscore removed
+extern size_t _EARLY_MEM_START;
+#define EARLY_MEM_START ((uintptr_t)&_EARLY_MEM_START)
+
 extern size_t _EARLY_KERNEL_START;
 #define EARLY_KERNEL_START ((uintptr_t)&_EARLY_KERNEL_START)
 extern size_t _EARLY_KERNEL_END;

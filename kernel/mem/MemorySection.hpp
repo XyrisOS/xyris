@@ -4,11 +4,12 @@
  * @brief Class used to categorize and range various sections of memory
  * @version 0.1
  * @date 2021-09-12
- * 
+ *
  * @copyright Copyright the Xyris Contributors (c) 2021
- * 
+ *
  */
 #pragma once
+#include <arch/Memory.hpp>
 #include <meta/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>
@@ -28,38 +29,60 @@ enum Type {
 
 class Section {
 public:
-    Section() = default;
-    Section(const size_t base, const size_t size)
-        : m_base(base)
-        , m_size(size)
+    Section()
+        : m_base(0)
+        , m_end(0)
         , m_type(Unknown)
     {
     }
-    Section(const size_t base, const size_t size, const Type type)
+
+    Section(const uintptr_t base, const uintptr_t end)
         : m_base(base)
-        , m_size(size)
+        , m_end(end)
+        , m_type(Unknown)
+    {
+    }
+
+    Section(const uintptr_t base, const uintptr_t end, const Type type)
+        : m_base(base)
+        , m_end(end)
         , m_type(type)
     {
     }
-    ALWAYS_INLINE bool Initialized()
+
+    ALWAYS_INLINE bool initialized()
     {
-        return m_base && m_size;
+        return m_base && size();
     }
-    ALWAYS_INLINE size_t Base()
+
+    ALWAYS_INLINE uintptr_t base()
     {
         return m_base;
     }
-    ALWAYS_INLINE size_t Size()
+
+    ALWAYS_INLINE uintptr_t end()
     {
-        return m_size;
+        return m_end;
     }
-    ALWAYS_INLINE enum Type Type()
+
+    ALWAYS_INLINE uintptr_t size()
+    {
+        return m_end - m_base;
+    }
+
+    ALWAYS_INLINE uintptr_t pages()
+    {
+        return size() / ARCH_PAGE_SIZE;
+    }
+
+    ALWAYS_INLINE enum Type type()
     {
         return m_type;
     }
-    const char* TypeString()
+
+    const char* typeString()
     {
-        switch (Type()) {
+        switch (type()) {
             case Available:
                 return "Available";
             case Reserved:
@@ -80,26 +103,25 @@ public:
                 return "Invalid!";
         }
     }
-    ALWAYS_INLINE void SetType(enum Type type)
+
+    ALWAYS_INLINE void setType(enum Type type)
     {
         m_type = type;
     }
-    ALWAYS_INLINE size_t End()
+
+    ALWAYS_INLINE bool empty()
     {
-        return m_base + m_size - 1;
+        return size() == 0;
     }
-    ALWAYS_INLINE bool Empty()
+
+    ALWAYS_INLINE bool contains(uintptr_t addr)
     {
-        return m_size == 0;
-    }
-    ALWAYS_INLINE bool Contains(uintptr_t addr)
-    {
-        return End() >= addr && addr <= Base();
+        return end() >= addr && addr <= base();
     }
 
 private:
-    size_t m_base;
-    size_t m_size;
+    uintptr_t m_base;
+    uintptr_t m_end;
     enum Type m_type;
 };
 

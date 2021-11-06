@@ -1,7 +1,0 @@
-target remote localhost:1234
-file dist/debug/kernel
-break kernelEntry
-set disassembly-flavor intel
-layout asm
-focus cmd
-

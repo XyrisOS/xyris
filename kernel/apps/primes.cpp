@@ -20,7 +20,7 @@ namespace Apps {
 #define PRIME_MAX_SQRT 4000
 #define PRIME_MAX (PRIME_MAX_SQRT * PRIME_MAX_SQRT)
 #define PRIMES_SIZE (PRIME_MAX / (sizeof(size_t) * CHAR_BIT))
-static Bitset<size_t, PRIMES_SIZE> map(SIZE_MAX);
+static Bitset<PRIMES_SIZE> map(SIZE_MAX);
 
 static size_t prime_current;
 
@@ -39,14 +39,14 @@ void show_primes(void)
     do {
         tasks_nano_sleep(1000ULL * 1000 * 1000);
         size_t pct = (prime_current * 100) / PRIME_MAX_SQRT;
-        Console::printf("\e[s\e[23;0fComputing primes: %%%u\e[u", pct);
+        Console::printf("\e[s\e[23;0fComputing primes: %%%zu\e[u", pct);
     } while (prime_current < PRIME_MAX_SQRT);
 
     size_t count = 0;
     for (size_t i = 2; i < PRIME_MAX; i++) {
         count += map.Test(i);
     }
-    Console::printf("\e[s\e[23;0fFound %u primes between 2 and %u.\e[u", count, PRIME_MAX);
+    Console::printf("\e[s\e[23;0fFound %zu primes between 2 and %u.\e[u", count, PRIME_MAX);
 }
 
 }

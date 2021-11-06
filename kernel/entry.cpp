@@ -13,6 +13,7 @@
 #include <lib/time.hpp>
 #include <stdint.h>
 #include <sys/tasks.hpp>
+#include <sys/Panic.hpp>
 // Bootloader
 #include <boot/Handoff.hpp>
 // Architecture specific code
@@ -85,7 +86,7 @@ extern "C" void kernelEntry(void* info, uint32_t magic)
     Arch::CPU::criticalRegion(devInit);
     // Initialize info from bootloader
     Boot::Handoff handoff(info, magic);
-    Paging::init(handoff.MemoryMap());
+    Memory::init(handoff.MemoryMap());
     Graphics::init(handoff.FramebufferInfo());
     // Print the splash screen to show we've booted into the kernel properly.
     printSplash();
@@ -113,5 +114,5 @@ extern "C" void kernelEntry(void* info, uint32_t magic)
 
     // Keep the kernel task alive.
     tasks_block_current(TASK_PAUSED);
-    PANIC("Kernel terminated unexpectedly!");
+    panic("Kernel terminated unexpectedly!");
 }
