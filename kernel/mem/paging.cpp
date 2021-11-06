@@ -21,15 +21,13 @@
 #include <meta/sections.hpp>
 #include <stddef.h>
 
-namespace Memory {
-
 #define PAGE_COUNT(s)   ((s) / ARCH_PAGE_SIZE) + 1;
+
+namespace Memory {
 
 static Mutex pagingLock("paging");
 
 static Physical::PhysicalManager physical;
-
-// one bit for every page
 static Bitset<MEM_BITMAP_SIZE> mappedPages;
 
 static uintptr_t pageDirectoryAddress;
@@ -47,7 +45,6 @@ static void mapEarlyMem();
 static void mapKernel();
 static uintptr_t findNextFreeVirtualAddress(size_t seq);
 static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table);
-static inline void setPageDirectory(uintptr_t Directory);
 static void argumentsCallback(const char* arg);
 
 // Kernel cmdline arguments
@@ -68,7 +65,7 @@ void init(MemoryMap* map)
     // map in our higher-half kernel
     mapKernel();
     // use our new set of page tables
-    setPageDirectory(Arch::Memory::pageAlign(pageDirectoryAddress));
+    Arch::Memory::setPageDirectory(Arch::Memory::pageAlign(pageDirectoryAddress));
     // flush the tlb and we're off to the races!
     Arch::Memory::pagingEnable();
 }
@@ -121,6 +118,7 @@ static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* ta
         // compute the physical address of this page table the virtual address is obtained with the & operator and
         // the offset is applied from the load address of the kernel we must shift it over 12 bits because we only
         // care about the highest 20 bits for the page table
+        // TODO: Get rid of this shift by using ``union Address``
         .tableAddr = KADDR_TO_PHYS((uintptr_t)table) >> 12
     };
 }
@@ -208,18 +206,13 @@ void mapKernelRangePhysical(Section sect)
 static void mapEarlyMem()
 {
     debugf("==== MAP EARLY MEM ====\n");
-    mapKernelRangeVirtual(Section(0x0, 0x100000));
+    mapKernelRangeVirtual(Section(EARLY_MEM_START, EARLY_KERNEL_START));
 }
 
 static void mapKernel()
 {
     debugf("==== MAP HH KERNEL ====\n");
     mapKernelRangePhysical(Section(KERNEL_START, KERNEL_END));
-}
-
-static inline void setPageDirectory(size_t page_dir)
-{
-    asm volatile("mov %0, %%cr3" ::"b"(page_dir));
 }
 
 /**

@@ -123,6 +123,11 @@ inline void pageInvalidate(void* addr)
    asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
 }
 
+inline void setPageDirectory(size_t page_dir)
+{
+    asm volatile("mov %0, %%cr3" ::"b"(page_dir));
+}
+
 /**
  * @brief Aligns the provided address to the start of its corresponding page address.
  *

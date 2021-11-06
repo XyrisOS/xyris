@@ -16,6 +16,7 @@ OUTPUT_ARCH(i386:i386)
 SECTIONS
 {
     /* Early kernel section, linked at 1MB */
+    _EARLY_MEM_START = .;
     . = 0x00100000;
     _EARLY_KERNEL_START = .;
 
