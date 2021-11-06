@@ -15,6 +15,7 @@
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 #include <mem/paging.hpp>
+#include <sys/Panic.hpp>
 // Generic devices
 #include <dev/graphics/console.hpp>
 #include <dev/serial/rs232.hpp>
@@ -52,7 +53,7 @@ Handoff::Handoff(void* handoff, uint32_t magic)
         m_bootType = Stivale2;
         parseStivale2(this, handoff);
     } else {
-        PANIC("Invalid bootloader magic!");
+        panic("Invalid bootloader magic!");
     }
 }
 
@@ -75,7 +76,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 auto memmap = (struct stivale2_struct_tag_memmap*)tag;
                 debugf("Found %Lu Stivale2 memmap entries.\n", memmap->entries);
                 if (memmap->entries > that->m_memoryMap.Count())
-                    PANIC("Not enough space to add all memory map entries!");
+                    panic("Not enough space to add all memory map entries!");
                 // Follows the tag list order in stivale2.h
                 for (size_t i = 0; i < memmap->entries; i++) {
                     auto entry = memmap->memmap[i];
@@ -210,7 +211,7 @@ void Handoff::parseMultiboot2(Handoff* that, void* handoff)
                      (uint8_t*)entry < (uint8_t*)tag + tag->size;
                      entry = (multiboot_memory_map_t*)((uintptr_t)entry + memmap->entry_size)) {
                     if (memMapIdx > that->m_memoryMap.Count()) {
-                        PANIC("Not enough space to add all memory map entries!");
+                        panic("Not enough space to add all memory map entries!");
                     }
 
                     uintptr_t end = entry->addr + entry->len - 1;

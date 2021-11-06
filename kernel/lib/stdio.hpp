@@ -73,3 +73,14 @@ int ksprintf(char* buf, const char* fmt, ...);
 #else
 #define debugf(fmt, ...)
 #endif
+
+/**
+ * @brief Prints a statement to serial debugger and the kernel framebuffer.
+ * Max message size is 1024 (including null terminator).
+ * @param fmt Formatted C string
+ * @param ... Sequence of additional arguments
+ */
+#define log_all(fmt, ...) do { \
+    RS232::printf(fmt, ##__VA_ARGS__); \
+    Console::printf(fmt, ##__VA_ARGS__); \
+} while (0)

@@ -13,6 +13,7 @@
 #include <lib/time.hpp>
 #include <stdint.h>
 #include <sys/tasks.hpp>
+#include <sys/Panic.hpp>
 // Bootloader
 #include <boot/Handoff.hpp>
 // Architecture specific code
@@ -113,5 +114,5 @@ extern "C" void kernelEntry(void* info, uint32_t magic)
 
     // Keep the kernel task alive.
     tasks_block_current(TASK_PAUSED);
-    PANIC("Kernel terminated unexpectedly!");
+    panic("Kernel terminated unexpectedly!");
 }

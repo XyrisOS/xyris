@@ -35,10 +35,10 @@ namespace Arch {
 
 struct stackframe;
 
-// Kernel panic
-NORET void panic(const char* msg, const char* file, uint32_t line, const char* func);
-NORET void panic(struct registers* regs, const char* file, uint32_t line, const char* func);
-#define PANIC(x) Arch::panic((x), __FILE__, __LINE__, __FUNCTION__)
+NORET void haltAndCatchFire();
+
+void registersToString(char* buf, struct registers* regs);
+void registersPrintInformation(struct registers* regs);
 
 }
 

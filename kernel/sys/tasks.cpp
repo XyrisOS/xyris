@@ -11,6 +11,7 @@
 #include <arch/Arch.hpp>
 #include <arch/Memory.hpp>
 #include <sys/tasks.hpp>
+#include <sys/Panic.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
 #include <dev/serial/rs232.hpp>
@@ -203,7 +204,7 @@ static void _task_stopping()
     // it is run in the context of the stopping task
     tasks_exit();
     // prevent undefined behavior from returning to a random address
-    PANIC("Attempted to schedule a stopped task\n");
+    panic("Attempted to schedule a stopped task\n");
 }
 
 // emulate a stack push
@@ -256,7 +257,7 @@ static void _remove_task(struct tasklist *list, struct task *task, struct task *
 {
     // if this is true, something's not right...
     if (previous != NULL && previous->next != task) {
-        PANIC("Bogus arguments to _remove_task.\n");
+        panic("Bogus arguments to _remove_task.\n");
     }
     // update the head if necessary
     if (list->head == task) {
@@ -292,13 +293,15 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
         new_task = (struct task*)malloc(sizeof(struct task));
         // panic if the alloc fails (we have no fallback)
         if (new_task == NULL) {
-            PANIC("Unable to allocate memory for new task struct.\n");
+            panic("Unable to allocate memory for new task struct.\n");
         }
     }
     // allocate a page for this stack (we might change this later)
     // TODO: Should more than one page be allocated / freed?
     uint8_t *stack = (uint8_t *)Memory::newPage(1);
-    if (stack == NULL) PANIC("Unable to allocate memory for new task stack.\n");
+    if (stack == NULL) {
+        panic("Unable to allocate memory for new task stack.\n");
+    }
     // remember, the stack grows up
     void *stack_pointer = stack + ARCH_PAGE_SIZE;
     // a null stack frame to make the panic screen happy

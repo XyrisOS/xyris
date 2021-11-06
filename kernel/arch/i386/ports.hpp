@@ -25,6 +25,7 @@
  * @return uint8_t Returned data byte
  */
 uint8_t readByte(uint16_t port);
+
 /**
  * @brief Writes a byte (8 bits) to the CPU bus at a given port address
  *
@@ -32,6 +33,7 @@ uint8_t readByte(uint16_t port);
  * @param data Byte to be written to the port
  */
 void writeByte(uint16_t port, uint8_t data);
+
 /**
  * @brief Writes a byte (8 bits) slowly to the CPU bus at a given port address
  *
@@ -39,6 +41,7 @@ void writeByte(uint16_t port, uint8_t data);
  * @param data Byte to be written to the port
  */
 void writeByteSlow(uint16_t port, uint8_t data);
+
 /**
  * @brief Reads a word (16 bits) off the CPU bus at a given port address
  *
@@ -46,6 +49,7 @@ void writeByteSlow(uint16_t port, uint8_t data);
  * @return uint8_t Returned data word
  */
 uint16_t readWord(uint16_t port);
+
 /**
  * @brief Writes a word (16 bits) to the CPU bus at a given port address
  *
@@ -53,6 +57,7 @@ uint16_t readWord(uint16_t port);
  * @param data Word to be written to the port
  */
 void writeWord(uint16_t port, uint16_t data);
+
 /**
  * @brief Reads a long (32 bits) off the CPU bus at a given port address
  *
@@ -60,6 +65,7 @@ void writeWord(uint16_t port, uint16_t data);
  * @return uint8_t Returned data long
  */
 uint32_t readLong(uint16_t port);
+
 /**
  * @brief Writes a long (32 bits) to the CPU bus at a given port address
  *

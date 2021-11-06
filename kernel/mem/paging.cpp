@@ -19,6 +19,7 @@
 #include <mem/Physical.hpp>
 #include <mem/paging.hpp>
 #include <meta/sections.hpp>
+#include <sys/Panic.hpp>
 #include <stddef.h>
 
 #define PAGE_COUNT(s)   ((s) / ARCH_PAGE_SIZE) + 1;
@@ -72,7 +73,7 @@ void init(MemoryMap* map)
 
 static void pageFaultCallback(struct registers* regs)
 {
-    PANIC(regs);
+    panic(regs);
 }
 
 static void initPhysical(MemoryMap* map)
@@ -149,7 +150,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     size_t pte = vaddr.page().tableIndex;
     // If the page's virtual address is not aligned
     if (vaddr.page().offset != 0) {
-        PANIC("Attempted to map a non-page-aligned virtual address.\n");
+        panic("Attempted to map a non-page-aligned virtual address.\n");
     }
     Arch::Memory::TableEntry* entry = &(pageTables[pde].pages[pte]);
     // Print a debug message to serial
@@ -163,7 +164,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
             return;
         }
 
-        PANIC("Attempted to map already mapped page.\n");
+        panic("Attempted to map already mapped page.\n");
     }
     // Set the page information
     pageTables[pde].pages[pte] = {

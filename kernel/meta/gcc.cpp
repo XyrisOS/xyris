@@ -12,6 +12,7 @@
  *
  */
 #include <arch/Arch.hpp>
+#include <sys/Panic.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -32,12 +33,12 @@ uintptr_t __stack_chk_guard = 0xBADBADBADBADBAD1;
 
 extern "C" void __stack_chk_fail(void)
 {
-    PANIC("Smashed stack detected.");
+    panic("Smashed stack detected.");
 }
 
 extern "C" void __cxa_pure_virtual()
 {
-    PANIC("Pure virtual called!");
+    panic("Pure virtual called!");
 }
 
 /**

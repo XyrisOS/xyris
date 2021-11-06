@@ -11,6 +11,7 @@
 #include <arch/Arch.hpp>
 #include <arch/i386/idt.hpp>
 #include <arch/i386/isr.hpp>
+#include <sys/Panic.hpp>
 
 // Private array of interrupt handlers
 isr_cb_t interrupt_handlers[256];
@@ -52,7 +53,7 @@ extern "C" void register_interrupt_handler(uint8_t n, isr_cb_t handler) {
 }
 
 extern "C" void isr_handler(struct registers *r) {
-    PANIC(r);
+    panic(r);
 }
 
 extern "C" void irq_handler(struct registers *regs) {
