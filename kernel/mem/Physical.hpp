@@ -52,17 +52,17 @@ public:
         }
     }
 
-    ALWAYS_INLINE void setFree(union Arch::Memory::Address addr)
+    ALWAYS_INLINE void setFree(Arch::Memory::Address addr)
     {
-        if (!isFree(addr.val)) {
-            m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr.val));
+        if (!isFree(addr)) {
+            m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr));
         }
     }
 
-    ALWAYS_INLINE void setUsed(union Arch::Memory::Address addr)
+    ALWAYS_INLINE void setUsed(Arch::Memory::Address addr)
     {
-        if (isFree(addr.val)) {
-            m_memory.Set(ADDRESS_TO_PAGE_IDX(addr.val));
+        if (isFree(addr)) {
+            m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
         }
     }
 

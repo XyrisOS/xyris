@@ -63,7 +63,7 @@ uintptr_t getPageDirPhysAddr();
  * @param vaddr Virtual address (in kernel space)
  * @param paddr Physical address
  */
-void mapKernelPage(union Arch::Memory::Address vaddr, union Arch::Memory::Address paddr);
+void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr);
 
 /**
  * @brief Map an address range into the kernel virtual address space.

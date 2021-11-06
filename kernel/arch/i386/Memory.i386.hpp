@@ -4,9 +4,9 @@
  * @brief i386 memory structures and definitions
  * @version 0.1
  * @date 2021-10-26
- * 
+ *
  * @copyright Copyright the Xyris Contributors (c) 2021
- * 
+ *
  */
 #pragma once
 
@@ -37,19 +37,6 @@ struct Page {
     uint32_t offset      : 12;  // Page offset address
     uint32_t tableIndex  : 10;  // Page table entry
     uint32_t dirIndex    : 10;  // Page directory entry
-};
-
-/**
- * @brief Address union. Represents a memory address that can
- * be used to address a page in virtual memory, a frame in
- * physical memory. Allows setting the value of these addresses
- * by also including an uintptr_t representation.
- *
- */
-union Address {
-    struct Page page;
-    struct Frame frame;
-    uintptr_t val;
 };
 
 /**
@@ -113,6 +100,75 @@ struct Directory
 };
 
 /**
+ * @brief Address class. Represents a memory address that can
+ * be used to address a page in virtual memory, a frame in
+ * physical memory. Allows setting the value of these addresses
+ * by also including an uintptr_t representation.
+ *
+ */
+class Address
+{
+public:
+    Address(uintptr_t addr) {
+        m_addr.val = addr;
+    }
+
+    Address(struct Frame frame) {
+        m_addr.frame = frame;
+    }
+
+    Address(struct Page page) {
+        m_addr.page = page;
+    }
+
+    operator struct Page() {
+        return m_addr.page;
+    }
+
+    operator struct Frame() {
+        return m_addr.frame;
+    }
+
+    operator uintptr_t() {
+        return m_addr.val;
+    }
+
+    uintptr_t operator+= (const uintptr_t& val) {
+        m_addr.val += val;
+        return m_addr.val;
+    }
+
+    uintptr_t operator-= (const uintptr_t& val) {
+        m_addr.val -= val;
+        return m_addr.val;
+    }
+
+    uintptr_t operator= (const uintptr_t& val) {
+        m_addr.val = val;
+        return m_addr.val;
+    }
+
+    struct Page page() {
+        return m_addr.page;
+    }
+
+    struct Frame frame() {
+        return m_addr.frame;
+    }
+
+    uintptr_t val() {
+        return m_addr.val;
+    }
+
+private:
+    union {
+        struct Page page;
+        struct Frame frame;
+        uintptr_t val;
+    } m_addr;
+};
+
+/**
  * @brief Invalidate the page at the given address. Implementations are architecture
  * specific.
  *
@@ -150,7 +206,5 @@ inline bool pageIsAligned(size_t addr)
 {
     return ((addr % ARCH_PAGE_SIZE) == 0);
 }
-
-#define ADDR(addr) ((union Arch::Memory::Address) { .val = (addr) })
 
 }

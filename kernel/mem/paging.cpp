@@ -142,23 +142,23 @@ static void initDirectory()
     pageDirectoryAddress = KADDR_TO_PHYS((uintptr_t)&pageDirectoryPhysical[0]);
 }
 
-void mapKernelPage(union Arch::Memory::Address vaddr, union Arch::Memory::Address paddr)
+void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
 {
     // Set the page directory entry (pde) and page table entry (pte)
-    size_t pde = vaddr.page.dirIndex;
-    size_t pte = vaddr.page.tableIndex;
+    size_t pde = vaddr.page().dirIndex;
+    size_t pte = vaddr.page().tableIndex;
     // If the page's virtual address is not aligned
-    if (vaddr.page.offset != 0) {
+    if (vaddr.page().offset != 0) {
         PANIC("Attempted to map a non-page-aligned virtual address.\n");
     }
     Arch::Memory::TableEntry* entry = &(pageTables[pde].pages[pte]);
     // Print a debug message to serial
     if (is_mapping_output_enabled) {
-        debugf("map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx\n", paddr.val, vaddr.val, pde, pte);
+        debugf("map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx\n", paddr.val(), vaddr.val(), pde, pte);
     }
     // If the page is already mapped into memory
     if (entry->present) {
-        if (entry->frame == paddr.frame.index) {
+        if (entry->frame == paddr.frame().index) {
             // this page was already mapped the same way
             return;
         }
@@ -177,28 +177,24 @@ void mapKernelPage(union Arch::Memory::Address vaddr, union Arch::Memory::Addres
         .pageAttrTable = 0,         // The page has no attribute table
         .global = 0,                // The page is local
         .unused = 0,                // Ignored
-        .frame = paddr.frame.index, // The last 20 bits are the frame
+        .frame = paddr.frame().index, // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
     physical.setUsed(paddr);
-    mappedPages.Set(vaddr.frame.index);
+    mappedPages.Set(vaddr.frame().index);
 }
 
 void mapKernelRangeVirtual(Section sect)
 {
-    union Arch::Memory::Address a;
-    for (a = ADDR(sect.base()); a.val < sect.end(); a.val += ARCH_PAGE_SIZE) {
+    for (Arch::Memory::Address a(sect.base()); a < sect.end(); a += ARCH_PAGE_SIZE) {
         mapKernelPage(a, a);
     }
 }
 
 void mapKernelRangePhysical(Section sect)
 {
-    union Arch::Memory::Address a;
-    for (a = ADDR(sect.base()); a.val < sect.end(); a.val += ARCH_PAGE_SIZE) {
-        union Arch::Memory::Address phys {
-            .val = KADDR_TO_PHYS(a.val)
-        };
+    for (Arch::Memory::Address a(sect.base()); a < sect.end(); a += ARCH_PAGE_SIZE) {
+        Arch::Memory::Address phys(KADDR_TO_PHYS(a));
         mapKernelPage(a, phys);
     }
 }
@@ -235,8 +231,9 @@ void* newPage(size_t size)
         size_t phys_page_idx = physical.findNextFreePhysicalAddress();
         if (phys_page_idx == SIZE_MAX)
             return NULL;
-        union Arch::Memory::Address phys = ADDR(phys_page_idx * ARCH_PAGE_SIZE);
-        mapKernelPage(ADDR(i * ARCH_PAGE_SIZE), phys);
+        Arch::Memory::Address phys(phys_page_idx * ARCH_PAGE_SIZE);
+        Arch::Memory::Address vaddr(i * ARCH_PAGE_SIZE);
+        mapKernelPage(vaddr, phys);
     }
     pagingLock.Unlock();
     return (void*)(free_idx * ARCH_PAGE_SIZE);
@@ -246,8 +243,8 @@ void freePage(void* page, size_t size)
 {
     pagingLock.Lock();
     size_t page_count = PAGE_COUNT(size);
-    union Arch::Memory::Address addr = ADDR((uintptr_t)page);
-    for (size_t i = addr.page.tableIndex; i < addr.page.tableIndex + page_count; i++) {
+    Arch::Memory::Address addr((uintptr_t)page);
+    for (size_t i = addr.page().tableIndex; i < addr.page().tableIndex + page_count; i++) {
         mappedPages.Reset(i);
         // this is the same as the line above
         struct Arch::Memory::TableEntry* pte = &(pageTables[i / ARCH_PAGE_TABLE_ENTRIES].pages[i % ARCH_PAGE_TABLE_ENTRIES]);
