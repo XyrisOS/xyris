@@ -50,6 +50,7 @@ x86 = env.Clone(
     CXX='i686-elf-g++',
     CC='i686-elf-gcc',
     AR='i686-elf-ar',
+    RANLIB="i686-elf-gcc-ranlib",
 )
 
 x86.Append(
