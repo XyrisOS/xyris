@@ -160,4 +160,5 @@ for target_env in targets:
         duplicate=0,
         exports={'env': target_env},
     )
+    target_env.Install('$INSTALL_DIR', kernel)
     target_env.EchfsImage('$INSTALL_DIR/xyris', [kernel])
