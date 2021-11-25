@@ -1,20 +1,48 @@
+# __  __          _
+# \ \/ /   _ _ __(_)___
+#  \  / | | | '__| / __|
+#  /  \ |_| | |  | \__ \
+# /_/\_\__, |_|  |_|___/
+#      |___/
+#
+# Compiles the kernel source code located in the kernel folder.
+
+# Designed by Keeton Feavel & Micah Switzer
+# Copyright the Xyris Contributors (c) 2019
 import os
 
 env = Environment(
-    tools=['default', 'echfs'],
-    ENV={'PATH': os.environ['PATH']},
+    tools=[
+        'default',
+        'echfs',
+    ],
+    ENV={
+        'PATH': os.environ['PATH'],
+    },
     BUILD_DIR='#Build/$ARCH/$MODE',
     INSTALL_DIR='#Distribution/$ARCH/$MODE',
     REPO_URL='https://github.com/XyrisOS/xyris',
     GIT_COMMIT='TODO',
     VERSION_ID=(0, 5, 0),
     VERSION_NAME='Pheonix',
+
+    # *******************
+    # * Toolchain Flags *
+    # *******************
+
     CCFLAGS=[
-        '-nostdlib', '-nodefaultlibs', '-ffreestanding', '-fstack-protector-all',
-        '-fno-builtin', '-fno-omit-frame-pointer'
+        '-nostdlib',
+        '-nodefaultlibs',
+        '-ffreestanding',
+        '-fstack-protector-all',
+        '-fno-builtin',
+        '-fno-omit-frame-pointer',
     ],
     CXXFLAGS=[
-        '-fpermissive', '-fno-rtti', '-fno-exceptions', '-fno-use-cxa-atexit',
+        '-fpermissive',
+        '-fno-rtti',
+        '-fno-exceptions',
+        '-fno-use-cxa-atexit',
     ],
     LINKFLAGS=[
         '-nostdlib',
@@ -32,17 +60,31 @@ env = Environment(
         '#thirdparty',
         '#libs',
     ],
-    CXXCOMSTR='  (CXX)  $TARGET',
-    ASCOMSTR='  (AS)   $TARGET',
-    CCCOMSTR='  (CC)   $TARGET',
-    ARCOMSTR='  (AR)   $TARGET',
-    RANLIBCOMSTR='  (RL)   $TARGET',
-    LINKCOMSTR='  (LINK) $TARGET',
+
+    # ******************************
+    # * Compiler Output Formatting *
+    # ******************************
+
+    COLOR_COM='\033[0;34m',
+    COLOR_OK='\033[0;32m',
+    COLOR_INFO='\033[0;93',
+    COLOR_NONE='\033[m',
+
+    CXXCOMSTR='  ${COLOR_COM}(CXX)${COLOR_NONE}  $SOURCE',
+    ASCOMSTR='  ${COLOR_COM}(AS)${COLOR_NONE}   $SOURCE',
+    CCCOMSTR='  ${COLOR_COM}(CC)${COLOR_NONE}   $SOURCE',
+    ARCOMSTR='  ${COLOR_COM}(AR)${COLOR_NONE}   $SOURCE',
+    RANLIBCOMSTR='  ${COLOR_COM}(RL)${COLOR_NONE}   $SOURCE',
+    LINKCOMSTR='  ${COLOR_COM}(LINK)${COLOR_NONE} $SOURCE',
 )
 
 env.Append(
     LIBPATH='$INSTALL_DIR',
 )
+
+# *******************
+# * i686 Toolchains *
+# *******************
 
 x86 = env.Clone(
     tools=['nasm'],
@@ -50,16 +92,24 @@ x86 = env.Clone(
     CXX='i686-elf-g++',
     CC='i686-elf-gcc',
     AR='i686-elf-ar',
-    RANLIB="i686-elf-gcc-ranlib",
+    RANLIB='i686-elf-gcc-ranlib',
 )
 
 x86.Append(
     ASFLAGS='-felf32',
 )
 
+# ************************
+# * Kernel Build Targets *
+# ************************
+
 targets = [
-    x86.Clone(tools=['mode_debug']),
-    x86.Clone(tools=['mode_release']),
+    x86.Clone(
+        tools=['mode_debug'],
+    ),
+    x86.Clone(
+        tools=['mode_release'],
+    ),
 ]
 
 for target_env in targets:

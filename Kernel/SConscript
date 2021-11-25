@@ -18,11 +18,19 @@ crtbegin = subprocess.check_output(
 crtend = subprocess.check_output(
         [env.subst('$CC'), '-print-file-name=crtend.o']
 ).decode().rstrip()
-sources = [Glob(path + '/*.cpp') + Glob(path + '/*.s', exclude=path + '/crt?.s') for (path, name, files) in walk('.')]
+sources = [
+    Glob(path + '/*.cpp') + Glob(path + '/*.s', exclude=path + '/crt?.s') for (path, name, files) in walk('.')
+]
 
 kernel = env.Program(
     'kernel',
-    Flatten([crti, crtbegin, Flatten(sources), crtend, crtn]),
+    Flatten([
+        crti,
+        crtbegin,
+        Flatten(sources),
+        crtend,
+        crtn
+    ]),
     LIBS=['gcc', 'alloc'],
 )
 
