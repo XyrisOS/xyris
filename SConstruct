@@ -30,6 +30,35 @@ env = Environment(
     # * Toolchain Flags *
     # *******************
 
+    # C only warnings
+    CWARNINGS=[
+        '-Wnested-externs',
+        '-Wstrict-prototypes',
+        '-Wmissing-prototypes',
+    ],
+    # C/C++ warnings
+    CCWARNINGS=[
+	    '-Wall',
+	    '-Werror',
+	    '-Wextra',
+	    '-Wundef',
+	    '-Winline',
+	    '-Wshadow',
+	    '-Wformat=2',
+	    '-Wcast-align',
+	    '-Wno-long-long',
+	    '-Wpointer-arith',
+	    '-Wwrite-strings',
+	    '-Wredundant-decls',
+	    '-Wdouble-promotion',
+	    '-Wno-unused-function',
+	    '-Wmissing-declarations',
+    ],
+    # C only flags
+    CFLAGS=[
+        '${CWARNINGS}'
+    ],
+    # C/C++ flags
     CCFLAGS=[
         '-nostdlib',
         '-nodefaultlibs',
@@ -37,7 +66,9 @@ env = Environment(
         '-fstack-protector-all',
         '-fno-builtin',
         '-fno-omit-frame-pointer',
+        '${CCWARNINGS}'
     ],
+    # C++ only flags
     CXXFLAGS=[
         '-fpermissive',
         '-fno-rtti',
