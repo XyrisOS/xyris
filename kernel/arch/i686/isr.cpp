@@ -9,8 +9,8 @@
  *
  */
 #include <arch/Arch.hpp>
-#include <arch/i386/idt.hpp>
-#include <arch/i386/isr.hpp>
+#include <arch/i686/idt.hpp>
+#include <arch/i686/isr.hpp>
 #include <sys/Panic.hpp>
 
 // Private array of interrupt handlers

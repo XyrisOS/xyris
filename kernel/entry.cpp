@@ -75,7 +75,7 @@ static void bootTone()
 
 /**
  * @brief This is the Xyris kernel entry point. This function is called directly
- * from the assembly written in boot.S located in arch/i386/boot.S. The pragma
+ * from the assembly written in boot.S located in arch/i686/boot.S. The pragma
  * allows this function to be declared without needing a former declaration.
  */
 extern "C" void kernelEntry(void* info, uint32_t magic)

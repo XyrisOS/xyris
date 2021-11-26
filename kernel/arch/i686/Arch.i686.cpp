@@ -1,21 +1,21 @@
 /**
- * @file Arch.i386.cpp
+ * @file Arch.i686.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief i386 architecture implementation of Arch.hpp
+ * @brief i686 architecture implementation of Arch.hpp
  * @version 0.1
  * @date 2021-08-24
  *
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-// Architecture (i386) specific header
-#include <arch/i386/Arch.i386.hpp>
-#include <arch/i386/regs.hpp>
-#include <arch/i386/gdt.hpp>
-#include <arch/i386/idt.hpp>
-#include <arch/i386/isr.hpp>
-#include <arch/i386/ports.hpp>
-#include <arch/i386/timer.hpp>
+// Architecture (i686) specific header
+#include <arch/i686/Arch.i686.hpp>
+#include <arch/i686/regs.hpp>
+#include <arch/i686/gdt.hpp>
+#include <arch/i686/idt.hpp>
+#include <arch/i686/isr.hpp>
+#include <arch/i686/ports.hpp>
+#include <arch/i686/timer.hpp>
 #include <cpuid.h>
 #include <stddef.h>
 #include <stdint.h>
