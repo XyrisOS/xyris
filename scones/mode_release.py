@@ -4,7 +4,10 @@ def generate(env):
     )
     env.Append(
         CPPDEFINES={'RELEASE': None},
-        CCFLAGS='-O3',
+        CCFLAGS=[
+            '-O3',
+            '-mno-avx',
+        ],
     )
 
 def exists(env):
