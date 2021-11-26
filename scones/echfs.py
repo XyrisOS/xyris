@@ -2,6 +2,7 @@ from SCons.Script import *
 from SCons.Errors import BuildError
 from SCons.Action import Action
 import os
+import platform
 
 
 def exists(env):
@@ -37,8 +38,15 @@ def echfs_op(action, *args):
 
 def echfs_image_generator(target, source, env, for_signature):
     assert(len(target) == 1)
+    bs = '1M'
+    # Take macOS's dd differences into account
+    if platform.system() == 'Darwin':
+        bs = '1m'
     actions = [
-            Action('dd if=/dev/zero bs=1M count=0 seek=2 of={} 2> /dev/null'.format(target[0]), '  (DD) {}'.format(target[0])),
+            Action(
+                'dd if=/dev/zero bs={} count=0 seek=2 of={} 2> /dev/null'.format(bs, target[0]),
+                '  (DD) {}'.format(target[0])
+            ),
             echfs_format(),
     ]
     for src in source:
