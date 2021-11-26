@@ -120,7 +120,7 @@ env.Append(
 # * i686 Toolchains *
 # *******************
 
-x86 = env.Clone(
+i686 = env.Clone(
     tools=['nasm'],
     ARCH='i686',
     CXX='i686-elf-g++',
@@ -129,7 +129,7 @@ x86 = env.Clone(
     RANLIB='i686-elf-gcc-ranlib',
 )
 
-x86.Append(
+i686.Append(
     ASFLAGS='-felf32',
 )
 
@@ -138,10 +138,10 @@ x86.Append(
 # ************************
 
 targets = [
-    x86.Clone(
+    i686.Clone(
         tools=['mode_debug'],
     ),
-    x86.Clone(
+    i686.Clone(
         tools=['mode_release'],
     ),
 ]
