@@ -11,7 +11,7 @@
 
 #include <arch/Arch.hpp>
 #include <dev/spkr/spkr.hpp>
-#include <arch/i386/timer.hpp> // TODO: Remove ASAP
+#include <arch/i686/timer.hpp> // TODO: Remove ASAP
 
 static void spkr_tone(uint32_t freq) {
     uint32_t div;

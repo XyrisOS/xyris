@@ -1,7 +1,7 @@
 /**
- * @file Memory.i386.hpp
+ * @file Memory.i686.hpp
  * @author Keeton Feavel (keeton@xyr.is)
- * @brief i386 memory structures and definitions
+ * @brief i686 memory structures and definitions
  * @version 0.1
  * @date 2021-10-26
  *

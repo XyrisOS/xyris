@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2020
  *
  */
-#include <arch/i386/ports.hpp>
+#include <arch/i686/ports.hpp>
 
 uint8_t readByte(uint16_t port) {
     uint8_t result;
@@ -43,4 +43,3 @@ uint32_t readLong(uint16_t port) {
 void writeLong(uint16_t port, uint32_t data) {
     asm volatile("outl %0, %1" : : "a"(data), "Nd" (port));
 }
-

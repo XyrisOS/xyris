@@ -10,7 +10,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-#include <arch/i386/gdt.hpp>
+#include <arch/i686/gdt.hpp>
 #include <lib/string.hpp>
 
 // Defined in the gdt_flush.s file.

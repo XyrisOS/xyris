@@ -50,7 +50,7 @@ CXXFLAGS +=                \
 	-fanalyzer             \
 
 LDFLAGS +=                 \
-	-T arch/i386/linker.ld \
+	-T arch/i686/linker.ld \
 	-L $(LIBRARY_DIR)/**   \
 	$(LIBS)                \
 
@@ -61,8 +61,8 @@ LDFLAGS +=                 \
 # All objects
 OBJ_CRTBEGIN := $(shell $(CC) -print-file-name=crtbegin.o)
 OBJ_CRTEND   := $(shell $(CC) -print-file-name=crtend.o)
-OBJ_CRTI     := $(BUILD_DIR)/arch/i386/asm/crti.o # hard-coded for now
-OBJ_CRTN     := $(BUILD_DIR)/arch/i386/asm/crtn.o # hard-coded for now
+OBJ_CRTI     := $(BUILD_DIR)/arch/i686/asm/crti.o # hard-coded for now
+OBJ_CRTN     := $(BUILD_DIR)/arch/i686/asm/crtn.o # hard-coded for now
 OBJ_C        := $(patsubst %.c,   $(BUILD_DIR)/%.o, $(C_SRC))
 OBJ_CPP      := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(CPP_SRC))
 OBJ_ASM_ALL  := $(patsubst %.s,   $(BUILD_DIR)/%.o, $(ATT_SRC)) \

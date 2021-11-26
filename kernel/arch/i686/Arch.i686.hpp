@@ -1,7 +1,7 @@
 /**
- * @file Arch.i386.hpp
+ * @file Arch.i686.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief i386 architecture implementation of Arch.hpp
+ * @brief i686 architecture implementation of Arch.hpp
  * @version 0.1
  * @date 2021-08-24
  *
@@ -9,9 +9,9 @@
  *
  */
 #pragma once
-#include <arch/i386/regs.hpp>
-#include <arch/i386/ports.hpp>
-#include <arch/i386/isr.hpp>
+#include <arch/i686/regs.hpp>
+#include <arch/i686/ports.hpp>
+#include <arch/i686/isr.hpp>
 
 namespace Arch {
 

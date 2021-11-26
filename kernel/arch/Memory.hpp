@@ -4,16 +4,16 @@
  * @brief Architecture memory management & paging API
  * @version 0.1
  * @date 2021-09-18
- * 
+ *
  * @copyright Copyright the Xyris Contributors (c) 2021
- * 
+ *
  */
 #pragma once
 
 #include <stdint.h>
 #include <stddef.h>
-#if defined(__i386__)
-#    include <arch/i386/Memory.i386.hpp>
+#if defined(__i686__)
+#    include <arch/i686/Memory.i686.hpp>
 #endif
 
 #define B_TO_KB(b) ((b) / 1024)

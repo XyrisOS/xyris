@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-#include <arch/i386/idt.hpp>
+#include <arch/i686/idt.hpp>
 
 struct idt_gate idt[IDT_ENTRIES];
 struct idt_register idt_reg;
