@@ -10,8 +10,8 @@
  */
 #include <Arch/Arch.hpp>
 #include <Arch/Memory.hpp>
-#include <sys/tasks.hpp>
-#include <sys/Panic.hpp>
+#include <Scheduler/tasks.hpp>
+#include <Panic.hpp>
 #include <Memory/heap.hpp>
 #include <Library/stdio.hpp>
 #include <Devices/serial/rs232.hpp>

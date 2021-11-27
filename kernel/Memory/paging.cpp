@@ -19,7 +19,7 @@
 #include <Memory/Physical.hpp>
 #include <Memory/paging.hpp>
 #include <Support/sections.hpp>
-#include <sys/Panic.hpp>
+#include <Panic.hpp>
 #include <stddef.h>
 
 #define PAGE_COUNT(s)   ((s) / ARCH_PAGE_SIZE) + 1;

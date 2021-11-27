@@ -10,7 +10,7 @@
  */
 #include <stddef.h>
 #include <Library/Bitset.hpp>
-#include <sys/tasks.hpp>
+#include <Scheduler/tasks.hpp>
 #include <Applications/primes.hpp>
 #include <Devices/graphics/console.hpp>
 

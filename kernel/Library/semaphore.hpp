@@ -11,7 +11,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <sys/tasks.hpp>
+#include <Scheduler/tasks.hpp>
 
 class Semaphore {
 public:

@@ -11,7 +11,7 @@
 #include <Arch/Arch.hpp>
 #include <Arch/i686/idt.hpp>
 #include <Arch/i686/isr.hpp>
-#include <sys/Panic.hpp>
+#include <Panic.hpp>
 
 // Private array of interrupt handlers
 isr_cb_t interrupt_handlers[256];

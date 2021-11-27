@@ -12,7 +12,7 @@
  *
  */
 #include <Arch/Arch.hpp>
-#include <sys/Panic.hpp>
+#include <Panic.hpp>
 #include <stddef.h>
 #include <stdint.h>
 

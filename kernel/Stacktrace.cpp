@@ -14,7 +14,7 @@
 #include <Devices/serial/rs232.hpp>
 #include <Library/stdio.hpp>
 #include <Memory/paging.hpp>
-#include <sys/trace.hpp>
+#include <Stacktrace.hpp>
 
 #define STACK_TRACE_BUF_SZ 32
 

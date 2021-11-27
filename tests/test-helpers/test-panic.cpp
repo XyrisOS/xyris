@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <sys/Panic.hpp>
+#include <Panic.hpp>
 #include <catch2/catch.hpp>
 
 // Provide a panic function for worse-case failure reporting

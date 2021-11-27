@@ -13,9 +13,9 @@
 #include <Devices/graphics/graphics.hpp>
 #include <Devices/serial/rs232.hpp>
 #include <Library/stdio.hpp>
-#include <sys/Panic.hpp>
-#include <sys/trace.hpp>
-#include <sys/tasks.hpp>
+#include <Panic.hpp>
+#include <Stacktrace.hpp>
+#include <Scheduler/tasks.hpp>
 #include <x86gprintrin.h>
 
 #define PANIC_MAX_TRACE  64

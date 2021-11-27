@@ -12,8 +12,8 @@
 #include <Library/stdio.hpp>
 #include <Library/time.hpp>
 #include <stdint.h>
-#include <sys/tasks.hpp>
-#include <sys/Panic.hpp>
+#include <Scheduler/tasks.hpp>
+#include <Panic.hpp>
 // Bootloader
 #include <Bootloader/Handoff.hpp>
 // Architecture specific code

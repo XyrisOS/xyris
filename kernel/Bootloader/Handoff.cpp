@@ -15,7 +15,7 @@
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
 #include <Memory/paging.hpp>
-#include <sys/Panic.hpp>
+#include <Panic.hpp>
 // Generic devices
 #include <Devices/graphics/console.hpp>
 #include <Devices/serial/rs232.hpp>
