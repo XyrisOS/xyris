@@ -11,7 +11,7 @@
  */
 #include <Arch/Arch.hpp>
 #include <Arch/Memory.hpp>
-#include <boot/Arguments.hpp>
+#include <Bootloader/Arguments.hpp>
 #include <lib/Bitset.hpp>
 #include <lib/mutex.hpp>
 #include <lib/stdio.hpp>

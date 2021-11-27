@@ -15,7 +15,7 @@
 #include <sys/tasks.hpp>
 #include <sys/Panic.hpp>
 // Bootloader
-#include <boot/Handoff.hpp>
+#include <Bootloader/Handoff.hpp>
 // Architecture specific code
 #include <Arch/Arch.hpp>
 // Memory management & paging

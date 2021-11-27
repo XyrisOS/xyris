@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <boot/Arguments.hpp>
+#include <Bootloader/Arguments.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 

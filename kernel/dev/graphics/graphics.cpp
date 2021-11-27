@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
-#include <boot/Handoff.hpp>
+#include <Bootloader/Handoff.hpp>
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
 

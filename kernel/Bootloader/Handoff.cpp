@@ -9,8 +9,8 @@
  *
  */
 #include <Arch/Arch.hpp>
-#include <boot/Arguments.hpp>
-#include <boot/Handoff.hpp>
+#include <Bootloader/Arguments.hpp>
+#include <Bootloader/Handoff.hpp>
 // System library functions
 #include <lib/stdio.hpp>
 #include <lib/string.hpp>
