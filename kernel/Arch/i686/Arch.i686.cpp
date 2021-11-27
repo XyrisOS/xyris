@@ -25,8 +25,8 @@
 #include <cpuid.h>
 // Helper functions
 #include <lib/stdio.hpp>
-#include <dev/graphics/console.hpp>
-#include <dev/serial/rs232.hpp>
+#include <Devices/graphics/console.hpp>
+#include <Devices/serial/rs232.hpp>
 
 const char exceptionStrings[33][32] = {
     "Divide-By-Zero", "Debugging", "Non-Maskable Interrupt", "Breakpoint",

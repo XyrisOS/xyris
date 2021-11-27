@@ -11,7 +11,7 @@
  *         https://github.com/sidsingh78/EPOCH-to-time-date-converter/blob/master/epoch_conv.c
  *         https://www.oryx-embedded.com/doc/date__time_8c_source.html
  */
-#include <dev/rtc/rtc.hpp>
+#include <Devices/rtc/rtc.hpp>
 #include <lib/time.hpp>
 
 namespace Time {

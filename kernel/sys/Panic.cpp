@@ -1,17 +1,17 @@
 /**
  * @file Panic.cpp
  * @author Keeton Feavel (keeton@xyr.is)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2021-11-05
- * 
+ *
  * @copyright Copyright the Xyris Contributors (c) 2021
- * 
+ *
  */
-#include <dev/graphics/console.hpp>
-#include <dev/graphics/framebuffer.hpp>
-#include <dev/graphics/graphics.hpp>
-#include <dev/serial/rs232.hpp>
+#include <Devices/graphics/console.hpp>
+#include <Devices/graphics/framebuffer.hpp>
+#include <Devices/graphics/graphics.hpp>
+#include <Devices/serial/rs232.hpp>
 #include <lib/stdio.hpp>
 #include <sys/Panic.hpp>
 #include <sys/trace.hpp>

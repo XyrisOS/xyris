@@ -10,7 +10,7 @@
  */
 
 #include <Arch/Arch.hpp>
-#include <dev/spkr/spkr.hpp>
+#include <Devices/spkr/spkr.hpp>
 #include <Arch/i686/timer.hpp> // TODO: Remove ASAP
 
 static void spkr_tone(uint32_t freq) {

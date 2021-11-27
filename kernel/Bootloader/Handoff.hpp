@@ -9,7 +9,7 @@
  *
  */
 #pragma once
-#include <dev/graphics/framebuffer.hpp>
+#include <Devices/graphics/framebuffer.hpp>
 #include <mem/MemoryMap.hpp>
 #include <stdint.h>
 

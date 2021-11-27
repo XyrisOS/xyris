@@ -14,7 +14,7 @@
 #include <sys/Panic.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
-#include <dev/serial/rs232.hpp>
+#include <Devices/serial/rs232.hpp>
 #include <stdint.h>
 #include <x86gprintrin.h>   // needed for __rdtsc
 #include <Arch/i686/timer.hpp> // TODO: Remove ASAP

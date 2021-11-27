@@ -1,17 +1,17 @@
 /**
  * @file font.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2021-07-25
- * 
+ *
  * @copyright Copyright the Panix Contributors (c) 2021
- * 
+ *
  * References:
  *     https://github.com/skiftOS/skift/blob/main/kernel/system/graphics/Font.cpp
  */
-#include <dev/graphics/font.hpp>
-#include <dev/graphics/graphics.hpp>
+#include <Devices/graphics/font.hpp>
+#include <Devices/graphics/graphics.hpp>
 #include <stdint.h>
 
 namespace Graphics {

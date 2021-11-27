@@ -17,8 +17,8 @@
 #include <mem/paging.hpp>
 #include <sys/Panic.hpp>
 // Generic devices
-#include <dev/graphics/console.hpp>
-#include <dev/serial/rs232.hpp>
+#include <Devices/graphics/console.hpp>
+#include <Devices/serial/rs232.hpp>
 // Bootloaders
 #include <multiboot/multiboot2.h>
 #include <stivale/stivale2.h>

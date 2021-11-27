@@ -13,7 +13,7 @@
  *     https://github.com/skiftOS/skift/blob/main/kernel/system/graphics/Graphics.cpp
  *
  */
-#include <dev/graphics/graphics.hpp>
+#include <Devices/graphics/graphics.hpp>
 #include <stddef.h>
 #include <stdint.h>
 #include <mem/heap.hpp>

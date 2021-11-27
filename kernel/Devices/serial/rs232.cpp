@@ -14,7 +14,7 @@
 
 #include <stdarg.h>
 #include <Arch/Arch.hpp>
-#include <dev/serial/rs232.hpp>
+#include <Devices/serial/rs232.hpp>
 #include <mem/heap.hpp>
 #include <lib/stdio.hpp>
 #include <lib/mutex.hpp>

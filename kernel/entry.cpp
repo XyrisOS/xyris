@@ -21,11 +21,11 @@
 // Memory management & paging
 #include <mem/paging.hpp>
 // Generic devices
-#include <dev/graphics/graphics.hpp>
-#include <dev/graphics/console.hpp>
-#include <dev/rtc/rtc.hpp>
-#include <dev/serial/rs232.hpp>
-#include <dev/spkr/spkr.hpp>
+#include <Devices/graphics/graphics.hpp>
+#include <Devices/graphics/console.hpp>
+#include <Devices/rtc/rtc.hpp>
+#include <Devices/serial/rs232.hpp>
+#include <Devices/spkr/spkr.hpp>
 // Apps
 #include <Applications/primes.hpp>
 #include <Applications/spinner.hpp>

@@ -13,7 +13,7 @@
  *         https://en.wikipedia.org/wiki/Julian_day
  */
 #include <Arch/Arch.hpp>
-#include <dev/rtc/rtc.hpp>
+#include <Devices/rtc/rtc.hpp>
 
 namespace RTC {
 

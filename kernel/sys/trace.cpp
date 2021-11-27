@@ -10,8 +10,8 @@
  */
 
 #include <Arch/Arch.hpp>
-#include <dev/graphics/console.hpp>
-#include <dev/serial/rs232.hpp>
+#include <Devices/graphics/console.hpp>
+#include <Devices/serial/rs232.hpp>
 #include <lib/stdio.hpp>
 #include <mem/paging.hpp>
 #include <sys/trace.hpp>

@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <dev/graphics/framebuffer.hpp>
+#include <Devices/graphics/framebuffer.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
