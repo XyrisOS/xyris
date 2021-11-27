@@ -9,19 +9,19 @@
  *
  */
 // Architecture (i686) specific header
-#include <arch/i686/Arch.i686.hpp>
-#include <arch/i686/regs.hpp>
-#include <arch/i686/gdt.hpp>
-#include <arch/i686/idt.hpp>
-#include <arch/i686/isr.hpp>
-#include <arch/i686/ports.hpp>
-#include <arch/i686/timer.hpp>
+#include <Arch/i686/Arch.i686.hpp>
+#include <Arch/i686/regs.hpp>
+#include <Arch/i686/gdt.hpp>
+#include <Arch/i686/idt.hpp>
+#include <Arch/i686/isr.hpp>
+#include <Arch/i686/ports.hpp>
+#include <Arch/i686/timer.hpp>
 #include <cpuid.h>
 #include <stddef.h>
 #include <stdint.h>
 // Architecture agnostic header
-#include <arch/Arch.hpp>
-#include <arch/Memory.hpp>
+#include <Arch/Arch.hpp>
+#include <Arch/Memory.hpp>
 #include <cpuid.h>
 // Helper functions
 #include <lib/stdio.hpp>

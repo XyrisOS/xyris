@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <arch/Arch.hpp>
+#include <Arch/Arch.hpp>
 #include <boot/Arguments.hpp>
 #include <boot/Handoff.hpp>
 // System library functions

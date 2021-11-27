@@ -9,8 +9,8 @@
  * @copyright Copyright Keeton Feavel and Micah Switzer (c) 2019
  *
  */
-#include <arch/Arch.hpp>
-#include <arch/Memory.hpp>
+#include <Arch/Arch.hpp>
+#include <Arch/Memory.hpp>
 #include <boot/Arguments.hpp>
 #include <lib/Bitset.hpp>
 #include <lib/mutex.hpp>

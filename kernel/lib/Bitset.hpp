@@ -11,7 +11,7 @@
  */
 #pragma once
 
-#include <arch/Arch.hpp>
+#include <Arch/Arch.hpp>
 #include <lib/string.hpp>
 #include <limits.h>
 #include <meta/compiler.hpp>

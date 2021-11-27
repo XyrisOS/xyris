@@ -10,7 +10,7 @@
  */
 #pragma once
 
-#include <arch/Memory.hpp>
+#include <Arch/Memory.hpp>
 #include <lib/Bitset.hpp>
 #include <mem/MemorySection.hpp>
 #include <meta/compiler.hpp>

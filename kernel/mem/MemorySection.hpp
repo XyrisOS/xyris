@@ -9,7 +9,7 @@
  *
  */
 #pragma once
-#include <arch/Memory.hpp>
+#include <Arch/Memory.hpp>
 #include <meta/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>

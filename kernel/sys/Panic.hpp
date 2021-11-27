@@ -4,14 +4,14 @@
  * @brief Kernel panic management
  * @version 0.1
  * @date 2021-11-05
- * 
+ *
  * @copyright Copyright the Xyris Contributors (c) 2021
- * 
+ *
  */
 #pragma once
 
 #include <meta/compiler.hpp>
-#include <arch/Arch.hpp>
+#include <Arch/Arch.hpp>
 
 /**
  * @brief Halt the system and print the provided message on the panic screen.

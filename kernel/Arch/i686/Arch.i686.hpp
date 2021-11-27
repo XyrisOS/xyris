@@ -9,9 +9,9 @@
  *
  */
 #pragma once
-#include <arch/i686/regs.hpp>
-#include <arch/i686/ports.hpp>
-#include <arch/i686/isr.hpp>
+#include <Arch/i686/regs.hpp>
+#include <Arch/i686/ports.hpp>
+#include <Arch/i686/isr.hpp>
 
 namespace Arch {
 

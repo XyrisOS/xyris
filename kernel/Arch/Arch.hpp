@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #if defined(__i686__)
-#    include <arch/i686/Arch.i686.hpp>
+#    include <Arch/i686/Arch.i686.hpp>
 #endif
 
 /**

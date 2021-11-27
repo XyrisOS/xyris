@@ -12,7 +12,7 @@
 #include <meta/compiler.hpp>
 #include <meta/sections.hpp>
 #include <stivale/stivale2.h>
-#include <arch/Arch.hpp>
+#include <Arch/Arch.hpp>
 /*
 // TODO: Figure out why these structs aren't the same as the ones in stivale2.s
 #define STIVALE2_MAGIC "stv2"

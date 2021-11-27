@@ -8,9 +8,9 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
-#include <arch/Arch.hpp>
-#include <arch/i686/idt.hpp>
-#include <arch/i686/isr.hpp>
+#include <Arch/Arch.hpp>
+#include <Arch/i686/idt.hpp>
+#include <Arch/i686/isr.hpp>
 #include <sys/Panic.hpp>
 
 // Private array of interrupt handlers

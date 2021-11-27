@@ -11,7 +11,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <arch/Arch.hpp>
+#include <Arch/Arch.hpp>
 #include <mem/paging.hpp>
 
 #define TIME_SLICE_SIZE (1 * 1000 * 1000ULL)

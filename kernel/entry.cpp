@@ -17,7 +17,7 @@
 // Bootloader
 #include <boot/Handoff.hpp>
 // Architecture specific code
-#include <arch/Arch.hpp>
+#include <Arch/Arch.hpp>
 // Memory management & paging
 #include <mem/paging.hpp>
 // Generic devices
@@ -75,7 +75,7 @@ static void bootTone()
 
 /**
  * @brief This is the Xyris kernel entry point. This function is called directly
- * from the assembly written in boot.S located in arch/i686/boot.S. The pragma
+ * from the assembly written in boot.S located in Arch/i686/boot.S. The pragma
  * allows this function to be declared without needing a former declaration.
  */
 extern "C" void kernelEntry(void* info, uint32_t magic)

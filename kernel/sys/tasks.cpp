@@ -8,8 +8,8 @@
  * @copyright Copyright the Xyris Contributors (c) 2020
  *
  */
-#include <arch/Arch.hpp>
-#include <arch/Memory.hpp>
+#include <Arch/Arch.hpp>
+#include <Arch/Memory.hpp>
 #include <sys/tasks.hpp>
 #include <sys/Panic.hpp>
 #include <mem/heap.hpp>
@@ -17,7 +17,7 @@
 #include <dev/serial/rs232.hpp>
 #include <stdint.h>
 #include <x86gprintrin.h>   // needed for __rdtsc
-#include <arch/i686/timer.hpp> // TODO: Remove ASAP
+#include <Arch/i686/timer.hpp> // TODO: Remove ASAP
 
 /* forward declarations */
 static void _enqueue_task(struct tasklist *, task *);

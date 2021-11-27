@@ -10,7 +10,7 @@
  *
  */
 
-#include <arch/Arch.hpp>
+#include <Arch/Arch.hpp>
 #include <meta/sections.hpp>
 #include <meta/compiler.hpp>
 
@@ -75,4 +75,3 @@ early_panic(const char *str) {
         }
     }
 }
-
