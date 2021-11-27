@@ -11,7 +11,7 @@
 #pragma once
 
 #include <Arch/Memory.hpp>
-#include <lib/Bitset.hpp>
+#include <Library/Bitset.hpp>
 #include <mem/MemorySection.hpp>
 #include <meta/compiler.hpp>
 #include <stddef.h>

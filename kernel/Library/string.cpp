@@ -9,7 +9,7 @@
  *
  */
 
-#include <lib/string.hpp>
+#include <Library/string.hpp>
 
 int strlen(const char* s)
 {

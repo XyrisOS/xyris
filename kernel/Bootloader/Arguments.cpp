@@ -9,8 +9,8 @@
  *
  */
 #include <Bootloader/Arguments.hpp>
-#include <lib/stdio.hpp>
-#include <lib/string.hpp>
+#include <Library/stdio.hpp>
+#include <Library/string.hpp>
 
 namespace Boot {
 

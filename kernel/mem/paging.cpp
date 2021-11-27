@@ -12,10 +12,10 @@
 #include <Arch/Arch.hpp>
 #include <Arch/Memory.hpp>
 #include <Bootloader/Arguments.hpp>
-#include <lib/Bitset.hpp>
-#include <lib/mutex.hpp>
-#include <lib/stdio.hpp>
-#include <lib/string.hpp>
+#include <Library/Bitset.hpp>
+#include <Library/mutex.hpp>
+#include <Library/stdio.hpp>
+#include <Library/string.hpp>
 #include <mem/Physical.hpp>
 #include <mem/paging.hpp>
 #include <meta/sections.hpp>

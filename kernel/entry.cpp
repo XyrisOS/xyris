@@ -9,8 +9,8 @@
  *
  */
 // System library functions
-#include <lib/stdio.hpp>
-#include <lib/time.hpp>
+#include <Library/stdio.hpp>
+#include <Library/time.hpp>
 #include <stdint.h>
 #include <sys/tasks.hpp>
 #include <sys/Panic.hpp>

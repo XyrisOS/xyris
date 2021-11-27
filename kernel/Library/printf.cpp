@@ -13,8 +13,8 @@
  * http://www.osdev.labedz.org/src/lib/stdio/printf.c
  *
  */
-#include <lib/stdio.hpp>
-#include <lib/string.hpp>
+#include <Library/stdio.hpp>
+#include <Library/string.hpp>
 #include <limits.h>
 #include <stdarg.h>
 

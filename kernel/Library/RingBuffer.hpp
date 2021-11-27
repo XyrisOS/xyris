@@ -13,7 +13,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <lib/errno.hpp>
+#include <Library/errno.hpp>
 
 template <typename T, size_t S>
 class RingBuffer {

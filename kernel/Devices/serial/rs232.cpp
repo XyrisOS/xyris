@@ -16,10 +16,10 @@
 #include <Arch/Arch.hpp>
 #include <Devices/serial/rs232.hpp>
 #include <mem/heap.hpp>
-#include <lib/stdio.hpp>
-#include <lib/mutex.hpp>
-#include <lib/string.hpp>
-#include <lib/RingBuffer.hpp>
+#include <Library/stdio.hpp>
+#include <Library/mutex.hpp>
+#include <Library/string.hpp>
+#include <Library/RingBuffer.hpp>
 
 #define RS_232_COM1_IRQ 0x04
 #define RS_232_COM3_IRQ 0x04

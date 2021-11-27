@@ -19,8 +19,8 @@
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
 #include <Bootloader/Handoff.hpp>
-#include <lib/stdio.hpp>
-#include <lib/string.hpp>
+#include <Library/stdio.hpp>
+#include <Library/string.hpp>
 
 namespace Graphics {
 

@@ -12,8 +12,8 @@
 #include <Devices/graphics/font.hpp>
 #include <Devices/graphics/framebuffer.hpp>
 #include <Devices/graphics/graphics.hpp>
-#include <lib/stdio.hpp>
-#include <lib/mutex.hpp>
+#include <Library/stdio.hpp>
+#include <Library/mutex.hpp>
 #include <stddef.h>
 
 namespace Console {

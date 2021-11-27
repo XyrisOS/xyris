@@ -24,7 +24,7 @@
 #include <Arch/Memory.hpp>
 #include <cpuid.h>
 // Helper functions
-#include <lib/stdio.hpp>
+#include <Library/stdio.hpp>
 #include <Devices/graphics/console.hpp>
 #include <Devices/serial/rs232.hpp>
 

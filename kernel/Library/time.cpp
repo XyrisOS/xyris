@@ -12,7 +12,7 @@
  *         https://www.oryx-embedded.com/doc/date__time_8c_source.html
  */
 #include <Devices/rtc/rtc.hpp>
-#include <lib/time.hpp>
+#include <Library/time.hpp>
 
 namespace Time {
 

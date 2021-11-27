@@ -12,7 +12,7 @@
 #include <Devices/graphics/framebuffer.hpp>
 #include <Devices/graphics/graphics.hpp>
 #include <Devices/serial/rs232.hpp>
-#include <lib/stdio.hpp>
+#include <Library/stdio.hpp>
 #include <sys/Panic.hpp>
 #include <sys/trace.hpp>
 #include <sys/tasks.hpp>

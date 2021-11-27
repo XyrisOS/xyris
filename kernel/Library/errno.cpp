@@ -9,7 +9,7 @@
  *
  */
 
-#include <lib/errno.hpp>
+#include <Library/errno.hpp>
 
 // Declare the actual errno value
 enum KernelError errno;

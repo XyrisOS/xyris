@@ -9,7 +9,7 @@
  *
  */
 #pragma once
-#include <lib/LinkedList.hpp>
+#include <Library/LinkedList.hpp>
 
 #define MAX_ARGUMENT_LEN 32
 #define KERNEL_PARAM(name, arg, callback) \

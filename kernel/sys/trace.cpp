@@ -12,7 +12,7 @@
 #include <Arch/Arch.hpp>
 #include <Devices/graphics/console.hpp>
 #include <Devices/serial/rs232.hpp>
-#include <lib/stdio.hpp>
+#include <Library/stdio.hpp>
 #include <mem/paging.hpp>
 #include <sys/trace.hpp>
 

@@ -8,8 +8,8 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <lib/errno.hpp>
-#include <lib/mutex.hpp>
+#include <Library/errno.hpp>
+#include <Library/mutex.hpp>
 #include <mem/heap.hpp>
 #include <mem/paging.hpp>
 #include <stddef.h>

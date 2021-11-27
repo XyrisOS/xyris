@@ -11,7 +11,7 @@
  *
  */
 #include <Arch/i686/gdt.hpp>
-#include <lib/string.hpp>
+#include <Library/string.hpp>
 
 // Defined in the gdt_flush.s file.
 extern "C" void gdt_flush(uintptr_t);

@@ -9,7 +9,7 @@
  *
  */
 #include <stddef.h>
-#include <lib/Bitset.hpp>
+#include <Library/Bitset.hpp>
 #include <sys/tasks.hpp>
 #include <Applications/primes.hpp>
 #include <Devices/graphics/console.hpp>

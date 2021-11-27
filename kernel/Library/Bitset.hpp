@@ -12,7 +12,7 @@
 #pragma once
 
 #include <Arch/Arch.hpp>
-#include <lib/string.hpp>
+#include <Library/string.hpp>
 #include <limits.h>
 #include <meta/compiler.hpp>
 #include <stddef.h>

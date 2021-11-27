@@ -13,7 +13,7 @@
 #include <sys/tasks.hpp>
 #include <sys/Panic.hpp>
 #include <mem/heap.hpp>
-#include <lib/stdio.hpp>
+#include <Library/stdio.hpp>
 #include <Devices/serial/rs232.hpp>
 #include <stdint.h>
 #include <x86gprintrin.h>   // needed for __rdtsc
