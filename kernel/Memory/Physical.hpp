@@ -12,7 +12,7 @@
 
 #include <Arch/Memory.hpp>
 #include <Library/Bitset.hpp>
-#include <mem/MemorySection.hpp>
+#include <Memory/MemorySection.hpp>
 #include <meta/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>

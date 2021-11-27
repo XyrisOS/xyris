@@ -11,7 +11,7 @@
 #pragma once
 
 #include <Arch/Memory.hpp>
-#include <mem/MemoryMap.hpp>
+#include <Memory/MemoryMap.hpp>
 #include <stddef.h>
 #include <stdint.h>
 

@@ -12,7 +12,7 @@
 
 #include <stdint.h>
 #include <Arch/Arch.hpp>
-#include <mem/paging.hpp>
+#include <Memory/paging.hpp>
 
 #define TIME_SLICE_SIZE (1 * 1000 * 1000ULL)
 

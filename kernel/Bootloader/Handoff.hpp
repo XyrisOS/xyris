@@ -10,7 +10,7 @@
  */
 #pragma once
 #include <Devices/graphics/framebuffer.hpp>
-#include <mem/MemoryMap.hpp>
+#include <Memory/MemoryMap.hpp>
 #include <stdint.h>
 
 namespace Boot {

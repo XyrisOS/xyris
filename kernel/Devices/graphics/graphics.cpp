@@ -16,8 +16,8 @@
 #include <Devices/graphics/graphics.hpp>
 #include <stddef.h>
 #include <stdint.h>
-#include <mem/heap.hpp>
-#include <mem/paging.hpp>
+#include <Memory/heap.hpp>
+#include <Memory/paging.hpp>
 #include <Bootloader/Handoff.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>

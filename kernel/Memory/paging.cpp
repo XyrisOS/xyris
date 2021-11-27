@@ -16,8 +16,8 @@
 #include <Library/mutex.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
-#include <mem/Physical.hpp>
-#include <mem/paging.hpp>
+#include <Memory/Physical.hpp>
+#include <Memory/paging.hpp>
 #include <meta/sections.hpp>
 #include <sys/Panic.hpp>
 #include <stddef.h>

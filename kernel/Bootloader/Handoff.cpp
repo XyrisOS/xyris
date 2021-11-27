@@ -14,7 +14,7 @@
 // System library functions
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
-#include <mem/paging.hpp>
+#include <Memory/paging.hpp>
 #include <sys/Panic.hpp>
 // Generic devices
 #include <Devices/graphics/console.hpp>

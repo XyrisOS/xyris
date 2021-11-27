@@ -13,7 +13,7 @@
 #include <Devices/graphics/console.hpp>
 #include <Devices/serial/rs232.hpp>
 #include <Library/stdio.hpp>
-#include <mem/paging.hpp>
+#include <Memory/paging.hpp>
 #include <sys/trace.hpp>
 
 #define STACK_TRACE_BUF_SZ 32

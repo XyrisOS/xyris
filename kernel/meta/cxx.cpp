@@ -10,7 +10,7 @@
  * References:
  *         https://wiki.osdev.org/C++
  */
-#include <mem/heap.hpp>
+#include <Memory/heap.hpp>
 
 void* operator new(size_t size)
 {

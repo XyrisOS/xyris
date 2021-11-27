@@ -19,7 +19,7 @@
 // Architecture specific code
 #include <Arch/Arch.hpp>
 // Memory management & paging
-#include <mem/paging.hpp>
+#include <Memory/paging.hpp>
 // Generic devices
 #include <Devices/graphics/graphics.hpp>
 #include <Devices/graphics/console.hpp>

@@ -10,8 +10,8 @@
  */
 #include <Library/errno.hpp>
 #include <Library/mutex.hpp>
-#include <mem/heap.hpp>
-#include <mem/paging.hpp>
+#include <Memory/heap.hpp>
+#include <Memory/paging.hpp>
 #include <stddef.h>
 
 static Mutex lock("alloc");

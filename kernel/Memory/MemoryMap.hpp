@@ -5,12 +5,12 @@
  * that describe the physical memory layout
  * @version 0.1
  * @date 2021-09-12
- * 
+ *
  * @copyright Copyright the Xyris Contributors (c) 2021
- * 
+ *
  */
 #pragma once
-#include <mem/MemorySection.hpp>
+#include <Memory/MemorySection.hpp>
 
 namespace Memory {
 
