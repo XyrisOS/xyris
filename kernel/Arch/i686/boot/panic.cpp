@@ -11,8 +11,8 @@
  */
 
 #include <Arch/Arch.hpp>
-#include <meta/sections.hpp>
-#include <meta/compiler.hpp>
+#include <Support/sections.hpp>
+#include <Support/compiler.hpp>
 
 #define TTY_WIDTH 80
 #define TTY_HEIGHT 25

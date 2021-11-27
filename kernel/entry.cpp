@@ -30,7 +30,7 @@
 #include <Applications/primes.hpp>
 #include <Applications/spinner.hpp>
 // Meta
-#include <meta/defines.hpp>
+#include <Support/defines.hpp>
 
 static void printSplash();
 static void bootTone();

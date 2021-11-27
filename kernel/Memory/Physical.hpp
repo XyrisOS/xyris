@@ -13,7 +13,7 @@
 #include <Arch/Memory.hpp>
 #include <Library/Bitset.hpp>
 #include <Memory/MemorySection.hpp>
-#include <meta/compiler.hpp>
+#include <Support/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>
 

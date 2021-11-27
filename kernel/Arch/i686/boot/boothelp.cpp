@@ -8,8 +8,8 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <meta/compiler.hpp>
-#include <meta/sections.hpp>
+#include <Support/compiler.hpp>
+#include <Support/sections.hpp>
 #include <multiboot/multiboot2.h>
 #include <stdint.h>
 #include <stivale/stivale2.h>
