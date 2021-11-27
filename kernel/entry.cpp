@@ -27,8 +27,8 @@
 #include <dev/serial/rs232.hpp>
 #include <dev/spkr/spkr.hpp>
 // Apps
-#include <apps/primes.hpp>
-#include <apps/spinner.hpp>
+#include <Applications/primes.hpp>
+#include <Applications/spinner.hpp>
 // Meta
 #include <meta/defines.hpp>
 

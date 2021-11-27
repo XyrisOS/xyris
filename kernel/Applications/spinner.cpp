@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <apps/spinner.hpp>
+#include <Applications/spinner.hpp>
 #include <dev/graphics/console.hpp>
 
 namespace Apps {

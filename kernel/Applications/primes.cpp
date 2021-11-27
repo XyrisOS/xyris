@@ -11,7 +11,7 @@
 #include <stddef.h>
 #include <lib/Bitset.hpp>
 #include <sys/tasks.hpp>
-#include <apps/primes.hpp>
+#include <Applications/primes.hpp>
 #include <dev/graphics/console.hpp>
 
 namespace Apps {

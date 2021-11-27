@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <apps/animation.hpp>
+#include <Applications/animation.hpp>
 #include <dev/graphics/graphics.hpp>
 
 namespace Apps {
