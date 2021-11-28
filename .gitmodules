@@ -1,5 +1,5 @@
 [submodule "libs/liballoc"]
-	path = libs/liballoc
+	path = Libraries/liballoc
 	url = https://github.com/XyrisOS/liballoc.git
 	branch = xyris
 [submodule "thirdparty/limine"]
