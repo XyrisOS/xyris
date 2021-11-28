@@ -25,7 +25,7 @@
 #include <cpuid.h>
 // Helper functions
 #include <Library/stdio.hpp>
-#include <Devices/graphics/console.hpp>
+#include <Devices/Graphics/console.hpp>
 #include <Devices/serial/rs232.hpp>
 
 const char exceptionStrings[33][32] = {

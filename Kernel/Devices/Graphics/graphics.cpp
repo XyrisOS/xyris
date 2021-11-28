@@ -10,10 +10,10 @@
  *
  * References:
  *     https://wiki.osdev.org/Double_Buffering
- *     https://github.com/skiftOS/skift/blob/main/kernel/system/graphics/Graphics.cpp
+ *     https://github.com/skiftOS/skift/blob/main/kernel/system/Graphics/Graphics.cpp
  *
  */
-#include <Devices/graphics/graphics.hpp>
+#include <Devices/Graphics/graphics.hpp>
 #include <stddef.h>
 #include <stdint.h>
 #include <Memory/heap.hpp>

@@ -10,7 +10,7 @@
  */
 
 #include <Arch/Arch.hpp>
-#include <Devices/graphics/console.hpp>
+#include <Devices/Graphics/console.hpp>
 #include <Devices/serial/rs232.hpp>
 #include <Library/stdio.hpp>
 #include <Memory/paging.hpp>

@@ -9,7 +9,7 @@
  *
  */
 #include <Applications/animation.hpp>
-#include <Devices/graphics/graphics.hpp>
+#include <Devices/Graphics/graphics.hpp>
 
 namespace Apps {
 

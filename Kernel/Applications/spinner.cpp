@@ -9,7 +9,7 @@
  *
  */
 #include <Applications/spinner.hpp>
-#include <Devices/graphics/console.hpp>
+#include <Devices/Graphics/console.hpp>
 
 namespace Apps {
 

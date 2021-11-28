@@ -8,9 +8,9 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <Devices/graphics/console.hpp>
-#include <Devices/graphics/framebuffer.hpp>
-#include <Devices/graphics/graphics.hpp>
+#include <Devices/Graphics/console.hpp>
+#include <Devices/Graphics/framebuffer.hpp>
+#include <Devices/Graphics/graphics.hpp>
 #include <Devices/serial/rs232.hpp>
 #include <Library/stdio.hpp>
 #include <Panic.hpp>

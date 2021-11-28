@@ -12,7 +12,7 @@
 #include <Library/Bitset.hpp>
 #include <Scheduler/tasks.hpp>
 #include <Applications/primes.hpp>
-#include <Devices/graphics/console.hpp>
+#include <Devices/Graphics/console.hpp>
 
 namespace Apps {
 

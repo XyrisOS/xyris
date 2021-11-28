@@ -8,10 +8,10 @@
  * @copyright Copyright the Panix Contributors (c) 2021
  *
  * References:
- *     https://github.com/skiftOS/skift/blob/main/kernel/system/graphics/Font.cpp
+ *     https://github.com/skiftOS/skift/blob/main/kernel/system/Graphics/Font.cpp
  */
-#include <Devices/graphics/font.hpp>
-#include <Devices/graphics/graphics.hpp>
+#include <Devices/Graphics/font.hpp>
+#include <Devices/Graphics/graphics.hpp>
 #include <stdint.h>
 
 namespace Graphics {

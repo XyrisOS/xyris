@@ -8,10 +8,10 @@
  * @copyright Copyright Keeton Feavel et al (c) 2020
  *
  */
-#include <Devices/graphics/console.hpp>
-#include <Devices/graphics/font.hpp>
-#include <Devices/graphics/framebuffer.hpp>
-#include <Devices/graphics/graphics.hpp>
+#include <Devices/Graphics/console.hpp>
+#include <Devices/Graphics/font.hpp>
+#include <Devices/Graphics/framebuffer.hpp>
+#include <Devices/Graphics/graphics.hpp>
 #include <Library/stdio.hpp>
 #include <Library/mutex.hpp>
 #include <stddef.h>
