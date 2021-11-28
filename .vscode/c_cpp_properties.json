@@ -7,7 +7,7 @@
             "includePath": [
                 "${default}",
                 "${workspaceFolder}/Kernel/",
-                "${workspaceFolder}/thirdparty/",
+                "${workspaceFolder}/Thirdparty/",
                 "${workspaceFolder}/Tests/"
             ],
             "cStandard": "c11",

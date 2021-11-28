@@ -62,7 +62,7 @@ export BUILD_DIR      := $(ROOT)/Build
 export LIBRARY_DIR    := $(ROOT)/libs
 export TESTS_DIR      := $(ROOT)/Tests
 export PRODUCTS_DIR   := $(ROOT)/Distribution
-export THIRDPARTY_DIR := $(ROOT)/thirdparty
+export THIRDPARTY_DIR := $(ROOT)/Thirdparty
 # Products
 export ISO            := $(PROJ_NAME).iso
 export IMG            := $(PROJ_NAME).img
