@@ -6,7 +6,7 @@
             "compilerPath": "/usr/bin/gcc",
             "includePath": [
                 "${default}",
-                "${workspaceFolder}/kernel/",
+                "${workspaceFolder}/Kernel/",
                 "${workspaceFolder}/thirdparty/",
                 "${workspaceFolder}/tests/"
             ],

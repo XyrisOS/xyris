@@ -57,7 +57,7 @@ export MKGRUB  := $(shell which grub-mkrescue)
 # Directories & files
 export KERNEL         := kernel
 export ROOT           := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-export KERNEL_DIR     := $(ROOT)/kernel
+export KERNEL_DIR     := $(ROOT)/Kernel
 export BUILD_DIR      := $(ROOT)/obj
 export LIBRARY_DIR    := $(ROOT)/libs
 export TESTS_DIR      := $(ROOT)/tests
@@ -159,7 +159,7 @@ $(PRODUCTS_DIR)/$(MODE)/$(KERNEL):
         $(MAKE) -C $$dir $(PROJ_NAME); \
     done
 	@printf "$(COLOR_INFO)Making Kernel ($(MODE))$(COLOR_NONE)\n"
-	@$(MAKE) -C $(KERNEL) $(KERNEL)
+	@$(MAKE) -C $(KERNEL_DIR) $(KERNEL)
 	@printf "$(COLOR_INFO)Done!$(COLOR_NONE)\n"
 
 # Hacky way to build all targets. This target cannot
