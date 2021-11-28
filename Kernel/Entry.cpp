@@ -24,7 +24,7 @@
 #include <Devices/Graphics/graphics.hpp>
 #include <Devices/Graphics/console.hpp>
 #include <Devices/Clock/rtc.hpp>
-#include <Devices/serial/rs232.hpp>
+#include <Devices/Serial/rs232.hpp>
 #include <Devices/spkr/spkr.hpp>
 // Apps
 #include <Applications/primes.hpp>

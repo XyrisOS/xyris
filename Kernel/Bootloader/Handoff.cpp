@@ -18,7 +18,7 @@
 #include <Panic.hpp>
 // Generic devices
 #include <Devices/Graphics/console.hpp>
-#include <Devices/serial/rs232.hpp>
+#include <Devices/Serial/rs232.hpp>
 // Bootloaders
 #include <multiboot/multiboot2.h>
 #include <stivale/stivale2.h>

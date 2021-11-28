@@ -68,7 +68,7 @@ int ksprintf(char* buf, const char* fmt, ...);
  * @param ... Sequence of additional arguments
  */
 #ifdef DEBUG
-#include <Devices/serial/rs232.hpp>
+#include <Devices/Serial/rs232.hpp>
 #define debugf(fmt, ...) RS232::printf(fmt, ##__VA_ARGS__)
 #else
 #define debugf(fmt, ...)

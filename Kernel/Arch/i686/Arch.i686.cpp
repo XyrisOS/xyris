@@ -26,7 +26,7 @@
 // Helper functions
 #include <Library/stdio.hpp>
 #include <Devices/Graphics/console.hpp>
-#include <Devices/serial/rs232.hpp>
+#include <Devices/Serial/rs232.hpp>
 
 const char exceptionStrings[33][32] = {
     "Divide-By-Zero", "Debugging", "Non-Maskable Interrupt", "Breakpoint",
