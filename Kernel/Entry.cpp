@@ -23,7 +23,7 @@
 // Generic devices
 #include <Devices/Graphics/graphics.hpp>
 #include <Devices/Graphics/console.hpp>
-#include <Devices/rtc/rtc.hpp>
+#include <Devices/Clock/rtc.hpp>
 #include <Devices/serial/rs232.hpp>
 #include <Devices/spkr/spkr.hpp>
 // Apps
