@@ -21,17 +21,17 @@ jobs:
         submodules: true
     # Unit Tests
     - name: Build and Run Tests
-      run: make unit-test && ./dist/unit-test -r junit --out ./tests/report.xml
+      run: make unit-test && ./dist/unit-test -r junit --out ./Tests/report.xml
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v2
       with:
         fail_on_failure: true
-        report_paths: 'tests/report.xml'
+        report_paths: 'Tests/report.xml'
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
         name: test-report
-        path: tests/report.xml
+        path: Tests/report.xml
     # Debug
     - name: 'Build Kernel (Debug)'
       run: make MODE=debug

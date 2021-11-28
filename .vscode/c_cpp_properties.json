@@ -8,7 +8,7 @@
                 "${default}",
                 "${workspaceFolder}/Kernel/",
                 "${workspaceFolder}/thirdparty/",
-                "${workspaceFolder}/tests/"
+                "${workspaceFolder}/Tests/"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",

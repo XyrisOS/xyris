@@ -47,7 +47,7 @@ LDFLAGS =                   \
 	-lm
 
 CPPFLAGS +=                 \
-	-I$(ROOT)/tests/        \
+	-I$(ROOT)/Tests/        \
 	-I$(THIRDPARTY_DIR)     \
 	-I$(KERNEL_DIR)         \
 	-DTESTING

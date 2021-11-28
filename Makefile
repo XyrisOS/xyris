@@ -60,7 +60,7 @@ export ROOT           := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST)
 export KERNEL_DIR     := $(ROOT)/Kernel
 export BUILD_DIR      := $(ROOT)/obj
 export LIBRARY_DIR    := $(ROOT)/libs
-export TESTS_DIR      := $(ROOT)/tests
+export TESTS_DIR      := $(ROOT)/Tests
 export PRODUCTS_DIR   := $(ROOT)/dist
 export THIRDPARTY_DIR := $(ROOT)/thirdparty
 # Products

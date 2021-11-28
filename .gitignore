@@ -32,7 +32,7 @@
 # Ignore build output
 obj/
 dist/
-tests/run_tests
+Tests/run_tests
 
 # Serial Output
 com1.txt
@@ -41,5 +41,5 @@ com1.txt
 docs/build/
 
 # Unit testing
-tests/report.xml
+Tests/report.xml
 thirdparty/catch2
