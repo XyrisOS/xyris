@@ -21,7 +21,7 @@ jobs:
         submodules: true
     # Unit Tests
     - name: Build and Run Tests
-      run: make unit-test && ./dist/unit-test -r junit --out ./Tests/report.xml
+      run: make unit-test && ./Distribution/unit-test -r junit --out ./Tests/report.xml
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v2
       with:
@@ -41,7 +41,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: os-image-debug
-        path: dist/debug/xyris.img
+        path: Distribution/debug/xyris.img
     # Release
     - name: 'Build Kernel (Release)'
       run: make MODE=release
@@ -51,4 +51,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: os-image-release
-        path: dist/release/xyris.img
+        path: Distribution/release/xyris.img

@@ -30,8 +30,8 @@
 .DS_Store
 
 # Ignore build output
-obj/
-dist/
+Build/
+Distribution/
 Tests/run_tests
 
 # Serial Output

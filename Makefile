@@ -58,10 +58,10 @@ export MKGRUB  := $(shell which grub-mkrescue)
 export KERNEL         := kernel
 export ROOT           := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 export KERNEL_DIR     := $(ROOT)/Kernel
-export BUILD_DIR      := $(ROOT)/obj
+export BUILD_DIR      := $(ROOT)/Build
 export LIBRARY_DIR    := $(ROOT)/libs
 export TESTS_DIR      := $(ROOT)/Tests
-export PRODUCTS_DIR   := $(ROOT)/dist
+export PRODUCTS_DIR   := $(ROOT)/Distribution
 export THIRDPARTY_DIR := $(ROOT)/thirdparty
 # Products
 export ISO            := $(PROJ_NAME).iso
@@ -190,7 +190,8 @@ dist: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
 $(PRODUCTS_DIR)/$(MODE)/$(ISO): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
 	@mkdir -p $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub
 	@cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(PRODUCTS_DIR)/$(MODE)/iso/boot/
-	@cp boot/grub.cfg $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub/grub.cfg
+# FIXME: This shouldn't be hardcoded
+	@cp $(KERNEL_DIR)/Arch/i686/Bootloader/grub.cfg $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub/grub.cfg
 	@$(MKGRUB) -o $@ $(PRODUCTS_DIR)/$(MODE)/iso
 	@rm -rf $(PRODUCTS_DIR)/$(MODE)/iso
 
@@ -203,7 +204,7 @@ $(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_D
 	@parted -s $@ mkpart primary 1 100%
 	@parted -s $@ set 1 boot on
 	@echfs-utils -m -p0 $@ quick-format 32768
-	@echfs-utils -m -p0 $@ import boot/limine.cfg limine.cfg
+	@echfs-utils -m -p0 $@ import $(KERNEL_DIR)/Arch/i686/Bootloader/limine.cfg limine.cfg
 	@echfs-utils -m -p0 $@ import $(THIRDPARTY_DIR)/limine/limine.sys limine.sys
 	@echfs-utils -m -p0 $@ import $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) kernel
 	$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
