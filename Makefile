@@ -272,7 +272,7 @@ vbox: vbox-create
 
 .PHONY: docs
 docs:
-	@$(MAKE) -C docs
+	@$(MAKE) -C Documentation
 
 # ********************
 # * Cleaning Targets *
