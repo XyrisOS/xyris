@@ -17,7 +17,7 @@ aliases:
     test:
       script:
         - make -j$(nproc) unit-test
-        - ./dist/unit-test
+        - ./Distribution/unit-test
     # Cleaning
     clean: make clean
     test-clean: make clean-tests

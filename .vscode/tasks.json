@@ -55,7 +55,7 @@
             "label": "Run (Unit Tests)",
             "command": "scuba",
             "args": [
-                "./dist/unit-test"
+                "./Distribution/unit-test"
             ],
             "group": {
                 "kind": "test",

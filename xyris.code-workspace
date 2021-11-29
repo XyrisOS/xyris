@@ -8,12 +8,12 @@
 		"C_Cpp.default.includePath": [
 			"${workspaceRoot}",
 			"${workspaceRoot}/include/",
-			"${workspaceRoot}/kernel/include/"
+			"${workspaceRoot}/Kernel/include/"
 		],
 		"C_Cpp.default.browse.path": [
 			"${workspaceRoot}",
 			"${workspaceRoot}/include/**",
-			"${workspaceRoot}/kernel/include/**"
+			"${workspaceRoot}/Kernel/include/**"
 		],
 		"C_Cpp.clang_format_fallbackStyle": "LLVM",
 		"C_Cpp.default.cppStandard": "c++17",

@@ -30,16 +30,16 @@
 .DS_Store
 
 # Ignore build output
-obj/
-dist/
-tests/run_tests
+Build/
+Distribution/
+Tests/run_tests
 
 # Serial Output
 com1.txt
 
 # Doxygen output
-docs/build/
+Documentation/build/
 
 # Unit testing
-tests/report.xml
-thirdparty/catch2
+Tests/report.xml
+Thirdparty/catch2
