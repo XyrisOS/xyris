@@ -1,4 +1,4 @@
-![Logo]https://github.com/XyrisOS/artwork/blob/stable/logo.png?raw=true)
+![Logo](https://github.com/XyrisOS/artwork/blob/stable/logo.png?raw=true)
 
 ## Xyris
 Xyris is a small, hobbyist kernel with the goal of becoming a fully-fledged microkernel with an emphasis on usability and security.
