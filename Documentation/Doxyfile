@@ -900,11 +900,9 @@ INPUT_ENCODING         = UTF-8
 # comment), *.py, *.pyw, *.f90, *.f95, *.f03, *.f08, *.f18, *.f, *.for, *.vhd,
 # *.vhdl, *.ucf, *.qsf and *.ice.
 
-FILE_PATTERNS          = *.md \
-                         *.hpp \
+FILE_PATTERNS          = *.hpp \
                          *.cpp \
                          *.asm \
-                         *.s \
                          *.S \
                          *.ld \
                          *.c \
@@ -1032,7 +1030,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = README.md
+USE_MDFILE_AS_MAINPAGE = Documentation/README.md
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
