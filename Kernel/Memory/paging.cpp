@@ -35,8 +35,8 @@ static uintptr_t pageDirectoryAddress;
 static struct Arch::Memory::Table* pageDirectoryVirtual[ARCH_PAGE_DIR_ENTRIES];
 
 // both of these must be page aligned for anything to work right at all
-static struct Arch::Memory::DirectoryEntry pageDirectoryPhysical[ARCH_PAGE_DIR_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
-static struct Arch::Memory::Table pageTables[ARCH_PAGE_TABLE_ENTRIES] SECTION(".page_tables,\"aw\", @nobits#");
+[[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::DirectoryEntry pageDirectoryPhysical[ARCH_PAGE_DIR_ENTRIES];
+[[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Table pageTables[ARCH_PAGE_TABLE_ENTRIES];
 
 // Function prototypes
 static void pageFaultCallback(struct registers* regs);

@@ -13,7 +13,7 @@
 
 #define MAX_ARGUMENT_LEN 32
 #define KERNEL_PARAM(name, arg, callback) \
-    SECTION(".arguments") struct Boot::argument __##name##_arg = \
+    [[gnu::section(".arguments")]] struct Boot::argument __##name##_arg = \
     { arg, callback }
 
 namespace Boot {

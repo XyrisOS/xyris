@@ -9,7 +9,6 @@
  *
  */
 #include <stdint.h>
-#include <Support/compiler.hpp>
 #include <Support/sections.hpp>
 #include <stivale/stivale2.h>
 #include <Arch/Arch.hpp>

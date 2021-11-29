@@ -10,7 +10,6 @@
  */
 #pragma once
 #include <Arch/Memory.hpp>
-#include <Support/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -50,32 +49,32 @@ public:
     {
     }
 
-    ALWAYS_INLINE bool initialized()
+    [[gnu::always_inline]] bool initialized()
     {
         return m_base && size();
     }
 
-    ALWAYS_INLINE uintptr_t base()
+    [[gnu::always_inline]] uintptr_t base()
     {
         return m_base;
     }
 
-    ALWAYS_INLINE uintptr_t end()
+    [[gnu::always_inline]] uintptr_t end()
     {
         return m_end;
     }
 
-    ALWAYS_INLINE uintptr_t size()
+    [[gnu::always_inline]] uintptr_t size()
     {
         return m_end - m_base;
     }
 
-    ALWAYS_INLINE uintptr_t pages()
+    [[gnu::always_inline]] uintptr_t pages()
     {
         return size() / ARCH_PAGE_SIZE;
     }
 
-    ALWAYS_INLINE enum Type type()
+    [[gnu::always_inline]] enum Type type()
     {
         return m_type;
     }
@@ -104,17 +103,17 @@ public:
         }
     }
 
-    ALWAYS_INLINE void setType(enum Type type)
+    [[gnu::always_inline]] void setType(enum Type type)
     {
         m_type = type;
     }
 
-    ALWAYS_INLINE bool empty()
+    [[gnu::always_inline]] bool empty()
     {
         return size() == 0;
     }
 
-    ALWAYS_INLINE bool contains(uintptr_t addr)
+    [[gnu::always_inline]] bool contains(uintptr_t addr)
     {
         return end() >= addr && addr <= base();
     }

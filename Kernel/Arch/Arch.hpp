@@ -10,7 +10,6 @@
  */
 #pragma once
 
-#include <Support/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>
 #if defined(__i686__)
@@ -35,7 +34,7 @@ namespace Arch {
 
 struct stackframe;
 
-NORET void haltAndCatchFire();
+[[noreturn]] void haltAndCatchFire();
 
 void registersToString(char* buf, struct registers* regs);
 void registersPrintInformation(struct registers* regs);

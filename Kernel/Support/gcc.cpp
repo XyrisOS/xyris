@@ -49,7 +49,7 @@ extern "C" void __cxa_pure_virtual()
 namespace __cxxabiv1 {
 
 // The ABI requires a 64-bit type.
-__extension__ typedef int64_t __guard __attribute__((mode(__DI__)));
+__extension__ typedef int64_t __guard [[gnu::mode(__DI__)]];
 
 // Function prototypes
 extern "C" int __cxa_guard_acquire(__guard* g);

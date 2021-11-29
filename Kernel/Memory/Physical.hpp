@@ -13,7 +13,6 @@
 #include <Arch/Memory.hpp>
 #include <Library/Bitset.hpp>
 #include <Memory/MemorySection.hpp>
-#include <Support/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -30,14 +29,14 @@ public:
         // Always assume memory is reserved until proven otherwise
     }
 */
-    ALWAYS_INLINE void setFree(Section& sect)
+    [[gnu::always_inline]] void setFree(Section& sect)
     {
         for (size_t i = 0; i < sect.pages(); i++) {
             setFree(ADDRESS_TO_PAGE_IDX(sect.base()) + i);
         }
     }
 
-    ALWAYS_INLINE void setUsed(Section& sect)
+    [[gnu::always_inline]] void setUsed(Section& sect)
     {
         debugf(
             "0x%08zX-0x%08zX 0x%08zX [%zu] [%s]\n",
@@ -52,40 +51,40 @@ public:
         }
     }
 
-    ALWAYS_INLINE void setFree(Arch::Memory::Address addr)
+    [[gnu::always_inline]] void setFree(Arch::Memory::Address addr)
     {
         if (!isFree(addr)) {
             m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr));
         }
     }
 
-    ALWAYS_INLINE void setUsed(Arch::Memory::Address addr)
+    [[gnu::always_inline]] void setUsed(Arch::Memory::Address addr)
     {
         if (isFree(addr)) {
             m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
         }
     }
 
-    ALWAYS_INLINE void setFree(uintptr_t addr)
+    [[gnu::always_inline]] void setFree(uintptr_t addr)
     {
         if (!isFree(addr)) {
             m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr));
         }
     }
 
-    ALWAYS_INLINE void setUsed(uintptr_t addr)
+    [[gnu::always_inline]] void setUsed(uintptr_t addr)
     {
         if (isFree(addr)) {
             m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
         }
     }
 
-    ALWAYS_INLINE bool isFree(uintptr_t addr)
+    [[gnu::always_inline]] bool isFree(uintptr_t addr)
     {
         return m_memory.Test(ADDRESS_TO_PAGE_IDX(addr)) == 0;
     }
 
-    ALWAYS_INLINE bool isFree(Section& sect)
+    [[gnu::always_inline]] bool isFree(Section& sect)
     {
         // TODO: Optimize bitmap library to take number of bits to set
         for (size_t i = 0; i < sect.pages(); i++) {
@@ -96,7 +95,7 @@ public:
         return true;
     }
 
-    ALWAYS_INLINE uintptr_t findNextFreePhysicalAddress()
+    [[gnu::always_inline]] uintptr_t findNextFreePhysicalAddress()
     {
         return m_memory.FindFirstBit(false);
     }

@@ -10,7 +10,6 @@
  */
 #pragma once
 #include <stdint.h>
-#include <Support/compiler.hpp>
 
 namespace Graphics {
 
@@ -31,31 +30,31 @@ public:
                     uint8_t greenMaskSize, uint8_t greenMaskShift,
                     uint8_t blueMaskSize, uint8_t blueMaskShift);
     // Getters
-    ALWAYS_INLINE void* getAddress()                          { return _addr; }
-    ALWAYS_INLINE uint32_t getWidth()                         { return _width; }
-    ALWAYS_INLINE uint32_t getHeight()                        { return _height; }
-    ALWAYS_INLINE uint16_t getDepth()                         { return _depth; }
-    ALWAYS_INLINE uint32_t getPitch()                         { return _pitch; }
-    ALWAYS_INLINE uint8_t getRedMaskSize()                    { return _redMaskSize; }
-    ALWAYS_INLINE uint8_t getRedMaskShift()                   { return _redMaskShift; }
-    ALWAYS_INLINE uint8_t getGreenMaskSize()                  { return _greenMaskSize; }
-    ALWAYS_INLINE uint8_t getGreenMaskShift()                 { return _greenMaskShift; }
-    ALWAYS_INLINE uint8_t getBlueMaskSize()                   { return _blueMaskSize; }
-    ALWAYS_INLINE uint8_t getBlueMaskShift()                  { return _blueMaskShift; }
-    ALWAYS_INLINE uint8_t getPixelWidth()                     { return _depth / 8; }
-    ALWAYS_INLINE FramebufferMemoryModel getModel()           { return _memoryModel; }
+    [[gnu::always_inline]] void* getAddress()                          { return _addr; }
+    [[gnu::always_inline]] uint32_t getWidth()                         { return _width; }
+    [[gnu::always_inline]] uint32_t getHeight()                        { return _height; }
+    [[gnu::always_inline]] uint16_t getDepth()                         { return _depth; }
+    [[gnu::always_inline]] uint32_t getPitch()                         { return _pitch; }
+    [[gnu::always_inline]] uint8_t getRedMaskSize()                    { return _redMaskSize; }
+    [[gnu::always_inline]] uint8_t getRedMaskShift()                   { return _redMaskShift; }
+    [[gnu::always_inline]] uint8_t getGreenMaskSize()                  { return _greenMaskSize; }
+    [[gnu::always_inline]] uint8_t getGreenMaskShift()                 { return _greenMaskShift; }
+    [[gnu::always_inline]] uint8_t getBlueMaskSize()                   { return _blueMaskSize; }
+    [[gnu::always_inline]] uint8_t getBlueMaskShift()                  { return _blueMaskShift; }
+    [[gnu::always_inline]] uint8_t getPixelWidth()                     { return _depth / 8; }
+    [[gnu::always_inline]] FramebufferMemoryModel getModel()           { return _memoryModel; }
     // Setters
-    ALWAYS_INLINE void setWidth(uint16_t val)                 { _width = val; }
-    ALWAYS_INLINE void setHeight(uint16_t val)                { _height = val; }
-    ALWAYS_INLINE void setDepth(uint16_t val)                 { _depth = val; }
-    ALWAYS_INLINE void setPitch(uint16_t val)                 { _pitch = val; }
-    ALWAYS_INLINE void setRedMaskSize(uint8_t val)            { _redMaskSize = val; }
-    ALWAYS_INLINE void setRedMaskShift(uint8_t val)           { _redMaskShift = val; }
-    ALWAYS_INLINE void setGreenMaskSize(uint8_t val)          { _greenMaskSize = val; }
-    ALWAYS_INLINE void setGreenMaskShift(uint8_t val)         { _greenMaskShift = val; }
-    ALWAYS_INLINE void setBlueMaskSize(uint8_t val)           { _blueMaskSize = val; }
-    ALWAYS_INLINE void setBlueMaskShift(uint8_t val)          { _blueMaskShift = val; }
-    ALWAYS_INLINE void setModel(FramebufferMemoryModel val)   { _memoryModel = val; }
+    [[gnu::always_inline]] void setWidth(uint16_t val)                 { _width = val; }
+    [[gnu::always_inline]] void setHeight(uint16_t val)                { _height = val; }
+    [[gnu::always_inline]] void setDepth(uint16_t val)                 { _depth = val; }
+    [[gnu::always_inline]] void setPitch(uint16_t val)                 { _pitch = val; }
+    [[gnu::always_inline]] void setRedMaskSize(uint8_t val)            { _redMaskSize = val; }
+    [[gnu::always_inline]] void setRedMaskShift(uint8_t val)           { _redMaskShift = val; }
+    [[gnu::always_inline]] void setGreenMaskSize(uint8_t val)          { _greenMaskSize = val; }
+    [[gnu::always_inline]] void setGreenMaskShift(uint8_t val)         { _greenMaskShift = val; }
+    [[gnu::always_inline]] void setBlueMaskSize(uint8_t val)           { _blueMaskSize = val; }
+    [[gnu::always_inline]] void setBlueMaskShift(uint8_t val)          { _blueMaskShift = val; }
+    [[gnu::always_inline]] void setModel(FramebufferMemoryModel val)   { _memoryModel = val; }
 
 private:
     void* _addr;                                // physical framebuffer address

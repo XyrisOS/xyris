@@ -14,7 +14,6 @@
 #include <Arch/Arch.hpp>
 #include <Library/string.hpp>
 #include <limits.h>
-#include <Support/compiler.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -48,7 +47,7 @@ public:
      *
      * @return size_t Size of the bitset in bytes
      */
-    ALWAYS_INLINE size_t Size()
+    [[gnu::always_inline]] size_t Size()
     {
         return S;
     }
@@ -58,7 +57,7 @@ public:
      *
      * @param pos Target bit to be set
      */
-    ALWAYS_INLINE void Set(size_t pos)
+    [[gnu::always_inline]] void Set(size_t pos)
     {
         map[Index(pos)] |= 1UL << Offset(pos);
     }
@@ -68,7 +67,7 @@ public:
      *
      * @param pos Target bit to be reset
      */
-    ALWAYS_INLINE void Reset(size_t pos)
+    [[gnu::always_inline]] void Reset(size_t pos)
     {
         map[Index(pos)] &= ~(1UL << Offset(pos));
     }
@@ -78,7 +77,7 @@ public:
      *
      * @param pos Target bit to be flipped
      */
-    ALWAYS_INLINE void Flip(size_t pos)
+    [[gnu::always_inline]] void Flip(size_t pos)
     {
         Test(pos) ? Reset(pos) : Set(pos);
     }
@@ -89,7 +88,7 @@ public:
      * @param pos Position to be tested
      * @return bool Bit value
      */
-    ALWAYS_INLINE bool Test(size_t pos)
+    [[gnu::always_inline]] bool Test(size_t pos)
     {
         return map[Index(pos)] >> Offset(pos) & 1;
     }
@@ -102,7 +101,7 @@ public:
      * @param pos Position to be tested
      * @return bool Bit value
      */
-    ALWAYS_INLINE bool operator[](size_t pos)
+    [[gnu::always_inline]] bool operator[](size_t pos)
     {
         return Test(pos);
     }
@@ -114,7 +113,7 @@ public:
      * @return size_t Position of the first bit with desired polarity.
      * If all bits are polarized, SIZE_MAX is returned.
      */
-    ALWAYS_INLINE size_t FindFirstBit(bool isSet)
+    [[gnu::always_inline]] size_t FindFirstBit(bool isSet)
     {
         for (size_t i = 0; i < S; i++) {
             if (Test(i) == isSet)
@@ -131,7 +130,7 @@ public:
      * @return size_t Position of the first bit with desired range and polarity.
      * If all bits are polarized, SIZE_MAX is returned.
      */
-    ALWAYS_INLINE size_t FindFirstRange(size_t count, bool isSet)
+    [[gnu::always_inline]] size_t FindFirstRange(size_t count, bool isSet)
     {
         size_t checkLow, checkHigh, check, idx, offset;
         size_t mask = ((size_t)1 << count) - (size_t)1;
@@ -150,17 +149,17 @@ public:
 
 private:
     size_t map[S];
-    ALWAYS_INLINE size_t TypeSize()
+    [[gnu::always_inline]] size_t TypeSize()
     {
         return sizeof(size_t) * CHAR_BIT;
     }
 
-    ALWAYS_INLINE size_t Index(size_t bit)
+    [[gnu::always_inline]] size_t Index(size_t bit)
     {
         return bit / TypeSize();
     }
 
-    ALWAYS_INLINE size_t Offset(size_t bit)
+    [[gnu::always_inline]] size_t Offset(size_t bit)
     {
         return bit % TypeSize();
     }

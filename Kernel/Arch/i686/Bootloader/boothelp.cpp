@@ -8,7 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-#include <Support/compiler.hpp>
+
 #include <Support/sections.hpp>
 #include <multiboot/multiboot2.h>
 #include <stdint.h>
@@ -30,8 +30,8 @@ extern "C" uint32_t multiboot2_mmap_helper(void* baseaddr);
  *
  */
 extern "C" uint32_t
-OPTIMIZE(0)
-SECTION(".early_text")
+__attribute__((optimize(0)))
+__attribute__((section(".early_text")))
 stivale2_mmap_helper(void* baseaddr)
 {
     struct stivale2_tag* tag = (struct stivale2_tag*)baseaddr;
@@ -76,8 +76,8 @@ stivale2_mmap_helper(void* baseaddr)
  *
  */
 extern "C" uint32_t
-OPTIMIZE(0)
-SECTION(".early_text")
+__attribute__((optimize(0)))
+__attribute__((section(".early_text")))
 multiboot2_mmap_helper(void* baseaddr)
 {
     struct multiboot_fixed {
