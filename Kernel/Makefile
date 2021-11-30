@@ -20,8 +20,7 @@ BUILD_DIR := $(BUILD_DIR)/$(MODE)/kernel
 # properly. Otherwise the object directory is "obj." and not "obj"
 
 # Assembly
-ATT_SRC  = $(shell find . -type f -name "*.s" | sed "s|^\./||")
-NASM_SRC = $(shell find . -type f -name "*.S" | sed "s|^\./||")
+NASM_SRC = $(shell find . -type f -name "*.s" | sed "s|^\./||")
 # C / C++
 C_SRC    = $(shell find . -type f -name "*.c" | sed "s|^\./||")
 CPP_SRC  = $(shell find . -type f -name "*.cpp" | sed "s|^\./||")
@@ -65,9 +64,8 @@ OBJ_CRTI     := $(BUILD_DIR)/Arch/i686/Assembly/crti.o # hard-coded for now
 OBJ_CRTN     := $(BUILD_DIR)/Arch/i686/Assembly/crtn.o # hard-coded for now
 OBJ_C        := $(patsubst %.c,   $(BUILD_DIR)/%.o, $(C_SRC))
 OBJ_CPP      := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(CPP_SRC))
-OBJ_ASM_ALL  := $(patsubst %.s,   $(BUILD_DIR)/%.o, $(ATT_SRC)) \
-                $(patsubst %.S,   $(BUILD_DIR)/%.o, $(NASM_SRC))
-OBJ_ASM      := $(filter-out $(OBJ_CRTI) $(OBJ_CRTN),$(OBJ_ASM_ALL))
+OBJ_NASM     := $(patsubst %.s,   $(BUILD_DIR)/%.o, $(NASM_SRC))
+OBJ_ASM      := $(filter-out $(OBJ_CRTI) $(OBJ_CRTN), $(OBJ_NASM))
 OBJ          := $(OBJ_CRTI) $(OBJ_CRTBEGIN) $(OBJ_CPP) $(OBJ_C) $(OBJ_ASM) $(OBJ_CRTEND) $(OBJ_CRTN)
 # Object directories, mirroring source
 OBJ_DIRS = $(addprefix $(BUILD_DIR), $(shell find . -type d | sed "s|^\.||"))
@@ -82,14 +80,14 @@ DEP = $(OBJ_CPP:%.o=%.d) $(OBJ_C:%.o=%.d)
 $(BUILD_DIR)/%.o: %.c $(HEADERS)
 	@$(OBJ_DIRS_MAKE)
 	@printf "$(COLOR_COM)(CC)$(COLOR_NONE)\t$(shell basename $@)\n"
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(CWARNINGS) -std=c17 -MMD -c -o $@ $<
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(CWARNINGS) -MMD -c -o $@ $<
 # C++ source -> object
 $(BUILD_DIR)/%.o: %.cpp $(HEADERS)
 	@$(OBJ_DIRS_MAKE)
 	@printf "$(COLOR_COM)(CXX)$(COLOR_NONE)\t$(shell basename $@)\n"
-	@$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -std=c++17 -MMD -c -o $@ $<
+	@$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -MMD -c -o $@ $<
 # NASM assembly -> object
-$(BUILD_DIR)/%.o: %.S
+$(BUILD_DIR)/%.o: %.s
 	@$(OBJ_DIRS_MAKE)
 	@printf "$(COLOR_COM)(NASM)$(COLOR_NONE)\t$(shell basename $@)\n"
 	@$(NASM) -f elf32 -o $@ $<

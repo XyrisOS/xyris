@@ -43,7 +43,7 @@ void timer_init(uint32_t freq) {
 
 static void timer_callback(struct registers *regs) {
     (void)regs;
-    timer_tick++;
+    timer_tick = timer_tick + 1;
     for (size_t i = 0; i < _callback_count; i++) {
         _callbacks[i]();
     }
