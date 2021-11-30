@@ -110,6 +110,7 @@ export CFLAGS :=            \
 	${WARNINGS}
 # C++ flags
 export CXXFLAGS :=          \
+	-std=c++20              \
 	-fpermissive            \
 	-fno-rtti               \
 	-fno-exceptions         \
