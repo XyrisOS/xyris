@@ -1,6 +1,6 @@
 def generate(env):
     env.Replace(
-        MODE='release'
+        MODE='Release'
     )
     env.Append(
         CPPDEFINES={'RELEASE': None},

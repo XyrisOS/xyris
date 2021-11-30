@@ -17,7 +17,7 @@ env = Environment(
         'echfs',
     ],
     toolpath=[
-        'scones',
+        'Scones',
     ],
     ENV={
         'PATH': os.environ['PATH'],

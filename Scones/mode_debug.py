@@ -1,6 +1,6 @@
 def generate(env):
     env.Replace(
-        MODE='debug'
+        MODE='Debug'
     )
     env.Append(
         CPPDEFINES={'DEBUG': None},
