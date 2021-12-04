@@ -221,8 +221,7 @@ QEMU_FLAGS =        \
     -m 4G           \
     -rtc clock=host \
     -vga std        \
-    -serial stdio   \
-	-monitor telnet:127.0.0.1:1234,server,nowait
+    -serial stdio
 QEMU_ARCH = x86_64
 # Virtualbox flags
 VM_NAME = $(PROJ_NAME)-box
@@ -241,7 +240,8 @@ run:
 	$(QEMU)                                      \
 	-drive file=$(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG),\
 	index=0,media=disk,format=raw \
-	$(QEMU_FLAGS)
+	$(QEMU_FLAGS) \
+	-monitor telnet:127.0.0.1:1234,server,nowait
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: run-debug
@@ -251,7 +251,7 @@ run-debug:
 	-S -s      \
 	-drive file=$(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG),\
 	index=0,media=disk,format=raw \
-	$(QEMU_FLAGS) > /dev/null &; true
+	$(QEMU_FLAGS) > /dev/null &
 
 # Create Virtualbox VM
 .PHONY: vbox-create
