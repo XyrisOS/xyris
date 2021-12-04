@@ -64,7 +64,7 @@
  * @brief GDT Code & Data Segment Selector Struct
  *
  */
-struct gdt_entry {
+struct [[gnu::packed]] gdt_entry {
     // These are descriptors in the GDT that have S=1. Bit 3 of "type" indicates whether it's (0) Data or (1) Code.
     // See https://wiki.osdev.org/Descriptors#Code.2FData_Segment_Descriptors for details on code & data segments.
     uint16_t limit_low;     // Limit
@@ -73,16 +73,16 @@ struct gdt_entry {
     uint8_t  access;        // Type
     uint8_t  granularity;   // Bits 0..3: limit, Bits 4..7: additional data/code attributes
     uint8_t  base_high;     // Base
-} __attribute__((packed));
+};
 
 /**
  * @brief GDT Pointer Struct
  *
  */
-struct gdt_ptr {
+struct [[gnu::packed]] gdt_ptr {
     unsigned short limit;   // The upper 16 bits of all selector limits
     unsigned int base;      // The address of the first gdt_segment
-} __attribute__((packed));
+};
 
 /**
  * @brief Setup and install the GDT onto the system.

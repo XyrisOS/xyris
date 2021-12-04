@@ -12,7 +12,6 @@
 
 #include <Arch/Arch.hpp>
 #include <Support/sections.hpp>
-#include <Support/compiler.hpp>
 
 #define TTY_WIDTH 80
 #define TTY_HEIGHT 25
@@ -45,8 +44,7 @@ enum bios_color : uint16_t {
 extern "C" void early_panic(const char *str);
 
 extern "C" void
-SECTION(".early_text")
-OPTIMIZE(0)
+__attribute__((section(".early_text")))
 early_panic(const char *str) {
     volatile uint16_t* where;
     int x = 0;

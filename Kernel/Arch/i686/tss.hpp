@@ -33,7 +33,7 @@ extern "C" void tss_flush();
  * Thanks to OSDev Wiki for this section of code.
  *
  */
-struct tss_entry {
+struct [[gnu::packed]] tss_entry {
     uint32_t    prev;    // The previous TSS - if we used hardware task switching this would form a linked list.
     uint32_t    esp0;    // The stack pointer to load when we change to kernel mode.
     uint32_t    ss0;     // The stack segment to load when we change to kernel mode.
@@ -61,4 +61,4 @@ struct tss_entry {
     uint32_t    ldt;
     uint16_t    trap;
     uint16_t    iomap_base;
-} __attribute__ ((packed)) tss_entry_t;
+} tss_entry_t;

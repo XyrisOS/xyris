@@ -48,7 +48,7 @@ const char exceptionStrings[33][32] = {
 
 namespace Arch {
 
-NORET void haltAndCatchFire()
+[[noreturn]] void haltAndCatchFire()
 {
     while (true) {
         asm volatile ("cli");

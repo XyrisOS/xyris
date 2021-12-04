@@ -106,6 +106,8 @@ export CFLAGS :=            \
 	-fstack-protector-all   \
 	-fno-builtin            \
 	-fno-omit-frame-pointer \
+	-mno-avx                \
+	-mno-sse                \
 	${XYRIS_CFLAGS}         \
 	${WARNINGS}
 # C++ flags
@@ -148,8 +150,8 @@ endif
 # Release
 ifeq ($(MODE), release)
 	CPPFLAGS += -DRELEASE
-	CXXFLAGS += -O3 -mno-avx
-	CFLAGS += -O3 -mno-avx
+	CXXFLAGS += -O3
+	CFLAGS += -O3
 endif
 
 # Kernel (Linked With Libraries)

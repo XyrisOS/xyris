@@ -63,7 +63,7 @@ static void printMoo()
     log_all("%s", cow);
 }
 
-static NORET void panicInternal(const char* msg, struct registers *registers)
+[[noreturn]] static void panicInternal(const char* msg, struct registers *registers)
 {
     printMoo();
     if (msg) {
@@ -79,12 +79,12 @@ static NORET void panicInternal(const char* msg, struct registers *registers)
     Arch::haltAndCatchFire();
 }
 
-NORET void panic(const char* msg)
+[[noreturn]] void panic(const char* msg)
 {
     panicInternal(msg, NULL);
 }
 
-NORET void panicf(const char* fmt, ...)
+[[noreturn]] void panicf(const char* fmt, ...)
 {
     va_list args;
     char buf[PANIC_MSG_BUF_SZ];
@@ -95,7 +95,7 @@ NORET void panicf(const char* fmt, ...)
     panic(buf);
 }
 
-NORET void panic(struct registers *registers)
+[[noreturn]] void panic(struct registers *registers)
 {
     panicInternal(PANIC_REG_DUMP_MSG, registers);
 }

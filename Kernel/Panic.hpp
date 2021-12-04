@@ -10,7 +10,6 @@
  */
 #pragma once
 
-#include <Support/compiler.hpp>
 #include <Arch/Arch.hpp>
 
 /**
@@ -18,7 +17,7 @@
  *
  * @param msg Panic message
  */
-NORET void panic(const char* msg);
+[[noreturn]] void panic(const char* msg);
 
 /**
  * @brief Halt the system and print the provided message and arguments on the panic screen.
@@ -26,12 +25,12 @@ NORET void panic(const char* msg);
  * @param fmt printf style format panic message
  * @param ... arguments
  */
-__attribute__ ((format (printf, 1, 2)))
-NORET void panicf(const char* fmt, ...);
+[[gnu::format(printf, 1, 2)]]
+[[noreturn]] void panicf(const char* fmt, ...);
 
 /**
  * @brief Halt the system and print information about the provided register dump.
  *
  * @param registers Architecture register structure
  */
-NORET void panic(struct registers *registers);
+[[noreturn]] void panic(struct registers *registers);
