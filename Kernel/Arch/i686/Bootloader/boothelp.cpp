@@ -30,7 +30,6 @@ extern "C" uint32_t multiboot2_mmap_helper(void* baseaddr);
  *
  */
 extern "C" uint32_t
-__attribute__((optimize(0)))
 __attribute__((section(".early_text")))
 stivale2_mmap_helper(void* baseaddr)
 {
@@ -76,7 +75,6 @@ stivale2_mmap_helper(void* baseaddr)
  *
  */
 extern "C" uint32_t
-__attribute__((optimize(0)))
 __attribute__((section(".early_text")))
 multiboot2_mmap_helper(void* baseaddr)
 {

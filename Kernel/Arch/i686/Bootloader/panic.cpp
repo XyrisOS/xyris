@@ -45,7 +45,6 @@ extern "C" void early_panic(const char *str);
 
 extern "C" void
 __attribute__((section(".early_text")))
-__attribute__((optimize(0)))
 early_panic(const char *str) {
     volatile uint16_t* where;
     int x = 0;
