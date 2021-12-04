@@ -31,6 +31,7 @@ struct stivale2_header_patched {
 __attribute__((section(".early_text")))
 static void stivale2_entry(struct stivale2_struct *info)
 {
+    // TODO: Fix me lol (port boot.s to C)
     kernelEntry((void*)info, (uint32_t)STIVALE2_MAGIC);
 }
 

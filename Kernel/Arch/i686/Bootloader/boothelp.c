@@ -14,8 +14,8 @@
 #include <stdint.h>
 #include <stivale/stivale2.h>
 
-extern "C" uint32_t stivale2_mmap_helper(void* baseaddr);
-extern "C" uint32_t multiboot2_mmap_helper(void* baseaddr);
+uint32_t stivale2_mmap_helper(void* baseaddr);
+uint32_t multiboot2_mmap_helper(void* baseaddr);
 
 /**
  *  ___ _   _          _     ___
@@ -29,7 +29,7 @@ extern "C" uint32_t multiboot2_mmap_helper(void* baseaddr);
  * the entire area.
  *
  */
-extern "C" uint32_t
+uint32_t
 __attribute__((section(".early_text")))
 stivale2_mmap_helper(void* baseaddr)
 {
@@ -38,7 +38,7 @@ stivale2_mmap_helper(void* baseaddr)
     while (tag) {
         switch (tag->identifier) {
             case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
-                auto memmap = (struct stivale2_struct_tag_memmap*)tag;
+                struct stivale2_struct_tag_memmap* memmap = (struct stivale2_struct_tag_memmap*)tag;
                 for (size_t i = 0; i < memmap->entries; i++) {
                     switch (memmap->memmap[i].type) {
                         case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
@@ -55,7 +55,7 @@ stivale2_mmap_helper(void* baseaddr)
             default:
                 break;
         }
-        tag = (struct stivale2_tag*)tag->next;
+        tag = (struct stivale2_tag*)(uint32_t)tag->next;
     }
     // If we get here, there's a problem so we will just
     // return 0 and panic in boot.S
@@ -74,7 +74,7 @@ stivale2_mmap_helper(void* baseaddr)
  * the entire area.
  *
  */
-extern "C" uint32_t
+uint32_t
 __attribute__((section(".early_text")))
 multiboot2_mmap_helper(void* baseaddr)
 {
@@ -83,6 +83,6 @@ multiboot2_mmap_helper(void* baseaddr)
         uint32_t reserved;
     };
 
-    auto fixed = (struct multiboot_fixed*)baseaddr;
+    struct multiboot_fixed* fixed = (struct multiboot_fixed*)baseaddr;
     return fixed->total_size;
 }
