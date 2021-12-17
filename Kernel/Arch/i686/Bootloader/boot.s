@@ -10,7 +10,7 @@ extern _fini
 ; function in C++ by telling the compiler they exist "somewhere"
 extern kernelEntry
 ; minimal panic function that works in most situations
-extern early_panic
+extern EarlyPanic
 ; paging helper for stivale2 bootloader info
 extern stivale2_mmap_helper
 ; paging helper for multiboot2 bootloader info
@@ -211,7 +211,7 @@ _start.badinfo:
     jmp _start.failhang
 
 _start.failhang:
-    call early_panic
+    call EarlyPanic
 
     ; infinite loop if panic returns
     jmp _start.catchfire

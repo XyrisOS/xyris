@@ -14,53 +14,7 @@
 #include <stdint.h>
 #include <stivale/stivale2.h>
 
-uint32_t stivale2_mmap_helper(void* baseaddr);
 uint32_t multiboot2_mmap_helper(void* baseaddr);
-
-/**
- *  ___ _   _          _     ___
- * / __| |_(_)_ ____ _| |___|_  )
- * \__ \  _| \ V / _` | / -_)/ /
- * |___/\__|_|\_/\__,_|_\___/___|
- *
- * Scan the stivale2 tags to find the reclaimable bootloader
- * memory map tag that starts at the stivale2 tag base
- * address.  Return the length found.  We'll memory map
- * the entire area.
- *
- */
-uint32_t
-__attribute__((section(".early_text")))
-stivale2_mmap_helper(void* baseaddr)
-{
-    struct stivale2_tag* tag = (struct stivale2_tag*)baseaddr;
-
-    while (tag) {
-        switch (tag->identifier) {
-            case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
-                struct stivale2_struct_tag_memmap* memmap = (struct stivale2_struct_tag_memmap*)tag;
-                for (size_t i = 0; i < memmap->entries; i++) {
-                    switch (memmap->memmap[i].type) {
-                        case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
-                            if (((uintptr_t)memmap->memmap[i].base) == (uintptr_t)baseaddr) {
-                                return (uintptr_t)memmap->memmap[i].length;
-                            }
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
-            }
-            default:
-                break;
-        }
-        tag = (struct stivale2_tag*)(uint32_t)tag->next;
-    }
-    // If we get here, there's a problem so we will just
-    // return 0 and panic in boot.S
-    return 0;
-}
 
 /*
  *  __  __      _ _   _ _              _   ___

@@ -10,6 +10,7 @@
  *
  */
 
+#include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Arch/Arch.hpp>
 #include <Support/sections.hpp>
 
@@ -39,13 +40,10 @@ enum bios_color : uint16_t {
     BIOS_White           = 15
 };
 
-// Provide a function prototype to make the compiler warnings happy. Don't
-// want to make it public though, so we won't put it in the panic header.
-extern "C" void early_panic(const char *str);
-
-extern "C" void
+extern "C"
 __attribute__((section(".early_text")))
-early_panic(const char *str) {
+void EarlyPanic(const char *str)
+{
     volatile uint16_t* where;
     int x = 0;
 	int y = 0;
@@ -72,4 +70,6 @@ early_panic(const char *str) {
                 break;
         }
     }
+
+    Arch::haltAndCatchFire();
 }
