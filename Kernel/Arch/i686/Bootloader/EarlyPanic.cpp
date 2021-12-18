@@ -10,8 +10,8 @@
  *
  */
 
-#include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Arch/Arch.hpp>
+#include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Support/sections.hpp>
 
 #define TTY_WIDTH 80
@@ -49,14 +49,14 @@ void EarlyPanic(const char *str)
 	int y = 0;
     // Clear the screen
     for (int i = 0; i < TTY_WIDTH; i++) {
-        for (int j = 0; j < TTY_HEIGHT; j ++) {
+        for (int j = 0; j < TTY_HEIGHT; j++) {
             where = biosVGABuffer + (j * TTY_WIDTH + i);
             *where = VGA_CHAR(' ', VGA_COLOR(BIOS_Black, BIOS_White));
         }
     }
     // For each character in the string
     for (int i = 0; str[i] != '\0'; ++i) {
-        switch(str[i]) {
+        switch (str[i]) {
             // Newline
             case '\n':
                 x = 0;

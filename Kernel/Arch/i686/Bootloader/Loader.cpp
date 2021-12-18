@@ -12,7 +12,6 @@
 #include <Arch/i686/Bootloader/Loader.hpp>
 
 extern "C"
-__attribute__((section(".early_text")))
 void stage2Entry(void* info, uint32_t magic)
 {
     // TODO: Fix me lol (port boot.s to C)

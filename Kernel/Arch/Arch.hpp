@@ -24,6 +24,7 @@
  * @param info Bootloader information structure
  * @param magic Bootloader magic
  */
+// TODO: Remove extern "C" when boot.s is gone
 extern "C" void kernelEntry(void* info, uint32_t magic);
 
 // Cannot be namespaced since it has to be used by
@@ -34,9 +35,35 @@ namespace Arch {
 
 struct stackframe;
 
-[[noreturn]] void haltAndCatchFire();
+/**
+ * @brief Disable interrupts and halts execution
+ *
+ */
+[[noreturn]] [[gnu::always_inline]]
+inline void haltAndCatchFire()
+{
+    while (true) {
+        asm volatile ("cli");
+        asm volatile ("hlt");
+    }
+}
 
+/**
+ * @brief Write all register names and values as a string to a
+ * buffer. Provided buffer size must also take escape and control
+ * characters (for formatting) into account.
+ *
+ * @param buf Buffer to contain register information string
+ * @param regs Register structure
+ */
 void registersToString(char* buf, struct registers* regs);
+
+/**
+ * @brief Print register information to all kernel terminals
+ * (serial, framebuffer, etc.). Used for panic and debug screens.
+ *
+ * @param regs Register structure
+ */
 void registersPrintInformation(struct registers* regs);
 
 }

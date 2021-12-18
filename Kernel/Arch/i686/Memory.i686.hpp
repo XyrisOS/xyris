@@ -9,13 +9,26 @@
  *
  */
 #pragma once
+#include <stdint.h>
+#include <stddef.h>
+#ifndef __cplusplus
+    // C needs bool type definition
+    #include <stdbool.h>
+#endif
 
 #define ARCH_PAGE_DIR_ENTRIES   1024
 #define ARCH_PAGE_TABLE_ENTRIES 1024
 #define ARCH_PAGE_ALIGN         0xFFFFF000
 #define ARCH_PAGE_SIZE          0x1000
 
+/* Only use namespace when including with C++ source so that the
+   bootloader to kernel bootstrap source can access these structs
+   It's a bit hacky since normally C++ includes C headers that have
+   C++ include guards, but because Xyris is primarily C++ with a
+   little bit of C, it makes more sense to do it this way */
+#ifdef __cplusplus
 namespace Arch::Memory {
+#endif
 
 /**
  * @brief Page frame structure. This represents a the
@@ -96,9 +109,12 @@ struct DirectoryEntry
  */
 struct Directory
 {
-    struct DirectoryEntry entries[1024];     // Pointers that the Intel CPU uses to access pages in memory
+    struct DirectoryEntry entries[1024]; // Pointers that the Intel CPU uses to access pages in memory
 };
 
+/* Only provide the Address class to C++ source so that this header can
+   be included by the bootstrap C source */
+#ifdef __cplusplus
 /**
  * @brief Address class. Represents a memory address that can
  * be used to address a page in virtual memory, a frame in
@@ -167,6 +183,7 @@ private:
         uintptr_t val;
     } m_addr;
 };
+#endif
 
 /**
  * @brief Invalidate the page at the given address. Implementations are architecture
@@ -207,4 +224,6 @@ inline bool pageIsAligned(size_t addr)
     return ((addr % ARCH_PAGE_SIZE) == 0);
 }
 
-}
+#ifdef __cplusplus
+} // !namespace Arch::Memory
+#endif

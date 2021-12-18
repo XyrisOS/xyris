@@ -9,16 +9,41 @@
  *
  */
 
-#include <stdint.h>
-#include <Support/sections.hpp>
-#include <stivale/stivale2.h>
 #include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Arch/i686/Bootloader/Loader.hpp>
+#include <Arch/i686/Memory.i686.hpp>
+#include <Support/sections.hpp>
+#include <stdint.h>
+#include <stivale/stivale2.h>
 
 #define STIVALE2_MAGIC "stv2"
 
-// TODO: Remove once boot.s is gone
-uint32_t stivale2_mmap_helper(void* baseaddr);
+// reserve 1024 DWORDs for our page table pointers
+__attribute__((section(".early_bss")))
+struct Directory pageDirectory;
+
+// lowmem identity mappings
+__attribute__((section(".early_bss")))
+uint32_t lowMemoryPageTable[1024];
+
+// kernel page table mappings
+__attribute__((section(".early_bss")))
+uint32_t kernelPageTable[1024];
+
+// page table that maps pages that contain page tables
+__attribute__((section(".early_bss")))
+uint32_t pagesPageTable[1024];
+
+// page table to hold bootloader structures
+__attribute__((section(".early_bss")))
+uint32_t bootloaderPageTable[1024];
+
+// stack for C/C++ runtime
+__attribute__((section(".early_bss")))
+uint32_t stackPageTable[1024];
+
+// TODO: Remove & rename once boot.s is gone
+uint32_t stivale2_mmap_helper(struct stivale2_tag* tag);
 
 /**
  * @brief Scan the stivale2 tags to find the reclaimable bootloader
@@ -28,18 +53,18 @@ uint32_t stivale2_mmap_helper(void* baseaddr);
  */
 uint32_t
 __attribute__((section(".early_text")))
-stivale2_mmap_helper(void* baseaddr)
+stivale2_mmap_helper(struct stivale2_tag* tag)
 {
-    struct stivale2_tag* tag = (struct stivale2_tag*)baseaddr;
-
     while (tag) {
         switch (tag->identifier) {
-            case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
+            case STIVALE2_STRUCT_TAG_MEMMAP_ID:
+            {
                 struct stivale2_struct_tag_memmap* memmap = (struct stivale2_struct_tag_memmap*)tag;
                 for (size_t i = 0; i < memmap->entries; i++) {
-                    switch (memmap->memmap[i].type) {
+                    switch (memmap->memmap[i].type)
+                    {
                         case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
-                            if (((uintptr_t)memmap->memmap[i].base) == (uintptr_t)baseaddr) {
+                            if (((uintptr_t)memmap->memmap[i].base) == (uintptr_t)tag) {
                                 return (uintptr_t)memmap->memmap[i].length;
                             }
                             break;
@@ -56,7 +81,13 @@ stivale2_mmap_helper(void* baseaddr)
     }
     /* If we get here, there's a problem so we will just
        return 0 and panic in boot.S */
-    EarlyPanic("Failed to find bootloader memory region!\n");
+    EarlyPanic("Error: Cannot detect bootloader info length!");
+}
+
+__attribute__((section(".early_text")))
+static void stage1LowMemory(void)
+{
+    // TODO
 }
 
 /**
@@ -68,6 +99,26 @@ stivale2_mmap_helper(void* baseaddr)
 __attribute__((section(".early_text")))
 static void stage1Entry(struct stivale2_struct *info)
 {
+    if (!info)
+    {
+        EarlyPanic("Error: Missing bootloader information!");
+    }
+
+    // Previously (in boot.s) we would check for SSE support but that's now
+    // disabled with -mno-sse since we don't save SSE/AVX registers for tasks
+    // In the future, if SSE or AVX is enabled, we'll need to do that here.
+
+    // zero the early BSS to start things off well
+    for (size_t i = 0; i < _EARLY_BSS_SIZE; i++) {
+        ((uint8_t*)_EARLY_BSS_START)[i] = 0;
+    }
+
+    // identity map from 0x00000000 -> LOWMEM_END
+    // code assumes that the kernel won't be greater than 3MB
+    // TODO
+
+    stage1LowMemory();
+
     stage2Entry(info, (uint32_t)STIVALE2_MAGIC);
 }
 
@@ -76,17 +127,22 @@ static void stage1Entry(struct stivale2_struct *info)
  *  / __| |_(_)_ ____ _| |___|_  ) / __| |_ _ _ _  _ __| |_ _  _ _ _ ___ ___
  *  \__ \  _| \ V / _` | / -_)/ /  \__ \  _| '_| || / _|  _| || | '_/ -_|_-<
  *  |___/\__|_|\_/\__,_|_\___/___| |___/\__|_|  \_,_\__|\__|\_,_|_| \___/__/
+ *
+ *  These structures define what features the Stivale2 compliant bootloader
+ *  (such as Limine) should provide for the kernel. Because Stivale2 is made
+ *  for 64 bit systems first and foremost, we have to create a "patched" version
+ *  of the primary Stivale2 header to properly work for 32 bit, i686, systems
  */
 
 struct stivale2_header_i686 {
-    uint32_t entry_point;
-    uint32_t unused_1;
-    uint32_t stack;
-    uint32_t unused_2;
-    uint32_t flags;
-    uint32_t unused_3;
-    uint32_t tags;
-    uint32_t unused_4;
+    uint32_t entry_point;       // Bootloader entry point address
+    uint32_t unused_1;          // Unused on i686
+    uint32_t stack;             // Stack to be used for Bootloader & early kernel
+    uint32_t unused_2;          // Unused on i686
+    uint32_t flags;             // Stivale2 flags
+    uint32_t unused_3;          // Unused on i686
+    uint32_t tags;              // Pointer to next Stivale2 tag (bootloader requests)
+    uint32_t unused_4;          // Unused on i686
 } __attribute__((__packed__));
 
 __attribute__((aligned(4)))

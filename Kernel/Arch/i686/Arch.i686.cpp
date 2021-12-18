@@ -48,14 +48,6 @@ const char exceptionStrings[33][32] = {
 
 namespace Arch {
 
-[[noreturn]] void haltAndCatchFire()
-{
-    while (true) {
-        asm volatile ("cli");
-        asm volatile ("hlt");
-    }
-}
-
 void registersToString(char* buf, struct registers* regs)
 {
     ksprintf(
