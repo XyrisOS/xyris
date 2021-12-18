@@ -42,6 +42,7 @@ extern size_t _CTORS_START;
 extern size_t _CTORS_END;
 #define CTORS_END ((uintptr_t)&_CTORS_END)
 
+extern size_t _BSS_SIZE;
 extern size_t _BSS_START;
 #define BSS_START ((uintptr_t)&_BSS_START)
 extern size_t _BSS_END;

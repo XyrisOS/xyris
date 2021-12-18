@@ -8,7 +8,6 @@
  * @copyright Copyright the Xyris Contributors (c) 2021
  *
  */
-
 #include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Arch/i686/Bootloader/Loader.hpp>
 #include <Arch/i686/Memory.i686.hpp>
@@ -17,6 +16,10 @@
 #include <stivale/stivale2.h>
 
 #define STIVALE2_MAGIC "stv2"
+
+//-----------------------------------------------
+// Stage1 variables
+//-----------------------------------------------
 
 // reserve 1024 DWORDs for our page table pointers
 __attribute__((section(".early_bss")))
@@ -45,6 +48,15 @@ uint32_t stackPageTable[1024];
 // TODO: Remove & rename once boot.s is gone
 uint32_t stivale2_mmap_helper(struct stivale2_tag* tag);
 
+//-----------------------------------------------
+// Stage1 functions
+//-----------------------------------------------
+
+static void stage1MapBootloader(void);
+static void stage1MapHighMemory(void);
+static void stage1MapLowMemory(void);
+static void stage1Entry(struct stivale2_struct *info);
+
 /**
  * @brief Scan the stivale2 tags to find the reclaimable bootloader
  * memory map tag that starts at the stivale2 tag base address. Return
@@ -64,8 +76,8 @@ stivale2_mmap_helper(struct stivale2_tag* tag)
                     switch (memmap->memmap[i].type)
                     {
                         case STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE:
-                            if (((uintptr_t)memmap->memmap[i].base) == (uintptr_t)tag) {
-                                return (uintptr_t)memmap->memmap[i].length;
+                            if (((uint32_t)memmap->memmap[i].base) == (uint32_t)tag) {
+                                return (uint32_t)memmap->memmap[i].length;
                             }
                             break;
 
@@ -79,15 +91,49 @@ stivale2_mmap_helper(struct stivale2_tag* tag)
         }
         tag = (struct stivale2_tag*)(uint32_t)tag->next;
     }
-    /* If we get here, there's a problem so we will just
-       return 0 and panic in boot.S */
+    // If we get here, there's a problem so we will panic and never return
     EarlyPanic("Error: Cannot detect bootloader info length!");
 }
 
+
+/**
+ * @brief Map bootloader information into the higher half of memory
+ * so that the kernel can access it and parse it.
+ *
+ */
 __attribute__((section(".early_text")))
-static void stage1LowMemory(void)
+static void stage1MapBootloader(void)
 {
     // TODO
+}
+
+
+/**
+ * @brief Map kernel memory into the higher half of memory
+ * See linker.ld for details on where the kernel should be mapped
+ *
+ */
+__attribute__((section(".early_text")))
+static void stage1MapHighMemory(void)
+{
+    // TODO
+}
+
+/**
+ * @brief identity map from 0x00000000 to _EARLY_KERNEL_END
+ * code assumes that the kernel won't be greater than 3MB
+ *
+ */
+__attribute__((section(".early_text")))
+static void stage1MapLowMemory(void)
+{
+    pageDirectory.entries[0].present = 1;
+    pageDirectory.entries[0].readWrite = 1;
+
+    for (size_t i = 0; i < _EARLY_KERNEL_END; i++)
+    {
+        // TODO
+    }
 }
 
 /**
@@ -104,22 +150,16 @@ static void stage1Entry(struct stivale2_struct *info)
         EarlyPanic("Error: Missing bootloader information!");
     }
 
-    // Previously (in boot.s) we would check for SSE support but that's now
-    // disabled with -mno-sse since we don't save SSE/AVX registers for tasks
-    // In the future, if SSE or AVX is enabled, we'll need to do that here.
-
     // zero the early BSS to start things off well
     for (size_t i = 0; i < _EARLY_BSS_SIZE; i++) {
         ((uint8_t*)_EARLY_BSS_START)[i] = 0;
     }
 
-    // identity map from 0x00000000 -> LOWMEM_END
-    // code assumes that the kernel won't be greater than 3MB
-    // TODO
-
-    stage1LowMemory();
-
+    stage1MapLowMemory();
+    stage1MapHighMemory();
+    stage1MapBootloader();
     stage2Entry(info, (uint32_t)STIVALE2_MAGIC);
+    EarlyPanic("Error: Execution returned to stage1!");
 }
 
 /*
