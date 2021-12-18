@@ -19,8 +19,6 @@ SECTIONS
     _EARLY_MEM_START = .;
     . = 0x00100000;
     _EARLY_KERNEL_START = .;
-
-    .multiboot2 : { *(.multiboot2) }
     .stivale2hdr : { *(.stivale2hdr) }
     .early_text ALIGN (4K) : { *(.early_text) }
     .early_data ALIGN (4K) : { *(.early_data) }

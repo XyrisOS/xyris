@@ -48,7 +48,6 @@ export AR      := $(shell which i686-elf-ar)
 export CC      := $(shell which i686-elf-gcc)
 export CXX     := $(shell which i686-elf-g++)
 export OBJCP   := $(shell which i686-elf-objcopy)
-export MKGRUB  := $(shell which grub-mkrescue)
 
 # *****************************
 # * Source Code & Directories *
@@ -188,15 +187,6 @@ unit-test:
 # Create a bootable image (either img or iso)
 .PHONY: dist
 dist: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
-
-# Create bootable ISO
-$(PRODUCTS_DIR)/$(MODE)/$(ISO): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
-	@mkdir -p $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub
-	@cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(PRODUCTS_DIR)/$(MODE)/iso/boot/
-# FIXME: This shouldn't be hardcoded
-	@cp $(KERNEL_DIR)/Arch/i686/Bootloader/grub.cfg $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub/grub.cfg
-	@$(MKGRUB) -o $@ $(PRODUCTS_DIR)/$(MODE)/iso
-	@rm -rf $(PRODUCTS_DIR)/$(MODE)/iso
 
 # Create a bootable IMG
 $(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys

@@ -16,8 +16,7 @@
 namespace Boot {
 
 enum HandoffBootloaderType {
-    Multiboot2 = 0,
-    Stivale2 = 1,
+    Stivale2 = 0,
 };
 
 // Unused for now.
@@ -100,7 +99,6 @@ public:
 
 private:
     static void parseStivale2(Handoff* that, void* handoff);
-    static void parseMultiboot2(Handoff* that, void* handoff);
 
     void* m_handle;
     char* m_cmdline;

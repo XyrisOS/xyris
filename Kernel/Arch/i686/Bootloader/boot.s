@@ -13,8 +13,6 @@ extern kernelEntry
 extern EarlyPanic
 ; paging helper for stivale2 bootloader info
 extern stivale2_mmap_helper
-; paging helper for multiboot2 bootloader info
-extern multiboot2_mmap_helper
 
 extern _KERNEL_BASE
 extern _KERNEL_START
@@ -35,7 +33,6 @@ STACK_SIZE equ 4*PAGE_SIZE              ; initial kernel stack space size of 16k
 
 ; Magic numbers for pre-mapping
 STIVALE2_MAGIC equ 'stv2'
-MULTIBOOT2_MAGIC equ 0x36d76289
 
 ; Text section of our executable. See linker.ld
 ; This is the kernel entry point
@@ -118,7 +115,7 @@ _start.bootinfo:
     xor eax, eax
     mov eax, dword [multiboot_magic]
     cmp eax, STIVALE2_MAGIC
-    jne _start.trymb2      ; nope, try multiboot2
+    jne _start.badboot      ; no luck, bail
     xor eax, eax
     mov eax, dword [multiboot_info]
     add eax, 128          ; Skip over the text fields
@@ -138,27 +135,6 @@ _start.bootinfo:
     je _start.badinfo
     pop eax
     jmp _start.markboot
-
-_start.trymb2:
-    cmp eax, MULTIBOOT2_MAGIC
-    jne _start.badboot    ; no luck, bail
-    xor eax, eax
-    mov eax, dword [multiboot_info]
-    mov edx, [eax]        ; address of multiboot2 structures
-    push edx              ; save address for later
-    shr edx, 22           ; get the right directory entry
-    mov eax, bootld_pt    ; bootloader info page table
-    mov [edx * 4 + page_directory], eax
-    or dword [edx * 4 + page_directory], PAGE_PERM
-    pop eax               ; recover address
-    mov ebx, eax          ; save a copy
-    push ebx
-    push eax
-    call multiboot2_mmap_helper
-    add ebx, eax
-    cmp eax, 0x00000000   ; If we have zero here, bad news
-    je _start.badinfo
-    pop eax
 
 _start.markboot:
     mov ecx, eax
