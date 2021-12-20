@@ -13,6 +13,11 @@
 #include <Support/sections.hpp>
 #include <Panic.hpp>
 
+/* C/C++ runtime initialization & teardown. See crti.s and crtn.s for details
+   https://wiki.osdev.org/Calling_Global_Constructors */
+extern "C" void _init();
+extern "C" void _fini();
+
 /**
  * @brief Check for any required CPU features and panic if
  * any are missing.
@@ -38,13 +43,16 @@ static void stage2CheckCPUFeatures(void)
 extern "C"
 void stage2Entry(void* info, uint32_t magic)
 {
-    // zero the kernel BSS
-    for (size_t i = 0; i < _BSS_SIZE; i++) {
-        ((uint8_t*)_BSS_START)[i] = 0;
-    }
-
     // TODO: Fix me lol (port boot.s to C)
     stage2CheckCPUFeatures();
+
+    // Call global constructors
+    _init();
+    // Enter the high-level kernel
     kernelEntry((void*)info, magic);
+    // Call global destructors
+    _fini();
+    // By this point the kernel should have full execution
+    // So, this should never be called unless the kernel returns
     panic("Execution returned to stage2!");
 }

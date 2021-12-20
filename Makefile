@@ -102,7 +102,7 @@ export CFLAGS :=            \
 	-nostdlib               \
 	-nodefaultlibs          \
 	-ffreestanding          \
-	-fstack-protector-all   \
+	-fstack-protector       \
 	-fno-builtin            \
 	-fno-omit-frame-pointer \
 	-mno-avx                \

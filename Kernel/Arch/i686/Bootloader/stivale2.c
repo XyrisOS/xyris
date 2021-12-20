@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <stivale/stivale2.h>
 
+#define KERNEL_STACK_SZ 1024
 #define STIVALE2_MAGIC "stv2"
 
 //-----------------------------------------------
@@ -44,6 +45,14 @@ uint32_t bootloaderPageTable[1024];
 // stack for C/C++ runtime
 __attribute__((section(".early_bss")))
 uint32_t stackPageTable[1024];
+
+// bootloader info pointer (for preserving when stack changes)
+__attribute__((section(".early_bss")))
+struct stivale2_struct *stivale2Info;
+
+// stack for C/C++ runtime (higher half)
+__attribute__((section(".bss")))
+uint8_t kernelStack[KERNEL_STACK_SZ];
 
 // TODO: Remove & rename once boot.s is gone
 uint32_t stivale2_mmap_helper(struct stivale2_tag* tag);
@@ -137,6 +146,26 @@ static void stage1MapLowMemory(void)
 }
 
 /**
+ * @brief Prepare a higher-half stack for kernel usage.
+ *
+ */
+__attribute__((section(".early_text")))
+static void stage1InitKernelStack(void)
+{
+    // zero the kernel BSS (higher half stack)
+    for (size_t i = 0; i < _BSS_SIZE; i++) {
+        ((uint8_t*)_BSS_START)[i] = 0;
+    }
+
+    // adjust the stack pointer to use the higher half, kernel stack
+    asm volatile (
+        "mov %0, %%esp"
+        : // no output
+        : "r" ((kernelStack + KERNEL_STACK_SZ))
+    );
+}
+
+/**
  * @brief Stivale2 protocol kernel stage 1 entry. Stage 1 is responsible
  * for providing an entry point for the bootloader in C, performing any
  * necessary bootstrappign and then calling into the C++ stage 2.
@@ -145,19 +174,24 @@ static void stage1MapLowMemory(void)
 __attribute__((section(".early_text")))
 static void stage1Entry(struct stivale2_struct *info)
 {
+    // By this point the stivale2 bootloader should have provided us a healthy
+    // stack to use (at the location we specified in stivale2_header_i686 struct)
     if (!info)
     {
+        // xyris requires information (such as memory maps, framebuffer location, etc)
+        // from the bootloader, so if that's missing we're already in trouble.
         EarlyPanic("Error: Missing bootloader information!");
     }
 
-    // zero the early BSS to start things off well
-    for (size_t i = 0; i < _EARLY_BSS_SIZE; i++) {
-        ((uint8_t*)_EARLY_BSS_START)[i] = 0;
-    }
+    // preserve bootloader information pointer so that when we move the
+    // stack pointer we don't lose the one thing we need to pass into
+    // stage2 / the higher half stack
+    stivale2Info = info;
 
     stage1MapLowMemory();
     stage1MapHighMemory();
     stage1MapBootloader();
+    stage1InitKernelStack();
     stage2Entry(info, (uint32_t)STIVALE2_MAGIC);
     EarlyPanic("Error: Execution returned to stage1!");
 }
