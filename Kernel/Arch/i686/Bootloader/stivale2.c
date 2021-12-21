@@ -117,11 +117,13 @@ stivale2_mmap_helper(struct stivale2_tag* tag)
 __attribute__((section(".early_text")))
 static void stage1Finalize(void)
 {
+    /*
     setPageDirectory((uintptr_t)&pageDirectory);
 
     struct CR0 cr0 = readCR0();
     cr0.pagingEnable = 1;
     writeCR0(cr0);
+    */
 }
 
 /**
