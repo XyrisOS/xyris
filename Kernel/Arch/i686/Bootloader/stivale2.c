@@ -11,13 +11,14 @@
 #include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Arch/i686/Bootloader/Loader.hpp>
 #include <Arch/i686/Memory.i686.hpp>
+#include <Arch/i686/regs.hpp>
 #include <Support/sections.hpp>
 #include <stdint.h>
 #include <stivale/stivale2.h>
 
 #define PAGE_SHIFT      12
 #define KERNEL_STACK_SZ 1024
-#define STIVALE2_MAGIC "stv2"
+#define STIVALE2_MAGIC  "stv2"
 
 //-----------------------------------------------
 // Stage1 variables
@@ -103,6 +104,21 @@ stivale2_mmap_helper(struct stivale2_tag* tag)
     }
     // If we get here, there's a problem so we will panic and never return
     EarlyPanic("Error: Cannot detect bootloader info length!");
+}
+
+/**
+ * @brief Finalize stage1 by loading the finalized page directory
+ * and enabling paging.
+ *
+ */
+__attribute__((section(".early_text")))
+static void stage1Finalize(void)
+{
+    setPageDirectory((uintptr_t)&pageDirectory);
+
+    struct CR0 cr0 = readCR0();
+    cr0.pagingEnable = 1;
+    writeCR0(cr0);
 }
 
 /**
@@ -219,6 +235,7 @@ static void stage1Entry(struct stivale2_struct *info)
     stage1MapHighMemory();
     stage1MapBootloader();
     stage1InitKernelStack();
+    stage1Finalize();
     stage2Entry(info, (uint32_t)STIVALE2_MAGIC);
     EarlyPanic("Error: Execution returned to stage1!");
 }

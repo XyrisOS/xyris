@@ -1,7 +1,7 @@
 /**
  * @file Memory.i686.hpp
  * @author Keeton Feavel (keeton@xyr.is)
- * @brief i686 memory structures and definitions
+ * @brief i686 memory structures and definitions. C & C++ compatible header.
  * @version 0.1
  * @date 2021-10-26
  *
@@ -191,14 +191,29 @@ private:
  *
  * @param addr Address of page to be invalidated
  */
-inline void pageInvalidate(void* addr)
+static inline void pageInvalidate(void* addr)
 {
-   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
+   asm volatile(
+       "invlpg (%0)"
+       :
+       : "r" (addr)
+       : "memory"
+    );
 }
 
-inline void setPageDirectory(size_t page_dir)
+/**
+ * @brief Writes the address of the page directory to CR3.
+ * Does not enable paging.
+ *
+ * @param pageDirPtr Address of page directory structure to be used
+ */
+static inline void setPageDirectory(uintptr_t pageDirPtr)
 {
-    asm volatile("mov %0, %%cr3" ::"b"(page_dir));
+    asm volatile(
+        "mov %0, %%cr3"
+        :
+        : "b" (pageDirPtr)
+    );
 }
 
 /**
@@ -207,7 +222,7 @@ inline void setPageDirectory(size_t page_dir)
  * @param addr Address to be aligned
  * @return uintptr_t Page aligned address value
  */
-inline uintptr_t pageAlign(size_t addr)
+static inline uintptr_t pageAlign(size_t addr)
 {
     return addr & ARCH_PAGE_ALIGN;
 }
@@ -219,7 +234,7 @@ inline uintptr_t pageAlign(size_t addr)
  * @return true Address is aligned to page boundary
  * @return false Address is not aligned to a page boundary
  */
-inline bool pageIsAligned(size_t addr)
+static inline bool pageIsAligned(size_t addr)
 {
     return ((addr % ARCH_PAGE_SIZE) == 0);
 }

@@ -1,7 +1,7 @@
 /**
  * @file regs.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
- * @brief
+ * @brief i686 control register definitions. C & C++ compatible header.
  * @version 0.3
  * @date 2019-12-10
  *
@@ -23,7 +23,9 @@ struct registers {
     uint32_t eip, cs, eflags, esp, ss;                   /* Pushed by the processor automatically */
 };
 
+#ifdef __cplusplus
 namespace Registers {
+#endif
 
 struct CR0
 {
@@ -54,38 +56,40 @@ struct CR3
    uint32_t writeThrough        : 1;    // Page level write through
    uint32_t cacheDisable        : 1;    // Cache disable
    uint32_t ignoredB            : 7;    // Ignored
-   uint32_t pageDir             : 10;   // Page directory physical address
+   uint32_t pageDir             : 20;   // Page directory physical address
 };
 
-inline struct CR0 readCR0()
+static inline struct CR0 readCR0(void)
 {
     struct CR0 x;
     asm volatile("mov %%cr0, %0": "=r"(x));
     return x;
 }
 
-inline void writeCR0(struct CR0 x)
+static inline void writeCR0(struct CR0 x)
 {
     asm volatile("mov %0, %%cr0":: "r"(x));
 }
 
-inline struct CR2 readCR2()
+static inline struct CR2 readCR2(void)
 {
     struct CR2 x;
     asm volatile("mov %%cr2, %0" : "=r"(x));
     return x;
 }
 
-inline struct CR3 readCR3()
+static inline struct CR3 readCR3(void)
 {
     struct CR3 x;
     asm volatile("mov %%cr3, %0": "=r"(x));
     return x;
 }
 
-inline void writeCR3(struct CR3 x)
+static inline void writeCR3(struct CR3 x)
 {
     asm volatile("mov %0, %%cr3":: "r"(x));
 }
 
+#ifdef __cplusplus
 } // !namespace Registers
+#endif
