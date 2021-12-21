@@ -77,9 +77,8 @@ static void stage1Entry(struct stivale2_struct *info);
  * the length found. We'll memory map the entire area.
  *
  */
-uint32_t
 __attribute__((section(".early_text")))
-stivale2_mmap_helper(struct stivale2_tag* tag)
+uint32_t stivale2_mmap_helper(struct stivale2_tag* tag)
 {
     while (tag) {
         switch (tag->identifier) {

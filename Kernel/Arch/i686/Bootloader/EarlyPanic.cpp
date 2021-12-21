@@ -14,12 +14,10 @@
 #include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Support/sections.hpp>
 
-#define TTY_WIDTH 80
-#define TTY_HEIGHT 25
-#define VGA_COLOR(bg, fg) (uint16_t)(((bg)<<4)|((fg)&0xF))
-#define VGA_CHAR(ch, co) (uint16_t)((ch)|((co)<<8))
-
-inline uint16_t* biosVGABuffer = (uint16_t*)0x000B8000;
+#define TTY_WIDTH   80
+#define TTY_HEIGHT  25
+#define VGA_COLOR(bg, fg)   (uint16_t)(((bg)<<4)|((fg)&0xF))
+#define VGA_CHAR(ch, co)    (uint16_t)((ch)|((co)<<8))
 
 enum bios_color : uint16_t {
     BIOS_Black           = 0,
@@ -45,6 +43,7 @@ __attribute__((section(".early_text")))
 void EarlyPanic(const char *str)
 {
     volatile uint16_t* where;
+    uint16_t* biosVGABuffer = (uint16_t*)0x000B8000;
     int x = 0;
 	int y = 0;
     // Clear the screen

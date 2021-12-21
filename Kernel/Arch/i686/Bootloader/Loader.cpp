@@ -10,8 +10,8 @@
  */
 #include <Arch/Arch.hpp>
 #include <Arch/i686/Bootloader/Loader.hpp>
-#include <Support/sections.hpp>
 #include <Panic.hpp>
+#include <Support/sections.hpp>
 
 /* C/C++ runtime initialization & teardown. See crti.s and crtn.s for details
    https://wiki.osdev.org/Calling_Global_Constructors */
@@ -30,18 +30,15 @@ extern "C" void _fini();
 static void stage2CheckCPUFeatures(void)
 {
     __builtin_cpu_init();
-    if (!__builtin_cpu_supports("sse"))
-    {
+    if (!__builtin_cpu_supports("sse")) {
         panic("Processor does not have SSE support!");
     }
-    if (!__builtin_cpu_supports("avx"))
-    {
+    if (!__builtin_cpu_supports("avx")) {
         panic("Processor does not have AVX support!");
     }
 }
 
-extern "C"
-void stage2Entry(void* info, uint32_t magic)
+extern "C" void stage2Entry(void* info, uint32_t magic)
 {
     // TODO: Fix me lol (port boot.s to C)
     stage2CheckCPUFeatures();
