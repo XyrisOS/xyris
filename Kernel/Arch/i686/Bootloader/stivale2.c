@@ -14,6 +14,9 @@
 #include <Arch/i686/regs.hpp>
 #include <Support/sections.hpp>
 #include <stdint.h>
+
+// Use the 32-bit version of stivale2
+#define _STIVALE2_SPLIT_64
 #include <stivale/stivale2.h>
 
 #define PAGE_SHIFT      12
@@ -252,17 +255,6 @@ static void stage1Entry(struct stivale2_struct *info)
  *  of the primary Stivale2 header to properly work for 32 bit, i686, systems
  */
 
-struct stivale2_header_i686 {
-    uint32_t entry_point;       // Bootloader entry point address
-    uint32_t unused_1;          // Unused on i686
-    uint32_t stack;             // Stack to be used for Bootloader & early kernel
-    uint32_t unused_2;          // Unused on i686
-    uint32_t flags;             // Stivale2 flags
-    uint32_t unused_3;          // Unused on i686
-    uint32_t tags;              // Pointer to next Stivale2 tag (bootloader requests)
-    uint32_t unused_4;          // Unused on i686
-} __attribute__((__packed__));
-
 __attribute__((aligned(4)))
 __attribute__((section(".early_data")))
 const struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
@@ -277,9 +269,9 @@ const struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
 
 __attribute__((aligned(4)))
 __attribute__((section(".stivale2hdr")))
-const struct stivale2_header_i686 stivale_hdr = {
-    .entry_point = (uint32_t)(void*)stage1Entry,
-    .stack = (uint32_t)EARLY_BSS_END,
+const struct stivale2_header stivale_hdr = {
+    .entry_point = (uint32_t)stage1Entry,
+    .stack = EARLY_BSS_END,
     .flags = 0,
     .tags = (uint32_t)&framebuffer_hdr_tag,
 };
