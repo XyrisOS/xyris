@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <stivale/stivale2.h>
 
+#define PAGE_SHIFT      12
 #define KERNEL_STACK_SZ 1024
 #define STIVALE2_MAGIC "stv2"
 
@@ -28,23 +29,23 @@ struct Directory pageDirectory;
 
 // lowmem identity mappings
 __attribute__((section(".early_bss")))
-uint32_t lowMemoryPageTable[1024];
+struct Table lowMemoryPageTable;
 
 // kernel page table mappings
 __attribute__((section(".early_bss")))
-uint32_t kernelPageTable[1024];
+struct Table kernelPageTable;
 
 // page table that maps pages that contain page tables
 __attribute__((section(".early_bss")))
-uint32_t pagesPageTable[1024];
+struct Table pagesPageTable;
 
 // page table to hold bootloader structures
 __attribute__((section(".early_bss")))
-uint32_t bootloaderPageTable[1024];
+struct Table bootloaderPageTable;
 
 // stack for C/C++ runtime
 __attribute__((section(".early_bss")))
-uint32_t stackPageTable[1024];
+struct Table stackPageTable;
 
 // bootloader info pointer (for preserving when stack changes)
 __attribute__((section(".early_bss")))
@@ -104,6 +105,25 @@ stivale2_mmap_helper(struct stivale2_tag* tag)
     EarlyPanic("Error: Cannot detect bootloader info length!");
 }
 
+/**
+ * @brief Prepare a higher-half stack for kernel usage.
+ *
+ */
+__attribute__((section(".early_text")))
+static void stage1InitKernelStack(void)
+{
+    // zero the kernel BSS (higher half stack)
+    for (size_t i = 0; i < _BSS_SIZE; i++) {
+        ((uint8_t*)_BSS_START)[i] = 0;
+    }
+
+    // adjust the stack pointer to use the higher half, kernel stack
+    asm volatile (
+        "mov %0, %%esp"
+        : // no output
+        : "r" ((kernelStack + KERNEL_STACK_SZ))
+    );
+}
 
 /**
  * @brief Map bootloader information into the higher half of memory
@@ -125,44 +145,51 @@ static void stage1MapBootloader(void)
 __attribute__((section(".early_text")))
 static void stage1MapHighMemory(void)
 {
-    // TODO
+    // First kernel page table entry
+    uint32_t kernelDirectoryEntryIdx = _KERNEL_START >> 22;
+    struct DirectoryEntry* kernelDirectoryEntry1 = &pageDirectory.entries[kernelDirectoryEntryIdx];
+    kernelDirectoryEntry1->present = 1;
+    kernelDirectoryEntry1->readWrite = 1;
+    kernelDirectoryEntry1->tableAddr = (uint32_t)&kernelPageTable;
+
+    // Second kernel page table entry
+    kernelDirectoryEntryIdx++;
+    struct DirectoryEntry* kernelDirectoryEntry2 = &pageDirectory.entries[kernelDirectoryEntryIdx];
+    kernelDirectoryEntry2->present = 1;
+    kernelDirectoryEntry2->readWrite = 1;
+    kernelDirectoryEntry2->tableAddr = (uint32_t)&pagesPageTable;
+
+    size_t kernelMemoryIdx = 0;
+    for (uintptr_t addr = KERNEL_START; addr < KERNEL_END; addr += ARCH_PAGE_SIZE)
+    {
+        struct TableEntry* kernelMemoryTableEntry = &lowMemoryPageTable.pages[kernelMemoryIdx++];
+        kernelMemoryTableEntry->present = 1;
+        kernelMemoryTableEntry->readWrite = 1;
+        kernelMemoryTableEntry->frame = addr;
+    }
 }
 
 /**
- * @brief identity map from 0x00000000 to _EARLY_KERNEL_END
- * code assumes that the kernel won't be greater than 3MB
+ * @brief identity map from 0x00000000 -> LOWMEM_END
  *
  */
 __attribute__((section(".early_text")))
 static void stage1MapLowMemory(void)
 {
-    pageDirectory.entries[0].present = 1;
-    pageDirectory.entries[0].readWrite = 1;
+    // WARNING: code assumes that the kernel won't be greater than 3MB
+    struct DirectoryEntry* lowMem = &pageDirectory.entries[0];
+    lowMem->present = 1;
+    lowMem->readWrite = 1;
+    lowMem->tableAddr = (uint32_t)&lowMemoryPageTable;
 
-    for (size_t i = 0; i < _EARLY_KERNEL_END; i++)
+    size_t lowMemoryIdx = 0;
+    for (uintptr_t addr = ARCH_PAGE_SIZE; addr < EARLY_KERNEL_END; addr += ARCH_PAGE_SIZE)
     {
-        // TODO
+        struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.pages[lowMemoryIdx++];
+        lowMemoryTableEntry->present = 1;
+        lowMemoryTableEntry->readWrite = 1;
+        lowMemoryTableEntry->frame = addr;
     }
-}
-
-/**
- * @brief Prepare a higher-half stack for kernel usage.
- *
- */
-__attribute__((section(".early_text")))
-static void stage1InitKernelStack(void)
-{
-    // zero the kernel BSS (higher half stack)
-    for (size_t i = 0; i < _BSS_SIZE; i++) {
-        ((uint8_t*)_BSS_START)[i] = 0;
-    }
-
-    // adjust the stack pointer to use the higher half, kernel stack
-    asm volatile (
-        "mov %0, %%esp"
-        : // no output
-        : "r" ((kernelStack + KERNEL_STACK_SZ))
-    );
 }
 
 /**
