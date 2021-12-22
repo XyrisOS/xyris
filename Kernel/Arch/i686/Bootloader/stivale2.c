@@ -55,9 +55,13 @@ struct Table stackPageTable;
 __attribute__((section(".early_bss")))
 struct stivale2_struct *stivale2Info;
 
-// stack for C/C++ runtime (higher half)
+// stack for stage1 C/C++ runtime
+__attribute__((section(".early_bss")))
+uint8_t stage1Stack[KERNEL_STACK_SZ];
+
+// stack for stage2 C/C++ runtime
 __attribute__((section(".bss")))
-uint8_t kernelStack[KERNEL_STACK_SZ];
+uint8_t stage2Stack[KERNEL_STACK_SZ];
 
 // TODO: Remove & rename once boot.s is gone
 uint32_t stivale2_mmap_helper(struct stivale2_tag* tag);
@@ -114,15 +118,13 @@ uint32_t stivale2_mmap_helper(struct stivale2_tag* tag)
  *
  */
 __attribute__((section(".early_text")))
-static void stage1Finalize(void)
+static void stage1EnablePaging(void)
 {
-    /*
     setPageDirectory((uintptr_t)&pageDirectory);
 
     struct CR0 cr0 = readCR0();
     cr0.pagingEnable = 1;
     writeCR0(cr0);
-    */
 }
 
 /**
@@ -130,7 +132,7 @@ static void stage1Finalize(void)
  *
  */
 __attribute__((section(".early_text")))
-static void stage1InitKernelStack(void)
+static void stage1JumpToStage2(void)
 {
     // zero the kernel BSS (higher half stack)
     for (size_t i = 0; i < _BSS_SIZE; i++) {
@@ -141,8 +143,12 @@ static void stage1InitKernelStack(void)
     asm volatile (
         "mov %0, %%esp"
         : // no output
-        : "r" ((kernelStack + KERNEL_STACK_SZ))
+        : "r" ((stage2Stack + sizeof(stage2Stack)))
     );
+
+    // Jump to stage2 before returning
+    stage2Entry(stivale2Info, (uint32_t)STIVALE2_MAGIC);
+    EarlyPanic("Error: Failed to make the jump to stage2!");
 }
 
 /**
@@ -238,9 +244,8 @@ static void stage1Entry(struct stivale2_struct *info)
     stage1MapLowMemory();
     stage1MapHighMemory();
     stage1MapBootloader();
-    stage1InitKernelStack();
-    stage1Finalize();
-    stage2Entry(info, (uint32_t)STIVALE2_MAGIC);
+    stage1EnablePaging();
+    stage1JumpToStage2();
     EarlyPanic("Error: Execution returned to stage1!");
 }
 
@@ -256,8 +261,7 @@ static void stage1Entry(struct stivale2_struct *info)
  *  of the primary Stivale2 header to properly work for 32 bit, i686, systems
  */
 
-__attribute__((aligned(4)))
-__attribute__((section(".early_data")))
+__attribute__((section(".early_data"), aligned(4)))
 const struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
     .tag = {
         .identifier = STIVALE2_HEADER_TAG_FRAMEBUFFER_ID,
@@ -268,11 +272,10 @@ const struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
     .framebuffer_bpp    = 0,
 };
 
-__attribute__((aligned(4)))
-__attribute__((section(".stivale2hdr")))
+__attribute__((section(".stivale2hdr"), aligned(4)))
 const struct stivale2_header stivale_hdr = {
     .entry_point = (uint32_t)stage1Entry,
-    .stack = EARLY_BSS_END,
+    .stack = (uint32_t)stage1Stack + sizeof(stage1Stack),
     .flags = 0,
     .tags = (uint32_t)&framebuffer_hdr_tag,
 };
