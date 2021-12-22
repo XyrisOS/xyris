@@ -261,7 +261,7 @@ static void stage1Entry(struct stivale2_struct *info)
  *  of the primary Stivale2 header to properly work for 32 bit, i686, systems
  */
 
-__attribute__((section(".early_data"), aligned(4)))
+__attribute__((section(".early_data"), used))
 const struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
     .tag = {
         .identifier = STIVALE2_HEADER_TAG_FRAMEBUFFER_ID,
@@ -272,7 +272,7 @@ const struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
     .framebuffer_bpp    = 0,
 };
 
-__attribute__((section(".stivale2hdr"), aligned(4)))
+__attribute__((section(".stivale2hdr"), used))
 const struct stivale2_header stivale_hdr = {
     .entry_point = (uint32_t)stage1Entry,
     .stack = (uint32_t)stage1Stack + sizeof(stage1Stack),
