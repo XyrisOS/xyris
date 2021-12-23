@@ -191,16 +191,23 @@ dist: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
 # Create a bootable IMG
 $(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
 	@printf "$(COLOR_INFO)Making Limine boot image ($(MODE))$(COLOR_NONE)\n"
-	@rm -f $@
-	@dd if=/dev/zero bs=1M count=0 seek=2 of=$@ 2> /dev/null
+	@rm -f $@ $@.ext2
+# Create the partition table using parted
+	@dd if=/dev/zero bs=1M count=0 seek=4 of=$@ 2> /dev/null
 	@parted -s $@ mklabel msdos
 	@parted -s $@ mkpart primary 1 100%
 	@parted -s $@ set 1 boot on
-	@echfs-utils -m -p0 $@ quick-format 32768
-	@echfs-utils -m -p0 $@ import $(KERNEL_DIR)/Arch/i686/Bootloader/limine.cfg limine.cfg
-	@echfs-utils -m -p0 $@ import $(THIRDPARTY_DIR)/limine/limine.sys limine.sys
-	@echfs-utils -m -p0 $@ import $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) kernel
-	$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
+	@parted -l $@
+# Create the ext2 partition using mke2fs
+# The ext2 partition must be (at least) 2048 * 512 bytes smaller than the full image
+	@dd if=/dev/zero bs=1M count=0 seek=2 of=$@.ext2 2> /dev/null
+	@mke2fs $@.ext2
+	@e2cp $(KERNEL_DIR)/Arch/i686/Bootloader/limine.cfg $@.ext2:/limine.cfg
+	@e2cp $(THIRDPARTY_DIR)/limine/limine.sys $@.ext2:/limine.sys
+	@e2cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $@.ext2:/kernel
+# Copy the ext2 partition past the MBR cylinders
+	@dd if=$@.ext2 bs=512 seek=2048 of=$@
+	@$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
 
 # *************************
 # * Virtual Machine Flags *
