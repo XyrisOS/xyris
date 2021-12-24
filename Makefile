@@ -220,11 +220,7 @@ QEMU_FLAGS =        \
     -vga std        \
     -serial stdio
 QEMU_ARCH = x86_64
-# Virtualbox flags
-VM_NAME = $(PROJ_NAME)-box
-VBOX_VM_FILE = $(PRODUCTS_DIR)/$(VM_NAME)/$(VM_NAME).vbox
 # VM executable locations
-VBOX = $(shell which VBoxManage)
 QEMU = $(shell which qemu-system-$(QEMU_ARCH))
 
 # ***************************
@@ -249,22 +245,6 @@ run-debug:
 	-drive file=$(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG),\
 	index=0,media=disk,format=raw \
 	$(QEMU_FLAGS) > /dev/null &
-
-# Create Virtualbox VM
-.PHONY: vbox-create
-vbox-create: $(PRODUCTS_DIR)/$(MODE)/$(ISO)
-	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCTS_DIR)
-	$(VBOX) modifyvm $(VM_NAME)                 \
-	--memory 256 --ioapic on --cpus 2 --vram 16 \
-	--graphicscontroller vboxvga --boot1 disk   \
-	--audiocontroller sb16 --uart1 0x3f8 4      \
-	--uartmode1 file $(shell pwd)/com1.txt
-	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCTS_DIR)/$(ISO)
-
-.PHONY: vbox-create
-vbox: vbox-create
-	$(VBOX) startvm --putenv --debug $(VM_NAME)
 
 # ****************************
 # * Documentation Generation *
