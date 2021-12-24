@@ -135,8 +135,8 @@ __attribute__((section(".early_text")))
 static void stage1JumpToStage2(void)
 {
     // zero the kernel BSS (higher half stack)
-    for (size_t i = 0; i < _BSS_SIZE; i++) {
-        ((uint8_t*)_BSS_START)[i] = 0;
+    for (size_t i = 0; i < (size_t)&_BSS_SIZE; i++) {
+        ((uint8_t*)&_BSS_START)[i] = 0;
     }
 
     // adjust the stack pointer to use the higher half, kernel stack
@@ -196,14 +196,13 @@ static void stage1MapHighMemory(void)
     uint32_t kernelDirectoryEntryIdx = _KERNEL_START >> PAGE_DIR_ENTRY_SHIFT;
 
     // First kernel page table entry
-    struct DirectoryEntry* kernelDirectoryEntry1 = &pageDirectory.entries[kernelDirectoryEntryIdx];
-    kernelDirectoryEntry1->present = 1;
-    kernelDirectoryEntry1->readWrite = 1;
-    kernelDirectoryEntry1->tableAddr = (uint32_t)&kernelPageTable;
+    struct DirectoryEntry* kernelDirectoryEntry = &pageDirectory.entries[kernelDirectoryEntryIdx];
+    kernelDirectoryEntry->present = 1;
+    kernelDirectoryEntry->readWrite = 1;
+    kernelDirectoryEntry->tableAddr = (uint32_t)&kernelPageTable;
 
     // Second kernel page table entry
-    kernelDirectoryEntryIdx++;
-    struct DirectoryEntry* pagesDirectoryEntry = &pageDirectory.entries[kernelDirectoryEntryIdx];
+    struct DirectoryEntry* pagesDirectoryEntry = kernelDirectoryEntry + 1;
     pagesDirectoryEntry->present = 1;
     pagesDirectoryEntry->readWrite = 1;
     pagesDirectoryEntry->tableAddr = (uint32_t)&pagesPageTable;
@@ -228,7 +227,7 @@ static void stage1MapLowMemory(void)
     struct DirectoryEntry* lowMem = &pageDirectory.entries[0];
     lowMem->present = 1;
     lowMem->readWrite = 1;
-    lowMem->tableAddr = (uint32_t)&lowMemoryPageTable;
+    lowMem->tableAddr = (uint32_t)&lowMemoryPageTable >> PAGE_DIR_ENTRY_SHIFT;
 
     // Map in the entirety of low-memory and stage1
     size_t lowMemoryIdx = 0;
@@ -236,7 +235,7 @@ static void stage1MapLowMemory(void)
         struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.pages[lowMemoryIdx++];
         lowMemoryTableEntry->present = 1;
         lowMemoryTableEntry->readWrite = 1;
-        lowMemoryTableEntry->frame = addr - _KERNEL_BASE;
+        lowMemoryTableEntry->frame = (addr - _KERNEL_BASE) >> PAGE_DIR_ENTRY_SHIFT;
     }
 }
 
