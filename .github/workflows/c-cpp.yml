@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/xyrisos/xyris-build/xyris-build:3.4.0
+      image: ghcr.io/xyrisos/xyris-build/xyris-build:3.5.0
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
