@@ -1,6 +1,3 @@
-# Note: All running tasks have been removed and were migrated to VSCode tasks that
-#       require Qemu to be installed on the host system. This helps reduce the total
-#       size of the Docker image and provide you with more choice.
 image: ghcr.io/xyrisos/xyris-build/xyris-build:3.5.0
 aliases:
     # Building
