@@ -67,8 +67,7 @@ ifeq (,$(wildcard $(CATCH2_HDR)))
 	| grep "catch.hpp" \
 	| cut -d : -f 2,3 \
 	| tr -d \" \
-	| wget -P $(CATCH2_DIR) -qi - \
-	|| true
+	| wget -P $(CATCH2_DIR) -qi -
 endif
 
 # *************************
