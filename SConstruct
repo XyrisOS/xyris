@@ -94,6 +94,7 @@ env = Environment(
         '#Thirdparty',
         '#Libraries',
     ],
+    LIMINE_INSTALL='#Thirdparty/limine/limine-install-linux-x86_32',
 
     # ******************************
     # * Compiler Output Formatting *
@@ -161,4 +162,12 @@ for target_env in targets:
         exports={'env': target_env},
     )
     target_env.Install('$INSTALL_DIR', kernel)
-    target_env.EchfsImage('$INSTALL_DIR/xyris', [kernel])
+    target_env.EchfsImage(
+            '$INSTALL_DIR/xyris',
+            [
+                '#Kernel/Arch/$ARCH/Bootloader/limine.cfg',
+                '#Thirdparty/limine/limine.sys',
+                kernel
+            ],
+            ECHFSFLAGS=['-m', '-p0']
+    )

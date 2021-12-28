@@ -47,10 +47,14 @@ def echfs_image_generator(target, source, env, for_signature):
                 'dd if=/dev/zero bs={} count=0 seek=2 of={} 2> /dev/null'.format(bs, target[0]),
                 '  (DD) {}'.format(target[0])
             ),
+            Action('parted -s $TARGET mklabel msdos', '  (PART) mklabel $TARGET'),
+            Action('parted -s $TARGET mkpart primary 1 100%', '  (PART) mkpart $TARGET'),
+            Action('parted -s $TARGET set 1 boot on', '  (PART) set boot $TARGET'),
             echfs_format(),
     ]
     for src in source:
         #print('echfs_image_gen: src: {}'.format(src))
         dest = os.path.basename(str(src))
         actions.append(echfs_import(dest, src))
+    actions.append(Action('$LIMINE_INSTALL $TARGET', '  (LIMINE) $TARGET'))
     return actions
