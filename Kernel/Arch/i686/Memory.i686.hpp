@@ -207,6 +207,7 @@ static inline void pageInvalidate(void* addr)
  *
  * @param pageDirPtr Address of page directory structure to be used
  */
+__attribute__((always_inline))
 static inline void setPageDirectory(uintptr_t pageDirPtr)
 {
     asm volatile(

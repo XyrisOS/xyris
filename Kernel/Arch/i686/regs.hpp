@@ -59,6 +59,7 @@ struct CR3
    uint32_t pageDir             : 20;   // Page directory physical address
 };
 
+__attribute__((always_inline))
 static inline struct CR0 readCR0(void)
 {
     struct CR0 x;
@@ -66,6 +67,7 @@ static inline struct CR0 readCR0(void)
     return x;
 }
 
+__attribute__((always_inline))
 static inline void writeCR0(struct CR0 x)
 {
     asm volatile("mov %0, %%cr0":: "r"(x));

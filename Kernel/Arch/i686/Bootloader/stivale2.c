@@ -19,7 +19,8 @@
 #define _STIVALE2_SPLIT_64
 #include <stivale/stivale2.h>
 
-#define PAGE_DIR_ENTRY_SHIFT    12
+#define PAGE_DIR_ENTRY_SHIFT    22
+#define PAGE_TABLE_ENTRY_SHIFT  12
 #define KERNEL_STACK_SZ         1024
 #define STIVALE2_MAGIC          "stv2"
 
@@ -28,27 +29,27 @@
 //-----------------------------------------------
 
 // reserve 1024 DWORDs for our page table pointers
-__attribute__((section(".early_bss")))
+__attribute__((section(".early_bss"),aligned(4096)))
 struct Directory pageDirectory;
 
 // lowmem identity mappings
-__attribute__((section(".early_bss")))
+__attribute__((section(".early_bss"),aligned(4096)))
 struct Table lowMemoryPageTable;
 
 // kernel page table mappings
-__attribute__((section(".early_bss")))
+__attribute__((section(".early_bss"),aligned(4096)))
 struct Table kernelPageTable;
 
 // page table that maps pages that contain page tables
-__attribute__((section(".early_bss")))
+__attribute__((section(".early_bss"),aligned(4096)))
 struct Table pagesPageTable;
 
 // page table to hold bootloader structures
-__attribute__((section(".early_bss")))
+__attribute__((section(".early_bss"),aligned(4096)))
 struct Table bootPageTable;
 
 // stack for C/C++ runtime
-__attribute__((section(".early_bss")))
+__attribute__((section(".early_bss"),aligned(4096)))
 struct Table stackPageTable;
 
 // bootloader info pointer (for preserving when stack changes)
@@ -167,7 +168,7 @@ static void stage1MapBootloader(void)
     struct DirectoryEntry* bootDirectoryEntry = &pageDirectory.entries[bootDirectoryEntryIdx];
     bootDirectoryEntry->present = 1;
     bootDirectoryEntry->readWrite = 1;
-    bootDirectoryEntry->tableAddr = (uint32_t)&bootPageTable;
+    bootDirectoryEntry->tableAddr = (uint32_t)&bootPageTable >> PAGE_TABLE_ENTRY_SHIFT;
 
     // Get the length of the bootloader information
     struct stivale2_tag *tags = (struct stivale2_tag *)(uintptr_t)stivale2Info->tags;
@@ -175,12 +176,12 @@ static void stage1MapBootloader(void)
     uint32_t stivale2InfoEnd = stivale2InfoAddr + stivale2InfoLength;
 
     // Map in the entire bootloader information linked list
-    size_t bootMemoryIdx = 0;
     for (uintptr_t addr = stivale2InfoAddr; addr < stivale2InfoEnd; addr += ARCH_PAGE_SIZE) {
-        struct TableEntry* bootTableEntry = &bootPageTable.pages[bootMemoryIdx++];
+        size_t bootMemoryIdx = addr >> PAGE_TABLE_ENTRY_SHIFT;
+        struct TableEntry* bootTableEntry = &bootPageTable.pages[bootMemoryIdx & 0xfff];
         bootTableEntry->present = 1;
         bootTableEntry->readWrite = 1;
-        bootTableEntry->frame = addr;
+        bootTableEntry->frame = bootMemoryIdx;
     }
 }
 
@@ -193,26 +194,26 @@ static void stage1MapBootloader(void)
 __attribute__((section(".early_text")))
 static void stage1MapHighMemory(void)
 {
-    uint32_t kernelDirectoryEntryIdx = _KERNEL_START >> PAGE_DIR_ENTRY_SHIFT;
+    uint32_t kernelDirectoryEntryIdx = (uint32_t)&_KERNEL_START >> PAGE_DIR_ENTRY_SHIFT;
 
     // First kernel page table entry
     struct DirectoryEntry* kernelDirectoryEntry = &pageDirectory.entries[kernelDirectoryEntryIdx];
     kernelDirectoryEntry->present = 1;
     kernelDirectoryEntry->readWrite = 1;
-    kernelDirectoryEntry->tableAddr = (uint32_t)&kernelPageTable;
+    kernelDirectoryEntry->tableAddr = (uint32_t)&kernelPageTable >> PAGE_TABLE_ENTRY_SHIFT;
 
     // Second kernel page table entry
     struct DirectoryEntry* pagesDirectoryEntry = kernelDirectoryEntry + 1;
     pagesDirectoryEntry->present = 1;
     pagesDirectoryEntry->readWrite = 1;
-    pagesDirectoryEntry->tableAddr = (uint32_t)&pagesPageTable;
+    pagesDirectoryEntry->tableAddr = (uint32_t)&pagesPageTable >> PAGE_TABLE_ENTRY_SHIFT;
 
-    size_t kernelMemoryIdx = 0;
     for (uintptr_t addr = KERNEL_START; addr < KERNEL_END; addr += ARCH_PAGE_SIZE) {
-        struct TableEntry* kernelMemoryTableEntry = &lowMemoryPageTable.pages[kernelMemoryIdx++];
+        size_t kernelMemoryIdx = addr >> PAGE_TABLE_ENTRY_SHIFT;
+        struct TableEntry* kernelMemoryTableEntry = &kernelPageTable.pages[kernelMemoryIdx & 0xfff];
         kernelMemoryTableEntry->present = 1;
         kernelMemoryTableEntry->readWrite = 1;
-        kernelMemoryTableEntry->frame = addr;
+        kernelMemoryTableEntry->frame = kernelMemoryIdx - 0xc0000;
     }
 }
 
@@ -227,15 +228,15 @@ static void stage1MapLowMemory(void)
     struct DirectoryEntry* lowMem = &pageDirectory.entries[0];
     lowMem->present = 1;
     lowMem->readWrite = 1;
-    lowMem->tableAddr = (uint32_t)&lowMemoryPageTable >> PAGE_DIR_ENTRY_SHIFT;
+    lowMem->tableAddr = (uint32_t)&lowMemoryPageTable >> PAGE_TABLE_ENTRY_SHIFT;
 
     // Map in the entirety of low-memory and stage1
-    size_t lowMemoryIdx = 0;
     for (uintptr_t addr = ARCH_PAGE_SIZE; addr < EARLY_KERNEL_END; addr += ARCH_PAGE_SIZE) {
-        struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.pages[lowMemoryIdx++];
+        size_t pageIdx = addr >> PAGE_TABLE_ENTRY_SHIFT;
+        struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.pages[pageIdx];
         lowMemoryTableEntry->present = 1;
         lowMemoryTableEntry->readWrite = 1;
-        lowMemoryTableEntry->frame = (addr - _KERNEL_BASE) >> PAGE_DIR_ENTRY_SHIFT;
+        lowMemoryTableEntry->frame = pageIdx;
     }
 }
 
