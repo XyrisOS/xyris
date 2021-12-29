@@ -22,6 +22,8 @@
 // Bootloaders
 #include <stivale/stivale2.h>
 
+#define STIVALE2_MAGIC 0x73747632
+
 namespace Boot {
 
 /*
@@ -45,7 +47,7 @@ Handoff::Handoff(void* handoff, uint32_t magic)
 {
     // Parse the handle based on the magic
     debugf("Bootloader info at 0x%p\n", handoff);
-    if (magic == *(uint32_t*)"stv2") {
+    if (magic == STIVALE2_MAGIC) {
         m_bootType = Stivale2;
         parseStivale2(this, handoff);
     } else {

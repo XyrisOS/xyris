@@ -22,7 +22,7 @@
 #define PAGE_DIR_ENTRY_SHIFT    22
 #define PAGE_TABLE_ENTRY_SHIFT  12
 #define KERNEL_STACK_SZ         1024
-#define STIVALE2_MAGIC          "stv2"
+#define STIVALE2_MAGIC          0x73747632 // "stv2"
 
 //-----------------------------------------------
 // Stage1 variables
@@ -148,7 +148,7 @@ static void stage1JumpToStage2(void)
     );
 
     // Jump to stage2 before returning
-    stage2Entry(stivale2Info, (uint32_t)STIVALE2_MAGIC);
+    stage2Entry(stivale2Info, STIVALE2_MAGIC);
     EarlyPanic("Error: Failed to make the jump to stage2!");
 }
 
