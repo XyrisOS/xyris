@@ -1,7 +1,7 @@
 /**
  * @file loader.cpp
  * @author Keeton Feavel (keeton@xyr.is)
- * @brief
+ * @brief Bootloader agnostic pre-kernel initialization
  * @version 0.1
  * @date 2021-12-15
  *
@@ -19,30 +19,13 @@ extern "C" void _init();
 extern "C" void _fini();
 
 /**
- * @brief Check for any required CPU features and panic if
- * any are missing.
- *
- * SSE is disabled with -mno-sse since we don't save SSE/AVX registers
- * for tasks, but we'll likely want to make it a requirement in the future,
- * so we check if SSE and AVX are available.
+ * @brief Bootloader agnostic pre-kernel entry initialization. Stage2 should not
+ * access any bootloader information and should only perform bootloader agnostic
+ * tasks before entering the kernel proper.
  *
  */
-static void stage2CheckCPUFeatures(void)
-{
-    __builtin_cpu_init();
-    if (!__builtin_cpu_supports("sse")) {
-        panic("Processor does not have SSE support!");
-    }
-    if (!__builtin_cpu_supports("avx")) {
-        panic("Processor does not have AVX support!");
-    }
-}
-
 extern "C" void stage2Entry(void* info, uint32_t magic)
 {
-    // TODO: Fix me lol (port boot.s to C)
-    stage2CheckCPUFeatures();
-
     // Call global constructors
     _init();
     // Enter the high-level kernel
