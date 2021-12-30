@@ -40,7 +40,6 @@ struct Table lowMemoryPageTable;
 __attribute__((section(".early_bss"),aligned(4096)))
 struct Table kernelPageTable[2];
 
-
 // page table to hold bootloader structures
 __attribute__((section(".early_bss"),aligned(4096)))
 struct Table bootPageTable;
@@ -163,14 +162,16 @@ static void stage1MapBootloader(void)
     // Bootloader info page directory
     uint32_t bootDirectoryEntryIdx = stivale2InfoAddr >> PAGE_DIR_ENTRY_SHIFT;
     struct DirectoryEntry* bootDirectoryEntry = &pageDirectory.entries[bootDirectoryEntryIdx];
+
+    // Determine if page table needs to be initalized
     struct Table *bootTable;
-    if (bootDirectoryEntry->present == 0) {
+    if (bootDirectoryEntry->present) {
+        bootTable = (struct Table*)(bootDirectoryEntry->tableAddr << PAGE_TABLE_ENTRY_SHIFT);
+    } else {
         bootDirectoryEntry->present = 1;
         bootDirectoryEntry->readWrite = 1;
         bootDirectoryEntry->tableAddr = (uint32_t)&bootPageTable >> PAGE_TABLE_ENTRY_SHIFT;
         bootTable = &bootPageTable;
-    } else {
-        bootTable = (struct Table*)(bootDirectoryEntry->tableAddr << PAGE_TABLE_ENTRY_SHIFT);
     }
 
     // Get the length of the bootloader information
