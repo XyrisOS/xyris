@@ -126,7 +126,7 @@ static void stage1EnablePaging(void)
  * @brief Prepare a higher-half stack for kernel usage.
  *
  */
-__attribute__((section(".early_text")))
+__attribute__((section(".early_text"),noreturn))
 static void stage1JumpToStage2(void)
 {
     // zero the kernel BSS (higher half stack)
@@ -136,19 +136,20 @@ static void stage1JumpToStage2(void)
 
     // adjust the stack pointer to use the higher half, kernel stack
     asm volatile (
-        "mov %0, %%esp"
+        "movl %0, %%esp\n"   // set the stack pointer
+        "xor %%ebp, %%ebp\n" // clear the base pointer
+        "pushl %1\n"         // push argument 2 (magic)
+        "pushl %2\n"         // push argument 1 (info ptr)
+        "pushl $0\n"         // push a null return address
+        "jmp stage2Entry\n"  // jump to stage 2
         : // no output
-        : "r" ((stage2Stack + sizeof(stage2Stack)))
+        : "i" ((stage2Stack + sizeof(stage2Stack)))
+        , "i" (STIVALE2_MAGIC)
+        , "rm" (stivale2Info)
     );
 
-    // Set NULL stack frame for trace
-    asm volatile (
-        "xor %ebp, %ebp"
-    );
-
-    // Jump to stage2 before returning
-    stage2Entry(stivale2Info, STIVALE2_MAGIC);
-    EarlyPanic("Error: Failed to make the jump to stage2!");
+    // it's impossible to return back to this function
+    __builtin_unreachable();
 }
 
 /**
