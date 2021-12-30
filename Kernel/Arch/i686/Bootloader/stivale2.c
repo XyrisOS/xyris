@@ -60,9 +60,6 @@ uint8_t stage1Stack[KERNEL_STACK_SZ];
 __attribute__((section(".bss")))
 uint8_t stage2Stack[KERNEL_STACK_SZ];
 
-// TODO: Remove & rename once boot.s is gone
-uint32_t stivale2_mmap_helper(struct stivale2_tag* tag);
-
 //-----------------------------------------------
 // Stage1 functions
 //-----------------------------------------------
@@ -71,6 +68,7 @@ static void stage1MapBootloader(void);
 static void stage1MapHighMemory(void);
 static void stage1MapLowMemory(void);
 static void stage1Entry(struct stivale2_struct *info);
+static uint32_t stage1GetBootInfoAddr(struct stivale2_tag* tag);
 
 /**
  * @brief Scan the stivale2 tags to find the reclaimable bootloader
@@ -79,7 +77,7 @@ static void stage1Entry(struct stivale2_struct *info);
  *
  */
 __attribute__((section(".early_text")))
-uint32_t stivale2_mmap_helper(struct stivale2_tag* tag)
+static uint32_t stage1GetBootInfoAddr(struct stivale2_tag* tag)
 {
     while (tag) {
         switch (tag->identifier) {
@@ -176,7 +174,7 @@ static void stage1MapBootloader(void)
 
     // Get the length of the bootloader information
     struct stivale2_tag *tags = (struct stivale2_tag *)(uintptr_t)stivale2Info->tags;
-    uint32_t stivale2InfoLength = stivale2_mmap_helper(tags);
+    uint32_t stivale2InfoLength = stage1GetBootInfoAddr(tags);
     uint32_t stivale2InfoEnd = stivale2InfoAddr + stivale2InfoLength;
 
     // Map in the entire bootloader information linked list
