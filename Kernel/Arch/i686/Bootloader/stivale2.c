@@ -20,9 +20,9 @@
 #include <stivale/stivale2.h>
 
 #define PAGE_DIR_ENTRY_SHIFT    22
-#define PAGE_TABLE_ENTRY_SHIFT  12
-#define KERNEL_STACK_SZ         1024
-#define STIVALE2_MAGIC          0x73747632 // "stv2"
+#define PAGE_TABLE_ENTRY_SHIFT  12                  // 2^12 = 4096 = PAGE_SIZE
+#define KERNEL_STACK_SZ         4 * ARCH_PAGE_SIZE  // stage2 & stage3 (kernel) stack size
+#define STIVALE2_MAGIC          0x73747632          // "stv2"
 
 //-----------------------------------------------
 // Stage1 variables
@@ -57,7 +57,7 @@ __attribute__((section(".early_bss")))
 uint8_t stage1Stack[KERNEL_STACK_SZ];
 
 // stack for stage2 C/C++ runtime
-__attribute__((section(".bss")))
+__attribute__((section(".bss"),aligned(4)))
 uint8_t stage2Stack[KERNEL_STACK_SZ];
 
 //-----------------------------------------------
@@ -139,6 +139,11 @@ static void stage1JumpToStage2(void)
         "mov %0, %%esp"
         : // no output
         : "r" ((stage2Stack + sizeof(stage2Stack)))
+    );
+
+    // Set NULL stack frame for trace
+    asm volatile (
+        "xor %ebp, %ebp"
     );
 
     // Jump to stage2 before returning

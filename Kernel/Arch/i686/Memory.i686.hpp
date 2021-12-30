@@ -18,8 +18,8 @@
 
 #define ARCH_PAGE_DIR_ENTRIES   1024
 #define ARCH_PAGE_TABLE_ENTRIES 1024
+#define ARCH_PAGE_SIZE          4096
 #define ARCH_PAGE_ALIGN         0xFFFFF000
-#define ARCH_PAGE_SIZE          0x1000
 
 /* Only use namespace when including with C++ source so that the
    bootloader to kernel bootstrap source can access these structs
