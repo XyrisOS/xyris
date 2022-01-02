@@ -148,16 +148,19 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     // Set the page directory entry (pde) and page table entry (pte)
     size_t pde = vaddr.page().dirIndex;
     size_t pte = vaddr.page().tableIndex;
-    // If the page's virtual address is not aligned
-    if (vaddr.page().offset != 0) {
-        panic("Attempted to map a non-page-aligned virtual address.\n");
-    }
-    Arch::Memory::TableEntry* entry = &(pageTables[pde].pages[pte]);
+
     // Print a debug message to serial
     if (is_mapping_output_enabled) {
         debugf("map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx\n", paddr.val(), vaddr.val(), pde, pte);
     }
+
+    // If the page's virtual address is not aligned
+    if (vaddr.page().offset) {
+        panicf("Attempted to map a non-page-aligned virtual address.\n(Address: 0x%08lX)\n", vaddr.val());
+    }
+
     // If the page is already mapped into memory
+    Arch::Memory::TableEntry* entry = &(pageTables[pde].pages[pte]);
     if (entry->present) {
         if (entry->frame == paddr.frame().index) {
             // this page was already mapped the same way
@@ -168,17 +171,17 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     }
     // Set the page information
     pageTables[pde].pages[pte] = {
-        .present = 1,               // The page is present
-        .readWrite = 1,             // The page has r/w permissions
-        .usermode = 0,              // These are kernel pages
-        .writeThrough = 0,          // Disable write through
-        .cacheDisable = 0,          // The page is cached
-        .accessed = 0,              // The page is unaccessed
-        .dirty = 0,                 // The page is clean
-        .pageAttrTable = 0,         // The page has no attribute table
-        .global = 0,                // The page is local
-        .unused = 0,                // Ignored
-        .frame = paddr.frame().index, // The last 20 bits are the frame
+        .present = 1,                   // The page is present
+        .readWrite = 1,                 // The page has r/w permissions
+        .usermode = 0,                  // These are kernel pages
+        .writeThrough = 0,              // Disable write through
+        .cacheDisable = 0,              // The page is cached
+        .accessed = 0,                  // The page is unaccessed
+        .dirty = 0,                     // The page is clean
+        .pageAttrTable = 0,             // The page has no attribute table
+        .global = 0,                    // The page is local
+        .unused = 0,                    // Ignored
+        .frame = paddr.frame().index,   // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
     physical.setUsed(paddr);
@@ -209,7 +212,7 @@ static void mapEarlyMem()
 static void mapKernel()
 {
     debugf("==== MAP HH KERNEL ====\n");
-    mapKernelRangePhysical(Section(KERNEL_START, KERNEL_END));
+    mapKernelRangePhysical(Section(Arch::Memory::pageAlign(KERNEL_START), KERNEL_END));
 }
 
 /**

@@ -194,7 +194,6 @@ static void stage1MapBootloader(void)
     }
 }
 
-
 /**
  * @brief Map kernel memory into the higher half of memory
  * See linker.ld for details on where the kernel should be mapped
