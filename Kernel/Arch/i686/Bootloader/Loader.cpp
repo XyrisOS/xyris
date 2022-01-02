@@ -29,7 +29,7 @@ extern "C" void stage2Entry(void* info, uint32_t magic)
     // Call global constructors
     _init();
     // Enter the high-level kernel
-    kernelEntry((void*)info, magic);
+    kernelEntry(info, magic);
     // Call global destructors
     _fini();
     // By this point the kernel should have full execution
