@@ -120,7 +120,7 @@ static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* ta
         // the offset is applied from the load address of the kernel we must shift it over 12 bits because we only
         // care about the highest 20 bits for the page table
         // TODO: Get rid of this shift by using ``union Address``
-        .tableAddr = KADDR_TO_PHYS((uintptr_t)table) >> 12
+        .tableAddr = KADDR_TO_PHYS((uintptr_t)table) >> ARCH_PAGE_TABLE_ENTRY_SHIFT
     };
 }
 
@@ -265,7 +265,8 @@ void freePage(void* page, size_t size)
 bool isPresent(uintptr_t addr)
 {
     // Convert the address into an index and check whether the page is in the bitmap
-    return mappedPages[addr >> 12];
+    // TODO: Fix this function. It's inaccurate and can result in triple faults.
+    return mappedPages[addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT];
 }
 
 // TODO: maybe enforce access control here in the future

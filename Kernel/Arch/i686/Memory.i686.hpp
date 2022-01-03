@@ -16,10 +16,13 @@
     #include <stdbool.h>
 #endif
 
-#define ARCH_PAGE_DIR_ENTRIES   1024
-#define ARCH_PAGE_TABLE_ENTRIES 1024
-#define ARCH_PAGE_SIZE          4096
-#define ARCH_PAGE_ALIGN         0xFFFFF000
+#define ARCH_PAGE_DIR_ENTRIES       1024
+#define ARCH_PAGE_TABLE_ENTRIES     1024
+#define ARCH_PAGE_SIZE              4096
+#define ARCH_PAGE_ALIGN             0xFFFFF000
+#define ARCH_PAGE_DIR_ENTRY_SHIFT   22          // Shift to convert address to 0-1023 directory index
+#define ARCH_PAGE_TABLE_ENTRY_SHIFT 12          // Shift to convert address to page address (2^12 = 4096 = PAGE_SIZE)
+#define ARCH_PAGE_TABLE_ENTRY_MASK  0x3ff       // Mask off top 10 bits to get 0-1023 index
 
 /* Only use namespace when including with C++ source so that the
    bootloader to kernel bootstrap source can access these structs

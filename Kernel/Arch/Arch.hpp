@@ -24,8 +24,7 @@
  * @param info Bootloader information structure
  * @param magic Bootloader magic
  */
-// TODO: Remove extern "C" when boot.s is gone
-extern "C" void kernelEntry(void* info, uint32_t magic);
+void kernelEntry(void* info, uint32_t magic);
 
 // Cannot be namespaced since it has to be used by
 // functions with C linkage for ASM interoperability

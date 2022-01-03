@@ -19,9 +19,6 @@
 #define _STIVALE2_SPLIT_64
 #include <stivale/stivale2.h>
 
-#define PAGE_DIR_ENTRY_SHIFT    22                  // Shift to convert address to 0-1023 directory index
-#define PAGE_TABLE_ENTRY_SHIFT  12                  // Shift to convert address to page address (2^12 = 4096 = PAGE_SIZE)
-#define PAGE_TABLE_ENTRY_MASK   0x3ff               // Mask off top 10 bits to get 0-1023 index
 #define KERNEL_STACK_SZ         4 * ARCH_PAGE_SIZE  // stage2 & stage3 (kernel) stack size
 #define STIVALE2_MAGIC          0x73747632          // "stv2"
 
@@ -165,17 +162,17 @@ static void stage1MapBootloader(void)
     uint32_t stivale2InfoAddr = (uint32_t)stivale2Info->tags;
 
     // Bootloader info page directory
-    uint32_t bootDirectoryEntryIdx = stivale2InfoAddr >> PAGE_DIR_ENTRY_SHIFT;
+    uint32_t bootDirectoryEntryIdx = stivale2InfoAddr >> ARCH_PAGE_DIR_ENTRY_SHIFT;
     struct DirectoryEntry* bootDirectoryEntry = &pageDirectory.entries[bootDirectoryEntryIdx];
 
     // Determine if page table needs to be initalized
     struct Table *bootTable;
     if (bootDirectoryEntry->present) {
-        bootTable = (struct Table*)(bootDirectoryEntry->tableAddr << PAGE_TABLE_ENTRY_SHIFT);
+        bootTable = (struct Table*)(bootDirectoryEntry->tableAddr << ARCH_PAGE_TABLE_ENTRY_SHIFT);
     } else {
         bootDirectoryEntry->present = 1;
         bootDirectoryEntry->readWrite = 1;
-        bootDirectoryEntry->tableAddr = (uint32_t)&bootPageTable >> PAGE_TABLE_ENTRY_SHIFT;
+        bootDirectoryEntry->tableAddr = (uint32_t)&bootPageTable >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
         bootTable = &bootPageTable;
     }
 
@@ -186,8 +183,8 @@ static void stage1MapBootloader(void)
 
     // Map in the entire bootloader information linked list
     for (uintptr_t addr = stivale2InfoAddr; addr < stivale2InfoEnd; addr += ARCH_PAGE_SIZE) {
-        size_t bootMemoryIdx = addr >> PAGE_TABLE_ENTRY_SHIFT;
-        struct TableEntry* bootTableEntry = &bootTable->pages[bootMemoryIdx & PAGE_TABLE_ENTRY_MASK];
+        size_t bootMemoryIdx = addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
+        struct TableEntry* bootTableEntry = &bootTable->pages[bootMemoryIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
         bootTableEntry->present = 1;
         bootTableEntry->readWrite = 1;
         bootTableEntry->frame = bootMemoryIdx;
@@ -202,28 +199,28 @@ static void stage1MapBootloader(void)
 __attribute__((section(".early_text")))
 static void stage1MapHighMemory(void)
 {
-    uint32_t kernelDirectoryEntryIdx = (uint32_t)&_KERNEL_START >> PAGE_DIR_ENTRY_SHIFT;
+    uint32_t kernelDirectoryEntryIdx = (uint32_t)&_KERNEL_START >> ARCH_PAGE_DIR_ENTRY_SHIFT;
 
     // First kernel page table entry
     struct DirectoryEntry* kernelDirectoryEntry = &pageDirectory.entries[kernelDirectoryEntryIdx];
     kernelDirectoryEntry->present = 1;
     kernelDirectoryEntry->readWrite = 1;
-    kernelDirectoryEntry->tableAddr = (uint32_t)&kernelPageTable[0] >> PAGE_TABLE_ENTRY_SHIFT;
+    kernelDirectoryEntry->tableAddr = (uint32_t)&kernelPageTable[0] >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
 
     // Second kernel page table entry
     struct DirectoryEntry* pagesDirectoryEntry = kernelDirectoryEntry + 1;
     pagesDirectoryEntry->present = 1;
     pagesDirectoryEntry->readWrite = 1;
-    pagesDirectoryEntry->tableAddr = (uint32_t)&kernelPageTable[1] >> PAGE_TABLE_ENTRY_SHIFT;
+    pagesDirectoryEntry->tableAddr = (uint32_t)&kernelPageTable[1] >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
 
     for (uintptr_t addr = KERNEL_START; addr < KERNEL_END; addr += ARCH_PAGE_SIZE) {
-        size_t kernelMemoryIdx = addr >> PAGE_TABLE_ENTRY_SHIFT;
+        size_t kernelMemoryIdx = addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
         // OR the mask with 0x400 so that pagesDirectoryEntry is used after kernelDirectoryEntry.
         // This only works because these two pages tables are next to each other in memory.
-        struct TableEntry* kernelMemoryTableEntry = &kernelPageTable[0].pages[kernelMemoryIdx & (0x400 | PAGE_TABLE_ENTRY_MASK)];
+        struct TableEntry* kernelMemoryTableEntry = &kernelPageTable[0].pages[kernelMemoryIdx & (0x400 | ARCH_PAGE_TABLE_ENTRY_MASK)];
         kernelMemoryTableEntry->present = 1;
         kernelMemoryTableEntry->readWrite = 1;
-        kernelMemoryTableEntry->frame = kernelMemoryIdx - (KERNEL_BASE >> PAGE_TABLE_ENTRY_SHIFT);
+        kernelMemoryTableEntry->frame = kernelMemoryIdx - (KERNEL_BASE >> ARCH_PAGE_TABLE_ENTRY_SHIFT);
     }
 }
 
@@ -236,16 +233,16 @@ static void stage1MapLowMemory(void)
 {
     // No need to get an index here since we're starting at 0x00000000,
     // which corresponds to the first entry in the page directory.
-    // WARNING: code assumes that the kernel won't be greater than 3MB
+    // WARNING: code assumes that the kernel won't be greater than 7MB
     struct DirectoryEntry* lowMem = &pageDirectory.entries[0];
     lowMem->present = 1;
     lowMem->readWrite = 1;
-    lowMem->tableAddr = (uint32_t)&lowMemoryPageTable >> PAGE_TABLE_ENTRY_SHIFT;
+    lowMem->tableAddr = (uint32_t)&lowMemoryPageTable >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
 
     // Map in the entirety of low-memory and stage1
     for (uintptr_t addr = ARCH_PAGE_SIZE; addr < EARLY_KERNEL_END; addr += ARCH_PAGE_SIZE) {
-        size_t pageIdx = addr >> PAGE_TABLE_ENTRY_SHIFT;
-        struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.pages[pageIdx & PAGE_TABLE_ENTRY_MASK];
+        size_t pageIdx = addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
+        struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.pages[pageIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
         lowMemoryTableEntry->present = 1;
         lowMemoryTableEntry->readWrite = 1;
         lowMemoryTableEntry->frame = pageIdx;
@@ -279,7 +276,6 @@ static void stage1Entry(struct stivale2_struct *info)
     stage1MapBootloader();
     stage1EnablePaging();
     stage1JumpToStage2();
-    EarlyPanic("Error: Execution returned to stage1!");
 }
 
 /*

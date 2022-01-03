@@ -78,7 +78,7 @@ static void bootTone()
  * from the assembly written in boot.S located in Arch/i686/boot.S. The pragma
  * allows this function to be declared without needing a former declaration.
  */
-extern "C" void kernelEntry(void* info, uint32_t magic)
+void kernelEntry(void* info, uint32_t magic)
 {
     // Initialize the CPU
     Arch::CPU::init();
