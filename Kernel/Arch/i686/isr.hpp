@@ -12,142 +12,84 @@
 #include <Arch/i686/Arch.i686.hpp>
 #include <stdint.h>
 
+#define ARCH_EXCEPTION_NUM 32           // Hardware exception count
+#define ARCH_INTERRUPT_NUM 16           // Hardware interrupt count
+#define ARCH_INTERRUPT_HANDLER_MAX 256  // Max number of registered interrupt handlers
+
+namespace Interrupts {
+
 /**
- * All of the following values are Interrupt Request (IRQ) identifiers
- * These values start at 32 because there are 32 prior values reserved
- * for processor level exceptions. Look at interrupt.s for the ASM on
- * how the IRQs call functions (and how they pass their value to said
- * function). Each Interrupt Request pushes the IRQ value along with
- * their corresponding hardware interrupt value (starting at 32).
+ * @brief Enumerator for mapping hardware exceptions to their purpose
+ *
  */
-enum isr {
-    ISR_DIVIDE_BY_ZERO = 0,
-    ISR_DEBUG = 1,
-    ISR_NON_MASK_INT = 2,
-    ISR_BREAKPOINT = 3,
-    ISR_OVERFLOW = 4,
-    ISR_BOUND_RANGE = 5,
-    ISR_INVALID_OPCODE = 6,
-    ISR_DEVICE_UNAVAIL = 7,
-    ISR_DOUBLE_FAULT = 8,
-    ISR_COPROCESSOR_SEG = 9,
-    ISR_INVALID_TSS = 10,
-    ISR_SEGMENT_MISSING = 11,
-    ISR_STACK_SEG_FAULT = 12,
-    ISR_PROTECT_FAULT = 13,
-    ISR_PAGE_FAULT = 14,
+enum Exception {
+    EXCEPTION_DIVIDE_BY_ZERO    = 0x00,
+    EXCEPTION_DEBUG             = 0x01,
+    EXCEPTION_NON_MASK_INT      = 0x02,
+    EXCEPTION_BREAKPOINT        = 0x03,
+    EXCEPTION_OVERFLOW          = 0x04,
+    EXCEPTION_BOUND_RANGE       = 0x05,
+    EXCEPTION_INVALID_OPCODE    = 0x06,
+    EXCEPTION_DEVICE_UNAVAIL    = 0x07,
+    EXCEPTION_DOUBLE_FAULT      = 0x08,
+    EXCEPTION_COPROCESSOR_SEG   = 0x09,
+    EXCEPTION_INVALID_TSS       = 0x0A,
+    EXCEPTION_SEGMENT_MISSING   = 0x0B,
+    EXCEPTION_STACK_SEG_FAULT   = 0x0C,
+    EXCEPTION_PROTECT_FAULT     = 0x0D,
+    EXCEPTION_PAGE_FAULT        = 0x0E,
     // Exception 0xF is reserved
-    ISR_FPU_EXCEPTION = 15,
-    ISR_ALIGNMENT_CHECK = 16,
-    ISR_MACHINE_CHECK = 17,
-    ISR_SIMD_FLOATPOINT = 18,
-    ISR_VIRTUALIZATION = 19,
+    EXCEPTION_FPU_EXCEPTION     = 0x10,
+    EXCEPTION_ALIGNMENT_CHECK   = 0x11,
+    EXCEPTION_MACHINE_CHECK     = 0x12,
+    EXCEPTION_SIMD_FLOATPOINT   = 0x13,
+    EXCEPTION_VIRTUALIZATION    = 0x14,
     // Exceptions 0x15-0x1D are reserved
-    ISR_SECURITY = 30,
+    EXCEPTION_SECURITY          = 0x1E,
     // Exception 0x1F is reserved
 };
 
-enum irq {
-    IRQ0 = 32,
-    IRQ1 = 33,
-    IRQ2 = 34,
-    IRQ3 = 35,
-    IRQ4 = 36,
-    IRQ5 = 37,
-    IRQ6 = 38,
-    IRQ7 = 39,
-    IRQ8 = 40,
-    IRQ9 = 41,
-    IRQ10 = 42,
-    IRQ11 = 43,
-    IRQ12 = 44,
-    IRQ13 = 45,
-    IRQ14 = 46,
-    IRQ15 = 47,
+/**
+ * @brief Enumerator for mapping hardware interrupt values to zero-indexed
+ * interrupts for programming ease. Unlike the exceptions, which are defined
+ * by the CPU manufacturer, interrupts can have multiple purposes, so it would
+ * be counter-productive to name them here.
+ *
+ */
+enum Interrupt {
+    INTERRUPT_0     = 0x20,
+    INTERRUPT_1     = 0x21,
+    INTERRUPT_2     = 0x22,
+    INTERRUPT_3     = 0x23,
+    INTERRUPT_4     = 0x24,
+    INTERRUPT_5     = 0x35,
+    INTERRUPT_6     = 0x26,
+    INTERRUPT_7     = 0x27,
+    INTERRUPT_8     = 0x28,
+    INTERRUPT_9     = 0x29,
+    INTERRUPT_10    = 0x2A,
+    INTERRUPT_11    = 0x2B,
+    INTERRUPT_12    = 0x2C,
+    INTERRUPT_13    = 0x2D,
+    INTERRUPT_14    = 0x2E,
+    INTERRUPT_15    = 0x2F,
 };
 
 /* Interrupt Service Routines */
-typedef void (*isr_cb_t)(struct registers*);
-
-extern "C"
-{
-
-void isr0();
-void isr1();
-void isr2();
-void isr3();
-void isr4();
-void isr5();
-void isr6();
-void isr7();
-void isr8();
-void isr9();
-void isr10();
-void isr11();
-void isr12();
-void isr13();
-void isr14();
-void isr15();
-void isr16();
-void isr17();
-void isr18();
-void isr19();
-void isr20();
-void isr21();
-void isr22();
-void isr23();
-void isr24();
-void isr25();
-void isr26();
-void isr27();
-void isr28();
-void isr29();
-void isr30();
-void isr31();
-/* Interrupt Requests */
-void irq0();
-void irq1();
-void irq2();
-void irq3();
-void irq4();
-void irq5();
-void irq6();
-void irq7();
-void irq8();
-void irq9();
-void irq10();
-void irq11();
-void irq12();
-void irq13();
-void irq14();
-void irq15();
-
-
-/**
- * @brief Handler for the Interrupt Service Request
- *
- * @param r Register information struct
- */
-void isr_handler(struct registers* r);
+typedef void (*InterruptHandler_t)(struct registers*);
 
 /**
  * @brief
  *
- * @param n
+ * @param interrupt
  * @param handler
  */
-void register_interrupt_handler(uint8_t n, isr_cb_t handler);
+void registerHandler(uint8_t interrupt, InterruptHandler_t handler);
 
 /**
  * @brief
  *
  */
-void irq_handler(struct registers* regs);
+void init();
 
-}
-
-/**
- * @brief
- *
- */
-void isr_install();
+} // !namespace Interrupts

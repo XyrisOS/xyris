@@ -109,7 +109,7 @@ void init(uint16_t com_id) {
     // Register the IRQ callback
     rs_232_port_base = com_id;
     uint8_t IRQ = 0x20 + (com_id == RS_232_COM1 ? RS_232_COM1_IRQ : RS_232_COM2_IRQ);
-    register_interrupt_handler(IRQ, callback);
+    Interrupts::registerHandler(IRQ, callback);
     // Write the port data to activate the device
     // disable interrupts
     writeByte(rs_232_port_base + RS_232_INTERRUPT_ENABLE_REG, 0x00);

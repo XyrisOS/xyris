@@ -56,7 +56,7 @@ KERNEL_PARAM(enableMappingLogs, MAPPING_OUTPUT_FLAG, argumentsCallback);
 void init(MemoryMap* map)
 {
     // we can set breakpoints or make a futile attempt to recover.
-    register_interrupt_handler(ISR_PAGE_FAULT, pageFaultCallback);
+    Interrupts::registerHandler(Interrupts::EXCEPTION_PAGE_FAULT, pageFaultCallback);
     // populate the physical memory map based on bootloader information
     initPhysical(map);
     // init our structures

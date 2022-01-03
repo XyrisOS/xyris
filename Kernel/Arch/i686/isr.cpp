@@ -13,23 +13,121 @@
 #include <Arch/i686/isr.hpp>
 #include <Panic.hpp>
 
-// Private array of interrupt handlers
-isr_cb_t interrupt_handlers[256];
-void (* isr_func_ptr[])(void) = { isr0,  isr1,  isr2,  isr3,  isr4,  isr5,  isr6,  isr7,
-                                  isr8,  isr9,  isr10, isr11, isr12, isr13, isr14, isr15,
-                                  isr16, isr17, isr18, isr19, isr20, isr21, isr22, isr23,
-                                  isr24, isr25, isr26, isr27, isr28, isr29, isr30, isr31 };
-void (* irq_func_ptr[])(void) = { irq0, irq1, irq2, irq3,   irq4,  irq5,  irq6,  irq7,
-                                  irq8, irq9, irq10, irq11, irq12, irq13, irq14, irq15 };
+namespace Interrupts {
 
-/* Can't do this with a loop because we need the address
- * of the function names */
-void isr_install() {
-    // Set all of the gate addresses
-    for (int isr = 0; isr < 32; ++isr) {
-        idt_set_gate(isr, (uint32_t)isr_func_ptr[isr]);
+// Interrupt handler function pointers
+InterruptHandler_t interruptHandlers[256];
+
+extern "C" {
+
+// Exception stubs
+void exception0();
+void exception1();
+void exception2();
+void exception3();
+void exception4();
+void exception5();
+void exception6();
+void exception7();
+void exception8();
+void exception9();
+void exception10();
+void exception11();
+void exception12();
+void exception13();
+void exception14();
+void exception15();
+void exception16();
+void exception17();
+void exception18();
+void exception19();
+void exception20();
+void exception21();
+void exception22();
+void exception23();
+void exception24();
+void exception25();
+void exception26();
+void exception27();
+void exception28();
+void exception29();
+void exception30();
+void exception31();
+// Interrupt stubs
+void interrupt0();
+void interrupt1();
+void interrupt2();
+void interrupt3();
+void interrupt4();
+void interrupt5();
+void interrupt6();
+void interrupt7();
+void interrupt8();
+void interrupt9();
+void interrupt10();
+void interrupt11();
+void interrupt12();
+void interrupt13();
+void interrupt14();
+void interrupt15();
+// Proper handlers (declared to make compiler happy)
+void exceptionHandler(struct registers* regs);
+void interruptHandler(struct registers* regs);
+
+/**
+ * @brief Hardware exception handler. Called by each exception handler stub.
+ *
+ * @param regs CPU registers structure. Includes interrupt number.
+ */
+void exceptionHandler(struct registers* regs)
+{
+    panic(regs);
+}
+
+/**
+ * @brief Hardware interrupt handler. Called by each interrupt handler stub.
+ *
+ * @param regs CPU registers structure. Includes interrupt number.
+ */
+void interruptHandler(struct registers* regs)
+{
+    // After every interrupt we need to send an EOI to the PICs or it won't send another
+    if (regs->int_num >= 0x28) {
+        // Respond to secondard PIC
+        writeByte(0xA0, 0x20);
     }
-    // Remap the PIC
+
+    // Respond to primary PIC
+    writeByte(0x20, 0x20);
+
+    if (interruptHandlers[regs->int_num]) {
+        InterruptHandler_t handler = interruptHandlers[regs->int_num];
+        handler(regs);
+    }
+}
+
+} // !extern "C"
+
+void (*exceptionHandlerStubs[ARCH_EXCEPTION_NUM])(void) = {
+    exception0,  exception1,  exception2,  exception3,  exception4,  exception5,  exception6,  exception7,
+    exception8,  exception9,  exception10, exception11, exception12, exception13, exception14, exception15,
+    exception16, exception17, exception18, exception19, exception20, exception21, exception22, exception23,
+    exception24, exception25, exception26, exception27, exception28, exception29, exception30, exception31
+};
+
+void (*interruptHandlerStubs[ARCH_INTERRUPT_NUM])(void) = {
+    interrupt0, interrupt1, interrupt2,  interrupt3,  interrupt4,  interrupt5,  interrupt6,  interrupt7,
+    interrupt8, interrupt9, interrupt10, interrupt11, interrupt12, interrupt13, interrupt14, interrupt15
+};
+
+void init()
+{
+    // Set all of the gate addresses
+    for (int exception = 0; exception < 32; exception++) {
+        idt_set_gate(exception, (uint32_t)exceptionHandlerStubs[exception]);
+    }
+
+    // Remap the programmable interrupt controller
     writeByte(0x20, 0x11);
     writeByte(0xA0, 0x11);
     writeByte(0x21, 0x20);
@@ -40,38 +138,19 @@ void isr_install() {
     writeByte(0xA1, 0x01);
     writeByte(0x21, 0x0);
     writeByte(0xA1, 0x0);
-    // Install the IRQs
-    for (int irq = 0; irq < 16; ++irq) {
-        idt_set_gate(32 + irq, (uint32_t)irq_func_ptr[irq]);
+
+    // Install the interrupt requests
+    for (int interrupt = 0; interrupt < ARCH_INTERRUPT_NUM; interrupt++) {
+        idt_set_gate(32 + interrupt, (uint32_t)interruptHandlerStubs[interrupt]);
     }
+
     // Load the IDT now that we've registered all of our IDT, IRQ, and ISR addresses
     load_idt();
 }
 
-extern "C"
+void registerHandler(uint8_t interrupt, InterruptHandler_t handler)
 {
-
-void register_interrupt_handler(uint8_t n, isr_cb_t handler) {
-    interrupt_handlers[n] = handler;
+    interruptHandlers[interrupt] = handler;
 }
 
-void isr_handler(struct registers *r) {
-    panic(r);
-}
-
-void irq_handler(struct registers *regs) {
-    /* After every interrupt we need to send an EOI to the PICs
-     * or they will not send another interrupt again */
-    if (regs->int_num >= 40) {
-        writeByte(0xA0, 0x20);                      /* slave  */
-    }
-    writeByte(0x20, 0x20);                          /* master */
-
-    /* Handle the interrupt in a more modular way */
-    if (interrupt_handlers[regs->int_num] != 0) {
-        isr_cb_t handler = interrupt_handlers[regs->int_num];
-        handler(regs);
-    }
-}
-
-}
+} // !namespace Interrupts
