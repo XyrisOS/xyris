@@ -59,6 +59,12 @@ struct CR3
    uint32_t pageDir             : 20;   // Page directory physical address
 };
 
+// A pointer to the array of interrupt handlers. Assembly instruction 'lidt' will read it
+struct [[gnu::packed]] IDTR {
+    uint16_t size   : 16;
+    uint32_t base   : 32;
+};
+
 __attribute__((always_inline))
 static inline struct CR0 readCR0(void)
 {

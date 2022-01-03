@@ -124,7 +124,7 @@ void init()
 {
     // Set all of the gate addresses
     for (int exception = 0; exception < 32; exception++) {
-        idt_set_gate(exception, (uint32_t)exceptionHandlerStubs[exception]);
+        IDT::setGate(exception, (uint32_t)exceptionHandlerStubs[exception]);
     }
 
     // Remap the programmable interrupt controller
@@ -141,11 +141,11 @@ void init()
 
     // Install the interrupt requests
     for (int interrupt = 0; interrupt < ARCH_INTERRUPT_NUM; interrupt++) {
-        idt_set_gate(32 + interrupt, (uint32_t)interruptHandlerStubs[interrupt]);
+        IDT::setGate(32 + interrupt, (uint32_t)interruptHandlerStubs[interrupt]);
     }
 
     // Load the IDT now that we've registered all of our IDT, IRQ, and ISR addresses
-    load_idt();
+    IDT::init();
 }
 
 void registerHandler(uint8_t interrupt, InterruptHandler_t handler)

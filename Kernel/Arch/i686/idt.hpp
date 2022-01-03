@@ -13,42 +13,36 @@
 #include <Arch/i686/Arch.i686.hpp>
 #include <stdint.h>
 
-/* Segment selectors */
-#define KERNEL_CS 0x08
-#define IDT_ENTRIES 256
+namespace IDT {
 
-/* How every interrupt gate (handler) is defined */
-/* Reference: See mmu.h in XV6 for an alternative to this system where
- * bitfields are used for the uint8_t flag parameter instead of a magic
- * number like we use. */
-struct [[gnu::packed]] idt_gate {
-    uint16_t low_offset;    /* Lower 16 bits of handler function address */
-    uint16_t selector;      /* Kernel segment selector */
-    uint8_t always0;
-    /* First byte
-     * Bit 7: "Interrupt is present"
-     * Bits 6-5: Privilege level of caller (0=kernel..3=user)
-     * Bit 4: Set to 0 for interrupt gates
-     * Bits 3-0: bits 1110 = decimal 14 = "32 bit interrupt gate" */
-    /** Diagram for flags from OSDev Wiki. See IDT page for details.
-     *     7                           0
-     *   +---+---+---+---+---+---+---+---+
-     *   | P |  DPL  | S |    GateType   |
-     *   +---+---+---+---+---+---+---+---+
-     */
-    uint8_t flags;
-    uint16_t high_offset; /* Higher 16 bits of handler function address */
+enum GateType : uint8_t
+{
+    TASK_GATE               = 0x5,
+    INTERRUPT_GATE_16_BIT   = 0x6,
+    TRAP_GATE_16_BIT        = 0x7,
+    INTERRUPT_GATE_32_BIT   = 0xE,
+    TRAP_GATE_32_BIT        = 0xF,
 };
 
-/* A pointer to the array of interrupt handlers.
- * Assembly instruction 'lidt' will read it */
-struct [[gnu::packed]] idt_register {
-    uint16_t limit;
-    uint32_t base;
+struct Segment {
+    uint8_t privilege   : 2;        // Ring privilege level
+    uint8_t table       : 1;        // 1 = LDT entry, 0 = GDT entry
+    uint16_t index      : 13;       // Index into table (LDT or GDT)
 };
 
-extern struct idt_gate idt[IDT_ENTRIES];
-extern struct idt_register idt_reg;
+struct Gate {
+    uint16_t low_offset             : 16;   // Lower 16 bits of handler function address
+    struct Segment selector;                // Kernel segment selector
+    uint8_t reserved                : 8;    // Should always be 0
+    struct
+    {
+        enum GateType type  : 4;    // Interrupt or Trap, 16 or 32 bit
+        uint8_t offset      : 1;    // Should always be 0
+        uint8_t privilege   : 2;    // Rings allowed to access via `INT` instruction (Ignored by hardware interrupts)
+        uint8_t present     : 1;    // Gate is present
+    } flags;
+    uint16_t high_offset    : 16;   // Higher 16 bits of handler function address
+};
 
 /**
  * @brief Sets the handler function (via address) for a specific IDT.
@@ -56,9 +50,12 @@ extern struct idt_register idt_reg;
  * @param n IDT index
  * @param handler Handler address
  */
-void idt_set_gate(int n, uint32_t handler);
+void setGate(int n, uint32_t handler);
+
 /**
  * @brief Calls the lidt instruction and installs the IDT onto the CPU.
  *
  */
-void load_idt();
+void init();
+
+} // !namespace IDT
