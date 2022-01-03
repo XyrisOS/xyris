@@ -48,15 +48,18 @@ void isr_install() {
     load_idt();
 }
 
-extern "C" void register_interrupt_handler(uint8_t n, isr_cb_t handler) {
+extern "C"
+{
+
+void register_interrupt_handler(uint8_t n, isr_cb_t handler) {
     interrupt_handlers[n] = handler;
 }
 
-extern "C" void isr_handler(struct registers *r) {
+void isr_handler(struct registers *r) {
     panic(r);
 }
 
-extern "C" void irq_handler(struct registers *regs) {
+void irq_handler(struct registers *regs) {
     /* After every interrupt we need to send an EOI to the PICs
      * or they will not send another interrupt again */
     if (regs->int_num >= 40) {
@@ -69,4 +72,6 @@ extern "C" void irq_handler(struct registers *regs) {
         isr_cb_t handler = interrupt_handlers[regs->int_num];
         handler(regs);
     }
+}
+
 }

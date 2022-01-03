@@ -67,70 +67,68 @@ enum irq {
 };
 
 /* Interrupt Service Routines */
-extern "C" void isr0();
-extern "C" void isr1();
-extern "C" void isr2();
-extern "C" void isr3();
-extern "C" void isr4();
-extern "C" void isr5();
-extern "C" void isr6();
-extern "C" void isr7();
-extern "C" void isr8();
-extern "C" void isr9();
-extern "C" void isr10();
-extern "C" void isr11();
-extern "C" void isr12();
-extern "C" void isr13();
-extern "C" void isr14();
-extern "C" void isr15();
-extern "C" void isr16();
-extern "C" void isr17();
-extern "C" void isr18();
-extern "C" void isr19();
-extern "C" void isr20();
-extern "C" void isr21();
-extern "C" void isr22();
-extern "C" void isr23();
-extern "C" void isr24();
-extern "C" void isr25();
-extern "C" void isr26();
-extern "C" void isr27();
-extern "C" void isr28();
-extern "C" void isr29();
-extern "C" void isr30();
-extern "C" void isr31();
-/* Interrupt Requests */
-extern "C" void irq0();
-extern "C" void irq1();
-extern "C" void irq2();
-extern "C" void irq3();
-extern "C" void irq4();
-extern "C" void irq5();
-extern "C" void irq6();
-extern "C" void irq7();
-extern "C" void irq8();
-extern "C" void irq9();
-extern "C" void irq10();
-extern "C" void irq11();
-extern "C" void irq12();
-extern "C" void irq13();
-extern "C" void irq14();
-extern "C" void irq15();
-
 typedef void (*isr_cb_t)(struct registers*);
 
-/**
- * @brief
- *
- */
-void isr_install();
+extern "C"
+{
+
+void isr0();
+void isr1();
+void isr2();
+void isr3();
+void isr4();
+void isr5();
+void isr6();
+void isr7();
+void isr8();
+void isr9();
+void isr10();
+void isr11();
+void isr12();
+void isr13();
+void isr14();
+void isr15();
+void isr16();
+void isr17();
+void isr18();
+void isr19();
+void isr20();
+void isr21();
+void isr22();
+void isr23();
+void isr24();
+void isr25();
+void isr26();
+void isr27();
+void isr28();
+void isr29();
+void isr30();
+void isr31();
+/* Interrupt Requests */
+void irq0();
+void irq1();
+void irq2();
+void irq3();
+void irq4();
+void irq5();
+void irq6();
+void irq7();
+void irq8();
+void irq9();
+void irq10();
+void irq11();
+void irq12();
+void irq13();
+void irq14();
+void irq15();
+
 
 /**
  * @brief Handler for the Interrupt Service Request
  *
  * @param r Register information struct
  */
-extern "C" void isr_handler(struct registers* r);
+void isr_handler(struct registers* r);
 
 /**
  * @brief
@@ -138,10 +136,18 @@ extern "C" void isr_handler(struct registers* r);
  * @param n
  * @param handler
  */
-extern "C" void register_interrupt_handler(uint8_t n, isr_cb_t handler);
+void register_interrupt_handler(uint8_t n, isr_cb_t handler);
 
 /**
  * @brief
  *
  */
-extern "C" void irq_handler(struct registers* regs);
+void irq_handler(struct registers* regs);
+
+}
+
+/**
+ * @brief
+ *
+ */
+void isr_install();

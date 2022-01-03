@@ -11,14 +11,13 @@
  */
 
 #include <Arch/Arch.hpp>
+#include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Support/sections.hpp>
 
-#define TTY_WIDTH 80
-#define TTY_HEIGHT 25
-#define VGA_COLOR(bg, fg) (uint16_t)(((bg)<<4)|((fg)&0xF))
-#define VGA_CHAR(ch, co) (uint16_t)((ch)|((co)<<8))
-
-inline uint16_t* biosVGABuffer = (uint16_t*)0x000B8000;
+#define TTY_WIDTH   80
+#define TTY_HEIGHT  25
+#define VGA_COLOR(bg, fg)   (uint16_t)(((bg)<<4)|((fg)&0xF))
+#define VGA_CHAR(ch, co)    (uint16_t)((ch)|((co)<<8))
 
 enum bios_color : uint16_t {
     BIOS_Black           = 0,
@@ -39,26 +38,24 @@ enum bios_color : uint16_t {
     BIOS_White           = 15
 };
 
-// Provide a function prototype to make the compiler warnings happy. Don't
-// want to make it public though, so we won't put it in the panic header.
-extern "C" void early_panic(const char *str);
-
-extern "C" void
+extern "C"
 __attribute__((section(".early_text")))
-early_panic(const char *str) {
+void EarlyPanic(const char *str)
+{
     volatile uint16_t* where;
+    uint16_t* biosVGABuffer = (uint16_t*)0x000B8000;
     int x = 0;
 	int y = 0;
     // Clear the screen
     for (int i = 0; i < TTY_WIDTH; i++) {
-        for (int j = 0; j < TTY_HEIGHT; j ++) {
+        for (int j = 0; j < TTY_HEIGHT; j++) {
             where = biosVGABuffer + (j * TTY_WIDTH + i);
             *where = VGA_CHAR(' ', VGA_COLOR(BIOS_Black, BIOS_White));
         }
     }
     // For each character in the string
     for (int i = 0; str[i] != '\0'; ++i) {
-        switch(str[i]) {
+        switch (str[i]) {
             // Newline
             case '\n':
                 x = 0;
@@ -72,4 +69,6 @@ early_panic(const char *str) {
                 break;
         }
     }
+
+    Arch::haltAndCatchFire();
 }

@@ -34,8 +34,8 @@ void printTrace(size_t max)
         ksprintf(buf, "0x%08X\n", stk->eip);
         Console::printf("%s", buf);
         RS232::printf("%s", buf);
-        // Check whether the address is in memory or not
-        if (!Memory::isPresent((uintptr_t)stk->ebp)) {
+        // Check for a NULL stack frame to indicate the end
+        if ((uintptr_t)stk->ebp == 0x00000000) {
             break;
         }
         stk = stk->ebp;

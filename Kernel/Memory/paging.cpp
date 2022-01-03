@@ -120,7 +120,7 @@ static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* ta
         // the offset is applied from the load address of the kernel we must shift it over 12 bits because we only
         // care about the highest 20 bits for the page table
         // TODO: Get rid of this shift by using ``union Address``
-        .tableAddr = KADDR_TO_PHYS((uintptr_t)table) >> 12
+        .tableAddr = KADDR_TO_PHYS((uintptr_t)table) >> ARCH_PAGE_TABLE_ENTRY_SHIFT
     };
 }
 
@@ -148,16 +148,19 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     // Set the page directory entry (pde) and page table entry (pte)
     size_t pde = vaddr.page().dirIndex;
     size_t pte = vaddr.page().tableIndex;
-    // If the page's virtual address is not aligned
-    if (vaddr.page().offset != 0) {
-        panic("Attempted to map a non-page-aligned virtual address.\n");
-    }
-    Arch::Memory::TableEntry* entry = &(pageTables[pde].pages[pte]);
+
     // Print a debug message to serial
     if (is_mapping_output_enabled) {
         debugf("map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx\n", paddr.val(), vaddr.val(), pde, pte);
     }
+
+    // If the page's virtual address is not aligned
+    if (vaddr.page().offset) {
+        panicf("Attempted to map a non-page-aligned virtual address.\n(Address: 0x%08lX)\n", vaddr.val());
+    }
+
     // If the page is already mapped into memory
+    Arch::Memory::TableEntry* entry = &(pageTables[pde].pages[pte]);
     if (entry->present) {
         if (entry->frame == paddr.frame().index) {
             // this page was already mapped the same way
@@ -168,17 +171,17 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     }
     // Set the page information
     pageTables[pde].pages[pte] = {
-        .present = 1,               // The page is present
-        .readWrite = 1,             // The page has r/w permissions
-        .usermode = 0,              // These are kernel pages
-        .writeThrough = 0,          // Disable write through
-        .cacheDisable = 0,          // The page is cached
-        .accessed = 0,              // The page is unaccessed
-        .dirty = 0,                 // The page is clean
-        .pageAttrTable = 0,         // The page has no attribute table
-        .global = 0,                // The page is local
-        .unused = 0,                // Ignored
-        .frame = paddr.frame().index, // The last 20 bits are the frame
+        .present = 1,                   // The page is present
+        .readWrite = 1,                 // The page has r/w permissions
+        .usermode = 0,                  // These are kernel pages
+        .writeThrough = 0,              // Disable write through
+        .cacheDisable = 0,              // The page is cached
+        .accessed = 0,                  // The page is unaccessed
+        .dirty = 0,                     // The page is clean
+        .pageAttrTable = 0,             // The page has no attribute table
+        .global = 0,                    // The page is local
+        .unused = 0,                    // Ignored
+        .frame = paddr.frame().index,   // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
     physical.setUsed(paddr);
@@ -209,7 +212,7 @@ static void mapEarlyMem()
 static void mapKernel()
 {
     debugf("==== MAP HH KERNEL ====\n");
-    mapKernelRangePhysical(Section(KERNEL_START, KERNEL_END));
+    mapKernelRangePhysical(Section(Arch::Memory::pageAlign(KERNEL_START), KERNEL_END));
 }
 
 /**
@@ -262,7 +265,8 @@ void freePage(void* page, size_t size)
 bool isPresent(uintptr_t addr)
 {
     // Convert the address into an index and check whether the page is in the bitmap
-    return mappedPages[addr >> 12];
+    // TODO: Fix this function. It's inaccurate and can result in triple faults.
+    return mappedPages[addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT];
 }
 
 // TODO: maybe enforce access control here in the future

@@ -16,10 +16,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// Function prototypes
-extern "C" void __cxa_pure_virtual();
-extern "C" void __stack_chk_fail(void);
-
 /**
  * @brief This function is the global handler for all stack protection. GCC will automatically
  * write the canary code and use this function as the handler for when a smashed stack is detected.
@@ -31,14 +27,23 @@ uintptr_t __stack_chk_guard = 0xDEADC0DE;
 uintptr_t __stack_chk_guard = 0xBADBADBADBADBAD1;
 #endif
 
-extern "C" void __stack_chk_fail(void)
+extern "C"
+{
+
+// Function prototypes (to make compiler happy)
+void __stack_chk_fail(void);
+void __cxa_pure_virtual();
+
+void __stack_chk_fail(void)
 {
     panic("Smashed stack detected.");
 }
 
-extern "C" void __cxa_pure_virtual()
+void __cxa_pure_virtual()
 {
     panic("Pure virtual called!");
+}
+
 }
 
 /**
@@ -51,24 +56,29 @@ namespace __cxxabiv1 {
 // The ABI requires a 64-bit type.
 __extension__ typedef int64_t __guard [[gnu::mode(__DI__)]];
 
-// Function prototypes
-extern "C" int __cxa_guard_acquire(__guard* g);
-extern "C" void __cxa_guard_release(__guard* g);
-extern "C" void __cxa_guard_abort(__guard* g);
+extern "C"
+{
 
-extern "C" int __cxa_guard_acquire(__guard* g)
+// Function prototypes
+int __cxa_guard_acquire(__guard* g);
+void __cxa_guard_release(__guard* g);
+void __cxa_guard_abort(__guard* g);
+
+int __cxa_guard_acquire(__guard* g)
 {
     return __atomic_test_and_set(g, __ATOMIC_RELEASE);
 }
 
-extern "C" void __cxa_guard_release(__guard* g)
+void __cxa_guard_release(__guard* g)
 {
     __atomic_clear(g, __ATOMIC_RELEASE);
 }
 
-extern "C" void __cxa_guard_abort(__guard* g)
+void __cxa_guard_abort(__guard* g)
 {
     __atomic_clear(g, __ATOMIC_RELEASE);
+}
+
 }
 
 } // !namespace __cxxabiv1

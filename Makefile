@@ -48,7 +48,6 @@ export AR      := $(shell which i686-elf-ar)
 export CC      := $(shell which i686-elf-gcc)
 export CXX     := $(shell which i686-elf-g++)
 export OBJCP   := $(shell which i686-elf-objcopy)
-export MKGRUB  := $(shell which grub-mkrescue)
 
 # *****************************
 # * Source Code & Directories *
@@ -103,7 +102,7 @@ export CFLAGS :=            \
 	-nostdlib               \
 	-nodefaultlibs          \
 	-ffreestanding          \
-	-fstack-protector-all   \
+	-fstack-protector       \
 	-fno-builtin            \
 	-fno-omit-frame-pointer \
 	-mno-avx                \
@@ -189,28 +188,26 @@ unit-test:
 .PHONY: dist
 dist: $(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG)
 
-# Create bootable ISO
-$(PRODUCTS_DIR)/$(MODE)/$(ISO): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL)
-	@mkdir -p $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub
-	@cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(PRODUCTS_DIR)/$(MODE)/iso/boot/
-# FIXME: This shouldn't be hardcoded
-	@cp $(KERNEL_DIR)/Arch/i686/Bootloader/grub.cfg $(PRODUCTS_DIR)/$(MODE)/iso/boot/grub/grub.cfg
-	@$(MKGRUB) -o $@ $(PRODUCTS_DIR)/$(MODE)/iso
-	@rm -rf $(PRODUCTS_DIR)/$(MODE)/iso
-
 # Create a bootable IMG
 $(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $(THIRDPARTY_DIR)/limine/limine.sys
 	@printf "$(COLOR_INFO)Making Limine boot image ($(MODE))$(COLOR_NONE)\n"
-	@rm -f $@
-	@dd if=/dev/zero bs=1M count=0 seek=2 of=$@ 2> /dev/null
+	@rm -f $@ $@.ext2
+# Create the partition table using parted
+	@dd if=/dev/zero bs=1M count=0 seek=4 of=$@ 2> /dev/null
 	@parted -s $@ mklabel msdos
 	@parted -s $@ mkpart primary 1 100%
 	@parted -s $@ set 1 boot on
-	@echfs-utils -m -p0 $@ quick-format 32768
-	@echfs-utils -m -p0 $@ import $(KERNEL_DIR)/Arch/i686/Bootloader/limine.cfg limine.cfg
-	@echfs-utils -m -p0 $@ import $(THIRDPARTY_DIR)/limine/limine.sys limine.sys
-	@echfs-utils -m -p0 $@ import $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) kernel
-	$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
+	@parted -l $@
+# Create the ext2 partition using mke2fs
+# The ext2 partition must be (at least) 2048 * 512 bytes smaller than the full image
+	@dd if=/dev/zero bs=1M count=0 seek=2 of=$@.ext2 2> /dev/null
+	@mke2fs $@.ext2
+	@e2cp $(KERNEL_DIR)/Arch/i686/Bootloader/limine.cfg $@.ext2:/limine.cfg
+	@e2cp $(THIRDPARTY_DIR)/limine/limine.sys $@.ext2:/limine.sys
+	@e2cp $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $@.ext2:/kernel
+# Copy the ext2 partition past the MBR cylinders
+	@dd if=$@.ext2 bs=512 seek=2048 of=$@
+	@$(THIRDPARTY_DIR)/limine/limine-install-linux-x86_32 $@
 
 # *************************
 # * Virtual Machine Flags *
@@ -221,14 +218,9 @@ QEMU_FLAGS =        \
     -m 4G           \
     -rtc clock=host \
     -vga std        \
-    -serial stdio   \
-	-monitor telnet:127.0.0.1:1234,server,nowait
+    -serial stdio
 QEMU_ARCH = x86_64
-# Virtualbox flags
-VM_NAME = $(PROJ_NAME)-box
-VBOX_VM_FILE = $(PRODUCTS_DIR)/$(VM_NAME)/$(VM_NAME).vbox
 # VM executable locations
-VBOX = $(shell which VBoxManage)
 QEMU = $(shell which qemu-system-$(QEMU_ARCH))
 
 # ***************************
@@ -241,7 +233,8 @@ run:
 	$(QEMU)                                      \
 	-drive file=$(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG),\
 	index=0,media=disk,format=raw \
-	$(QEMU_FLAGS)
+	$(QEMU_FLAGS) \
+	-monitor telnet:127.0.0.1:1234,server,nowait
 
 # Open the connection to qemu and load our kernel-object file with symbols
 .PHONY: run-debug
@@ -251,23 +244,7 @@ run-debug:
 	-S -s      \
 	-drive file=$(PRODUCTS_DIR)/$(MODE)/$(BOOTIMG),\
 	index=0,media=disk,format=raw \
-	$(QEMU_FLAGS) > /dev/null &; true
-
-# Create Virtualbox VM
-.PHONY: vbox-create
-vbox-create: $(PRODUCTS_DIR)/$(MODE)/$(ISO)
-	$(VBOX) createvm --register --name $(VM_NAME) --basefolder $(shell pwd)/$(PRODUCTS_DIR)
-	$(VBOX) modifyvm $(VM_NAME)                 \
-	--memory 256 --ioapic on --cpus 2 --vram 16 \
-	--graphicscontroller vboxvga --boot1 disk   \
-	--audiocontroller sb16 --uart1 0x3f8 4      \
-	--uartmode1 file $(shell pwd)/com1.txt
-	$(VBOX) storagectl $(VM_NAME) --name "DiskDrive" --add ide --bootable on
-	$(VBOX) storageattach $(VM_NAME) --storagectl "DiskDrive" --port 1 --device 1 --type dvddrive --medium $(PRODUCTS_DIR)/$(ISO)
-
-.PHONY: vbox-create
-vbox: vbox-create
-	$(VBOX) startvm --putenv --debug $(VM_NAME)
+	$(QEMU_FLAGS) > /dev/null &
 
 # ****************************
 # * Documentation Generation *

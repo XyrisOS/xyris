@@ -1,7 +1,7 @@
 /**
  * @file Memory.i686.hpp
  * @author Keeton Feavel (keeton@xyr.is)
- * @brief i686 memory structures and definitions
+ * @brief i686 memory structures and definitions. C & C++ compatible header.
  * @version 0.1
  * @date 2021-10-26
  *
@@ -9,13 +9,29 @@
  *
  */
 #pragma once
+#include <stdint.h>
+#include <stddef.h>
+#ifndef __cplusplus
+    // C needs bool type definition
+    #include <stdbool.h>
+#endif
 
-#define ARCH_PAGE_DIR_ENTRIES   1024
-#define ARCH_PAGE_TABLE_ENTRIES 1024
-#define ARCH_PAGE_ALIGN         0xFFFFF000
-#define ARCH_PAGE_SIZE          0x1000
+#define ARCH_PAGE_DIR_ENTRIES       1024
+#define ARCH_PAGE_TABLE_ENTRIES     1024
+#define ARCH_PAGE_SIZE              4096
+#define ARCH_PAGE_ALIGN             0xFFFFF000
+#define ARCH_PAGE_DIR_ENTRY_SHIFT   22          // Shift to convert address to 0-1023 directory index
+#define ARCH_PAGE_TABLE_ENTRY_SHIFT 12          // Shift to convert address to page address (2^12 = 4096 = PAGE_SIZE)
+#define ARCH_PAGE_TABLE_ENTRY_MASK  0x3ff       // Mask off top 10 bits to get 0-1023 index
 
+/* Only use namespace when including with C++ source so that the
+   bootloader to kernel bootstrap source can access these structs
+   It's a bit hacky since normally C++ includes C headers that have
+   C++ include guards, but because Xyris is primarily C++ with a
+   little bit of C, it makes more sense to do it this way */
+#ifdef __cplusplus
 namespace Arch::Memory {
+#endif
 
 /**
  * @brief Page frame structure. This represents a the
@@ -96,9 +112,12 @@ struct DirectoryEntry
  */
 struct Directory
 {
-    struct DirectoryEntry entries[1024];     // Pointers that the Intel CPU uses to access pages in memory
+    struct DirectoryEntry entries[1024]; // Pointers that the Intel CPU uses to access pages in memory
 };
 
+/* Only provide the Address class to C++ source so that this header can
+   be included by the bootstrap C source */
+#ifdef __cplusplus
 /**
  * @brief Address class. Represents a memory address that can
  * be used to address a page in virtual memory, a frame in
@@ -167,6 +186,7 @@ private:
         uintptr_t val;
     } m_addr;
 };
+#endif
 
 /**
  * @brief Invalidate the page at the given address. Implementations are architecture
@@ -174,14 +194,30 @@ private:
  *
  * @param addr Address of page to be invalidated
  */
-inline void pageInvalidate(void* addr)
+static inline void pageInvalidate(void* addr)
 {
-   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
+   asm volatile(
+       "invlpg (%0)"
+       :
+       : "r" (addr)
+       : "memory"
+    );
 }
 
-inline void setPageDirectory(size_t page_dir)
+/**
+ * @brief Writes the address of the page directory to CR3.
+ * Does not enable paging.
+ *
+ * @param pageDirPtr Address of page directory structure to be used
+ */
+__attribute__((always_inline))
+static inline void setPageDirectory(uintptr_t pageDirPtr)
 {
-    asm volatile("mov %0, %%cr3" ::"b"(page_dir));
+    asm volatile(
+        "mov %0, %%cr3"
+        :
+        : "b" (pageDirPtr)
+    );
 }
 
 /**
@@ -190,7 +226,7 @@ inline void setPageDirectory(size_t page_dir)
  * @param addr Address to be aligned
  * @return uintptr_t Page aligned address value
  */
-inline uintptr_t pageAlign(size_t addr)
+static inline uintptr_t pageAlign(size_t addr)
 {
     return addr & ARCH_PAGE_ALIGN;
 }
@@ -202,9 +238,11 @@ inline uintptr_t pageAlign(size_t addr)
  * @return true Address is aligned to page boundary
  * @return false Address is not aligned to a page boundary
  */
-inline bool pageIsAligned(size_t addr)
+static inline bool pageIsAligned(size_t addr)
 {
     return ((addr % ARCH_PAGE_SIZE) == 0);
 }
 
-}
+#ifdef __cplusplus
+} // !namespace Arch::Memory
+#endif
