@@ -1,18 +1,132 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
-    "version": "2.0.0",
-    "tasks": [
+	"version": "2.0.0",
+	"tasks": [
         {
-            "label": "Debug QEMU",
             "type": "shell",
-            "isBackground": true,
-            "linux": {
-                "command": "qemu-system-i386 -S -gdb tcp::1234 -drive format=raw,file=dist/panix.iso -m 512 &"
-            },
-            "options": {
-                "cwd": "${workspaceRoot}"
+            "label": "Build (All)",
+            "command": "scuba",
+            "args": [
+                "build"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
+        },
+        {
+            "type": "shell",
+            "label": "Build (Debug)",
+            "command": "scuba",
+            "args": [
+                "img-debug"
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Build (Release)",
+            "command": "scuba",
+            "args": [
+                "img-release"
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Clean (All)",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Build (Unit Tests)",
+            "command": "scuba",
+            "args": [
+                "make",
+                "unit-test"
+            ],
+            "group": "test"
+        },
+        {
+            "type": "shell",
+            "label": "Run (Unit Tests)",
+            "command": "scuba",
+            "args": [
+                "./Distribution/unit-test"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "dependsOn": [
+                "Build (Unit Tests)"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "Run (Debug)",
+            "command": "make",
+            "args": [
+                "run"
+            ],
+            "group": "none",
+            "options": {
+                "env": {
+                    "MODE": "debug"
+                }
+            },
+            "problemMatcher": [],
+            "dependsOn": [
+                "Build (Debug)"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "Run (Debug + GDB)",
+            "command": "make",
+            "args": [
+                "run-debug"
+            ],
+            "group": "none",
+            "options": {
+                "env": {
+                    "MODE": "debug"
+                }
+            },
+            "problemMatcher": [],
+            "dependsOn": [
+                "Build (Debug)"
+            ],
+        },
+        {
+            "type": "shell",
+            "label": "Run (Release)",
+            "command": "make",
+            "args": [
+                "run"
+            ],
+            "group": "none",
+            "options": {
+                "env": {
+                    "MODE": "release"
+                }
+            },
+            "problemMatcher": [],
+            "dependsOn": [
+                "Build (Release)"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "Build (Docs)",
+            "command": "scuba",
+            "args": [
+                "docs"
+            ],
+            "group": "none"
         }
     ]
 }

@@ -1,0 +1,18 @@
+name: Signal Docs
+
+on:
+  push:
+    branches: [ 'dev' ]
+
+jobs:
+  build:
+    name: Dispatch to `XyrisOS/docs`
+    runs-on: ubuntu-latest
+    steps:
+      - name: Emit repository_dispatch
+        uses: mvasigh/dispatch-action@main
+        with:
+          token: ${{ secrets.DOCS_PAT }}
+          repo: docs
+          owner: XyrisOS
+          event_type: push_dev

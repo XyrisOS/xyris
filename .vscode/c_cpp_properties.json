@@ -1,15 +1,19 @@
 {
     "configurations": [
         {
-            "name": "Linux",
-            "defines": [],
+            "name": "Xyris i686",
+            "defines": [
+                "__i686__"
+            ],
             "compilerPath": "/usr/bin/gcc",
             "includePath": [
                 "${default}",
-                "${workspaceFolder}/sysroot/usr/include/kernel/**"
+                "${workspaceFolder}/Kernel/",
+                "${workspaceFolder}/Thirdparty/",
+                "${workspaceFolder}/Tests/"
             ],
-            "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "gcc-x86"
         }
     ],

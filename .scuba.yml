@@ -1,1 +1,47 @@
-image: docker.pkg.github.com/panix-os-dev-team/panix/panixbuild:1.0.0
+# Note: All running tasks have been removed and were migrated to VSCode tasks that
+#       require Qemu to be installed on the host system. This helps reduce the total
+#       size of the Docker image and provide you with more choice.
+image: ghcr.io/xyrisos/xyris-build/xyris-build:3.5.0
+aliases:
+    # Building
+    build: make -j$(nproc) all
+    debug:
+      environment:
+        MODE: debug
+      script: make -j$(nproc)
+    release:
+      environment:
+        MODE: release
+      script: make -j$(nproc)
+    # Testing
+    test:
+      script:
+        - make -j$(nproc) unit-test
+        - ./Distribution/unit-test
+    # Cleaning
+    clean: make clean
+    test-clean: make clean-tests
+    # Distribution
+    img-debug:
+      environment:
+        IMGTYPE: img
+        MODE: debug
+      script: make dist
+    img-release:
+      environment:
+        IMGTYPE: img
+        MODE: release
+      script: make dist
+    iso-debug:
+      environment:
+        IMGTYPE: iso
+        MODE: debug
+      script: make dist
+    iso-release:
+      environment:
+        IMGTYPE: iso
+        MODE: release
+      script: make dist
+    # Documentation
+    docs:
+      script: make docs
