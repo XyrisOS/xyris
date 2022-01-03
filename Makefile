@@ -20,9 +20,9 @@ export REPO_URL   := "https://git.io/JWjEx"
 # Xyris Version
 export GIT_COMMIT := "$(shell git describe --abbrev=8 --dirty --always --tags)"
 export VER_MAJOR  := "0"
-export VER_MINOR  := "4"
+export VER_MINOR  := "5"
 export VER_PATCH  := "0"
-export VER_NAME   := "Phoenix"
+export VER_NAME   := "Tengu"
 # Build output types
 export MODE       ?= debug
 export IMGTYPE    ?= img
