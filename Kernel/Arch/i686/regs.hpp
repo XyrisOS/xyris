@@ -21,7 +21,7 @@ struct registers {
     uint32_t edi, esi, ebp, ignored, ebx, edx, ecx, eax; /* Pushed by pusha. */
     uint32_t int_num, err_code;                          /* Interrupt number and error code (if applicable) */
     uint32_t eip, cs, eflags, esp, ss;                   /* Pushed by the processor automatically */
-};
+} __attribute__((packed));
 
 #ifdef __cplusplus
 namespace Registers {
@@ -43,12 +43,12 @@ struct CR0
     uint32_t nonWriteThrough    : 1;    // Disable write through caching?
     uint32_t cacheDisable       : 1;    // Cache disabled?
     uint32_t pagingEnable       : 1;    // Enable paging
-};
+} __attribute__((packed));
 
 struct CR2
 {
     uint32_t pageFaultAddr      : 32;   // Address where page fault occured
-};
+} __attribute__((packed));
 
 struct CR3
 {
@@ -57,13 +57,19 @@ struct CR3
    uint32_t cacheDisable        : 1;    // Cache disable
    uint32_t ignoredB            : 7;    // Ignored
    uint32_t pageDir             : 20;   // Page directory physical address
-};
+} __attribute__((packed));
 
 // A pointer to the array of interrupt handlers. Assembly instruction 'lidt' will read it
-struct [[gnu::packed]] IDTR {
+struct IDTR {
     uint16_t size   : 16;
     uint32_t base   : 32;
-};
+} __attribute__((packed));
+
+// A pointer to the global descriptor table. Assembly 'lgdt' will read it.
+struct GDTR {
+    uint16_t size   : 16;
+    uint32_t base   : 32;
+} __attribute__((packed));
 
 __attribute__((always_inline))
 static inline struct CR0 readCR0(void)

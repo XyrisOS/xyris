@@ -20,20 +20,21 @@ struct Registers::IDTR idtr;
 
 void setGate(int n, uint32_t handler_addr)
 {
-    idt[n].low_offset = (uint16_t)((handler_addr) & 0xFFFF);
-    idt[n].selector = {
+    struct Gate* gate = &idt[n];
+    gate->low_offset = (uint16_t)((handler_addr) & 0xFFFF);
+    gate->selector = {
         .privilege = 0,
         .table = 0,
         .index = 1,
     };
-    idt[n].reserved = 0;
-    idt[n].flags = {
+    gate->reserved = 0;
+    gate->flags = {
         .type = INTERRUPT_GATE_32_BIT,
         .offset = 0,
         .privilege = 0,
         .present = 1,
     };
-    idt[n].high_offset = (uint16_t)(((handler_addr) >> 16) & 0xFFFF);
+    gate->high_offset = (uint16_t)(((handler_addr) >> 16) & 0xFFFF);
 }
 
 void init()

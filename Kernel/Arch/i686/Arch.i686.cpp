@@ -110,7 +110,7 @@ namespace Arch::CPU {
 void init()
 {
     criticalRegion([]() {
-        gdt_install();      // Initialize the Global Descriptor Table
+        GDT::init();        // Initialize the Global Descriptor Table
         Interrupts::init(); // Initialize Interrupt Service Requests
         timer_init(1000);   // Programmable Interrupt Timer (1ms)
     });

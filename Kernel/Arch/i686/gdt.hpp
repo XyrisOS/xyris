@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <Arch/i686/Arch.i686.hpp>
 
+namespace GDT {
+
 /**
  * @brief Thanks to the OSDev Wiki for this solution. We had previously
  * used the James Molloy / os-tutorial repo version but it was a lot more
@@ -64,28 +66,21 @@
  * @brief GDT Code & Data Segment Selector Struct
  *
  */
-struct [[gnu::packed]] gdt_entry {
+struct [[gnu::packed]] Entry {
     // These are descriptors in the GDT that have S=1. Bit 3 of "type" indicates whether it's (0) Data or (1) Code.
     // See https://wiki.osdev.org/Descriptors#Code.2FData_Segment_Descriptors for details on code & data segments.
-    uint16_t limit_low;     // Limit
-    uint16_t base_low;      // Base
-    uint8_t  base_middle;   // Base
-    uint8_t  access;        // Type
-    uint8_t  granularity;   // Bits 0..3: limit, Bits 4..7: additional data/code attributes
-    uint8_t  base_high;     // Base
-};
-
-/**
- * @brief GDT Pointer Struct
- *
- */
-struct [[gnu::packed]] gdt_ptr {
-    unsigned short limit;   // The upper 16 bits of all selector limits
-    unsigned int base;      // The address of the first gdt_segment
+    uint16_t limit_low      : 16;   // Limit
+    uint16_t base_low       : 16;   // Base
+    uint8_t  base_middle    : 8;    // Base
+    uint8_t  access         : 8;    // Type
+    uint8_t  flags          : 8;    // Bits 0..3: limit, Bits 4..7: additional data/code attributes
+    uint8_t  base_high      : 8;    // Base
 };
 
 /**
  * @brief Setup and install the GDT onto the system.
  *
  */
-extern void gdt_install();
+void init();
+
+} // !namespace GDT
