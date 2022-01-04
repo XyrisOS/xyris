@@ -217,6 +217,7 @@ static inline void setPageDirectory(uintptr_t pageDirPtr)
         "mov %0, %%cr3"
         :
         : "b" (pageDirPtr)
+        : "memory"
     );
 }
 
