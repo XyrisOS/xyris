@@ -19,34 +19,112 @@ namespace GDT {
 struct Entry gdt[ARCH_GDT_MAX_ENTRIES];
 struct Registers::GDTR gdtr;
 
-static void setGate(uint8_t num, uint64_t base, uint64_t limit, uint16_t flags)
-{
-    uint64_t descriptor = 0;
-
-    // Create the high 32 bit segment
-    descriptor = base & 0xFF000000;          // base direct map
-    descriptor |= (base >> 16) & 0x000000FF; // base 23-16 : 7-0
-    descriptor |= (flags << 8) & 0x00F0FF00; // flags 16-11 : 24-19 7-0 : 15-8
-    descriptor |= limit & 0x000F0000;        // limit direct map
-    // Shift by 32 to move to the lower half of the section
-    descriptor <<= 32;
-    // Create the low 32 bit segment
-    descriptor |= (base << 16) & 0xFFFF0000; // base 15-0 : 31-16
-    descriptor |= limit & 0x0000FFFF;        // limit direct map
-    // Copy the descriptor value into our GDT entries array
-    memcpy(&gdt[num], &descriptor, sizeof(uint64_t));
-}
-
 void init()
 {
+    uint8_t gdtIndex = 0;
+    const union Base nullSegmentBase = { .value = 0 };
+    const union Limit nullSegmentLimit = { .value = 0 };
+    gdt[gdtIndex++] = {
+        .limit_low = nullSegmentLimit.section.low,
+        .base_low = nullSegmentBase.section.low,
+        .accessed = 0,
+        .rw = 0,
+        .dc = 0,
+        .executable = 0,
+        .system = 0,
+        .privilege = 0,
+        .present = 0,
+        .limit_high = nullSegmentLimit.section.high,
+        .reserved = 0,
+        .longMode = 0,
+        .size = 0,
+        .granulatity = 0,
+        .base_high = nullSegmentBase.section.high,
+    };
+
+    const union Base kernelCodeBase = { .value = 0 };
+    const union Limit kernelCodeLimit = { .value = 0x000FFFFF };
+    gdt[gdtIndex++] = {
+        .limit_low = kernelCodeLimit.section.low,
+        .base_low = kernelCodeBase.section.low,
+        .accessed = 0,
+        .rw = 1,
+        .dc = 0,
+        .executable = 1,
+        .system = 1,
+        .privilege = 0,
+        .present = 1,
+        .limit_high = kernelCodeLimit.section.high,
+        .reserved = 0,
+        .longMode = 0,
+        .size = 1,
+        .granulatity = 1,
+        .base_high = kernelCodeBase.section.high,
+    };
+
+    const union Base kernelDataBase = { .value = 0 };
+    const union Limit kernelDataLimit = { .value = 0x000FFFFF };
+    gdt[gdtIndex++] = {
+        .limit_low = kernelDataLimit.section.low,
+        .base_low = kernelDataBase.section.low,
+        .accessed = 0,
+        .rw = 1,
+        .dc = 0,
+        .executable = 0,
+        .system = 1,
+        .privilege = 0,
+        .present = 1,
+        .limit_high = kernelDataLimit.section.high,
+        .reserved = 0,
+        .longMode = 0,
+        .size = 1,
+        .granulatity = 1,
+        .base_high = kernelDataBase.section.high,
+    };
+
+    const union Base userCodeBase = { .value = 0 };
+    const union Limit userCodeLimit = { .value = 0x000FFFFF };
+    gdt[gdtIndex++] = {
+        .limit_low = userCodeLimit.section.low,
+        .base_low = userCodeBase.section.low,
+        .accessed = 0,
+        .rw = 1,
+        .dc = 0,
+        .executable = 1,
+        .system = 1,
+        .privilege = 3,
+        .present = 1,
+        .limit_high = userCodeLimit.section.high,
+        .reserved = 0,
+        .longMode = 0,
+        .size = 1,
+        .granulatity = 1,
+        .base_high = userCodeBase.section.high,
+    };
+
+    const union Base userDataBase = { .value = 0 };
+    const union Limit userDataLimit = { .value = 0x000FFFFF };
+    gdt[gdtIndex++] = {
+        .limit_low = userDataLimit.section.low,
+        .base_low = userDataBase.section.low,
+        .accessed = 0,
+        .rw = 1,
+        .dc = 0,
+        .executable = 0,
+        .system = 1,
+        .privilege = 3,
+        .present = 1,
+        .limit_high = userDataLimit.section.high,
+        .reserved = 0,
+        .longMode = 0,
+        .size = 1,
+        .granulatity = 1,
+        .base_high = userDataBase.section.high,
+    };
+
+    // Update GDT register and flush
     gdtr.size = sizeof(gdt) - 1;
     gdtr.base = (uint32_t)&gdt;
-
-    setGate(0, 0, 0, 0);                     // Null segment
-    setGate(1, 0, 0x000FFFFF, GDT_CODE_PL0); // Kernel code segment
-    setGate(2, 0, 0x000FFFFF, GDT_DATA_PL0); // Kernel data segment
-    setGate(3, 0, 0x000FFFFF, GDT_CODE_PL3); // User mode code segment
-    setGate(4, 0, 0x000FFFFF, GDT_DATA_PL3); // User mode data segment
 
     gdt_flush((uint32_t)&gdtr);
 }
