@@ -8,6 +8,7 @@
  * @copyright Copyright the Xyris Contributors (c) 2022
  *
  */
+#pragma once
 #include <stdint.h>
 
 extern "C" {
