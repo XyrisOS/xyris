@@ -24,16 +24,17 @@ enum GateType : uint8_t
     TRAP_GATE_32_BIT        = 0xF,
 };
 
-struct Segment {
+struct [[gnu::packed]] Segment {
     uint8_t privilege   : 2;        // Ring privilege level
     uint8_t table       : 1;        // 1 = LDT entry, 0 = GDT entry
     uint16_t index      : 13;       // Index into table (LDT or GDT)
 };
+static_assert(sizeof(struct Segment) == 2);
 
-struct Gate {
-    uint16_t low_offset             : 16;   // Lower 16 bits of handler function address
-    struct Segment selector;                // Kernel segment selector
-    uint8_t reserved                : 8;    // Should always be 0
+struct [[gnu::packed]] Gate {
+    uint16_t low_offset     : 16;   // Lower 16 bits of handler function address
+    struct Segment selector;        // Kernel segment selector
+    uint8_t reserved        : 8;    // Should always be 0
     struct
     {
         enum GateType type  : 4;    // Interrupt or Trap, 16 or 32 bit
@@ -43,6 +44,7 @@ struct Gate {
     } flags;
     uint16_t high_offset    : 16;   // Higher 16 bits of handler function address
 };
+static_assert(sizeof(struct Gate) == 8);
 
 /**
  * @brief Sets the handler function (via address) for a specific IDT.

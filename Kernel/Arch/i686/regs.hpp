@@ -71,6 +71,15 @@ struct GDTR {
     uint32_t base   : 32;
 } __attribute__((packed));
 
+// Structure compile-time size checks
+#ifdef __cplusplus
+static_assert(sizeof(struct CR0) == 4);
+static_assert(sizeof(struct CR2) == 4);
+static_assert(sizeof(struct CR3) == 4);
+static_assert(sizeof(struct IDTR) == 6);
+static_assert(sizeof(struct GDTR) == 6);
+#endif
+
 __attribute__((always_inline))
 static inline struct CR0 readCR0(void)
 {
