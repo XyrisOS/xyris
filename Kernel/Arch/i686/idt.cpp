@@ -21,7 +21,8 @@ struct Registers::IDTR idtr;
 void setGate(int n, uint32_t handler_addr)
 {
     struct Gate* gate = &idt[n];
-    gate->low_offset = (uint16_t)((handler_addr) & 0xFFFF);
+    union Offset offset = { .value = handler_addr };
+    gate->offset_low = offset.section.low;
     gate->selector = {
         .privilege = 0,
         .table = 0,
@@ -34,7 +35,7 @@ void setGate(int n, uint32_t handler_addr)
         .privilege = 0,
         .present = 1,
     };
-    gate->high_offset = (uint16_t)(((handler_addr) >> 16) & 0xFFFF);
+    gate->offset_high = offset.section.high;
 }
 
 void init()

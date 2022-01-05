@@ -31,8 +31,17 @@ struct [[gnu::packed]] Segment {
 };
 static_assert(sizeof(struct Segment) == 2);
 
+union Offset {
+    struct [[gnu::packed]] OffsetSections
+    {
+        uint16_t low    : 16;
+        uint16_t high   : 16;
+    } section;
+    uint32_t value;
+};
+
 struct [[gnu::packed]] Gate {
-    uint16_t low_offset     : 16;   // Lower 16 bits of handler function address
+    uint16_t offset_low     : 16;   // Lower 16 bits of handler function address
     struct Segment selector;        // Kernel segment selector
     uint8_t reserved        : 8;    // Should always be 0
     struct
@@ -42,7 +51,7 @@ struct [[gnu::packed]] Gate {
         uint8_t privilege   : 2;    // Rings allowed to access via `INT` instruction (Ignored by hardware interrupts)
         uint8_t present     : 1;    // Gate is present
     } flags;
-    uint16_t high_offset    : 16;   // Higher 16 bits of handler function address
+    uint16_t offset_high    : 16;   // Higher 16 bits of handler function address
 };
 static_assert(sizeof(struct Gate) == 8);
 
