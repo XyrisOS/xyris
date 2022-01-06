@@ -71,7 +71,7 @@ void registersPrintInformation(struct registers* regs)
         log_all("Error code: %lu", regs->err_code);
     }
 
-    if (regs->int_num == ISR_PAGE_FAULT) {
+    if (regs->int_num == Interrupts::EXCEPTION_PAGE_FAULT) {
         Registers::CR2 cr2 = Registers::readCR2();
         int missing = regs->err_code & 0x1;  // Page not present
         int rw = regs->err_code & 0x2;       // Write operation?
@@ -110,8 +110,8 @@ namespace Arch::CPU {
 void init()
 {
     criticalRegion([]() {
-        gdt_install();      // Initialize the Global Descriptor Table
-        isr_install();      // Initialize Interrupt Service Requests
+        GDT::init();        // Initialize the Global Descriptor Table
+        Interrupts::init(); // Initialize Interrupt Service Requests
         timer_init(1000);   // Programmable Interrupt Timer (1ms)
     });
 }

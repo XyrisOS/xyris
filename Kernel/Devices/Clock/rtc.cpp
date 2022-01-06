@@ -45,13 +45,13 @@ void init()
     // Initializer
     writeByte(RTC_CMOS_PORT, 0x8A);
     writeByte(RTC_DATA_PORT, 0x20);
-    // Enable IRQ 8 - Make sure interrupts are disabled beforehand
+    // Enable hardware interrupt 8 - Make sure interrupts are disabled beforehand
     writeByte(RTC_CMOS_PORT, 0x8B);
     char prev = readByte(RTC_DATA_PORT);
     writeByte(RTC_CMOS_PORT, 0x8B);
     writeByte(RTC_DATA_PORT, (prev | 0x40));
-    // Register our callback function with IRQ 8
-    register_interrupt_handler(IRQ8, callback);
+    // Register our callback function with hardware interrupt 8
+    Interrupts::registerHandler(Interrupts::INTERRUPT_8, callback);
 }
 
 static void callback(struct registers* regs)

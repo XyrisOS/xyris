@@ -9,24 +9,46 @@
  *
  */
 #include <Arch/i686/idt.hpp>
+#include <Arch/i686/regs.hpp>
 
-struct idt_gate idt[IDT_ENTRIES];
-struct idt_register idt_reg;
+#define ARCH_IDT_MAX_ENTRIES 256
 
-void idt_set_gate(int n, uint32_t handler_addr) {
-    idt[n].low_offset = (uint16_t)((handler_addr) & 0xFFFF);
-    idt[n].selector = KERNEL_CS;
-    idt[n].always0 = 0;
-    idt[n].flags = 0x8E; //    1 -> present bit,
-                         //   00 -> ring 0 privilege
-                         //    0 -> interrupt/trap gate
-                         // 1110 -> type: 32-bit interrupt gate
-    idt[n].high_offset = (uint16_t)(((handler_addr) >> 16) & 0xFFFF);
+namespace IDT {
+
+struct Gate idt[ARCH_IDT_MAX_ENTRIES];
+struct Registers::IDTR idtr;
+
+void setGate(int n, uint32_t handler_addr)
+{
+    struct Gate* gate = &idt[n];
+    union Offset offset = { .value = handler_addr };
+    gate->offset_low = offset.section.low;
+    gate->selector = {
+        .privilege = 0,
+        .table = 0,
+        .index = 1,
+    };
+    gate->reserved = 0;
+    gate->flags = {
+        .type = INTERRUPT_GATE_32_BIT,
+        .offset = 0,
+        .privilege = 0,
+        .present = 1,
+    };
+    gate->offset_high = offset.section.high;
 }
 
-void load_idt() {
-    idt_reg.base = (uint32_t) &idt;
-    idt_reg.limit = IDT_ENTRIES * sizeof(struct idt_gate) - 1;
-    /* Don't make the mistake of loading &idt -- always load &idt_reg */
-    asm volatile("lidt (%0)" : : "r" (&idt_reg) : "memory");
+void init()
+{
+    // Update the IDT table
+    idtr.size = sizeof(idt) - 1;
+    idtr.base = (uint32_t)&idt;
+    // Load the IDT table into the IDT register
+    asm volatile(
+        "lidt (%0)"
+        :
+        : "r"(&idtr)
+        : "memory");
 }
+
+} // !namespace IDT

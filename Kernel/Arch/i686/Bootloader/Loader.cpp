@@ -10,13 +10,9 @@
  */
 #include <Arch/Arch.hpp>
 #include <Arch/i686/Bootloader/Loader.hpp>
+#include <Arch/i686/Assembly/crti.h>
 #include <Panic.hpp>
 #include <Support/sections.hpp>
-
-/* C/C++ runtime initialization & teardown. See crti.s and crtn.s for details
-   https://wiki.osdev.org/Calling_Global_Constructors */
-extern "C" void _init();
-extern "C" void _fini();
 
 /**
  * @brief Bootloader agnostic pre-kernel entry initialization. Stage2 should not
