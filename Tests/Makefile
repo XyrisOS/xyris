@@ -1,8 +1,8 @@
-#  ____             _        _____         _
-# |  _ \ __ _ _ __ (_)_  __ |_   _|__  ___| |_ ___
-# | |_) / _` | '_ \| \ \/ /   | |/ _ \/ __| __/ __|
-# |  __/ (_| | | | | |>  <    | |  __/\__ \ |_\__ \.
-# |_|   \__,_|_| |_|_/_/\_\   |_|\___||___/\__|___/
+#  _____         _
+# |_   _|__  ___| |_ ___
+#   | |/ _ \/ __| __/ __|
+#   | |  __/\__ \ |_\__ \.
+#   |_|\___||___/\__|___/
 #
 # Compiles the unit test source code located in the tests folder.
 # TODO: This makefile does not properly account for main.cpp not
@@ -22,7 +22,7 @@ OUTPUT      := unit-test
 BUILD_DIR   := $(BUILD_DIR)/$(OUTPUT)
 CATCH2_DIR  := $(THIRDPARTY_DIR)/catch2
 CATCH2_HDR  := $(CATCH2_DIR)/catch.hpp
-CATCH2_URL  := "https://api.github.com/repos/catchorg/Catch2/releases/latest"
+CATCH2_URL  := "https://github.com/catchorg/Catch2/releases/download/v2.13.8/catch.hpp"
 
 # Use the host's copy of GCC instead of the i686 cross compiler
 # since it does not have a standard library (if compiled properly)
@@ -63,11 +63,7 @@ ifeq (,$(wildcard $(CATCH2_HDR)))
 # Make directory, cd into it, and download
 	@printf "$(COLOR_COM)(GET)$(COLOR_NONE)\t$(CATCH2_HDR)\n"
 	@mkdir -p $(CATCH2_DIR)
-	@curl -s $(CATCH2_URL) \
-	| grep "catch.hpp" \
-	| cut -d : -f 2,3 \
-	| tr -d \" \
-	| wget -P $(CATCH2_DIR) -qi -
+	@wget -qP $(CATCH2_DIR) $(CATCH2_URL)
 endif
 
 # *************************
