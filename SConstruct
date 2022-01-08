@@ -14,7 +14,7 @@ import os
 env = Environment(
     tools=[
         'default',
-        'echfs',
+        'ext2'
     ],
     toolpath=[
         'Scones',
@@ -162,7 +162,7 @@ for target_env in targets:
         exports={'env': target_env},
     )
     target_env.Install('$INSTALL_DIR', kernel)
-    target_env.EchfsImage(
+    target_env.Ext2Image(
             '$INSTALL_DIR/xyris',
             [
                 '#Kernel/Arch/$ARCH/Bootloader/limine.cfg',

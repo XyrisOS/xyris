@@ -197,7 +197,6 @@ $(PRODUCTS_DIR)/$(MODE)/$(IMG): $(PRODUCTS_DIR)/$(MODE)/$(KERNEL) $(THIRDPARTY_D
 	@parted -s $@ mklabel msdos
 	@parted -s $@ mkpart primary 1 100%
 	@parted -s $@ set 1 boot on
-	@parted -l $@
 # Create the ext2 partition using mke2fs
 # The ext2 partition must be (at least) 2048 * 512 bytes smaller than the full image
 	@dd if=/dev/zero bs=1M count=0 seek=2 of=$@.ext2 2> /dev/null
