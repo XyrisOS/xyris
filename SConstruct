@@ -24,10 +24,10 @@ env = Environment(
     },
     BUILD_DIR='#Build/$ARCH/$MODE',
     INSTALL_DIR='#Distribution/$ARCH/$MODE',
-    REPO_URL='https://github.com/XyrisOS/xyris',
+    REPO_URL='https://git.io/JWjEx',
     GIT_COMMIT='TODO',
     VERSION_ID=(0, 5, 0),
-    VERSION_NAME='Pheonix',
+    VERSION_NAME='Tengu',
 
     # *******************
     # * Toolchain Flags *
@@ -66,13 +66,14 @@ env = Environment(
         '-nostdlib',
         '-nodefaultlibs',
         '-ffreestanding',
-        '-fstack-protector-all',
+        '-fstack-protector',
         '-fno-builtin',
         '-fno-omit-frame-pointer',
         '${CCWARNINGS}'
     ],
     # C++ only flags
     CXXFLAGS=[
+        '-std=c++20',
         '-fpermissive',
         '-fno-rtti',
         '-fno-exceptions',
@@ -80,6 +81,7 @@ env = Environment(
     ],
     LINKFLAGS=[
         '-nostdlib',
+        '-lgcc',
     ],
     CPPDEFINES={
         'REPO_URL': '\\"$REPO_URL\\"',
@@ -122,7 +124,9 @@ env.Append(
 # *******************
 
 i686 = env.Clone(
-    tools=['nasm'],
+    tools=[
+        'nasm'
+    ],
     ARCH='i686',
     CXX='i686-elf-g++',
     CC='i686-elf-gcc',
@@ -131,7 +135,13 @@ i686 = env.Clone(
 )
 
 i686.Append(
-    ASFLAGS='-felf32',
+    ASFLAGS=[
+        '-felf32',
+    ],
+    CCFLAGS=[
+	    '-mno-avx',
+	    '-mno-sse',
+    ]
 )
 
 # ************************
@@ -152,14 +162,18 @@ for target_env in targets:
         'Libraries/liballoc/SConscript',
         variant_dir='$BUILD_DIR/liballoc',
         duplicate=0,
-        exports={'env': target_env},
+        exports={
+            'env': target_env
+        },
     )
     target_env.Install('$INSTALL_DIR', liballoc)
     kernel = target_env.SConscript(
         'Kernel/SConscript',
         variant_dir='$BUILD_DIR/kernel',
         duplicate=0,
-        exports={'env': target_env},
+        exports={
+            'env': target_env
+        },
     )
     target_env.Install('$INSTALL_DIR', kernel)
     target_env.Ext2Image(

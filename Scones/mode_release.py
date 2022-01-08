@@ -6,7 +6,6 @@ def generate(env):
         CPPDEFINES={'RELEASE': None},
         CCFLAGS=[
             '-O3',
-            '-mno-avx',
         ],
     )
 

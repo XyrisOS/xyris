@@ -133,8 +133,7 @@ export ASFLAGS :=       \
 export LDFLAGS :=       \
 	${XYRIS_LDFLAGS}    \
 	-nostdlib           \
-	-lgcc               \
-	-L.
+	-lgcc
 
 # ************************
 # * Kernel Build Targets *

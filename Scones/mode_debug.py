@@ -4,7 +4,9 @@ def generate(env):
     )
     env.Append(
         CPPDEFINES={'DEBUG': None},
-        CCFLAGS=['-ggdb3'],
+        CCFLAGS=[
+            '-ggdb3'
+        ],
     )
 
 def exists(env):
