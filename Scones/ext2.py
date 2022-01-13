@@ -16,13 +16,8 @@ def generate(env):
     assert(exists(env))
 
     builder = Builder(generator=ext2_image_generator, suffix='.img')
-    env.Append(BUILDERS={'Ext2Image': builder})
-    env.SetDefault(
-            # Tools
-            PARTED='parted',
-            PARTED_FLAGS=[
-                '-s'
-            ],
+    env.Append(
+        BUILDERS={'Ext2Image': builder}
     )
 
 def dd_file_generator(target: File, size: int):
@@ -40,7 +35,7 @@ def partition_table_generator(target: File):
     actions = [
             dd_file_generator(target, table_size_mb),
             Action(
-                '$PARTED $PARTED_FLAGS {} mklabel msdos'.format(
+                'parted -s {} mklabel msdos'.format(
                     target.get_path(),
                 ),
                 '  (PARTED) mklabel {}'.format(
@@ -48,7 +43,7 @@ def partition_table_generator(target: File):
                 )
             ),
             Action(
-                '$PARTED $PARTED_FLAGS {} mkpart primary 1 100%'.format(
+                'parted -s {} mkpart primary 1 100%'.format(
                     target.get_path(),
                 ),
                 '  (PARTED) mkpart {}'.format(
@@ -56,7 +51,7 @@ def partition_table_generator(target: File):
                 )
             ),
             Action(
-                '$PARTED $PARTED_FLAGS {} set 1 boot on'.format(
+                'parted -s {} set 1 boot on'.format(
                     target.get_path(),
                 ),
                 '  (PARTED) set boot {}'.format(
@@ -110,6 +105,16 @@ def dd_file_merger(target, ext2):
         ),
     )
 
+def limine_install(target: File):
+    return Action(
+        '$LIMINE_INSTALL {}'.format(
+            target.get_path(),
+        ),
+        '  (LIMINE) {}'.format(
+            target.get_path()
+        )
+    )
+
 def ext2_image_generator(target, source, env, for_signature):
     assert(len(target) == 1)
     assert(len(source) == 3)
@@ -119,10 +124,10 @@ def ext2_image_generator(target, source, env, for_signature):
     kernel = source[2]
     target_img = target[0]
     target_ext2 = File(disk_image.get_path() + '.ext2')
-    actions = [
+    actions = Flatten([
             partition_table_generator(target_img),
             ext2_partition_generator(target_ext2, limine_cfg, limine_sys, kernel),
             dd_file_merger(target_img, target_ext2),
-            Action('$LIMINE_INSTALL $TARGET', '  (LIMINE) $TARGET'),
-    ]
-    return Flatten(actions)
+            limine_install(target_img),
+    ])
+    return actions

@@ -96,7 +96,7 @@ env = Environment(
         '#Thirdparty',
         '#Libraries',
     ],
-    LIMINE_INSTALL='#Thirdparty/limine/limine-install-linux-x86_32',
+    LIMINE_INSTALL=File('#Thirdparty/limine/limine-install-linux-x86_32'),
 
     # ******************************
     # * Compiler Output Formatting *
