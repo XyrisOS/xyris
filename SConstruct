@@ -15,9 +15,9 @@ import subprocess
 
 def get_git_commit():
     """Returns the current git version as a string."""
-    return str(subprocess.check_output(
+    return subprocess.check_output(
         ['git', 'describe', '--abbrev=8', '--dirty', '--always', '--tags']
-    ))
+    ).decode().rstrip()
 
 env = Environment(
     tools=[
