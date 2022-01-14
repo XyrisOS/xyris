@@ -10,6 +10,14 @@
 # Designed by Keeton Feavel & Micah Switzer
 # Copyright the Xyris Contributors (c) 2019
 import os
+import subprocess
+
+
+def get_git_commit():
+    """Returns the current git version as a string."""
+    return str(subprocess.check_output(
+        ['git', 'describe', '--abbrev=8', '--dirty', '--always', '--tags']
+    ))
 
 env = Environment(
     tools=[
@@ -25,7 +33,7 @@ env = Environment(
     BUILD_DIR='#Build/$ARCH/$MODE',
     INSTALL_DIR='#Distribution/$ARCH/$MODE',
     REPO_URL='https://git.io/JWjEx',
-    GIT_COMMIT='TODO',
+    GIT_COMMIT=get_git_commit(),
     VERSION_ID=(0, 5, 0),
     VERSION_NAME='Tengu',
 
