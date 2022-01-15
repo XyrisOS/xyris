@@ -193,3 +193,12 @@ for target_env in targets:
             ],
             ECHFSFLAGS=['-m', '-p0']
     )
+    tests = target_env.SConscript(
+        'Tests/SConscript',
+        variant_dir='$BUILD_DIR/tests',
+        duplicate=0,
+        exports={
+            'env': target_env
+        }
+    )
+    target_env.Install('$INSTALL_DIR', tests)

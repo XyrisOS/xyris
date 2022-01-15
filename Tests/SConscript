@@ -1,0 +1,52 @@
+from os import walk
+from os.path import exists
+import urllib.request
+import subprocess
+Import('env')
+
+catch2_header_url = 'https://github.com/catchorg/Catch2/releases/download/v2.13.8/catch.hpp'
+
+env = Environment(
+    # FIXME: Use new environment / toolchain for unit tests
+    CXX='g++',
+    CC='gcc',
+    CXXFLAGS=[
+        '-fanalyzer',
+        '-fprofile-arcs',
+        '-ftest-coverage',
+    ],
+    CPPDEFINES={
+        'TESTING': None
+    },
+    CPPPATH=[
+        '#Tests',
+        '#Kernel',
+        '#Thirdparty',
+    ],
+    LINKFLAGS=[
+        '--coverage',
+        '-lstdc++',
+        '-lgcov',
+        '-lgcc',
+        '-lm',
+    ],
+)
+
+catch2_header = env.Command(
+    '#Thirdparty/catch2/',
+    None,
+    'wget -qP $TARGET {}'.format(catch2_header_url)
+)
+sources = [
+    Glob(path + '/*.cpp') + Glob(path + '/*.c') for (path, name, files) in walk('.')
+]
+
+tests = env.Program(
+    'tests',
+    Flatten([
+        Flatten(sources),
+        catch2_header
+    ])
+)
+
+Return('tests')
