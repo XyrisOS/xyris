@@ -1,4 +1,4 @@
-from os import walk
+import os
 import subprocess
 Import('env')
 
@@ -12,26 +12,60 @@ env.Append(
     ],
 )
 
-crti = env.File('Arch/$ARCH/Assembly/crti.s')
-crtn = env.File('Arch/$ARCH/Assembly/crtn.s')
+# Toolchain should supply crtbegin and crtend
 crtbegin = subprocess.check_output(
-        [env.subst('$CC'), '-print-file-name=crtbegin.o']
+    [env.subst('$CC'), '-print-file-name=crtbegin.o']
 ).decode().rstrip()
 crtend = subprocess.check_output(
-        [env.subst('$CC'), '-print-file-name=crtend.o']
+    [env.subst('$CC'), '-print-file-name=crtend.o']
 ).decode().rstrip()
-sources = [
-    Glob(path + '/*.cpp') + Glob(path + '/*.c') + Glob(path + '/*.s', exclude=path + '/crt?.s') for (path, name, files) in walk('.')
+
+# All source file extensions used by the kernel
+extensions = [
+    '.c',
+    '.cpp',
+    '.s',
 ]
+
+def glob(root: str, extensions: list):
+    """
+    Finds all files in a root directory matching the provided file extensions
+
+    Returns a flattened list of File nodes
+    """
+    sources = []
+    for (dirpath, dirs, files) in os.walk(root):
+        for extension in extensions:
+            sources += Glob(dirpath + '/*' + extension)
+    return Flatten(sources)
+
+def glob_with_ignored_dirs(root: str, extensions: list, ignored_dirs: list):
+    """
+    Finds all files in a root directory matching the provided file extensions while
+    skipping any file within ignored directories.
+
+    Returns a flattened list of File nodes
+    """
+    sources = []
+    for (dirpath, dirs, files) in os.walk(root):
+        for ignored_dir in ignored_dirs:
+            if not dirpath.startswith(ignored_dir):
+                for extension in extensions:
+                    sources += Glob(dirpath + '/*' + extension)
+    return Flatten(sources)
+
+# Gather architecture specific source
+arch_sources = glob('Arch', extensions)
+# Gather common kernel source
+common_sources = glob_with_ignored_dirs('.', extensions, ['./Arch'])
 
 kernel = env.Program(
     'kernel',
     Flatten([
-        crti,
-        crtbegin,
-        Flatten(sources),
         crtend,
-        crtn
+        crtbegin,
+        arch_sources,
+        common_sources
     ]),
     LIBS=['gcc', 'alloc'],
 )
