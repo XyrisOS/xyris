@@ -1,16 +1,28 @@
-from os import walk
-from os.path import exists
+import os
 Import('env')
 
-sources = [
-    Glob(path + '/*.cpp') + Glob(path + '/*.c') for (path, name, files) in walk('.')
+def glob(root: str, extensions: list):
+    """
+    Finds all files in a root directory matching the provided file extensions
+
+    Returns a flattened list of File nodes
+    """
+    sources = []
+    for (dirpath, dirs, files) in os.walk(root):
+        for extension in extensions:
+            sources += Glob(dirpath + '/*' + extension)
+    return Flatten(sources)
+
+extensions = [
+    '.c',
+    '.cpp',
 ]
+
+sources = glob(".", extensions)
 
 tests = env.Program(
     'tests',
-    Flatten([
-        Flatten(sources)
-    ])
+    sources
 )
 
 Return('tests')
