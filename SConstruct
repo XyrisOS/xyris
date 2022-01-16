@@ -193,12 +193,45 @@ for target_env in targets:
             ],
             ECHFSFLAGS=['-m', '-p0']
     )
-    tests = target_env.SConscript(
-        'Tests/SConscript',
-        variant_dir='$BUILD_DIR/tests',
-        duplicate=0,
-        exports={
-            'env': target_env
-        }
-    )
-    target_env.Install('$INSTALL_DIR', tests)
+
+
+catch2_header_url = 'https://github.com/catchorg/Catch2/releases/download/v2.13.8/catch.hpp'
+catch2_header = env.Command(
+    '#Thirdparty/catch2/catch.hpp',
+    None,
+    'wget -qP ${{TARGET.dir}} {}'.format(catch2_header_url)
+)
+
+test_env = Environment(
+    BUILD_DIR='#Build/Tests',
+    INSTALL_DIR='#Distribution/Tests',
+    CXXFLAGS=[
+        '-fprofile-arcs',
+        '-ftest-coverage',
+    ],
+    CPPDEFINES={
+        'TESTING': None
+    },
+    CPPPATH=[
+        '#Tests',
+        '#Kernel',
+        '#Thirdparty',
+    ],
+    LINKFLAGS=[
+        '--coverage',
+        '-lstdc++',
+        '-lgcov',
+        '-lgcc',
+        '-lm',
+    ],
+)
+
+tests = test_env.SConscript(
+    'Tests/SConscript',
+    variant_dir='$BUILD_DIR/tests',
+    duplicate=0,
+    exports={
+        'env': test_env
+    }
+)
+test_env.Install('$INSTALL_DIR', tests)
