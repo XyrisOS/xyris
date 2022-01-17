@@ -31,7 +31,7 @@ def glob(root: str, extensions: list):
     sources = []
     for (dirpath, dirs, files) in os.walk(root):
         for extension in extensions:
-            sources += Glob(dirpath + '/*' + extension)
+            sources.append(Glob(dirpath + '/*' + extension))
     return Flatten(sources)
 
 def glob_with_ignored_dirs(root: str, extensions: list, ignored_dirs: list):
@@ -46,7 +46,7 @@ def glob_with_ignored_dirs(root: str, extensions: list, ignored_dirs: list):
         for ignored_dir in ignored_dirs:
             if not dirpath.startswith(ignored_dir):
                 for extension in extensions:
-                    sources += Glob(dirpath + '/*' + extension)
+                    sources.append(Glob(dirpath + '/*' + extension))
     return Flatten(sources)
 
 # All source file extensions used by the kernel

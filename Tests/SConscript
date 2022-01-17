@@ -10,7 +10,7 @@ def glob(root: str, extensions: list):
     sources = []
     for (dirpath, dirs, files) in os.walk(root):
         for extension in extensions:
-            sources += Glob(dirpath + '/*' + extension)
+            sources.append(Glob(dirpath + '/*' + extension))
     return Flatten(sources)
 
 extensions = [
