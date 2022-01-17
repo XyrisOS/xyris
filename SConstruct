@@ -12,12 +12,14 @@
 import os
 import subprocess
 
-
 def get_git_commit():
     """Returns the current git version as a string."""
     return subprocess.check_output(
         ['git', 'describe', '--abbrev=8', '--dirty', '--always', '--tags']
     ).decode().rstrip()
+
+# Clear any default targets set by SCons
+Default(None)
 
 env = Environment(
     tools=[
@@ -33,6 +35,7 @@ env = Environment(
     },
     BUILD_DIR='#Build/$ARCH/$MODE',
     INSTALL_DIR='#Distribution/$ARCH/$MODE',
+    LIBPATH='$INSTALL_DIR',
     REPO_URL='https://git.io/JWjEx',
     GIT_COMMIT=get_git_commit(),
     VERSION_ID=(0, 5, 0),
@@ -131,6 +134,8 @@ kernel_targets = [
     ),
 ]
 
+# Build a list of all build targets associated with the kernel
+# Includes all dependencies, kernels, bootable images, etc.
 for target_env in kernel_targets:
     liballoc = target_env.SConscript(
         'Libraries/liballoc/SConscript',
@@ -140,6 +145,7 @@ for target_env in kernel_targets:
             'env': target_env
         },
     )
+    Default(liballoc)
     target_env.Install('$INSTALL_DIR', liballoc)
     kernel = target_env.SConscript(
         'Kernel/SConscript',
@@ -149,38 +155,37 @@ for target_env in kernel_targets:
             'env': target_env
         },
     )
+    Default(kernel)
     target_env.Install('$INSTALL_DIR', kernel)
-    target_env.Ext2Image(
+    image = target_env.Ext2Image(
             '$INSTALL_DIR/xyris',
             [
                 '#Kernel/Arch/$ARCH/Bootloader/limine.cfg',
                 '#Thirdparty/limine/limine.sys',
                 kernel
-            ],
-            ECHFSFLAGS=['-m', '-p0']
+            ]
     )
+    Default(image)
 
 # ***************************
 # * Unit Test Build Targets *
 # ***************************
 
-catch2_header_url = 'https://github.com/catchorg/Catch2/releases/download/v2.13.8/catch.hpp'
-catch2_header = env.Command(
-    '#Thirdparty/catch2/catch.hpp',
-    None,
-    'wget -qP ${{TARGET.dir}} {}'.format(catch2_header_url)
-)
-
-test_env = Environment(
+env = Environment(
+    tools=[
+        'default',
+        'colors'
+    ],
+    toolpath=[
+        'Scones',
+    ],
     BUILD_DIR='#Build/Tests',
     INSTALL_DIR='#Distribution/Tests',
+    LIBPATH='$INSTALL_DIR',
     CXXFLAGS=[
         '-fprofile-arcs',
         '-ftest-coverage',
     ],
-    CPPDEFINES={
-        'TESTING': None
-    },
     CPPPATH=[
         '#Tests',
         '#Kernel',
@@ -195,12 +200,21 @@ test_env = Environment(
     ],
 )
 
-tests = test_env.SConscript(
+catch2_header_url = 'https://github.com/catchorg/Catch2/releases/download/v2.13.8/catch.hpp'
+catch2_header = env.Command(
+    '#Thirdparty/catch2/catch.hpp',
+    None,
+    'wget -qP ${{TARGET.dir}} {}'.format(catch2_header_url)
+)
+
+tests = env.SConscript(
     'Tests/SConscript',
     variant_dir='$BUILD_DIR/tests',
     duplicate=0,
     exports={
-        'env': test_env
+        'env': env
     }
 )
-test_env.Install('$INSTALL_DIR', tests)
+env.Install('$INSTALL_DIR', tests)
+
+env.Alias('tests', [catch2_header, tests])
