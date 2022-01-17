@@ -22,11 +22,11 @@ def generate(env):
 
 def dd_file_generator(target: File, size: int):
     return Action(
-        'dd if=/dev/zero bs=1M count=0 seek={} of={} 2> /dev/null'.format(
+        'dd if=/dev/zero bs=1M count=0 seek={} of={} > /dev/null 2>&1'.format(
             size,
             target.get_path(),
         ),
-        '  (DD) {}'.format(
+        '  ${{COLOR_COM}}(DD)${{COLOR_NONE}} {}'.format(
             target.get_path(),
         ),
     )
@@ -38,7 +38,7 @@ def partition_table_generator(target: File):
                 'parted -s {} mklabel msdos'.format(
                     target.get_path(),
                 ),
-                '  (PARTED) mklabel {}'.format(
+                '  ${{COLOR_COM}}(PARTED)${{COLOR_NONE}} mklabel {}'.format(
                     target.get_path(),
                 )
             ),
@@ -46,7 +46,7 @@ def partition_table_generator(target: File):
                 'parted -s {} mkpart primary 1 100%'.format(
                     target.get_path(),
                 ),
-                '  (PARTED) mkpart {}'.format(
+                '  ${{COLOR_COM}}(PARTED)${{COLOR_NONE}} mkpart {}'.format(
                     target.get_path(),
                 )
             ),
@@ -54,7 +54,7 @@ def partition_table_generator(target: File):
                 'parted -s {} set 1 boot on'.format(
                     target.get_path(),
                 ),
-                '  (PARTED) set boot {}'.format(
+                '  ${{COLOR_COM}}(PARTED)${{COLOR_NONE}} set boot {}'.format(
                     target.get_path(),
                 )
             ),
@@ -63,10 +63,10 @@ def partition_table_generator(target: File):
 
 def ext2_create(target: File):
     return Action(
-        'mke2fs {}'.format(
+        'mke2fs {} > /dev/null 2>&1'.format(
             target.get_path(),
         ),
-        '  (MKE2FS) {}'.format(
+        '  ${{COLOR_COM}}(MKE2FS)${{COLOR_NONE}} {}'.format(
             target.get_path(),
         )
     ),
@@ -78,7 +78,7 @@ def ext2_copy(target: File, source: File, path: str):
             target.get_path(),
             path,
         ),
-        '  (E2CP) {}'.format(
+        '  ${{COLOR_COM}}(E2CP)${{COLOR_NONE}} {}'.format(
             source.get_path(),
         )
     )
@@ -100,17 +100,17 @@ def dd_file_merger(target, ext2):
             ext2.get_path(),
             target.get_path(),
         ),
-        '  (DD) {}'.format(
+        '  ${{COLOR_COM}}(DD)${{COLOR_NONE}} {}'.format(
             target.get_path(),
         ),
     )
 
 def limine_install(target: File):
     return Action(
-        '$LIMINE_INSTALL {}'.format(
+        '$LIMINE_INSTALL {} > /dev/null 2>&1'.format(
             target.get_path(),
         ),
-        '  (LIMINE) {}'.format(
+        '  ${{COLOR_COM}}(LIMINE)${{COLOR_NONE}} {}'.format(
             target.get_path()
         )
     )
