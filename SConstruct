@@ -136,6 +136,8 @@ kernel_targets = [
 
 # Build a list of all build targets associated with the kernel
 # Includes all dependencies, kernels, bootable images, etc.
+kernel_targets_debug = []
+kernel_targets_release = []
 for target_env in kernel_targets:
     liballoc = target_env.SConscript(
         'Libraries/liballoc/SConscript',
@@ -166,6 +168,19 @@ for target_env in kernel_targets:
             ]
     )
     Default(image)
+
+    # FIXME: Find a better way of doing this
+    if target_env['MODE'] == 'Debug':
+        kernel_targets_debug.append(liballoc)
+        kernel_targets_debug.append(kernel)
+        kernel_targets_debug.append(image)
+    elif target_env['MODE'] == 'Release':
+        kernel_targets_release.append(liballoc)
+        kernel_targets_release.append(kernel)
+        kernel_targets_release.append(image)
+
+env.Alias('kernel-debug', kernel_targets_debug)
+env.Alias('kernel-release', kernel_targets_release)
 
 # ***************************
 # * Unit Test Build Targets *

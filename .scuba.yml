@@ -1,44 +1,17 @@
 image: ghcr.io/xyrisos/xyris-build/xyris-build:3.5.0
 aliases:
     # Building
-    build: make -j$(nproc) all
-    debug:
-      environment:
-        MODE: debug
-      script: make -j$(nproc)
-    release:
-      environment:
-        MODE: release
-      script: make -j$(nproc)
+    build: scons
+    debug: scons kernel-debug
+    release: scons kernel-release
     # Testing
     test:
       script:
-        - make -j$(nproc) unit-test
-        - ./Distribution/unit-test
+        - scons tests
+        - ./Distribution/Tests/tests
     # Cleaning
-    clean: make clean
-    test-clean: make clean-tests
-    # Distribution
-    img-debug:
-      environment:
-        IMGTYPE: img
-        MODE: debug
-      script: make dist
-    img-release:
-      environment:
-        IMGTYPE: img
-        MODE: release
-      script: make dist
-    iso-debug:
-      environment:
-        IMGTYPE: iso
-        MODE: debug
-      script: make dist
-    iso-release:
-      environment:
-        IMGTYPE: iso
-        MODE: release
-      script: make dist
+    clean: scons -c
+    test-clean: scons -c tests
     # Documentation
     docs:
       script: make docs
