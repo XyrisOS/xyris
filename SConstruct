@@ -127,45 +127,30 @@ env.Append(
     LIBPATH='$INSTALL_DIR',
 )
 
-# *******************
-# * i686 Toolchains *
-# *******************
-
-i686 = env.Clone(
-    tools=[
-        'nasm'
-    ],
-    ARCH='i686',
-    CXX='i686-elf-g++',
-    CC='i686-elf-gcc',
-    AR='i686-elf-ar',
-    RANLIB='i686-elf-gcc-ranlib',
-)
-
-i686.Append(
-    ASFLAGS=[
-        '-felf32',
-    ],
-    CCFLAGS=[
-	    '-mno-avx',
-	    '-mno-sse',
-    ]
-)
-
 # ************************
 # * Kernel Build Targets *
 # ************************
 
-targets = [
-    i686.Clone(
-        tools=['mode_debug'],
+kernel_targets = [
+    # i686 ELF (debug)
+    env.Clone(
+        tools=[
+            'nasm',
+            'i686_elf',
+            'mode_debug',
+        ],
     ),
-    i686.Clone(
-        tools=['mode_release'],
+    # i686 ELF (release)
+    env.Clone(
+        tools=[
+            'nasm',
+            'i686_elf',
+            'mode_release',
+        ],
     ),
 ]
 
-for target_env in targets:
+for target_env in kernel_targets:
     liballoc = target_env.SConscript(
         'Libraries/liballoc/SConscript',
         variant_dir='$BUILD_DIR/liballoc',
@@ -194,6 +179,9 @@ for target_env in targets:
             ECHFSFLAGS=['-m', '-p0']
     )
 
+# ***************************
+# * Unit Test Build Targets *
+# ***************************
 
 catch2_header_url = 'https://github.com/catchorg/Catch2/releases/download/v2.13.8/catch.hpp'
 catch2_header = env.Command(
