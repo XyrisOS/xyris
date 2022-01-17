@@ -115,7 +115,7 @@ env = Environment(
 # * Kernel Build Targets *
 # ************************
 
-kernel_targets = [
+kernel_environments = [
     # i686 ELF (debug)
     env.Clone(
         tools=[
@@ -138,7 +138,7 @@ kernel_targets = [
 # Includes all dependencies, kernels, bootable images, etc.
 kernel_targets_debug = []
 kernel_targets_release = []
-for target_env in kernel_targets:
+for target_env in kernel_environments:
     liballoc = target_env.SConscript(
         'Libraries/liballoc/SConscript',
         variant_dir='$BUILD_DIR/liballoc',
@@ -169,16 +169,14 @@ for target_env in kernel_targets:
     )
     Default(image)
 
-    # FIXME: Find a better way of doing this
-    if target_env['MODE'] == 'Debug':
-        kernel_targets_debug.append(liballoc)
-        kernel_targets_debug.append(kernel)
-        kernel_targets_debug.append(image)
-    elif target_env['MODE'] == 'Release':
-        kernel_targets_release.append(liballoc)
-        kernel_targets_release.append(kernel)
-        kernel_targets_release.append(image)
+    # Add targets to kernel_targets_[MODE] list
+    target_list_name = 'kernel_targets_' + target_env['MODE'].lower()
+    targets_list = globals()[target_list_name]
+    targets_list.append(liballoc)
+    targets_list.append(kernel)
+    targets_list.append(image)
 
+# Mode specific kernel targets
 env.Alias('kernel-debug', kernel_targets_debug)
 env.Alias('kernel-release', kernel_targets_release)
 
