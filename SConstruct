@@ -24,6 +24,7 @@ Default(None)
 env = Environment(
     tools=[
         'default',
+        'doxygen',
         'colors',
         'ext2'
     ],
@@ -136,6 +137,7 @@ kernel_environments = [
 
 # Build a list of all build targets associated with the kernel
 # Includes all dependencies, kernels, bootable images, etc.
+kernel_targets_all = []
 kernel_targets_debug = []
 kernel_targets_release = []
 for target_env in kernel_environments:
@@ -169,16 +171,27 @@ for target_env in kernel_environments:
     )
     Default(image)
 
+    kernel_targets_all.extend([liballoc, kernel, image])
+
     # Add targets to kernel_targets_[MODE] list
     target_list_name = 'kernel_targets_' + target_env['MODE'].lower()
     targets_list = globals()[target_list_name]
-    targets_list.append(liballoc)
-    targets_list.append(kernel)
-    targets_list.append(image)
+    targets_list.extend([liballoc, kernel, image])
 
 # Mode specific kernel targets
 env.Alias('kernel-debug', kernel_targets_debug)
 env.Alias('kernel-release', kernel_targets_release)
+
+# ************************
+# * Kernel Documentation *
+# ************************
+
+kernel_docs = env.Doxygen(
+    '#Documentation/Build',
+    '#Documentation/Doxyfile',
+)
+env.Alias('docs', kernel_docs)
+env.Clean('docs', '#Documentation/Build')
 
 # ************************
 # * Kernel Phony Targets *
@@ -271,5 +284,4 @@ tests = env.SConscript(
     }
 )
 env.Install('$INSTALL_DIR', tests)
-
 env.Alias('tests', [catch2_header, tests])

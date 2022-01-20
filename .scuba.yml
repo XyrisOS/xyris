@@ -9,9 +9,9 @@ aliases:
       script:
         - scons tests
         - ./Distribution/Tests/tests
+    # Documentation
+    docs: scons docs
     # Cleaning
     clean: scons -c
-    test-clean: scons -c tests
-    # Documentation
-    docs:
-      script: make docs
+    clean-tests: scons -c tests
+    clean-docs: scons -c docs

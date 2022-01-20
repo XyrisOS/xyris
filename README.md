@@ -1,4 +1,4 @@
-![Logo](.github/logo.png)
+![Logo](https://media.githubusercontent.com/media/XyrisOS/artwork/stable/images/xyris-banner-full.png)
 
 <div style="text-align:center">
     <a href="https://github.com/XyrisOS/xyris/actions/workflows/c-cpp.yml"><img alt="C/C++ CI" src="https://github.com/XyrisOS/xyris/actions/workflows/c-cpp.yml/badge.svg"></a>
