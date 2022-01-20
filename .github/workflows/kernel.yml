@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Kernel CI
 
 on:
   push:
@@ -7,7 +7,8 @@ on:
     branches: [ dev ]
 
 jobs:
-  build:
+  build-i686:
+    name: Build
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/xyrisos/xyris-build/xyris-build:3.5.0
@@ -35,9 +36,24 @@ jobs:
       with:
         name: i686-release-xyris.img
         path: Distribution/i686/Release/xyris.img
+  unit-tests:
+    name: Test
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/xyrisos/xyris-build/xyris-build:3.5.0
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: true
     # Unit Tests
     - name: Build and Run Tests
-      run: scons tests && ./Distribution/Tests/tests -r junit --out Tests/report.xml
+      run: |
+        scons tests
+        ./Distribution/Tests/tests -r junit --out Tests/report.xml
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v2
       with:
