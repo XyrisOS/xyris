@@ -283,5 +283,5 @@ tests = env.SConscript(
         'env': env
     }
 )
-env.Install('$INSTALL_DIR', tests)
-env.Alias('tests', [catch2_header, tests])
+tests_intall = env.Install('$INSTALL_DIR', tests)
+env.Alias('tests', [catch2_header, tests, tests_intall])
