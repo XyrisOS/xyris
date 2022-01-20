@@ -19,9 +19,25 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: true
+    # Debug
+    - name: 'Build Kernel (Debug)'
+      run: scons kernel-debug
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: os-image-debug
+        path: Distribution/i686/Debug/xyris.img
+    # Release
+    - name: 'Build Kernel (Release)'
+      run: scons kernel-release
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: os-image-release
+        path: Distribution/i686/Release/xyris.img
     # Unit Tests
     - name: Build and Run Tests
-      run: make unit-test && ./Distribution/unit-test -r junit --out ./Tests/report.xml
+      run: scons tests && ./Distribution/Tests/tests -r junit --out Tests/report.xml
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v2
       with:
@@ -32,23 +48,3 @@ jobs:
       with:
         name: test-report
         path: Tests/report.xml
-    # Debug
-    - name: 'Build Kernel (Debug)'
-      run: make MODE=debug
-    - name: 'Build Image (Debug)'
-      run: make dist MODE=debug
-    - name: 'Upload Artifact'
-      uses: actions/upload-artifact@v2
-      with:
-        name: os-image-debug
-        path: Distribution/debug/xyris.img
-    # Release
-    - name: 'Build Kernel (Release)'
-      run: make MODE=release
-    - name: 'Build Image (Release)'
-      run: make dist MODE=release
-    - name: 'Upload Artifact'
-      uses: actions/upload-artifact@v2
-      with:
-        name: os-image-release
-        path: Distribution/release/xyris.img
