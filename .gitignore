@@ -43,3 +43,7 @@ Documentation/build/
 # Unit testing
 Tests/report.xml
 Thirdparty/catch2
+
+# SCons
+.sconsign.dblite
+__pycache__/

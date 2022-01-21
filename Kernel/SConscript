@@ -1,0 +1,51 @@
+import os
+import subprocess
+Import('env')
+
+env = env.Clone()
+linkerscript = env.File('Arch/$ARCH/linker.ld')
+env.Append(
+    LINKSCRIPT=linkerscript,
+    CXXFLAGS=[
+        '-fanalyzer',
+    ],
+    LINKFLAGS=[
+        '-T${LINKSCRIPT}',
+    ],
+)
+
+# Toolchain should supply crtbegin and crtend
+crtbegin = subprocess.check_output(
+    [env.subst('$CC'), '-print-file-name=crtbegin.o']
+).decode().rstrip()
+crtend = subprocess.check_output(
+    [env.subst('$CC'), '-print-file-name=crtend.o']
+).decode().rstrip()
+
+# All source file extensions used by the kernel
+extensions = [
+    '.c',
+    '.cpp',
+    '.s',
+]
+
+arch_sources = env.RecursiveGlob('./Arch', extensions)
+common_sources = env.RecursiveGlobIgnoreDirs('.', extensions, ['./Arch'])
+
+kernel = env.Program(
+    'kernel',
+    Flatten([
+        crtend,
+        crtbegin,
+        arch_sources,
+        common_sources
+    ]),
+    LIBS=[
+        'gcc',
+        'alloc'
+    ],
+)
+
+env.Depends(kernel, linkerscript)
+
+Return('kernel')

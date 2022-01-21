@@ -1,0 +1,16 @@
+import os
+Import('env')
+
+extensions = [
+    '.c',
+    '.cpp',
+]
+
+sources = env.RecursiveGlob(".", extensions)
+
+tests = env.Program(
+    'tests',
+    sources
+)
+
+Return('tests')
