@@ -26,6 +26,7 @@ env = Environment(
         'default',
         'doxygen',
         'colors',
+        'glob',
         'ext2'
     ],
     toolpath=[
@@ -242,7 +243,8 @@ env.Pseudo(
 env = Environment(
     tools=[
         'default',
-        'colors'
+        'colors',
+        'glob'
     ],
     toolpath=[
         'Scones',

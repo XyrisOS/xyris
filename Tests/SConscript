@@ -1,24 +1,12 @@
 import os
 Import('env')
 
-def glob(root: str, extensions: list):
-    """
-    Finds all files in a root directory matching the provided file extensions
-
-    Returns a flattened list of File nodes
-    """
-    sources = []
-    for (dirpath, dirs, files) in os.walk(root):
-        for extension in extensions:
-            sources.append(Glob(dirpath + '/*' + extension))
-    return Flatten(sources)
-
 extensions = [
     '.c',
     '.cpp',
 ]
 
-sources = glob(".", extensions)
+sources = env.glob(".", extensions)
 
 tests = env.Program(
     'tests',
