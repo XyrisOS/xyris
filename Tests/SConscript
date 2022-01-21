@@ -6,7 +6,7 @@ extensions = [
     '.cpp',
 ]
 
-sources = env.glob(".", extensions)
+sources = env.RecursiveGlob(".", extensions)
 
 tests = env.Program(
     'tests',
