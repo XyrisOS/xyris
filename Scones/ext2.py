@@ -15,7 +15,7 @@ def generate(env):
     # only run the tool if we exist (seems reasonable)
     assert(exists(env))
 
-    builder = Builder(generator=ext2_image_generator, suffix='.img')
+    builder = Builder(generator=ext2_image_generator)
     env.Append(
         BUILDERS={'Ext2Image': builder}
     )
@@ -35,28 +35,16 @@ def partition_table_generator(target: File):
     actions = [
             dd_file_generator(target, table_size_mb),
             Action(
-                'parted -s {} mklabel msdos'.format(
-                    target.get_path(),
-                ),
-                '  ${{COLOR_COM}}(PARTED)${{COLOR_NONE}} mklabel {}'.format(
-                    target.get_path(),
-                )
+                'parted -s ${TARGET} mklabel msdos',
+                '  ${COLOR_COM}(PARTED)${COLOR_NONE} mklabel ${TARGET}'
             ),
             Action(
-                'parted -s {} mkpart primary 1 100%'.format(
-                    target.get_path(),
-                ),
-                '  ${{COLOR_COM}}(PARTED)${{COLOR_NONE}} mkpart {}'.format(
-                    target.get_path(),
-                )
+                'parted -s ${TARGET} mkpart primary 1 100%',
+                '  ${COLOR_COM}(PARTED)${COLOR_NONE} mkpart ${TARGET}'
             ),
             Action(
-                'parted -s {} set 1 boot on'.format(
-                    target.get_path(),
-                ),
-                '  ${{COLOR_COM}}(PARTED)${{COLOR_NONE}} set boot {}'.format(
-                    target.get_path(),
-                )
+                'parted -s ${TARGET} set 1 boot on',
+                '  ${COLOR_COM}(PARTED)${COLOR_NONE} set boot ${TARGET}'
             ),
     ]
     return actions
@@ -94,10 +82,10 @@ def ext2_partition_generator(target_ext2, limine_cfg, limine_sys, kernel):
     ]
     return actions
 
-def dd_file_merger(target, ext2):
+def dd_file_merger(target, source):
     return Action(
         'dd if={} bs=512 seek=2048 of={} 2> /dev/null'.format(
-            ext2.get_path(),
+            source.get_path(),
             target.get_path(),
         ),
         '  ${{COLOR_COM}}(DD)${{COLOR_NONE}} {}'.format(
@@ -107,12 +95,8 @@ def dd_file_merger(target, ext2):
 
 def limine_install(target: File):
     return Action(
-        '$LIMINE_INSTALL {} > /dev/null 2>&1'.format(
-            target.get_path(),
-        ),
-        '  ${{COLOR_COM}}(LIMINE)${{COLOR_NONE}} {}'.format(
-            target.get_path()
-        )
+        '$LIMINE_INSTALL ${TARGET} > /dev/null 2>&1',
+        '  ${COLOR_COM}(LIMINE)${COLOR_NONE} ${TARGET}'
     )
 
 def ext2_image_generator(target, source, env, for_signature):
@@ -122,12 +106,11 @@ def ext2_image_generator(target, source, env, for_signature):
     limine_cfg = source[0]
     limine_sys = source[1]
     kernel = source[2]
-    target_img = target[0]
-    target_ext2 = File(disk_image.get_path() + '.ext2')
+    target_ext2 = File('${TARGET}.ext2')
     actions = Flatten([
-            partition_table_generator(target_img),
+            partition_table_generator(disk_image),
             ext2_partition_generator(target_ext2, limine_cfg, limine_sys, kernel),
-            dd_file_merger(target_img, target_ext2),
-            limine_install(target_img),
+            dd_file_merger(disk_image, target_ext2),
+            limine_install(disk_image),
     ])
     return actions

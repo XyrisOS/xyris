@@ -163,7 +163,7 @@ for target_env in kernel_environments:
     Default(kernel)
     target_env.Install('$INSTALL_DIR', kernel)
     image = target_env.Ext2Image(
-            '$INSTALL_DIR/xyris',
+            '$INSTALL_DIR/xyris.img',
             [
                 '#Kernel/Arch/$ARCH/Bootloader/limine.cfg',
                 '#Thirdparty/limine/limine.sys',
