@@ -1,7 +1,7 @@
 ![Logo](https://media.githubusercontent.com/media/XyrisOS/artwork/stable/images/xyris-banner-full.png)
 
 <div style="text-align:center">
-    <a href="https://github.com/XyrisOS/xyris/actions/workflows/c-cpp.yml"><img alt="C/C++ CI" src="https://github.com/XyrisOS/xyris/actions/workflows/c-cpp.yml/badge.svg"></a>
+    <a href="https://github.com/XyrisOS/xyris/actions/workflows/kernel.yml"><img alt="C/C++ CI" src="https://github.com/XyrisOS/xyris/actions/workflows/kernel.yml/badge.svg"></a>
     <a href="https://github.com/XyrisOS/xyris/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/XyrisOS/xyris"></a>
     <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/XyrisOS/xyris">
     <a href="https://discord.gg/FNbZMr7p9d"><img alt="Discord" src="https://img.shields.io/discord/732032083647660123"></a>
