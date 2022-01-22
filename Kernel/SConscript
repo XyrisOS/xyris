@@ -29,8 +29,8 @@ extensions = [
     '.s',
 ]
 
-arch_sources = env.RecursiveGlob('./Arch', extensions)
-common_sources = env.RecursiveGlobIgnoreDirs('.', extensions, ['./Arch'])
+arch_sources = env.RecursiveGlob('./Arch/$ARCH', extensions)
+common_sources = env.RecursiveGlob('.', extensions, ['./Arch'])
 
 kernel = env.Program(
     'kernel',
