@@ -8,7 +8,7 @@
             "name": "Debug Kernel",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/Distribution/debug/Kernel",
+            "program": "${workspaceRoot}/Distribution/i686/Debug/Kernel",
             "cwd": "${workspaceRoot}",
             "args": [],
             "targetArchitecture": "x64",
@@ -24,7 +24,7 @@
                 { "text": "-enable-pretty-printing" },
                 { "text": "file ${workspaceRoot}/Distribution/debug/Kernel" }
             ],
-            "preLaunchTask": "Run (Debug + GDB)"
+            "preLaunchTask": "Debug"
         }
     ]
 }
