@@ -1,5 +1,5 @@
 /**
- * @file mutex.hpp
+ * @file Mutex.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief
  * @version 0.3
@@ -23,36 +23,28 @@ public:
     Mutex(const char* name = nullptr);
 
     /**
-     * @brief Destroys a mutex and removes it from memory.
+     * @brief Aquire the mutex.
      *
+     * @return int Returns true on success.
      */
-    ~Mutex();
+    bool lock();
 
     /**
-     * @brief Locks a provided mutex. This call will block
-     * if the mutex is already locked.
+     * @brief Try to aquire the mutex and return immediately
+     * if already locked.
      *
-     * @return int Returns 0 on success and -1 on error.
+     * @return int Returns true on success.
      */
-    int Lock();
+    bool tryLock();
 
     /**
-     * @brief Attempts to lock a mutex. If the mutex is
-     * currently locked then the function will return and
-     * set errno accordingly.
+     * @brief Release the mutex.
      *
-     * @return int Returns 0 on success and -1 on error.
+     * @return int Returns true on success.
      */
-    int Trylock();
-
-    /**
-     * @brief Unlocks a mutex for others to use.
-     *
-     * @return int Returns 0 on success and -1 on error.
-     */
-    int Unlock();
+    bool unlock();
 
 private:
-    bool locked;
-    struct task_sync task_sync;
+    bool m_isLocked;
+    struct task_sync m_taskSync;
 };

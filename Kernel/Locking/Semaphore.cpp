@@ -18,14 +18,12 @@
 // Reference:
 // https://gcc.gnu.org/onlinedocs/gcc-8.3.0/gcc/_005f_005fatomic-Builtins.html
 
-#include <Library/errno.hpp>
 #include <Locking/Semaphore.hpp>
 
 // Can't make this an inline function due to compiler errors with failure_memorder
-// being too strong. Likely due to the fact that it doesn't know the value at
-// compile time.
+// being too strong. Likely due to the fact that it doesn't know the value at compile time.
 #define COMPARE_EXCHANGE(curVal, failure_memorder) __atomic_compare_exchange_n( \
-    &count,                                                                     \
+    &m_count,                                                                   \
     &curVal,                                                                    \
     curVal - 1,                                                                 \
     false,                                                                      \
@@ -33,79 +31,67 @@
     failure_memorder)
 
 Semaphore::Semaphore(uint32_t val, bool share, const char* name)
-    : shared(share)
-    , count(val)
+    : m_isShared(share)
+    , m_count(val)
 {
-    task_sync.dbg_name = name;
-    tasks_sync_init(&task_sync);
+    m_taskSync.dbg_name = name;
+    tasks_sync_init(&m_taskSync);
 }
 
-Semaphore::~Semaphore()
+bool Semaphore::wait()
 {
-    // Nothing to destruct
-}
-
-int Semaphore::Wait()
-{
-    // Used to store the current value of the semaphore for atomic comparison later.
-    uint32_t curVal = count;
-    // Compare the semaphore's current value to the value recorded earlier.
-    // If the semaphore counter is already 0 then just skip the compare and exhange.
+    uint32_t curVal = count();
     do {
         while (curVal == 0) {
-            TASK_ONLY tasks_sync_block(&task_sync);
-            curVal = count;
+            TASK_ONLY tasks_sync_block(&m_taskSync);
+            curVal = count();
         }
         // Fail using atomic relaxed because it may allow us to get to the "waiting" state faster.
     } while (!COMPARE_EXCHANGE(curVal, __ATOMIC_RELAXED));
-    // Return success
-    return 0;
+
+    return true;
 }
 
-int Semaphore::TryWait()
+bool Semaphore::tryWait()
 {
-    // Used to store the current value of the semaphore for atomic comparison later.
-    uint32_t curVal = count;
-    // Compare the semaphore's current value to the value recorded earlier.
-    // If the semaphore counter is already 0 then just skip the compare and exhange.
+    uint32_t curVal = count();
     do {
         if (curVal == 0) {
-            errno = LockTaken;
-            return -1;
+            return false;
         }
         // We need to fail on an Atomic Acquire Release because it will fail less often (i.e. fewer loop iterations)
     } while (!COMPARE_EXCHANGE(curVal, __ATOMIC_ACQUIRE));
-    // To get here the semaphore must not have been locked.
-    return 0;
+
+    return true;
 }
 
-int Semaphore::TimedWait(const uint32_t* usec)
+bool Semaphore::timeWait(const uint32_t* usec)
 {
     // TODO: Add the timer functionality here.
     (void)usec;
-    // Used to store the current value of the semaphore for atomic comparison later.
-    uint32_t curVal = count;
-    // Compare the semaphore's current value to the value recorded earlier.
-    // If the semaphore counter is already 0 then just skip the compare and exhange.
+    uint32_t curVal = count();
     do {
         while (curVal == 0) {
-            curVal = count;
+            curVal = count();
         }
         // Fail using atomic relaxed because it may allow us to get to the "waiting" state faster.
     } while (!COMPARE_EXCHANGE(curVal, __ATOMIC_ACQUIRE));
-    // Return success
-    return 0;
+
+    return true;
 }
 
-int Semaphore::Post()
+bool Semaphore::post()
 {
-    __atomic_fetch_add(&count, 1, __ATOMIC_RELEASE);
-    TASK_ONLY tasks_sync_unblock(&task_sync);
-    return 0;
+    __atomic_fetch_add(&m_count, 1, __ATOMIC_RELEASE);
+    TASK_ONLY tasks_sync_unblock(&m_taskSync);
+
+    return true;
 }
 
-int Semaphore::Count(uint32_t* val)
+uint32_t Semaphore::count()
 {
-    __atomic_load(&count, val, __ATOMIC_ACQUIRE);
-    return 0;
+    uint32_t ret = 0;
+    __atomic_load(&m_count, &ret, __ATOMIC_ACQUIRE);
+
+    return ret;
 }

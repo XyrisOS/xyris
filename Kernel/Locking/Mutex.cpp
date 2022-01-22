@@ -19,47 +19,36 @@
 // https://gcc.gnu.org/onlinedocs/gcc-8.3.0/gcc/_005f_005fatomic-Builtins.html
 
 #include <Locking/Mutex.hpp>
-#include <Library/errno.hpp>
 
 Mutex::Mutex(const char* name)
-    : locked(false)
+    : m_isLocked(false)
 {
-    task_sync.dbg_name = name;
-    tasks_sync_init(&task_sync);
+    m_taskSync.dbg_name = name;
+    tasks_sync_init(&m_taskSync);
 };
 
-Mutex::~Mutex()
+bool Mutex::lock()
 {
-    // Nothing to destruct yet
-}
-
-int Mutex::Lock()
-{
-    // Check if the Mutex is unlocked
-    while (__atomic_test_and_set(&locked, __ATOMIC_RELEASE)) {
-        // Block the current kernel task
-        TASK_ONLY tasks_sync_block(&task_sync);
+    while (__atomic_test_and_set(&m_isLocked, __ATOMIC_RELEASE)) {
+        TASK_ONLY tasks_sync_block(&m_taskSync);
     }
-    // Success, return 0
-    return 0;
+
+    return true;
 }
 
-int Mutex::Trylock()
+bool Mutex::tryLock()
 {
-    // If we cannot immediately acquire the lock then just return an error
-    if (__atomic_test_and_set(&locked, __ATOMIC_RELEASE)) {
-        errno = InvalidValue;
-        return -1;
+    if (__atomic_test_and_set(&m_isLocked, __ATOMIC_RELEASE)) {
+        return false;
     }
-    // Success, return 0
-    return 0;
+
+    return true;
 }
 
-int Mutex::Unlock()
+bool Mutex::unlock()
 {
-    // Clear the lock
-    __atomic_clear(&locked, __ATOMIC_RELEASE);
-    TASK_ONLY tasks_sync_unblock(&task_sync);
-    // Success, return 0
-    return 0;
+    __atomic_clear(&m_isLocked, __ATOMIC_RELEASE);
+    TASK_ONLY tasks_sync_unblock(&m_taskSync);
+
+    return true;
 }

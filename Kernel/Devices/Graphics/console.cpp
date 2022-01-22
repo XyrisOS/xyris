@@ -96,12 +96,12 @@ static Mutex ttyLock;
 
 static void Lock()
 {
-    ttyLock.Lock();
+    ttyLock.lock();
 }
 
 static void Unlock()
 {
-    ttyLock.Unlock();
+    ttyLock.unlock();
 }
 
 static int putchar(unsigned c, void** ptr)

@@ -1,5 +1,5 @@
 /**
- * @file semaphore.hpp
+ * @file Semaphore.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief
  * @version 0.3
@@ -21,75 +21,50 @@ public:
      * exclusion when multiple threads need to access a particular
      * variable.
      *
-     * @param val Initialized value (how many times must the semaphore
-     * be accessed at the beginning before locking?)
-     * @param share Boolean value indicating whether the semaphore
-     * should be shared amongst threads or will be used within one thread
-     * exclusively.
+     * @param val Initial value
+     * @param share Allow semaphore to be shared across threads
      * @param name Semaphore name (for debugging / printing)
      */
     Semaphore(uint32_t val, bool share, const char* name = nullptr);
 
     /**
-     * @brief Destroys a semaphore by removing it from memory.
-     *
+     * @brief Wait for the semaphore to become available.
+     * @return int Returns true on success.
      */
-    ~Semaphore();
+    bool wait();
 
     /**
-     * @brief Waiting on a semaphore decrements the count value. When a
-     * count value is 0, the semaphore is locked and the process or thread
-     * must sleep and wait until the semaphore is unlocked by calling post.
+     * @brief Check if the semaphore is available. If unavailable, return immediately,
+     * otherwise wait on the semaphore.
      *
-     * @return int Returns 0 on success and -1 on failure
-     * When an error occurs errno is set.
+     * @return int Returns 0 on success.
      */
-    int Wait();
+    bool tryWait();
 
     /**
-     * @brief Functionally the same as sem_wait except that instead of
-     * blocking when the semaphore is locked, errno is set instead.
+     * @brief Wait on the semaphore for a set duration of time.
      *
-     * @return int Returns 0 on success and -1 on failure.
-     * When an error occurs errno is set.
+     * @param usec Microseconds to wait until returning if unsuccessful.
+     * @return int Returns true on success.
      */
-    int TryWait();
+    bool timeWait(const uint32_t* usec);
 
     /**
-     * @brief Functionally the same as sem_wait but with a timeout. This
-     * timeout does not mean that within the given period of time the
-     * semaphore will be unlocked but rather that after the timeout period
-     * the thread or process will unblock and may resume execution without
-     * access to the semaphore's reference variable.
+     * @brief Post to the semaphore.
      *
-     * @param usec Microseconds to wait until resuming execution without
-     * access to the semaphore's intended reference variable.
-     * @return int Returns 0 on success and -1 on failure.
-     * When an error occurs errno is set.
+     * @return int Returns true on success.
      */
-    int TimedWait(const uint32_t* usec);
+    bool post();
 
     /**
-     * @brief Increments the semaphore's counter. This is used to indicate
-     * that the thread or process is done utilizing the reference variable
-     * and that it is available for use.
+     * @brief Atomically get the semaphore's current counter value.
      *
-     * @return int Returns 0 on success and -1 on failure.
-     * When an error occurs errno is set.
+     * @return uint32_t Returns the semaphore count.
      */
-    int Post();
-
-    /**
-     * @brief Gets the counter value from a semaphore structure.
-     *
-     * @param val Pointer to the semaphore value variable
-     * @return int Returns 0 on success and -1 on failure.
-     * When an error occurs errno is set.
-     */
-    int Count(uint32_t* val);
+    uint32_t count();
 
 private:
-    bool shared;
-    uint32_t count;
-    struct task_sync task_sync;
+    bool m_isShared;
+    uint32_t m_count;
+    struct task_sync m_taskSync;
 };
