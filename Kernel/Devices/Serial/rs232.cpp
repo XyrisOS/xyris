@@ -17,9 +17,9 @@
 #include <Devices/Serial/rs232.hpp>
 #include <Memory/heap.hpp>
 #include <Library/stdio.hpp>
-#include <Library/mutex.hpp>
 #include <Library/string.hpp>
 #include <Library/RingBuffer.hpp>
+#include <Scheduler/Mutex.hpp>
 
 #define RS_232_COM1_IRQ 0x04
 #define RS_232_COM3_IRQ 0x04

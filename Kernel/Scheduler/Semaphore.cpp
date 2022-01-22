@@ -18,8 +18,8 @@
 // Reference:
 // https://gcc.gnu.org/onlinedocs/gcc-8.3.0/gcc/_005f_005fatomic-Builtins.html
 
+#include <Scheduler/Semaphore.hpp>
 #include <Library/errno.hpp>
-#include <Library/semaphore.hpp>
 
 // Can't make this an inline function due to compiler errors with failure_memorder
 // being too strong. Likely due to the fact that it doesn't know the value at
