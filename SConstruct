@@ -24,7 +24,6 @@ Default(None)
 env = Environment(
     tools=[
         'default',
-        'doxygen',
         'colors',
         'glob',
         'ext2'
@@ -184,17 +183,6 @@ env.Alias('kernel-debug', kernel_targets_debug)
 env.Alias('kernel-release', kernel_targets_release)
 
 # ************************
-# * Kernel Documentation *
-# ************************
-
-kernel_docs = env.Doxygen(
-    '#Documentation/Build',
-    '#Documentation/Doxyfile',
-)
-env.Alias('docs', kernel_docs)
-env.Clean('docs', '#Documentation/Build')
-
-# ************************
 # * Kernel Phony Targets *
 # ************************
 
@@ -235,6 +223,27 @@ env.Pseudo(
         '''
     )
 )
+
+# ************************
+# * Kernel Documentation *
+# ************************
+
+env = Environment(
+    tools=[
+        'doxygen',
+        'colors'
+    ],
+    toolpath=[
+        'Scones',
+    ],
+)
+
+kernel_docs = env.Doxygen(
+    '#Documentation/Build',
+    '#Documentation/Doxyfile',
+)
+env.Alias('docs', kernel_docs)
+env.Clean('docs', '#Documentation/Build')
 
 # ***************************
 # * Unit Test Build Targets *
