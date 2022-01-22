@@ -13,7 +13,7 @@
 #include <Arch/Memory.hpp>
 #include <Bootloader/Arguments.hpp>
 #include <Library/Bitset.hpp>
-#include <Library/mutex.hpp>
+#include <Locking/Mutex.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
 #include <Memory/Physical.hpp>

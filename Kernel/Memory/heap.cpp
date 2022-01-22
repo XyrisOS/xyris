@@ -9,7 +9,7 @@
  *
  */
 #include <Library/errno.hpp>
-#include <Library/mutex.hpp>
+#include <Locking/Mutex.hpp>
 #include <Memory/heap.hpp>
 #include <Memory/paging.hpp>
 #include <stddef.h>

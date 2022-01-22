@@ -13,7 +13,7 @@
 #include <Devices/Graphics/framebuffer.hpp>
 #include <Devices/Graphics/graphics.hpp>
 #include <Library/stdio.hpp>
-#include <Library/mutex.hpp>
+#include <Locking/Mutex.hpp>
 #include <stddef.h>
 
 namespace Console {

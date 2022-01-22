@@ -18,7 +18,7 @@
 // Reference:
 // https://gcc.gnu.org/onlinedocs/gcc-8.3.0/gcc/_005f_005fatomic-Builtins.html
 
-#include <Library/mutex.hpp>
+#include <Locking/Mutex.hpp>
 #include <Library/errno.hpp>
 
 Mutex::Mutex(const char* name)

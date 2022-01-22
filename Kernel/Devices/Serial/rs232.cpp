@@ -17,7 +17,7 @@
 #include <Devices/Serial/rs232.hpp>
 #include <Memory/heap.hpp>
 #include <Library/stdio.hpp>
-#include <Library/mutex.hpp>
+#include <Locking/Mutex.hpp>
 #include <Library/string.hpp>
 #include <Library/RingBuffer.hpp>
 
