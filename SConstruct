@@ -24,7 +24,6 @@ Default(None)
 env = Environment(
     tools=[
         'default',
-        'doxygen',
         'colors',
         'glob',
         'ext2'
@@ -232,11 +231,23 @@ env.Pseudo(
 # * Kernel Documentation *
 # ************************
 
-kernel_docs = env.Doxygen(
+env = Environment(
+    tools=[
+        'doxygen'
+    ],
+    toolpath=[
+        'Scones'
+    ],
+    ENV={
+        'PATH': os.environ['PATH']
+    },
+)
+
+docs = env.Doxygen(
     '#Documentation/Build',
     '#Documentation/Doxyfile',
 )
-env.Alias('docs', kernel_docs)
+env.Alias('docs', docs)
 env.Clean('docs', '#Documentation/Build')
 
 # ***************************
