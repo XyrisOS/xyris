@@ -24,6 +24,7 @@ Default(None)
 env = Environment(
     tools=[
         'default',
+        'doxygen',
         'colors',
         'glob',
         'ext2'
@@ -230,16 +231,6 @@ env.Pseudo(
 # ************************
 # * Kernel Documentation *
 # ************************
-
-env = Environment(
-    tools=[
-        'doxygen',
-        'colors'
-    ],
-    toolpath=[
-        'Scones',
-    ],
-)
 
 kernel_docs = env.Doxygen(
     '#Documentation/Build',
