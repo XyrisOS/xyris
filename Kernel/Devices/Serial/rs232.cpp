@@ -17,7 +17,7 @@
 #include <Devices/Serial/rs232.hpp>
 #include <Memory/heap.hpp>
 #include <Library/stdio.hpp>
-#include <Library/mutex.hpp>
+#include <Locking/Mutex.hpp>
 #include <Library/string.hpp>
 #include <Library/RingBuffer.hpp>
 
@@ -55,9 +55,9 @@ static int is_transmit_empty() {
 }
 
 static char read_byte() {
-    mutex_rs232.Lock();
+    mutex_rs232.lock();
     while (received() == 0);
-    mutex_rs232.Unlock();
+    mutex_rs232.unlock();
     return readByte(rs_232_port_base + RS_232_DATA_REG);
 }
 
@@ -139,13 +139,13 @@ void init(uint16_t com_id) {
 
 size_t read(char* buf, size_t count) {
     size_t bytes = 0;
-    mutex_rs232.Lock();
+    mutex_rs232.lock();
     for (size_t idx = 0; idx < count && !ring.IsEmpty(); idx++)
     {
         buf[idx] = ring.Dequeue();
         bytes++;
     }
-    mutex_rs232.Unlock();
+    mutex_rs232.unlock();
     return bytes;
 }
 

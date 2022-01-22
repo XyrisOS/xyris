@@ -9,7 +9,7 @@
  *
  */
 #include <Library/errno.hpp>
-#include <Library/mutex.hpp>
+#include <Locking/Mutex.hpp>
 #include <Memory/heap.hpp>
 #include <Memory/paging.hpp>
 #include <stddef.h>
@@ -20,12 +20,12 @@ extern "C" {
 
 int liballoc_lock()
 {
-    return lock.Lock();
+    return (lock.lock() ? 0 : 1);
 }
 
 int liballoc_unlock()
 {
-    return lock.Unlock();
+    return (lock.unlock() ? 0 : 1);
 }
 
 void* liballoc_alloc(unsigned int count)
