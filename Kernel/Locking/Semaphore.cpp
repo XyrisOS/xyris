@@ -8,16 +8,6 @@
  * @copyright Copyright the Xyris Contributors (c) 2020
  *
  */
-
-// All of the GCC builtin functions used here are documented at the link provided
-// below. These builtins effectly generate assembly that will atomically perform
-// the function described by the function name. Normally there would be a wrapper
-// around these provided by <atomic.h> but we can't use that since we don't have
-// a standard library for either C or C++;
-//
-// Reference:
-// https://gcc.gnu.org/onlinedocs/gcc-8.3.0/gcc/_005f_005fatomic-Builtins.html
-
 #include <Locking/Semaphore.hpp>
 
 // Can't make this an inline function due to compiler errors with failure_memorder
