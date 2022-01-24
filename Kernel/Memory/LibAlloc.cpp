@@ -10,7 +10,7 @@
  */
 #include <Library/errno.hpp>
 #include <Locking/Mutex.hpp>
-#include <Memory/heap.hpp>
+#include <Memory/LibAlloc.hpp>
 #include <Memory/paging.hpp>
 #include <stddef.h>
 
