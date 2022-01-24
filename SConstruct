@@ -76,18 +76,15 @@ env = Environment(
     ],
     # C/C++ flags
     CCFLAGS=[
-        '-nostdlib',
         '-nodefaultlibs',
         '-ffreestanding',
         '-fstack-protector',
-        '-fno-builtin',
         '-fno-omit-frame-pointer',
         '${CCWARNINGS}'
     ],
     # C++ only flags
     CXXFLAGS=[
         '-std=c++20',
-        '-fpermissive',
         '-fno-rtti',
         '-fno-exceptions',
         '-fno-use-cxa-atexit',
