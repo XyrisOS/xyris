@@ -19,7 +19,7 @@
 #include <Library/string.hpp>
 #include <Locking/RAII.hpp>
 #include <Logger.hpp>
-#include <Memory/heap.hpp>
+#include <Memory/LibAlloc.hpp>
 #include <stdarg.h>
 
 #define RS_232_COM1_IRQ 0x04
