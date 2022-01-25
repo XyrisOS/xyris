@@ -21,8 +21,8 @@ public:
      *
      */
     Node()
-        : next(nullptr)
-        , prev(nullptr)
+        : m_Next(nullptr)
+        , m_Prev(nullptr)
     {
         // Default constructor
     }
@@ -34,8 +34,8 @@ public:
      * @param p Previous node in the list
      */
     Node(Node* n, Node* p)
-        : next(n)
-        , prev(p)
+        : m_Next(n)
+        , m_Prev(p)
     {
         // Complete constructor
     }
@@ -47,7 +47,7 @@ public:
      */
     Node* Next()
     {
-        return next;
+        return m_Next;
     }
 
     /**
@@ -57,7 +57,7 @@ public:
      */
     Node* Previous()
     {
-        return prev;
+        return m_Prev;
     }
 
     /**
@@ -67,7 +67,7 @@ public:
      */
     void SetNext(Node* n)
     {
-        next = n;
+        m_Next = n;
     }
 
     /**
@@ -77,12 +77,12 @@ public:
      */
     void SetPrevious(Node* n)
     {
-        prev = n;
+        m_Prev = n;
     }
 
 private:
-    Node* next;
-    Node* prev;
+    Node* m_Next;
+    Node* m_Prev;
 };
 
 class LinkedList {

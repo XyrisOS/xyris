@@ -9,45 +9,46 @@
  *
  */
 #include "Heap.hpp"
+#include "New.hpp"
 #include "paging.hpp"
 #include <Arch/Memory.hpp>
-#include <Library/rand.hpp>
 #include <Library/LinkedList.hpp>
+#include <Library/rand.hpp>
 #include <Locking/Mutex.hpp>
 #include <Panic.hpp>
 
-#define HEAP_MAGIC  0x0B1E55ED
-#define HEAP_DEATH  0xBADA110C
+#define HEAP_MAGIC 0x0B1E55ED
+#define HEAP_DEATH 0xBADA110C
 
-#define ALIGNMENT   16 // Memory byte alignment
-#define ALIGN_TYPE  uint8_t
-#define ALIGN_INFO  sizeof(ALIGN_TYPE) * 16 // Size of alignment info
+#define ALIGNMENT 16 // Memory byte alignment
+#define ALIGN_TYPE uint8_t
+#define ALIGN_INFO sizeof(ALIGN_TYPE) * 16 // Size of alignment info
 
 class Minor;
 
 class Major : public LinkedList::Node {
 public:
-    void initialize(size_t pages)
+    Major(size_t pages)
+        : Node()
+        , m_Pages(pages)
+        , m_Size(pages * ARCH_PAGE_SIZE)
+        , m_Usage(sizeof(Major))
+        , m_First(nullptr)
     {
-        m_Prev = nullptr;
-        m_Next = nullptr;
-        m_Pages = pages;
-        m_Size = pages * ARCH_PAGE_SIZE;
-        m_Usage = sizeof(Major);
-        m_First = nullptr;
+        // Default constructor
     }
 
     void setPages(size_t pages) { m_Pages = pages; }
     void setSize(size_t size) { m_Size = size; }
     void setUsage(size_t usage) { m_Usage = usage; }
+    void setFirst(Minor* first) { m_First = first; }
 
     size_t getPages() { return m_Pages; }
     size_t getSize() { return m_Size; }
     size_t getUsage() { return m_Usage; }
+    Minor* getFirst() { return m_First; }
 
 private:
-    Major* m_Prev;
-    Major* m_Next;
     size_t m_Pages;
     size_t m_Size;
     size_t m_Usage;
@@ -56,22 +57,20 @@ private:
 
 class Minor : public LinkedList::Node {
 public:
-    void initialize()
+    Minor(size_t magic, Major* major, size_t size, size_t requestedSize)
+        : Node()
+        , m_Block(major)
+        , m_Magic(magic)
+        , m_Size(size)
+        , m_RequestedSize(requestedSize)
     {
-        prev = nullptr;
-        next = nullptr;
-        block = nullptr;
-        magic = 0;
-        size = 0;
-        requested_size = 0;
+        // Default constructor
     }
 
-    Minor* prev;
-    Minor* next;
-    Major* block;
-    size_t magic;
-    size_t size;
-    size_t requested_size;
+    Major* m_Block;
+    size_t m_Magic;
+    size_t m_Size;
+    size_t m_RequestedSize;
 };
 
 static Mutex heapLock("heap");
@@ -81,11 +80,11 @@ static size_t magicHeapOk = HEAP_MAGIC;
 static size_t magicHeapDead = HEAP_DEATH;
 
 static LinkedList::LinkedList memoryList;
-static Major* bestBet = nullptr;    // Major block with most free memory
+static Major* bestBet = nullptr; // Major block with most free memory
 
-static size_t pageCount = 16;       // Number of pages to request per chunk.
-static size_t totalAllocated = 0;   // Total bytes allocated
-//static size_t totalInUse = 0;       // Total bytes in use
+static size_t pageCount = 16;     // Number of pages to request per chunk.
+static size_t totalAllocated = 0; // Total bytes allocated
+static size_t totalInUse = 0;       // Total bytes in use
 
 namespace Memory::Heap {
 
@@ -120,24 +119,36 @@ static Major* allocateNewPage(size_t size)
         pages = pageCount;
     }
 
-    Major* major = (Major*)Memory::newPage(pages * ARCH_PAGE_SIZE - 1);
-    if (major == nullptr) {
-        // Out of memory.
-        // TODO: Should we panic or just return NULL?
+    void* buffer = Memory::newPage(pages * ARCH_PAGE_SIZE - 1);
+    if (buffer == nullptr) {
         panic("Out of memory!");
     }
 
-    major->initialize(pages);
+    Major* major = new (buffer) Major(pages);
     totalAllocated += major->getSize();
 
     return major;
 }
 
+static inline void align(void* ptr)
+{
+    if (ALIGNMENT > 1) {
+        ptr = (void*)((uintptr_t)ptr + ALIGN_INFO);
+
+        uintptr_t diff = (uintptr_t)ptr & (ALIGNMENT - 1);
+        if (diff) {
+            diff = ALIGNMENT - diff;
+            ptr = (void*)((uintptr_t)ptr + diff);
+        }
+
+        *((ALIGN_TYPE*)((uintptr_t)ptr - ALIGN_INFO)) = diff + ALIGN_INFO;
+    }
+}
+
 void* malloc(size_t requestedSize)
 {
-    //void* ptr = nullptr;
-    //Minor* minor;
-    //Minor* newMinor;
+    // Minor* minor;
+    // Minor* newMinor;
     size_t size = requestedSize;
 
     // Adjust size so that there's enough space to store alignment info and
@@ -175,7 +186,8 @@ void* malloc(size_t requestedSize)
         }
     }
 
-    uintptr_t diff;
+    uintptr_t diff = 0;
+    void* ptr = nullptr;
     while (major) {
         diff = major->getSize() - major->getUsage(); // Total block free memory
         if (bestSize < diff) {
@@ -188,12 +200,44 @@ void* malloc(size_t requestedSize)
         if (diff < size + sizeof(Minor)) {
             if (major->Next()) {
                 major = reinterpret_cast<Major*>(major->Next());
+                continue;
             }
+
+            if (startedBet == 0) {
+                major = reinterpret_cast<Major*>(memoryList.Head());
+                startedBet = 0;
+                continue;
+            }
+
+            // Create a new major block and add it next to the current
+            Major* nextBlock = allocateNewPage(size);
+            memoryList.InsertAfter(major, nextBlock);
+            major = nextBlock;
         }
+
+        // Case 2: New block
+        if (major->getFirst() == nullptr) {
+            // FIXME: This seems like some voodoo we don't want...
+            void* buffer = (void*)((uintptr_t)major + sizeof(Minor));
+            Minor* minor = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
+            // TODO: Have to (void)minor since everything is taken care of in the constructor
+            // and we don't need to access it.
+            (void)minor;
+
+            major->setUsage(major->getUsage() + size + sizeof(Minor));
+            totalInUse += size;
+
+            // FIXME: Also seems like some voodoo...
+            ptr = (void*)((uintptr_t)major->getFirst() + sizeof(Minor));
+            // FIXME: Can't call align() without getting a compiler string overflow warning/error
+            //align(ptr);
+
+            goto exit;
+        }
+
     }
 
+exit:
     heapLock.unlock();
-
-    (void)startedBet;
-    return NULL;
+    return ptr;
 }
