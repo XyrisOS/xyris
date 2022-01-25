@@ -14,13 +14,13 @@
 
 namespace LinkedList {
 
-class LinkedListNode {
+class Node {
 public:
     /**
      * @brief Construct a new Linked List Node object
      *
      */
-    LinkedListNode()
+    Node()
         : next(nullptr)
         , prev(nullptr)
     {
@@ -33,7 +33,7 @@ public:
      * @param n Next node in the list
      * @param p Previous node in the list
      */
-    LinkedListNode(LinkedListNode* n, LinkedListNode* p)
+    Node(Node* n, Node* p)
         : next(n)
         , prev(p)
     {
@@ -43,9 +43,9 @@ public:
     /**
      * @brief Get the next node in the linked list
      *
-     * @return LinkedListNode* Pointer to next node
+     * @return Node* Pointer to next node
      */
-    LinkedListNode* Next()
+    Node* Next()
     {
         return next;
     }
@@ -53,9 +53,9 @@ public:
     /**
      * @brief Get the previous node in the linked list
      *
-     * @return LinkedListNode* Pointer to the previous node
+     * @return Node* Pointer to the previous node
      */
-    LinkedListNode* Previous()
+    Node* Previous()
     {
         return prev;
     }
@@ -65,7 +65,7 @@ public:
      *
      * @param n Pointer to next node
      */
-    void SetNext(LinkedListNode* n)
+    void SetNext(Node* n)
     {
         next = n;
     }
@@ -75,14 +75,14 @@ public:
      *
      * @param n Pointer to the previous node
      */
-    void SetPrevious(LinkedListNode* n)
+    void SetPrevious(Node* n)
     {
         prev = n;
     }
 
 private:
-    LinkedListNode* next;
-    LinkedListNode* prev;
+    Node* next;
+    Node* prev;
 };
 
 class LinkedList {
@@ -97,13 +97,13 @@ public:
 
     ~LinkedList()
     {
-        LinkedListNode* back;
+        Node* back;
         while ((back = RemoveBack())) {
             delete back;
         }
     }
 
-    void InsertFront(LinkedListNode* val)
+    void InsertFront(Node* val)
     {
         if (head) {
             InsertBefore(head, val);
@@ -114,7 +114,7 @@ public:
         }
     }
 
-    void InsertBack(LinkedListNode* node)
+    void InsertBack(Node* node)
     {
         if (tail) {
             InsertAfter(tail, node);
@@ -125,7 +125,7 @@ public:
         }
     }
 
-    void InsertBefore(LinkedListNode* next, LinkedListNode* node)
+    void InsertBefore(Node* next, Node* node)
     {
         if (!next)
             return;
@@ -140,7 +140,7 @@ public:
         ++count;
     }
 
-    void InsertAfter(LinkedListNode* prev, LinkedListNode* node)
+    void InsertAfter(Node* prev, Node* node)
     {
         if (!prev)
             return;
@@ -155,7 +155,7 @@ public:
         ++count;
     }
 
-    void Remove(LinkedListNode* del)
+    void Remove(Node* del)
     {
         if (del == head)
             head = del->Next();
@@ -168,38 +168,38 @@ public:
         count--;
     }
 
-    LinkedListNode* RemoveFront()
+    Node* RemoveFront()
     {
         if (!head)
             return NULL;
-        LinkedListNode* currHead = head;
+        Node* currHead = head;
         Remove(currHead);
         return currHead;
     }
 
-    LinkedListNode* RemoveBack()
+    Node* RemoveBack()
     {
         if (!tail)
             return NULL;
-        LinkedListNode* currTail = tail;
+        Node* currTail = tail;
         Remove(currTail);
         return currTail;
     }
 
-    LinkedListNode* RemoveBefore(LinkedListNode* node)
+    Node* RemoveBefore(Node* node)
     {
         if (!node)
             return NULL;
-        LinkedListNode* before = node->Previous();
+        Node* before = node->Previous();
         Remove(before);
         return before;
     }
 
-    LinkedListNode* RemoveAfter(LinkedListNode* node)
+    Node* RemoveAfter(Node* node)
     {
         if (!node)
             return NULL;
-        LinkedListNode* after = node->Next();
+        Node* after = node->Next();
         Remove(after);
         return after;
     }
@@ -207,9 +207,9 @@ public:
     /**
      * @brief Get pointer to the head node
      *
-     * @return LinkedListNode* Pointer to head node
+     * @return Node* Pointer to head node
      */
-    LinkedListNode* Head()
+    Node* Head()
     {
         return head;
     }
@@ -217,9 +217,9 @@ public:
     /**
      * @brief Get pointer to the tail node
      *
-     * @return LinkedListNode* Pointer to tail node
+     * @return Node* Pointer to tail node
      */
-    LinkedListNode* Tail()
+    Node* Tail()
     {
         return tail;
     }
@@ -246,8 +246,8 @@ public:
     }
 
 private:
-    LinkedListNode* head;
-    LinkedListNode* tail;
+    Node* head;
+    Node* tail;
     size_t count;
 };
 
