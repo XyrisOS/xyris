@@ -14,7 +14,6 @@
 
 namespace LinkedList {
 
-template<typename T>
 class LinkedListNode {
 public:
     /**
@@ -22,9 +21,8 @@ public:
      *
      */
     LinkedListNode()
-        : data(0)
-        , next(NULL)
-        , prev(NULL)
+        : next(nullptr)
+        , prev(nullptr)
     {
         // Default constructor
     }
@@ -32,39 +30,14 @@ public:
     /**
      * @brief Construct a new Linked List Node object
      *
-     * @param v Value to be stored
-     */
-    LinkedListNode(T v)
-        : data(v)
-        , next(NULL)
-        , prev(NULL)
-    {
-        // Value constructor
-    }
-
-    /**
-     * @brief Construct a new Linked List Node object
-     *
      * @param n Next node in the list
      * @param p Previous node in the list
-     * @param v Value to be stored
      */
-    LinkedListNode(T v, LinkedListNode* n, LinkedListNode* p)
-        : data(v)
-        , next(n)
+    LinkedListNode(LinkedListNode* n, LinkedListNode* p)
+        : next(n)
         , prev(p)
     {
         // Complete constructor
-    }
-
-    /**
-     * @brief Return the data stored by the node
-     *
-     * @return T Stored data
-     */
-    T& Data()
-    {
-        return data;
     }
 
     /**
@@ -88,15 +61,6 @@ public:
     }
 
     /**
-     * @brief Set the node's data
-     *
-     */
-    void SetData(T v)
-    {
-        data = v;
-    }
-
-    /**
      * @brief Set the node's next pointer
      *
      * @param n Pointer to next node
@@ -117,91 +81,81 @@ public:
     }
 
 private:
-    T data;
     LinkedListNode* next;
     LinkedListNode* prev;
 };
 
-template<typename T>
 class LinkedList {
 public:
     LinkedList()
-        : head(NULL)
-        , tail(NULL)
+        : head(nullptr)
+        , tail(nullptr)
         , count(0)
     {
         // Default constructor
     }
 
-    LinkedList(T val)
-        : LinkedList()
-    {
-        InsertFront(val);
-    }
-
     ~LinkedList()
     {
-        LinkedListNode<T>* back;
+        LinkedListNode* back;
         while ((back = RemoveBack())) {
             delete back;
         }
     }
 
-    void InsertFront(T val)
+    void InsertFront(LinkedListNode* val)
     {
         if (head) {
             InsertBefore(head, val);
         } else {
-            head = new LinkedListNode<T>(val);
+            head = val;
             tail = head;
             ++count;
         }
     }
 
-    void InsertBack(T val)
+    void InsertBack(LinkedListNode* node)
     {
         if (tail) {
-            InsertAfter(tail, val);
+            InsertAfter(tail, node);
         } else {
-            tail = new LinkedListNode<T>(val);
+            tail = node;
             head = tail;
             ++count;
         }
     }
 
-    void InsertBefore(LinkedListNode<T>* next, T val)
+    void InsertBefore(LinkedListNode* next, LinkedListNode* node)
     {
         if (!next)
             return;
-        LinkedListNode<T>* newNode = new LinkedListNode<T>(val);
-        newNode->SetPrevious(next->Previous());
-        next->SetPrevious(newNode);
-        newNode->SetNext(next);
-        if (newNode->Previous()) {
-            newNode->Previous()->SetNext(newNode);
+        node->SetPrevious(next->Previous());
+        next->SetPrevious(node);
+        node->SetNext(next);
+        if (node->Previous()) {
+            node->Previous()->SetNext(node);
         } else {
-            head = newNode;
+            head = node;
         }
         ++count;
     }
 
-    void InsertAfter(LinkedListNode<T>* prev, T val)
+    void InsertAfter(LinkedListNode* prev, LinkedListNode* node)
     {
         if (!prev)
             return;
-        LinkedListNode<T>* newNode = new LinkedListNode<T>(val);
-        newNode->SetNext(prev->Next());
-        prev->SetNext(newNode);
-        newNode->SetPrevious(prev);
-        if (newNode->Next()) {
-            newNode->Next()->SetPrevious(newNode);
+        node->SetNext(prev->Next());
+        prev->SetNext(node);
+        node->SetPrevious(prev);
+        if (node->Next()) {
+            node->Next()->SetPrevious(node);
         } else {
-            tail = newNode;
+            tail = node;
         }
         ++count;
     }
 
-    void Remove(LinkedListNode<T>* del)
+    void Remove(LinkedListNode* del)
     {
         if (del == head)
             head = del->Next();
@@ -214,38 +168,38 @@ public:
         count--;
     }
 
-    LinkedListNode<T>* RemoveFront()
+    LinkedListNode* RemoveFront()
     {
         if (!head)
             return NULL;
-        LinkedListNode<T>* currHead = head;
+        LinkedListNode* currHead = head;
         Remove(currHead);
         return currHead;
     }
 
-    LinkedListNode<T>* RemoveBack()
+    LinkedListNode* RemoveBack()
     {
         if (!tail)
             return NULL;
-        LinkedListNode<T>* currTail = tail;
+        LinkedListNode* currTail = tail;
         Remove(currTail);
         return currTail;
     }
 
-    LinkedListNode<T>* RemoveBefore(LinkedListNode<T>* node)
+    LinkedListNode* RemoveBefore(LinkedListNode* node)
     {
         if (!node)
             return NULL;
-        LinkedListNode<T>* before = node->Previous();
+        LinkedListNode* before = node->Previous();
         Remove(before);
         return before;
     }
 
-    LinkedListNode<T>* RemoveAfter(LinkedListNode<T>* node)
+    LinkedListNode* RemoveAfter(LinkedListNode* node)
     {
         if (!node)
             return NULL;
-        LinkedListNode<T>* after = node->Next();
+        LinkedListNode* after = node->Next();
         Remove(after);
         return after;
     }
@@ -255,7 +209,7 @@ public:
      *
      * @return LinkedListNode* Pointer to head node
      */
-    LinkedListNode<T>* Head()
+    LinkedListNode* Head()
     {
         return head;
     }
@@ -265,7 +219,7 @@ public:
      *
      * @return LinkedListNode* Pointer to tail node
      */
-    LinkedListNode<T>* Tail()
+    LinkedListNode* Tail()
     {
         return tail;
     }
@@ -292,8 +246,8 @@ public:
     }
 
 private:
-    LinkedListNode<T>* head;
-    LinkedListNode<T>* tail;
+    LinkedListNode* head;
+    LinkedListNode* tail;
     size_t count;
 };
 

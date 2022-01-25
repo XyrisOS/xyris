@@ -12,82 +12,117 @@
 // Linked list is header-only template
 #include <Library/LinkedList.hpp>
 
-TEST_CASE("linked list operations", "[linkedlist]") {
-    LinkedList::LinkedList<uint8_t> list;
+/**
+ * @brief Test class that extends the LinkedListNode class
+ * to allow for a single uint8_t to be stored.
+ *
+ */
+class TestNode : public LinkedList::LinkedListNode {
+public:
+    TestNode()
+        : LinkedListNode()
+        , m_Data(0)
+    {
+        // Default constructor
+    }
+    TestNode(uint8_t i)
+        : LinkedListNode()
+        , m_Data(i) {
+            // Value constructor
+        };
+
+    uint8_t Data() { return m_Data; }
+
+private:
+    uint8_t m_Data;
+};
+
+TEST_CASE("linked list operations", "[linkedlist]")
+{
+    LinkedList::LinkedList list;
     // Ensure the constructor sets the head properly
-    SECTION("constructor") {
-        LinkedList::LinkedList<uint8_t> list2 = LinkedList::LinkedList<uint8_t>(0);
-        auto node = list2.Head();
-        REQUIRE(node != NULL);
-        REQUIRE(node->Data() == 0);
+    SECTION("constructor")
+    {
+        LinkedList::LinkedList list2 = LinkedList::LinkedList();
+        REQUIRE(list2.Head() == nullptr);
     }
     // Ensure the linked list insert data properly
-    SECTION("Insertion") {
+    SECTION("Insertion")
+    {
         for (int i = 0; i < UINT8_MAX; i++) {
-            list.InsertBack(i);
+            TestNode* node = new TestNode(i);
+            list.InsertBack(node);
         }
         // 0 -> 254 == 255 entries
         REQUIRE(list.Count() == UINT8_MAX);
     }
     // Ensure the linked list can remove data properly
-    SECTION("Insert (Back) : Removal (Back)") {
+    SECTION("Insert (Back) : Removal (Back)")
+    {
         for (int i = 0; i < UINT8_MAX; i++) {
-            list.InsertBack(i);
+            TestNode* node = new TestNode(i);
+            list.InsertBack(node);
         }
         // 0 -> 254 == 255 entries
         REQUIRE(list.Count() == UINT8_MAX);
         // Remove all data
         for (int i = UINT8_MAX; i > 0; i--) {
-            auto node = list.RemoveBack();
-            REQUIRE(node != NULL);
+            TestNode* node = reinterpret_cast<TestNode*>(list.RemoveBack());
+            REQUIRE(node != nullptr);
             REQUIRE(node->Data() == (i - 1));
             delete node;
         }
         REQUIRE(list.Count() == 0);
     }
     // Ensure the linked list can remove data properly
-    SECTION("Insert (Back) : Removal (Front)") {
+    SECTION("Insert (Back) : Removal (Front)")
+    {
         for (int i = 0; i < UINT8_MAX; i++) {
-            list.InsertBack(i);
+            TestNode* node = new TestNode(i);
+            list.InsertBack(node);
         }
         // 0 -> 254 == 255 entries
         REQUIRE(list.Count() == UINT8_MAX);
         // Remove all data
         for (int i = 0; i < UINT8_MAX; i++) {
-            auto node = list.RemoveFront();
-            REQUIRE(node != NULL);
+            TestNode* node = reinterpret_cast<TestNode*>(list.RemoveFront());
+            REQUIRE(node != nullptr);
             REQUIRE(node->Data() == i);
             delete node;
         }
         REQUIRE(list.Count() == 0);
     }
     // Ensure the linked list can remove data properly
-    SECTION("Insert (Front) : Removal (Back)") {
+    SECTION("Insert (Front) : Removal (Back)")
+    {
         for (int i = 0; i < UINT8_MAX; i++) {
-            list.InsertFront(i);
+            TestNode* node = new TestNode(i);
+            list.InsertFront(node);
         }
         // 0 -> 254 == 255 entries
         REQUIRE(list.Count() == UINT8_MAX);
         // Remove all data
         for (int i = UINT8_MAX; i > 0; i--) {
-            auto node = list.RemoveBack();
-            REQUIRE(node != NULL);
+            TestNode* node = reinterpret_cast<TestNode*>(list.RemoveBack());
+            REQUIRE(node != nullptr);
             REQUIRE(node->Data() == (UINT8_MAX - i));
             delete node;
         }
         REQUIRE(list.Count() == 0);
     }
     // Ensure the linked list can remove data properly
-    SECTION("Insert (Front) : Removal (Front)") {
+    SECTION("Insert (Front) : Removal (Front)")
+    {
         for (int i = 0; i < UINT8_MAX; i++) {
-            list.InsertFront(i);
+            TestNode* node = new TestNode(i);
+            list.InsertFront(node);
         }
         // 0 -> 254 == 255 entries
         REQUIRE(list.Count() == UINT8_MAX);
         // Remove all data
-        for (int i = UINT8_MAX; i > 0 ; i--) {
-            auto node = list.RemoveFront();
-            REQUIRE(node != NULL);
+        for (int i = UINT8_MAX; i > 0; i--) {
+            TestNode* node = reinterpret_cast<TestNode*>(list.RemoveFront());
+            REQUIRE(node != nullptr);
             REQUIRE(node->Data() == (i - 1));
             delete node;
         }
