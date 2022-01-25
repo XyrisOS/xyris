@@ -13,20 +13,20 @@
 #include <Library/LinkedList.hpp>
 
 /**
- * @brief Test class that extends the LinkedListNode class
+ * @brief Test class that extends the Node class
  * to allow for a single uint8_t to be stored.
  *
  */
-class TestNode : public LinkedList::LinkedListNode {
+class TestNode : public LinkedList::Node {
 public:
     TestNode()
-        : LinkedListNode()
+        : Node()
         , m_Data(0)
     {
         // Default constructor
     }
     TestNode(uint8_t i)
-        : LinkedListNode()
+        : Node()
         , m_Data(i) {
             // Value constructor
         };
