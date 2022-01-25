@@ -82,8 +82,8 @@ static size_t magicHeapDead = HEAP_DEATH;
 static LinkedList::LinkedList memoryList;
 static Major* bestBet = nullptr; // Major block with most free memory
 
-static size_t pageCount = 16;     // Number of pages to request per chunk.
-static size_t totalAllocated = 0; // Total bytes allocated
+static const size_t pageCount = 16; // Number of pages to request per chunk.
+static size_t totalAllocated = 0;   // Total bytes allocated
 static size_t totalInUse = 0;       // Total bytes in use
 
 namespace Memory::Heap {
