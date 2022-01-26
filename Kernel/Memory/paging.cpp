@@ -230,16 +230,20 @@ void* newPage(size_t size)
     RAIIMutex lock(pagingLock);
     size_t page_count = PAGE_COUNT(size);
     size_t free_idx = findNextFreeVirtualAddress(page_count);
-    if (free_idx == SIZE_MAX)
-        return NULL;
+    if (free_idx == SIZE_MAX) {
+        return nullptr;
+    }
+
     for (size_t i = free_idx; i < free_idx + page_count; i++) {
         size_t phys_page_idx = physical.findNextFreePhysicalAddress();
-        if (phys_page_idx == SIZE_MAX)
-            return NULL;
+        if (phys_page_idx == SIZE_MAX) {
+            return nullptr;
+        }
         Arch::Memory::Address phys(phys_page_idx * ARCH_PAGE_SIZE);
         Arch::Memory::Address vaddr(i * ARCH_PAGE_SIZE);
         mapKernelPage(vaddr, phys);
     }
+
     return (void*)(free_idx * ARCH_PAGE_SIZE);
 }
 
