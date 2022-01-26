@@ -105,6 +105,7 @@ void initialize()
 
 static Major* allocateNewPage(size_t size)
 {
+    // Allocate enough to fit the data plus a major and minor block header
     size_t pages = size + sizeof(Major) + sizeof(Minor);
 
     // Align the buffer size if necessary
@@ -147,8 +148,6 @@ static inline void align(void* ptr)
 
 void* malloc(size_t requestedSize)
 {
-    // Minor* minor;
-    // Minor* newMinor;
     size_t size = requestedSize;
 
     // Adjust size so that there's enough space to store alignment info and
@@ -217,24 +216,87 @@ void* malloc(size_t requestedSize)
 
         // Case 2: New block
         if (major->getFirst() == nullptr) {
-            // FIXME: This seems like some voodoo we don't want...
-            void* buffer = (void*)((uintptr_t)major + sizeof(Minor));
+            // Get a pointer to the region of memory directly after the major block
+            void* buffer = (void*)((uintptr_t)major + sizeof(Major));
+            // Use this region of memory as a minor block header
             Minor* minor = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
-            // TODO: Have to (void)minor since everything is taken care of in the constructor
-            // and we don't need to access it.
-            (void)minor;
 
+            major->setFirst(minor);
             major->setUsage(major->getUsage() + size + sizeof(Minor));
             totalInUse += size;
 
-            // FIXME: Also seems like some voodoo...
+            // Update the pointer to the memory directly after the minor block
             ptr = (void*)((uintptr_t)major->getFirst() + sizeof(Minor));
+
+            // Align the pointer to the nearest bounary (block headers may cause unalignment)
             // FIXME: Can't call align() without getting a compiler string overflow warning/error
-            //align(ptr);
+            // align(ptr);
 
             goto exit;
         }
 
+        // Case 3: Block is in use and there's enough space at the start of the block
+        diff = (uintptr_t)major->getFirst() - ((uintptr_t)major + sizeof(Major));
+
+        // Space in the front?
+        if (diff >= (size + sizeof(Minor))) {
+            Minor* minor = major->getFirst();
+            // Get a pointer to the region of memory directly after the major block
+            void* buffer = (void*)((uintptr_t)major + sizeof(Major));
+            // Use this region of memory as a minor block header
+            Minor* previous = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
+
+            // TODO: Keep track of this using the linked list library somehow?
+            minor->SetPrevious(previous);
+            previous->SetNext(minor);
+            major->setUsage(major->getUsage() + size + sizeof(Minor));
+            totalInUse += size;
+
+            // Update the pointer to the memory directly after the minor block
+            ptr = (void*)((uintptr_t)major->getFirst() + sizeof(Minor));
+
+            // Align the pointer to the nearest bounary (block headers may cause unalignment)
+            // FIXME: Can't call align() without getting a compiler string overflow warning/error
+            // align(ptr);
+        }
+
+        // Case 4: There is enough space in this block, but is it contiguous?
+        // Minor* newMinor;
+        Minor* minor = major->getFirst();
+        // Loop within the block and check contiguity
+        while (minor) {
+            // Case 4.1: End of minor block in major block.
+            if (minor->Next()) {
+                // The rest of the block is free, but is it big enough?
+                diff = ((uintptr_t)major + major->getSize()) - ((uintptr_t)minor + sizeof(Minor) + minor->m_Size);
+                if (diff >= (size + sizeof(Minor))) {
+                    // Enough contiguous memory
+                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->m_Size);
+                    // Use this region of memory as a minor block header
+                    Minor* next = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
+                    next->SetPrevious(minor);
+                    minor->SetNext(next);
+                    major->setUsage(major->getUsage() + size + sizeof(Minor));
+                    totalInUse += size;
+
+                    // Update the pointer to the memory directly after the minor block
+                    ptr = (void*)((uintptr_t)minor + sizeof(Minor));
+
+                    // Align the pointer to the nearest bounary (block headers may cause unalignment)
+                    // FIXME: Can't call align() without getting a compiler string overflow warning/error
+                    // align(ptr);
+                }
+            }
+
+            // Case 4.2: Is there space between two minor blocks?
+            if (minor->Next()) {
+                // Is the difference between this minor block and the next enough?
+                diff = (uintptr_t)minor->Next() - ((uintptr_t)minor + sizeof(Minor) + minor->m_Size);
+                if (diff >= (size + sizeof(Minor))) {
+                    // Enough contiguous memory
+                }
+            }
+        }
     }
 
 exit:
