@@ -163,7 +163,7 @@ void* malloc(size_t requestedSize)
         return NULL;
     }
 
-    if (memoryList.Head() == nullptr) {
+    if (memoryList.IsEmpty()) {
         // Initialization of first major block
         Major* root = allocateNewPage(size);
         if (root == nullptr) {
@@ -210,6 +210,10 @@ void* malloc(size_t requestedSize)
 
             // Create a new major block and add it next to the current
             Major* nextBlock = allocateNewPage(size);
+            if (nextBlock == nullptr) {
+                panic("Failed to allocate new major block");
+            }
+
             memoryList.InsertAfter(major, nextBlock);
             major = nextBlock;
         }
@@ -231,7 +235,6 @@ void* malloc(size_t requestedSize)
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             // FIXME: Can't call align() without getting a compiler string overflow warning/error
             // align(ptr);
-
             goto exit;
         }
 
@@ -258,6 +261,7 @@ void* malloc(size_t requestedSize)
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             // FIXME: Can't call align() without getting a compiler string overflow warning/error
             // align(ptr);
+            goto exit;
         }
 
         // Case 4: There is enough space in this block, but is it contiguous?
@@ -285,6 +289,7 @@ void* malloc(size_t requestedSize)
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
                     // FIXME: Can't call align() without getting a compiler string overflow warning/error
                     // align(ptr);
+                    goto exit;
                 }
             }
 
@@ -294,9 +299,48 @@ void* malloc(size_t requestedSize)
                 diff = (uintptr_t)minor->Next() - ((uintptr_t)minor + sizeof(Minor) + minor->m_Size);
                 if (diff >= (size + sizeof(Minor))) {
                     // Enough contiguous memory
+                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->m_Size);
+                    // Use this region of memory as a minor block header
+                    Minor* newMinor = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
+                    // TODO: Keep track of this using the linked list library somehow?
+                    newMinor->SetNext(minor->Next());
+                    newMinor->SetPrevious(minor);
+                    minor->Next()->SetPrevious(newMinor);
+                    minor->SetNext(newMinor);
+                    major->setUsage(major->getUsage() + size + sizeof(Minor));
+                    totalInUse += size;
+
+                    // Update the pointer to the memory directly after the minor block
+                    ptr = (void*)((uintptr_t)newMinor + sizeof(Minor));
+
+                    // Align the pointer to the nearest bounary (block headers may cause unalignment)
+                    // FIXME: Can't call align() without getting a compiler string overflow warning/error
+                    // align(ptr);
+                    goto exit;
                 }
             }
+
+            minor = reinterpret_cast<Minor*>(minor->Next());
         }
+
+        // Case 5: Block is full.
+        if (major->Next()) {
+            if (startedBet == 1) {
+                major = reinterpret_cast<Major*>(memoryList.Head());
+                startedBet = 0;
+                continue;
+            }
+
+            // Run out of page space.
+            Major* nextBlock = allocateNewPage(size);
+            if (nextBlock == nullptr) {
+                panic("Failed to allocate new major block");
+            }
+
+            memoryList.InsertAfter(major, nextBlock);
+        }
+
+        major = reinterpret_cast<Major*>(major->Next());
     }
 
 exit:
