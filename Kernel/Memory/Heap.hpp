@@ -13,7 +13,26 @@
 
 namespace Memory::Heap {
 
+/**
+ * @brief Initialize kernel heap. Randomizes the heap integrity magic
+ * values and should only be called once.
+ *
+ */
 void initialize();
+
+/**
+ * @brief Get the total number of bytes allocated on the heap.
+ *
+ * @return size_t Number of allocated bytes
+ */
+size_t getTotalAllocated();
+
+/**
+ * @brief Get the total number of bytes allocated and in use on the heap.
+ *
+ * @return size_t Number of bytes allocated and in use.
+ */
+size_t getTotalInUse();
 
 } // !namespace Memory::Heap
 
