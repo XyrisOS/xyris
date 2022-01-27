@@ -13,7 +13,7 @@
 #include <Arch/Memory.hpp>
 #include <Bootloader/Arguments.hpp>
 #include <Library/Bitset.hpp>
-#include <Locking/Mutex.hpp>
+#include <Locking/RAII.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
 #include <Memory/Physical.hpp>
@@ -226,7 +226,7 @@ static uintptr_t findNextFreeVirtualAddress(size_t seq)
 
 void* newPage(size_t size)
 {
-    pagingLock.lock();
+    RAIIMutex lock(pagingLock);
     size_t page_count = PAGE_COUNT(size);
     size_t free_idx = findNextFreeVirtualAddress(page_count);
     if (free_idx == SIZE_MAX)
@@ -239,13 +239,12 @@ void* newPage(size_t size)
         Arch::Memory::Address vaddr(i * ARCH_PAGE_SIZE);
         mapKernelPage(vaddr, phys);
     }
-    pagingLock.unlock();
     return (void*)(free_idx * ARCH_PAGE_SIZE);
 }
 
 void freePage(void* page, size_t size)
 {
-    pagingLock.lock();
+    RAIIMutex lock(pagingLock);
     size_t page_count = PAGE_COUNT(size);
     Arch::Memory::Address addr((uintptr_t)page);
     for (size_t i = addr.page().tableIndex; i < addr.page().tableIndex + page_count; i++) {
@@ -259,7 +258,6 @@ void freePage(void* page, size_t size)
         // clear that tlb
         Arch::Memory::pageInvalidate(page);
     }
-    pagingLock.unlock();
 }
 
 bool isPresent(uintptr_t addr)

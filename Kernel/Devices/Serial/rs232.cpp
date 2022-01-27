@@ -17,7 +17,7 @@
 #include <Devices/Serial/rs232.hpp>
 #include <Memory/heap.hpp>
 #include <Library/stdio.hpp>
-#include <Locking/Mutex.hpp>
+#include <Locking/RAII.hpp>
 #include <Library/string.hpp>
 #include <Library/RingBuffer.hpp>
 
@@ -55,9 +55,9 @@ static int is_transmit_empty() {
 }
 
 static char read_byte() {
-    mutex_rs232.lock();
-    while (received() == 0);
-    mutex_rs232.unlock();
+    lockedRegion([]() {
+        while (received() == 0);
+    }, mutex_rs232);
     return readByte(rs_232_port_base + RS_232_DATA_REG);
 }
 
