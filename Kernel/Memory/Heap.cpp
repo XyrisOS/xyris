@@ -30,10 +30,10 @@ class Major : public LinkedList::Node {
 public:
     Major(size_t pages)
         : Node()
+        , m_First(nullptr)
         , m_Pages(pages)
         , m_Size(pages * ARCH_PAGE_SIZE)
         , m_Usage(sizeof(Major))
-        , m_First(nullptr)
     {
         // Default constructor
     }
@@ -49,10 +49,10 @@ public:
     Minor* getFirst() { return m_First; }
 
 private:
+    Minor* m_First;
     size_t m_Pages;
     size_t m_Size;
     size_t m_Usage;
-    Minor* m_First;
 };
 
 class Minor : public LinkedList::Node {
@@ -67,6 +67,17 @@ public:
         // Default constructor
     }
 
+    void setBlock(Major* block) { m_Block = block; }
+    void setMagic(size_t magic) { m_Magic = magic; }
+    void setSize(size_t size) { m_Size = size; }
+    void setRequestedSize(size_t requestedSize) { m_RequestedSize = requestedSize; }
+
+    Major* getBlock() { return m_Block; }
+    size_t getMagic() { return m_Magic; }
+    size_t getSize() { return m_Size; }
+    size_t getRequestedSize() { return m_RequestedSize; }
+
+private:
     Major* m_Block;
     size_t m_Magic;
     size_t m_Size;
@@ -99,6 +110,16 @@ void initialize()
 
         heapLock.unlock();
     }
+}
+
+size_t getTotalAllocated()
+{
+    return totalAllocated;
+}
+
+size_t getTotalInUse()
+{
+    return totalInUse;
 }
 
 } // !namespace Memory::Heap
@@ -270,10 +291,10 @@ void* malloc(size_t requestedSize)
             // Case 4.1: End of minor block in major block.
             if (minor->Next()) {
                 // The rest of the block is free, but is it big enough?
-                diff = ((uintptr_t)major + major->getSize()) - ((uintptr_t)minor + sizeof(Minor) + minor->m_Size);
+                diff = ((uintptr_t)major + major->getSize()) - ((uintptr_t)minor + sizeof(Minor) + minor->getSize());
                 if (diff >= (size + sizeof(Minor))) {
                     // Enough contiguous memory
-                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->m_Size);
+                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->getSize());
                     // Use this region of memory as a minor block header
                     Minor* next = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
                     next->SetPrevious(minor);
@@ -293,10 +314,10 @@ void* malloc(size_t requestedSize)
             // Case 4.2: Is there space between two minor blocks?
             if (minor->Next()) {
                 // Is the difference between this minor block and the next enough?
-                diff = (uintptr_t)minor->Next() - ((uintptr_t)minor + sizeof(Minor) + minor->m_Size);
+                diff = (uintptr_t)minor->Next() - ((uintptr_t)minor + sizeof(Minor) + minor->getSize());
                 if (diff >= (size + sizeof(Minor))) {
                     // Enough contiguous memory
-                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->m_Size);
+                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->getSize());
                     // Use this region of memory as a minor block header
                     Minor* newMinor = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
                     // TODO: Keep track of this using the linked list library somehow?
