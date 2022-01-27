@@ -131,18 +131,18 @@ static Major* allocateNewPage(size_t size)
     return major;
 }
 
-static inline void align(void* ptr)
+static inline void align(void** ptr)
 {
     if (ALIGNMENT > 1) {
-        ptr = (void*)((uintptr_t)ptr + ALIGN_INFO);
+        *ptr = (void*)((uintptr_t)*ptr + ALIGN_INFO);
 
-        uintptr_t diff = (uintptr_t)ptr & (ALIGNMENT - 1);
+        uintptr_t diff = (uintptr_t)*ptr & (ALIGNMENT - 1);
         if (diff) {
             diff = ALIGNMENT - diff;
-            ptr = (void*)((uintptr_t)ptr + diff);
+            *ptr = (void*)((uintptr_t)*ptr + diff);
         }
 
-        *((ALIGN_TYPE*)((uintptr_t)ptr - ALIGN_INFO)) = diff + ALIGN_INFO;
+        *((ALIGN_TYPE*)((uintptr_t)*ptr - ALIGN_INFO)) = diff + ALIGN_INFO;
     }
 }
 
@@ -233,8 +233,7 @@ void* malloc(size_t requestedSize)
             ptr = (void*)((uintptr_t)major->getFirst() + sizeof(Minor));
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
-            // FIXME: Can't call align() without getting a compiler string overflow warning/error
-            // align(ptr);
+            align(&ptr);
             goto exit;
         }
 
@@ -259,8 +258,7 @@ void* malloc(size_t requestedSize)
             ptr = (void*)((uintptr_t)major->getFirst() + sizeof(Minor));
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
-            // FIXME: Can't call align() without getting a compiler string overflow warning/error
-            // align(ptr);
+            align(&ptr);
             goto exit;
         }
 
@@ -287,8 +285,7 @@ void* malloc(size_t requestedSize)
                     ptr = (void*)((uintptr_t)minor + sizeof(Minor));
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
-                    // FIXME: Can't call align() without getting a compiler string overflow warning/error
-                    // align(ptr);
+                    align(&ptr);
                     goto exit;
                 }
             }
@@ -314,8 +311,7 @@ void* malloc(size_t requestedSize)
                     ptr = (void*)((uintptr_t)newMinor + sizeof(Minor));
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
-                    // FIXME: Can't call align() without getting a compiler string overflow warning/error
-                    // align(ptr);
+                    align(&ptr);
                     goto exit;
                 }
             }
