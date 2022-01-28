@@ -31,58 +31,56 @@ class Major : public LinkedList::Node {
 public:
     Major(size_t pages)
         : Node()
-        , m_First(nullptr)
-        , m_Pages(pages)
-        , m_Size(pages * ARCH_PAGE_SIZE)
-        , m_Usage(sizeof(Major))
+        , m_pages(pages)
+        , m_size(pages * ARCH_PAGE_SIZE)
+        , m_usage(sizeof(Major))
     {
         // Default constructor
     }
 
-    void setPages(size_t pages) { m_Pages = pages; }
-    void setSize(size_t size) { m_Size = size; }
-    void setUsage(size_t usage) { m_Usage = usage; }
-    void setFirst(Minor* first) { m_First = first; }
+    void setPages(size_t pages) { m_pages = pages; }
+    void setSize(size_t size) { m_size = size; }
+    void setUsage(size_t usage) { m_usage = usage; }
 
-    size_t getPages() { return m_Pages; }
-    size_t getSize() { return m_Size; }
-    size_t getUsage() { return m_Usage; }
-    Minor* getFirst() { return m_First; }
+    size_t pages() { return m_pages; }
+    size_t size() { return m_size; }
+    size_t usage() { return m_usage; }
+
+    LinkedList::LinkedList llMinor;
 
 private:
-    Minor* m_First;
-    size_t m_Pages;
-    size_t m_Size;
-    size_t m_Usage;
+    size_t m_pages;
+    size_t m_size;
+    size_t m_usage;
 };
 
 class Minor : public LinkedList::Node {
 public:
     Minor(size_t magic, Major* major, size_t size, size_t requestedSize)
         : Node()
-        , m_Block(major)
-        , m_Magic(magic)
-        , m_Size(size)
-        , m_RequestedSize(requestedSize)
+        , m_block(major)
+        , m_magic(magic)
+        , m_size(size)
+        , m_requestedSize(requestedSize)
     {
         // Default constructor
     }
 
-    void setBlock(Major* block) { m_Block = block; }
-    void setMagic(size_t magic) { m_Magic = magic; }
-    void setSize(size_t size) { m_Size = size; }
-    void setRequestedSize(size_t requestedSize) { m_RequestedSize = requestedSize; }
+    void setBlock(Major* block) { m_block = block; }
+    void setMagic(size_t magic) { m_magic = magic; }
+    void setSize(size_t size) { m_size = size; }
+    void setRequestedSize(size_t requestedSize) { m_requestedSize = requestedSize; }
 
-    Major* getBlock() { return m_Block; }
-    size_t getMagic() { return m_Magic; }
-    size_t getSize() { return m_Size; }
-    size_t getRequestedSize() { return m_RequestedSize; }
+    Major* block() { return m_block; }
+    size_t magic() { return m_magic; }
+    size_t size() { return m_size; }
+    size_t requestedSize() { return m_requestedSize; }
 
 private:
-    Major* m_Block;
-    size_t m_Magic;
-    size_t m_Size;
-    size_t m_RequestedSize;
+    Major* m_block;
+    size_t m_magic;
+    size_t m_size;
+    size_t m_requestedSize;
 };
 
 static Mutex heapLock("heap");
@@ -148,7 +146,7 @@ static Major* allocateNewPage(size_t size)
     }
 
     Major* major = new (buffer) Major(pages);
-    totalAllocated += major->getSize();
+    totalAllocated += major->size();
 
     return major;
 }
@@ -199,7 +197,7 @@ void* malloc(size_t requestedSize)
     Major* major = reinterpret_cast<Major*>(memoryList.Head());
 
     if (bestBet) {
-        bestSize = bestBet->getSize() - bestBet->getUsage();
+        bestSize = bestBet->size() - bestBet->usage();
         if (bestSize > (size + sizeof(Minor))) {
             major = bestBet;
             startedBet = 1;
@@ -209,7 +207,7 @@ void* malloc(size_t requestedSize)
     uintptr_t diff = 0;
     void* ptr = nullptr;
     while (major) {
-        diff = major->getSize() - major->getUsage(); // Total block free memory
+        diff = major->size() - major->usage(); // Total block free memory
         if (bestSize < diff) {
             // Block has more free memory than previous best
             bestBet = major;
@@ -240,18 +238,17 @@ void* malloc(size_t requestedSize)
         }
 
         // Case 2: New block
-        if (major->getFirst() == nullptr) {
+        if (major->llMinor.Head() == nullptr) {
             // Get a pointer to the region of memory directly after the major block
             void* buffer = (void*)((uintptr_t)major + sizeof(Major));
             // Use this region of memory as a minor block header
             Minor* minor = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
-
-            major->setFirst(minor);
-            major->setUsage(major->getUsage() + size + sizeof(Minor));
+            major->llMinor.InsertFront(minor);
+            major->setUsage(major->usage() + size + sizeof(Minor));
             totalInUse += size;
 
             // Update the pointer to the memory directly after the minor block
-            ptr = (void*)((uintptr_t)major->getFirst() + sizeof(Minor));
+            ptr = (void*)((uintptr_t)major->llMinor.Head() + sizeof(Minor));
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
@@ -259,24 +256,21 @@ void* malloc(size_t requestedSize)
         }
 
         // Case 3: Block is in use and there's enough space at the start of the block
-        diff = (uintptr_t)major->getFirst() - ((uintptr_t)major + sizeof(Major));
+        diff = (uintptr_t)major->llMinor.Head() - ((uintptr_t)major + sizeof(Major));
 
         // Space in the front?
         if (diff >= (size + sizeof(Minor))) {
-            Minor* minor = major->getFirst();
+            Minor* minor = reinterpret_cast<Minor*>(major->llMinor.Head());
             // Get a pointer to the region of memory directly after the major block
             void* buffer = (void*)((uintptr_t)major + sizeof(Major));
             // Use this region of memory as a minor block header
-            Minor* previous = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
-
-            // TODO: Keep track of this using the linked list library somehow?
-            minor->SetPrevious(previous);
-            previous->SetNext(minor);
-            major->setUsage(major->getUsage() + size + sizeof(Minor));
+            Minor* newMinor = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
+            major->llMinor.InsertBefore(newMinor, minor);
+            major->setUsage(major->usage() + size + sizeof(Minor));
             totalInUse += size;
 
             // Update the pointer to the memory directly after the minor block
-            ptr = (void*)((uintptr_t)major->getFirst() + sizeof(Minor));
+            ptr = (void*)((uintptr_t)major->llMinor.Head() + sizeof(Minor));
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
@@ -285,21 +279,21 @@ void* malloc(size_t requestedSize)
 
         // Case 4: There is enough space in this block, but is it contiguous?
         // Minor* newMinor;
-        Minor* minor = major->getFirst();
+        Minor* minor = reinterpret_cast<Minor*>(major->llMinor.Head());
         // Loop within the block and check contiguity
         while (minor) {
             // Case 4.1: End of minor block in major block.
             if (minor->Next()) {
                 // The rest of the block is free, but is it big enough?
-                diff = ((uintptr_t)major + major->getSize()) - ((uintptr_t)minor + sizeof(Minor) + minor->getSize());
+                diff = ((uintptr_t)major + major->size()) - ((uintptr_t)minor + sizeof(Minor) + minor->size());
                 if (diff >= (size + sizeof(Minor))) {
                     // Enough contiguous memory
-                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->getSize());
+                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->size());
                     // Use this region of memory as a minor block header
                     Minor* next = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
                     next->SetPrevious(minor);
                     minor->SetNext(next);
-                    major->setUsage(major->getUsage() + size + sizeof(Minor));
+                    major->setUsage(major->usage() + size + sizeof(Minor));
                     totalInUse += size;
 
                     // Update the pointer to the memory directly after the minor block
@@ -314,18 +308,14 @@ void* malloc(size_t requestedSize)
             // Case 4.2: Is there space between two minor blocks?
             if (minor->Next()) {
                 // Is the difference between this minor block and the next enough?
-                diff = (uintptr_t)minor->Next() - ((uintptr_t)minor + sizeof(Minor) + minor->getSize());
+                diff = (uintptr_t)minor->Next() - ((uintptr_t)minor + sizeof(Minor) + minor->size());
                 if (diff >= (size + sizeof(Minor))) {
                     // Enough contiguous memory
-                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->getSize());
+                    void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->size());
                     // Use this region of memory as a minor block header
                     Minor* newMinor = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
-                    // TODO: Keep track of this using the linked list library somehow?
-                    newMinor->SetNext(minor->Next());
-                    newMinor->SetPrevious(minor);
-                    minor->Next()->SetPrevious(newMinor);
-                    minor->SetNext(newMinor);
-                    major->setUsage(major->getUsage() + size + sizeof(Minor));
+                    major->llMinor.InsertBefore(newMinor, minor);
+                    major->setUsage(major->usage() + size + sizeof(Minor));
                     totalInUse += size;
 
                     // Update the pointer to the memory directly after the minor block
