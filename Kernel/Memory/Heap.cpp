@@ -194,7 +194,7 @@ void* malloc(size_t requestedSize)
 
     int32_t startedBet = 0;
     uint64_t bestSize = 0;
-    Major* major = reinterpret_cast<Major*>(memoryList.Head());
+    Major* major = static_cast<Major*>(memoryList.Head());
 
     if (bestBet) {
         bestSize = bestBet->size() - bestBet->usage();
@@ -204,10 +204,9 @@ void* malloc(size_t requestedSize)
         }
     }
 
-    uintptr_t diff = 0;
     void* ptr = nullptr;
     while (major) {
-        diff = major->size() - major->usage(); // Total block free memory
+        uintptr_t diff = major->size() - major->usage(); // Total block free memory
         if (bestSize < diff) {
             // Block has more free memory than previous best
             bestBet = major;
@@ -217,12 +216,12 @@ void* malloc(size_t requestedSize)
         // Case 1: Not enough space in this major block
         if (diff < size + sizeof(Minor)) {
             if (major->Next()) {
-                major = reinterpret_cast<Major*>(major->Next());
+                major = static_cast<Major*>(major->Next());
                 continue;
             }
 
             if (startedBet == 0) {
-                major = reinterpret_cast<Major*>(memoryList.Head());
+                major = static_cast<Major*>(memoryList.Head());
                 startedBet = 0;
                 continue;
             }
@@ -260,7 +259,7 @@ void* malloc(size_t requestedSize)
 
         // Space in the front?
         if (diff >= (size + sizeof(Minor))) {
-            Minor* minor = reinterpret_cast<Minor*>(major->llMinor.Head());
+            Minor* minor = static_cast<Minor*>(major->llMinor.Head());
             // Get a pointer to the region of memory directly after the major block
             void* buffer = (void*)((uintptr_t)major + sizeof(Major));
             // Use this region of memory as a minor block header
@@ -279,7 +278,7 @@ void* malloc(size_t requestedSize)
 
         // Case 4: There is enough space in this block, but is it contiguous?
         // Minor* newMinor;
-        Minor* minor = reinterpret_cast<Minor*>(major->llMinor.Head());
+        Minor* minor = static_cast<Minor*>(major->llMinor.Head());
         // Loop within the block and check contiguity
         while (minor) {
             // Case 4.1: End of minor block in major block.
@@ -327,13 +326,13 @@ void* malloc(size_t requestedSize)
                 }
             }
 
-            minor = reinterpret_cast<Minor*>(minor->Next());
+            minor = static_cast<Minor*>(minor->Next());
         }
 
         // Case 5: Block is full.
         if (major->Next()) {
             if (startedBet == 1) {
-                major = reinterpret_cast<Major*>(memoryList.Head());
+                major = static_cast<Major*>(memoryList.Head());
                 startedBet = 0;
                 continue;
             }
@@ -347,7 +346,7 @@ void* malloc(size_t requestedSize)
             memoryList.InsertAfter(major, nextBlock);
         }
 
-        major = reinterpret_cast<Major*>(major->Next());
+        major = static_cast<Major*>(major->Next());
     }
 
     return ptr;
