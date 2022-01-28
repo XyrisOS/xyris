@@ -22,13 +22,20 @@ public:
      * @param mutex Mutex to use for RAII (un)locking
      *
      */
-    RAIIMutex(Mutex& mutex);
+    RAIIMutex(Mutex& mutex)
+        : m_Mutex(mutex)
+    {
+        m_Mutex.lock();
+    }
 
     /**
      * @brief Destroy the RAIIMutex object and unlock the mutex
      *
      */
-    ~RAIIMutex();
+    ~RAIIMutex()
+    {
+        m_Mutex.unlock();
+    }
 
 private:
     Mutex& m_Mutex;
