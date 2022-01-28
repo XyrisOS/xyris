@@ -39,11 +39,11 @@ private:
 
 TEST_CASE("linked list operations", "[linkedlist]")
 {
-    LinkedList::LinkedList list;
+    LinkedList::LinkedListUnmanaged list;
     // Ensure the constructor sets the head properly
     SECTION("constructor")
     {
-        LinkedList::LinkedList list2 = LinkedList::LinkedList();
+        LinkedList::LinkedListUnmanaged list2 = LinkedList::LinkedListUnmanaged();
         REQUIRE(list2.Head() == nullptr);
     }
     // Ensure the linked list insert data properly

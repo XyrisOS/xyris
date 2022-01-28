@@ -85,9 +85,9 @@ private:
     Node* m_Prev;
 };
 
-class LinkedList {
+class LinkedListUnmanaged {
 public:
-    LinkedList()
+    LinkedListUnmanaged()
         : head(nullptr)
         , tail(nullptr)
         , count(0)
@@ -95,12 +95,9 @@ public:
         // Default constructor
     }
 
-    ~LinkedList()
+    ~LinkedListUnmanaged()
     {
-        Node* back;
-        while ((back = RemoveBack())) {
-            delete back;
-        }
+        // Unmanaged linked list does not destroy any nodes
     }
 
     void InsertFront(Node* node)

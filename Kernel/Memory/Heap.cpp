@@ -29,7 +29,7 @@ class Minor;
 
 class Major : public LinkedList::Node {
 public:
-    Major(size_t pages)
+    explicit Major(size_t pages)
         : Node()
         , m_pages(pages)
         , m_size(pages * ARCH_PAGE_SIZE)
@@ -46,7 +46,7 @@ public:
     size_t size() { return m_size; }
     size_t usage() { return m_usage; }
 
-    LinkedList::LinkedList llMinor;
+    LinkedList::LinkedListUnmanaged llMinor;
 
 private:
     size_t m_pages;
@@ -89,7 +89,7 @@ static bool isMagicChosen = false;
 static size_t magicHeapOk = HEAP_MAGIC;
 static size_t magicHeapDead = HEAP_DEATH;
 
-static LinkedList::LinkedList memoryList;
+static LinkedList::LinkedListUnmanaged memoryList;
 static Major* bestBet = nullptr; // Major block with most free memory
 
 static const size_t pageCount = 16; // Number of pages to request per chunk.
