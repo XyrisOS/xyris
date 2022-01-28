@@ -103,12 +103,12 @@ public:
         }
     }
 
-    void InsertFront(Node* val)
+    void InsertFront(Node* node)
     {
         if (head) {
-            InsertBefore(head, val);
+            InsertBefore(node, head);
         } else {
-            head = val;
+            head = node;
             tail = head;
             ++count;
         }
@@ -117,7 +117,7 @@ public:
     void InsertBack(Node* node)
     {
         if (tail) {
-            InsertAfter(tail, node);
+            InsertAfter(node, tail);
         } else {
             tail = node;
             head = tail;
@@ -125,46 +125,59 @@ public:
         }
     }
 
-    void InsertBefore(Node* next, Node* node)
+    /**
+     * @brief Insert a node before another.
+     *
+     * @param insert Node to be inserted.
+     * @param node Node to be inserted before.
+     */
+    void InsertBefore(Node* insert, Node* node)
     {
-        if (!next)
+        if (!insert)
             return;
-        node->SetPrevious(next->Previous());
-        next->SetPrevious(node);
-        node->SetNext(next);
+
         if (node->Previous()) {
-            node->Previous()->SetNext(node);
+            node->Previous()->SetNext(insert);
         } else {
-            head = node;
+            head = insert;
         }
+
+        insert->SetPrevious(node->Previous());
+        insert->SetNext(node);
+        node->SetPrevious(insert);
         ++count;
     }
 
-    void InsertAfter(Node* prev, Node* node)
+    void InsertAfter(Node* insert, Node* node)
     {
-        if (!prev)
+        if (!insert)
             return;
-        node->SetNext(prev->Next());
-        prev->SetNext(node);
-        node->SetPrevious(prev);
+
         if (node->Next()) {
-            node->Next()->SetPrevious(node);
+            node->Next()->SetPrevious(insert);
         } else {
-            tail = node;
+            tail = insert;
         }
+
+        insert->SetNext(node->Next());
+        insert->SetPrevious(node);
+        node->SetNext(insert);
         ++count;
     }
 
     void Remove(Node* del)
     {
+        if (!del)
+            return;
+
         if (del == head)
             head = del->Next();
         if (del == tail)
             tail = del->Previous();
-        if (del->Next())
-            del->Next()->SetPrevious(del->Previous());
         if (del->Previous())
             del->Previous()->SetNext(del->Next());
+        if (del->Next())
+            del->Next()->SetPrevious(del->Previous());
         count--;
     }
 
