@@ -15,6 +15,7 @@
 #include <Library/LinkedList.hpp>
 #include <Library/rand.hpp>
 #include <Locking/Mutex.hpp>
+#include <Locking/RAII.hpp>
 #include <Panic.hpp>
 
 #define HEAP_MAGIC 0x0B1E55ED
@@ -169,6 +170,7 @@ static inline void align(void** ptr)
 
 void* malloc(size_t requestedSize)
 {
+    RAIIMutex raii(heapLock);
     size_t size = requestedSize;
 
     // Adjust size so that there's enough space to store alignment info and
@@ -177,11 +179,9 @@ void* malloc(size_t requestedSize)
         size += ALIGNMENT + ALIGN_INFO;
     }
 
-    heapLock.lock();
-
     if (size == 0) {
         // TODO: Print warning
-        return NULL;
+        return nullptr;
     }
 
     if (memoryList.IsEmpty()) {
@@ -255,7 +255,7 @@ void* malloc(size_t requestedSize)
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
-            goto exit;
+            return ptr;
         }
 
         // Case 3: Block is in use and there's enough space at the start of the block
@@ -280,7 +280,7 @@ void* malloc(size_t requestedSize)
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
-            goto exit;
+            return ptr;
         }
 
         // Case 4: There is enough space in this block, but is it contiguous?
@@ -307,7 +307,7 @@ void* malloc(size_t requestedSize)
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
                     align(&ptr);
-                    goto exit;
+                    return ptr;
                 }
             }
 
@@ -333,7 +333,7 @@ void* malloc(size_t requestedSize)
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
                     align(&ptr);
-                    goto exit;
+                    return ptr;
                 }
             }
 
@@ -360,7 +360,5 @@ void* malloc(size_t requestedSize)
         major = reinterpret_cast<Major*>(major->Next());
     }
 
-exit:
-    heapLock.unlock();
     return ptr;
 }
