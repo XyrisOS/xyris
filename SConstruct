@@ -141,16 +141,6 @@ if 'docs' not in COMMAND_LINE_TARGETS:
     kernel_targets_debug = []
     kernel_targets_release = []
     for target_env in kernel_environments:
-        liballoc = target_env.SConscript(
-            'Libraries/liballoc/SConscript',
-            variant_dir='$BUILD_DIR/liballoc',
-            duplicate=0,
-            exports={
-                'env': target_env
-            },
-        )
-        Default(liballoc)
-        target_env.Install('$INSTALL_DIR', liballoc)
         kernel = target_env.SConscript(
             'Kernel/SConscript',
             variant_dir='$BUILD_DIR/kernel',
@@ -171,12 +161,12 @@ if 'docs' not in COMMAND_LINE_TARGETS:
         )
         Default(image)
 
-        kernel_targets_all.extend([liballoc, kernel, image])
+        kernel_targets_all.extend([kernel, image])
 
         # Add targets to kernel_targets_[MODE] list
         target_list_name = 'kernel_targets_' + target_env['MODE'].lower()
         targets_list = globals()[target_list_name]
-        targets_list.extend([liballoc, kernel, image])
+        targets_list.extend([kernel, image])
 
     # Mode specific kernel targets
     env.Alias('kernel-debug', kernel_targets_debug)

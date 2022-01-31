@@ -474,3 +474,33 @@ void* realloc(void* originalPtr, size_t size)
 
     return ptr;
 }
+
+void* operator new(size_t size)
+{
+    return malloc(size);
+}
+
+void* operator new[](size_t size)
+{
+    return malloc(size);
+}
+
+void operator delete(void* p)
+{
+    free(p);
+}
+
+void operator delete[](void* p)
+{
+    free(p);
+}
+
+void operator delete(void* p, long unsigned int)
+{
+    free(p);
+}
+
+void operator delete[](void* p, long unsigned int)
+{
+    free(p);
+}
