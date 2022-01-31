@@ -8,6 +8,7 @@ env.Append(
     LINKSCRIPT=linkerscript,
     CXXFLAGS=[
         '-fanalyzer',
+        '-Wno-analyzer-malloc-leak',
     ],
     LINKFLAGS=[
         '-T${LINKSCRIPT}',

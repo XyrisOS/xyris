@@ -14,6 +14,7 @@
 #include <Arch/Memory.hpp>
 #include <Library/LinkedList.hpp>
 #include <Library/rand.hpp>
+#include <Library/string.hpp>
 #include <Locking/Mutex.hpp>
 #include <Locking/RAII.hpp>
 #include <Panic.hpp>
@@ -403,4 +404,12 @@ void free(void* ptr)
             bestBet = major;
         }
     }
+}
+
+void* calloc(size_t count, size_t size)
+{
+    size_t actualSize = count * size;
+    void* ptr = malloc(actualSize);
+    memset(ptr, 0, actualSize);
+    return ptr;
 }
