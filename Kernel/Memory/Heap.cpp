@@ -142,7 +142,7 @@ static Major* allocateNewPage(size_t size)
 
     void* buffer = Memory::newPage(pages * ARCH_PAGE_SIZE - 1);
     if (buffer == nullptr) {
-        panic("Out of memory!");
+        panic("heap: out of memory!");
     }
 
     Major* major = new (buffer) Major(pages);
@@ -186,7 +186,7 @@ void* malloc(size_t requestedSize)
         // Initialization of first major block
         Major* root = allocateNewPage(size);
         if (root == nullptr) {
-            panic("Failed to initialize heap root block");
+            panic("heap: root block allocation failed");
         }
 
         memoryList.InsertFront(root);
@@ -229,7 +229,7 @@ void* malloc(size_t requestedSize)
             // Create a new major block and add it next to the current
             Major* nextBlock = allocateNewPage(size);
             if (nextBlock == nullptr) {
-                panic("Failed to allocate new major block");
+                panic("heap: major block allocation failed");
             }
 
             memoryList.InsertAfter(major, nextBlock);
@@ -277,7 +277,6 @@ void* malloc(size_t requestedSize)
         }
 
         // Case 4: There is enough space in this block, but is it contiguous?
-        // Minor* newMinor;
         Minor* minor = static_cast<Minor*>(major->llMinor.Head());
         // Loop within the block and check contiguity
         while (minor) {
@@ -340,7 +339,7 @@ void* malloc(size_t requestedSize)
             // Run out of page space.
             Major* nextBlock = allocateNewPage(size);
             if (nextBlock == nullptr) {
-                panic("Failed to allocate new major block");
+                panic("heap: major block allocation failed");
             }
 
             memoryList.InsertAfter(major, nextBlock);
@@ -350,4 +349,58 @@ void* malloc(size_t requestedSize)
     }
 
     return ptr;
+}
+
+void free(void* ptr)
+{
+    RAIIMutex raii(heapLock);
+    if (ptr == nullptr) {
+        return;
+    }
+
+    Minor* minor = static_cast<Minor*>((Minor*)((uintptr_t)ptr - sizeof(Minor)));
+    size_t magic = minor->magic();
+    if (magic != magicHeapOk)
+    {
+        // Check for over-run errors
+        if (((magic & 0xFFFFFF) == (magicHeapOk & 0xFFFFFF)) ||
+            ((magic & 0xFFFF) == (magicHeapOk & 0xFFFF)) ||
+            ((magic & 0xFF) == (magicHeapOk & 0xFF))) {
+            panicf("heap: 1-3 byte overrun for magic 0x%08zX != 0x%08zX", magic, magicHeapOk);
+        }
+
+        if (magic == magicHeapDead) {
+            panicf("heap: double free on %p", ptr);
+        } else {
+            panicf("heap: bad free called on %p", ptr);
+        }
+
+        return;
+    }
+
+    Major* major = minor->block();
+    totalInUse -= minor->size();
+    major->setUsage(major->usage() - (minor->size() + sizeof(Minor)));
+    minor->setMagic(magicHeapDead);
+    // Remove the minor from the major's list
+    major->llMinor.Remove(minor);
+
+    // Clean up the major block
+    if (major->llMinor.IsEmpty())
+    {
+        // Major block is completely unused
+        memoryList.Remove(major);
+        if (bestBet == major) {
+            bestBet = nullptr;
+        }
+
+        totalAllocated -= major->size();
+        Memory::freePage(major, major->pages() * ARCH_PAGE_SIZE - 1);
+    } else if (bestBet) {
+        // If the current major block that had space freed now has more
+        // free space than the best bet, update.
+        if ((major->size() - major->usage()) > (bestBet->size() - bestBet->usage())) {
+            bestBet = major;
+        }
+    }
 }
