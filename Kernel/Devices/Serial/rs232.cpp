@@ -15,11 +15,11 @@
 #include <Arch/Arch.hpp>
 #include <Devices/Serial/rs232.hpp>
 #include <Library/RingBuffer.hpp>
+#include <Memory/Heap.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
 #include <Locking/RAII.hpp>
 #include <Logger.hpp>
-#include <Memory/LibAlloc.hpp>
 #include <stdarg.h>
 
 #define RS_232_COM1_IRQ 0x04
