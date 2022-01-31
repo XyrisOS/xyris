@@ -18,7 +18,7 @@ namespace Memory::Heap {
  * values and should only be called once.
  *
  */
-void initialize();
+void init();
 
 /**
  * @brief Get the total number of bytes allocated on the heap.

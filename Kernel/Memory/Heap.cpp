@@ -12,11 +12,14 @@
 #include "New.hpp"
 #include "paging.hpp"
 #include <Arch/Memory.hpp>
+#include <Devices/Clock/rtc.hpp>
 #include <Library/LinkedList.hpp>
 #include <Library/rand.hpp>
+#include <Library/stdio.hpp>
 #include <Library/string.hpp>
 #include <Locking/Mutex.hpp>
 #include <Locking/RAII.hpp>
+#include <Logger.hpp>
 #include <Panic.hpp>
 
 #define HEAP_MAGIC 0x0B1E55ED
@@ -99,16 +102,17 @@ static size_t totalInUse = 0;       // Total bytes in use
 
 namespace Memory::Heap {
 
-void initialize()
+void init()
 {
     if (!isMagicChosen) {
-        heapLock.lock();
+        RAIIMutex raii(heapLock);
 
+        srand(RTC::getEpoch());
         magicHeapOk = (size_t)rand();
         magicHeapDead = (size_t)rand();
         isMagicChosen = true;
 
-        heapLock.unlock();
+        Logger::Debug(__func__, "heap: OK: 0x%08zX DEAD: 0x%08zX\n", magicHeapOk, magicHeapDead);
     }
 }
 
@@ -180,6 +184,7 @@ static inline void unalign(void** ptr)
 void* malloc(size_t requestedSize)
 {
     RAIIMutex raii(heapLock);
+    Logger::Debug(__func__, "heap: mallocing: %zu\n", requestedSize);
     size_t size = requestedSize;
 
     // Adjust size so that there's enough space to store alignment info and
@@ -189,7 +194,7 @@ void* malloc(size_t requestedSize)
     }
 
     if (size == 0) {
-        // TODO: Print warning
+        Logger::Debug(__func__, "heap: malloc returning nullptr\n");
         return nullptr;
     }
 
@@ -262,6 +267,7 @@ void* malloc(size_t requestedSize)
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
+            Logger::Debug(__func__, "heap: malloc'd: %p @ 2\n", ptr);
             return ptr;
         }
 
@@ -284,6 +290,7 @@ void* malloc(size_t requestedSize)
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
+            Logger::Debug(__func__, "heap: malloc'd: %p @ 3\n", ptr);
             return ptr;
         }
 
@@ -310,6 +317,7 @@ void* malloc(size_t requestedSize)
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
                     align(&ptr);
+                    Logger::Debug(__func__, "heap: malloc'd: %p @ 4.1\n", ptr);
                     return ptr;
                 }
             }
@@ -332,6 +340,7 @@ void* malloc(size_t requestedSize)
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
                     align(&ptr);
+                    Logger::Debug(__func__, "heap: malloc'd: %p @ 4.2\n", ptr);
                     return ptr;
                 }
             }
@@ -359,12 +368,18 @@ void* malloc(size_t requestedSize)
         major = static_cast<Major*>(major->Next());
     }
 
+    if (ptr) {
+        Logger::Debug(__func__, "heap: malloc'd: %p @ end\n", ptr);
+    } else {
+        Logger::Debug(__func__, "heap: malloc returning nullptr @ end\n");
+    }
     return ptr;
 }
 
 void free(void* ptr)
 {
     RAIIMutex raii(heapLock);
+    Logger::Debug(__func__, "heap: freeing: %p\n", ptr);
     if (ptr == nullptr) {
         return;
     }
