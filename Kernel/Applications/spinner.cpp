@@ -13,6 +13,7 @@
 #include <Memory/Heap.hpp>
 #include <Library/string.hpp>
 #include <Arch/Memory.hpp>
+#include <Panic.hpp>
 
 namespace Apps {
 
@@ -22,6 +23,9 @@ void spinner(void) {
     const char spinnay[] = { '|', '/', '-', '\\' };
     for (size_t size = 1; size < 1024 * 1024 * 1024; size++) {
         void* ptr = malloc(size);
+        if (ptr == nullptr) {
+            panic("null malloc in stress test!");
+        }
         memset(ptr, 0xCAFEBABE, size / sizeof(0xCAFEBABE));
         // Display a spinner to know that we're still running.
         Console::printf("\e[s\e[24;0f%c Bytes: %zu\e[u", spinnay[i], size);
