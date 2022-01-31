@@ -167,6 +167,16 @@ static inline void align(void** ptr)
     }
 }
 
+static inline void unalign(void** ptr)
+{
+    if (ALIGNMENT > 1) {
+        uintptr_t diff = *((ALIGN_TYPE*)((uintptr_t)*ptr - ALIGN_INFO));
+        if (diff < (ALIGNMENT + ALIGN_INFO)) {
+            *ptr = (void*)((uintptr_t)*ptr - diff);
+        }
+    }
+}
+
 void* malloc(size_t requestedSize)
 {
     RAIIMutex raii(heapLock);
@@ -411,5 +421,56 @@ void* calloc(size_t count, size_t size)
     size_t actualSize = count * size;
     void* ptr = malloc(actualSize);
     memset(ptr, 0, actualSize);
+    return ptr;
+}
+
+void* realloc(void* originalPtr, size_t size)
+{
+    if (size == 0) {
+        free(originalPtr);
+        return nullptr;
+    }
+
+    if (originalPtr == nullptr) {
+        return malloc(size);
+    }
+
+    // Unalign the pointer (if required)
+    void* ptr = originalPtr;
+    unalign(&ptr);
+
+    // Begin the rellocation
+    RAIIMutex raii(heapLock);
+
+    Minor* minor = (Minor*)((uintptr_t)ptr - sizeof(Minor));
+    size_t magic = minor->magic();
+    if (magic != magicHeapOk) {
+        // Check for over-run errors
+        if (((magic & 0xFFFFFF) == (magicHeapOk & 0xFFFFFF)) ||
+            ((magic & 0xFFFF) == (magicHeapOk & 0xFFFF)) ||
+            ((magic & 0xFF) == (magicHeapOk & 0xFF))) {
+            panicf("heap: 1-3 byte overrun for magic 0x%08zX != 0x%08zX", magic, magicHeapOk);
+        }
+
+        if (magic == magicHeapDead) {
+            panicf("heap: multiple realloc on %p", ptr);
+        } else {
+            panicf("heap: bad realloc called on %p", ptr);
+        }
+
+        return nullptr;
+    }
+
+    size_t realSize = minor->requestedSize();
+    if (realSize >= size) {
+        minor->setRequestedSize(size);
+        return originalPtr;
+    }
+
+    // Reallocate to a block larger than what we currently have.
+    ptr = malloc(size);
+    memcpy(ptr, originalPtr, realSize);
+    free(originalPtr);
+
     return ptr;
 }
