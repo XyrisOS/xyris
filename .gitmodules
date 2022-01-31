@@ -1,7 +1,3 @@
-[submodule "libs/liballoc"]
-	path = Libraries/liballoc
-	url = https://github.com/XyrisOS/liballoc.git
-	branch = xyris
 [submodule "thirdparty/limine"]
 	path = Thirdparty/limine
 	url = https://github.com/limine-bootloader/limine.git
