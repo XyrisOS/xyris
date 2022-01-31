@@ -19,6 +19,7 @@
 // Architecture specific code
 #include <Arch/Arch.hpp>
 // Memory management & paging
+#include <Memory/Heap.hpp>
 #include <Memory/paging.hpp>
 // Generic devices
 #include <Devices/Clock/rtc.hpp>
@@ -86,6 +87,7 @@ void kernelEntry(void* info, uint32_t magic)
 
     Boot::Handoff handoff(info, magic);
     Memory::init(handoff.MemoryMap());
+    Memory::Heap::init();
     Graphics::init(handoff.FramebufferInfo());
     tasks_init();
 
