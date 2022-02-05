@@ -110,8 +110,8 @@ void init()
         RAIIMutex raii(heapLock);
 
         srand(RTC::getEpoch());
-        magicHeapOk = (size_t)rand();
-        magicHeapDead = (size_t)rand();
+        magicHeapOk = (size_t)(rand() << BYTES_TO_BITS(sizeof(magicHeapOk) / 2) | rand());
+        magicHeapDead = (size_t)(rand() << BYTES_TO_BITS(sizeof(magicHeapOk) / 2) | rand());
         isMagicChosen = true;
 
         Logger::Debug(__func__, "heap: OK: 0x%08zX DEAD: 0x%08zX\n", magicHeapOk, magicHeapDead);
