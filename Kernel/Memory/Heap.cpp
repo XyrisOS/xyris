@@ -395,6 +395,7 @@ void* malloc(size_t requestedSize)
 void free(void* ptr)
 {
     RAIIMutex raii(heapLock);
+    unalign(&ptr);
     debugf("heap: free: freeing: 0x%p\n", ptr);
     if (ptr == nullptr) {
         return;
