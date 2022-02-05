@@ -40,6 +40,7 @@ public:
         , m_usage(sizeof(Major))
     {
         // Default constructor
+        Logger::Debug(__func__, "heap: Major: constructed new major: addr: 0x%p, pages: %zu, size: %zu\n", this, m_pages, m_size);
     }
 
     void setPages(size_t pages) { m_pages = pages; }
@@ -68,7 +69,7 @@ public:
         , m_requestedSize(requestedSize)
     {
         // Default constructor
-        Logger::Debug(__func__, "heap: Minor: constructed new minor: magic: 0x%08zX\n", m_magic);
+        Logger::Debug(__func__, "heap: Minor: constructed new minor: addr: 0x%p, magic: 0x%08zX\n", this, m_magic);
     }
 
     void setBlock(Major* block) { m_block = block; }
@@ -155,13 +156,13 @@ static Major* allocateNewPage(size_t size)
     Major* major = new (buffer) Major(pages);
     totalAllocated += major->size();
 
-    Logger::Debug(__func__, "heap: allocateNewPage: major: %p, pages: %zu totalAllocated: %zu\n", major, pages, totalAllocated);
+    Logger::Debug(__func__, "heap: allocateNewPage: major: 0x%p, pages: %zu totalAllocated: %zu\n", major, pages, totalAllocated);
     return major;
 }
 
 static inline void align(void** ptr)
 {
-    Logger::Debug(__func__, "heap: align: before: %p\n", *ptr);
+    Logger::Debug(__func__, "heap: align: before: 0x%p\n", *ptr);
     if (ALIGNMENT > 1) {
         *ptr = (void*)((uintptr_t)*ptr + ALIGN_INFO);
 
@@ -173,19 +174,19 @@ static inline void align(void** ptr)
 
         *((ALIGN_TYPE*)((uintptr_t)*ptr - ALIGN_INFO)) = diff + ALIGN_INFO;
     }
-    Logger::Debug(__func__, "heap: align: after: %p\n", *ptr);
+    Logger::Debug(__func__, "heap: align: after: 0x%p\n", *ptr);
 }
 
 static inline void unalign(void** ptr)
 {
-    Logger::Debug(__func__, "heap: unalign: before: %p\n", *ptr);
+    Logger::Debug(__func__, "heap: unalign: before: 0x%p\n", *ptr);
     if (ALIGNMENT > 1) {
         uintptr_t diff = *((ALIGN_TYPE*)((uintptr_t)*ptr - ALIGN_INFO));
         if (diff < (ALIGNMENT + ALIGN_INFO)) {
             *ptr = (void*)((uintptr_t)*ptr - diff);
         }
     }
-    Logger::Debug(__func__, "heap: align: after: %p\n", *ptr);
+    Logger::Debug(__func__, "heap: align: after: 0x%p\n", *ptr);
 }
 
 void* malloc(size_t requestedSize)
@@ -277,7 +278,7 @@ void* malloc(size_t requestedSize)
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
-            Logger::Debug(__func__, "heap: malloc'd: %p @ 2\n", ptr);
+            Logger::Debug(__func__, "heap: malloc'd: 0x%p @ 2\n", ptr);
             return ptr;
         }
 
@@ -301,7 +302,7 @@ void* malloc(size_t requestedSize)
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
-            Logger::Debug(__func__, "heap: malloc'd: %p @ 3\n", ptr);
+            Logger::Debug(__func__, "heap: malloc'd: 0x%p @ 3\n", ptr);
             return ptr;
         }
 
@@ -329,7 +330,7 @@ void* malloc(size_t requestedSize)
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
                     align(&ptr);
-                    Logger::Debug(__func__, "heap: malloc'd: %p @ 4.1\n", ptr);
+                    Logger::Debug(__func__, "heap: malloc'd: 0x%p @ 4.1\n", ptr);
                     return ptr;
                 }
             }
@@ -353,7 +354,7 @@ void* malloc(size_t requestedSize)
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
                     align(&ptr);
-                    Logger::Debug(__func__, "heap: malloc'd: %p @ 4.2\n", ptr);
+                    Logger::Debug(__func__, "heap: malloc'd: 0x%p @ 4.2\n", ptr);
                     return ptr;
                 }
             }
@@ -384,26 +385,27 @@ void* malloc(size_t requestedSize)
     }
 
     if (ptr) {
-        Logger::Debug(__func__, "heap: malloc'd: %p @ end\n", ptr);
+        Logger::Debug(__func__, "heap: malloc'd: 0x%p @ end\n", ptr);
     } else {
         Logger::Debug(__func__, "heap: malloc returning nullptr @ end\n");
     }
+
     return ptr;
 }
 
 void free(void* ptr)
 {
     RAIIMutex raii(heapLock);
-    Logger::Debug(__func__, "heap: free: freeing: %p\n", ptr);
+    Logger::Debug(__func__, "heap: free: freeing: 0x%p\n", ptr);
     if (ptr == nullptr) {
         return;
     }
 
     Minor* minor = reinterpret_cast<Minor*>(((uintptr_t)ptr - sizeof(Minor)));
     size_t magic = minor->magic();
-    Logger::Debug(__func__, "heap: free: minor: %p, magic: 0x%08zX\n", minor, magic);
-    if (minor->magic() != magicHeapOk)
+    if (magic != magicHeapOk)
     {
+        Logger::Debug(__func__, "heap: free: minor: 0x%p, invalid magic 0x%08zX\n", minor, magic);
         // Check for over-run errors
         if (((magic & 0xFFFFFF) == (magicHeapOk & 0xFFFFFF)) ||
             ((magic & 0xFFFF) == (magicHeapOk & 0xFFFF)) ||
@@ -412,9 +414,9 @@ void free(void* ptr)
         }
 
         if (magic == magicHeapDead) {
-            panicf("heap: free: double free on %p", ptr);
+            panicf("heap: free: double free on 0x%p", ptr);
         } else {
-            panicf("heap: free: bad free called on %p", ptr);
+            panicf("heap: free: bad free called on 0x%p", ptr);
         }
 
         return;
@@ -475,7 +477,7 @@ void* realloc(void* originalPtr, size_t size)
 
     Minor* minor = reinterpret_cast<Minor*>((uintptr_t)ptr - sizeof(Minor));
     size_t magic = minor->magic();
-    if (minor->magic() != magicHeapOk) {
+    if (magic != magicHeapOk) {
         // Check for over-run errors
         if (((magic & 0xFFFFFF) == (magicHeapOk & 0xFFFFFF)) ||
             ((magic & 0xFFFF) == (magicHeapOk & 0xFFFF)) ||
@@ -484,9 +486,9 @@ void* realloc(void* originalPtr, size_t size)
         }
 
         if (magic == magicHeapDead) {
-            panicf("heap: multiple realloc on %p", ptr);
+            panicf("heap: multiple realloc on 0x%p", ptr);
         } else {
-            panicf("heap: bad realloc called on %p", ptr);
+            panicf("heap: bad realloc called on 0x%p", ptr);
         }
 
         return nullptr;
