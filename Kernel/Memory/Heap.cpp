@@ -299,7 +299,7 @@ void* malloc(size_t requestedSize)
         // Loop within the block and check contiguity
         while (minor) {
             // Case 4.1: End of minor block in major block.
-            if (minor->Next()) {
+            if (minor->Next() == nullptr) {
                 // The rest of the block is free, but is it big enough?
                 diff = ((uintptr_t)major + major->size()) - ((uintptr_t)minor + sizeof(Minor) + minor->size());
                 if (diff >= (size + sizeof(Minor))) {
