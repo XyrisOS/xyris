@@ -319,9 +319,8 @@ void* malloc(size_t requestedSize)
                     // Enough contiguous memory
                     void* buffer = (void*)((uintptr_t)minor + sizeof(Minor) + minor->size());
                     // Use this region of memory as a minor block header
-                    Minor* next = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
-                    next->SetPrevious(minor);
-                    minor->SetNext(next);
+                    Minor* newMinor = new (buffer) Minor(magicHeapOk, major, size, requestedSize);
+                    major->llMinor.InsertBack(newMinor);
                     major->setUsage(major->usage() + size + sizeof(Minor));
                     totalInUse += size;
 
