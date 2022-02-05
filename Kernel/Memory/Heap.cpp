@@ -67,6 +67,7 @@ public:
         , m_requestedSize(requestedSize)
     {
         // Default constructor
+        debugf("heap: Minor: constructed new minor: magic: 0x%08zX\n", m_magic);
     }
 
     void setBlock(Major* block) { m_block = block; }
@@ -129,6 +130,7 @@ size_t getTotalInUse()
 
 static Major* allocateNewPage(size_t size)
 {
+    debugf("heap: allocateNewPage: size: %zu\n", size);
     // Allocate enough to fit the data plus a major and minor block header
     size_t pages = size + sizeof(Major) + sizeof(Minor);
 
@@ -152,11 +154,13 @@ static Major* allocateNewPage(size_t size)
     Major* major = new (buffer) Major(pages);
     totalAllocated += major->size();
 
+    debugf("heap: allocateNewPage: major: %p, pages: %zu totalAllocated: %zu\n", major, pages, totalAllocated);
     return major;
 }
 
 static inline void align(void** ptr)
 {
+    debugf("heap: align: before: %p\n", *ptr);
     if (ALIGNMENT > 1) {
         *ptr = (void*)((uintptr_t)*ptr + ALIGN_INFO);
 
@@ -168,22 +172,25 @@ static inline void align(void** ptr)
 
         *((ALIGN_TYPE*)((uintptr_t)*ptr - ALIGN_INFO)) = diff + ALIGN_INFO;
     }
+    debugf("heap: align: after: %p\n", *ptr);
 }
 
 static inline void unalign(void** ptr)
 {
+    debugf("heap: unalign: before: %p\n", *ptr);
     if (ALIGNMENT > 1) {
         uintptr_t diff = *((ALIGN_TYPE*)((uintptr_t)*ptr - ALIGN_INFO));
         if (diff < (ALIGNMENT + ALIGN_INFO)) {
             *ptr = (void*)((uintptr_t)*ptr - diff);
         }
     }
+    debugf("heap: align: after: %p\n", *ptr);
 }
 
 void* malloc(size_t requestedSize)
 {
     RAIIMutex raii(heapLock);
-    debugf("heap: mallocing: %zu\n", requestedSize);
+    debugf("heap: malloc: requestedSize: %zu\n", requestedSize);
     size_t size = requestedSize;
 
     // Adjust size so that there's enough space to store alignment info and
@@ -198,6 +205,7 @@ void* malloc(size_t requestedSize)
     }
 
     if (memoryList.IsEmpty()) {
+        debugf("heap: malloc: memory list is empty\n");
         // Initialization of first major block
         Major* root = allocateNewPage(size);
         if (root == nullptr) {
@@ -230,6 +238,7 @@ void* malloc(size_t requestedSize)
 
         // Case 1: Not enough space in this major block
         if (diff < size + sizeof(Minor)) {
+            debugf("heap: malloc: case 1\n");
             if (major->Next()) {
                 major = static_cast<Major*>(major->Next());
                 continue;
@@ -253,6 +262,7 @@ void* malloc(size_t requestedSize)
 
         // Case 2: New block
         if (major->llMinor.Head() == nullptr) {
+            debugf("heap: malloc: case 2\n");
             // Get a pointer to the region of memory directly after the major block
             void* buffer = (void*)((uintptr_t)major + sizeof(Major));
             // Use this region of memory as a minor block header
@@ -271,6 +281,7 @@ void* malloc(size_t requestedSize)
         }
 
         // Case 3: Block is in use and there's enough space at the start of the block
+        debugf("heap: malloc: case 3\n");
         diff = (uintptr_t)major->llMinor.Head() - ((uintptr_t)major + sizeof(Major));
 
         // Space in the front?
@@ -294,11 +305,13 @@ void* malloc(size_t requestedSize)
         }
 
         // Case 4: There is enough space in this block, but is it contiguous?
+        debugf("heap: malloc: case 4\n");
         Minor* minor = static_cast<Minor*>(major->llMinor.Head());
         // Loop within the block and check contiguity
         while (minor) {
             // Case 4.1: End of minor block in major block.
             if (minor->Next() == nullptr) {
+                debugf("heap: malloc: case 4.1\n");
                 // The rest of the block is free, but is it big enough?
                 diff = ((uintptr_t)major + major->size()) - ((uintptr_t)minor + sizeof(Minor) + minor->size());
                 if (diff >= (size + sizeof(Minor))) {
@@ -323,6 +336,7 @@ void* malloc(size_t requestedSize)
 
             // Case 4.2: Is there space between two minor blocks?
             if (minor->Next()) {
+                debugf("heap: malloc: case 4.2\n");
                 // Is the difference between this minor block and the next enough?
                 diff = (uintptr_t)minor->Next() - ((uintptr_t)minor + sizeof(Minor) + minor->size());
                 if (diff >= (size + sizeof(Minor))) {
@@ -349,6 +363,7 @@ void* malloc(size_t requestedSize)
 
         // Case 5: Block is full.
         if (major->Next()) {
+            debugf("heap: malloc: case 5\n");
             if (startedBet == 1) {
                 major = static_cast<Major*>(memoryList.Head());
                 startedBet = 0;
@@ -364,6 +379,7 @@ void* malloc(size_t requestedSize)
             memoryList.InsertAfter(major, nextBlock);
         }
 
+        debugf("heap: malloc: getting major next\n");
         major = static_cast<Major*>(major->Next());
     }
 
@@ -378,26 +394,27 @@ void* malloc(size_t requestedSize)
 void free(void* ptr)
 {
     RAIIMutex raii(heapLock);
-    debugf("heap: freeing: %p\n", ptr);
+    debugf("heap: free: freeing: %p\n", ptr);
     if (ptr == nullptr) {
         return;
     }
 
-    Minor* minor = static_cast<Minor*>((Minor*)((uintptr_t)ptr - sizeof(Minor)));
+    Minor* minor = reinterpret_cast<Minor*>(((uintptr_t)ptr - sizeof(Minor)));
     size_t magic = minor->magic();
-    if (magic != magicHeapOk)
+    debugf("heap: free: minor: %p, magic: 0x%08zX\n", minor, magic);
+    if (minor->magic() != magicHeapOk)
     {
         // Check for over-run errors
         if (((magic & 0xFFFFFF) == (magicHeapOk & 0xFFFFFF)) ||
             ((magic & 0xFFFF) == (magicHeapOk & 0xFFFF)) ||
             ((magic & 0xFF) == (magicHeapOk & 0xFF))) {
-            panicf("heap: 1-3 byte overrun for magic 0x%08zX != 0x%08zX", magic, magicHeapOk);
+            panicf("heap: free: 1-3 byte overrun for magic 0x%08zX != 0x%08zX", magic, magicHeapOk);
         }
 
         if (magic == magicHeapDead) {
-            panicf("heap: double free on %p", ptr);
+            panicf("heap: free: double free on %p", ptr);
         } else {
-            panicf("heap: bad free called on %p", ptr);
+            panicf("heap: free: bad free called on %p", ptr);
         }
 
         return;
@@ -456,9 +473,9 @@ void* realloc(void* originalPtr, size_t size)
     // Begin the rellocation
     RAIIMutex raii(heapLock);
 
-    Minor* minor = (Minor*)((uintptr_t)ptr - sizeof(Minor));
+    Minor* minor = reinterpret_cast<Minor*>((uintptr_t)ptr - sizeof(Minor));
     size_t magic = minor->magic();
-    if (magic != magicHeapOk) {
+    if (minor->magic() != magicHeapOk) {
         // Check for over-run errors
         if (((magic & 0xFFFFFF) == (magicHeapOk & 0xFFFFFF)) ||
             ((magic & 0xFFFF) == (magicHeapOk & 0xFFFF)) ||
