@@ -126,15 +126,18 @@ int memcmp(const void* ptr1, const void* ptr2, size_t num)
 
 void* memmove(void* destptr, const void* srcptr, size_t size)
 {
-    unsigned char* dst = (unsigned char*)destptr;
-    const unsigned char* src = (const unsigned char*)srcptr;
+    uint8_t* dst = (uint8_t*)destptr;
+    const uint8_t* src = (const uint8_t*)srcptr;
     if (dst < src) {
-        for (size_t i = 0; i < size; i++)
+        for (size_t i = 0; i < size; i++) {
             dst[i] = src[i];
+        }
     } else {
-        for (size_t i = size; i != 0; i--)
+        for (size_t i = size; i; i--) {
             dst[i - 1] = src[i - 1];
+        }
     }
+
     return destptr;
 }
 
@@ -142,13 +145,13 @@ void* memcpy(void* dst, const void* src, size_t size)
 {
     uint8_t *bDst;
     uint8_t *bSrc;
-    uint32_t *lDst = (uint32_t*)dst;
-    uint32_t *lSrc  = (uint32_t*)src;
+    size_t *lDst = (size_t*)dst;
+    size_t *lSrc  = (size_t*)src;
 
-    while (size >= sizeof(unsigned int) )
+    while (size >= sizeof(size_t))
     {
         *lDst++ = *lSrc++;
-        size -= sizeof(unsigned int);
+        size -= sizeof(size_t);
     }
 
     bDst = (uint8_t*)lDst;
