@@ -16,17 +16,17 @@ const char* Logger::levelToString(LogLevel lvl)
 {
     switch (lvl) {
         case lTRACE:
-            return "TRACE";
+            return "\033[36mTRACE\033[0m";
         case lDEBUG:
-            return "DEBUG";
+            return "\033[96mDEBUG\033[0m";
         case lVERBOSE:
-            return "VERBOSE";
+            return "\033[92mVERBOSE\033[0m";
         case lINFO:
-            return "INFO";
+            return "\033[94mINFO\033[0m";
         case lWARNING:
-            return "WARNING";
+            return "\033[93mWARNING\033[0m";
         case lERROR:
-            return "ERROR";
+            return "\033[91mERROR\033[0m";
         default:
             return "UNKNOWN";
     }
@@ -34,61 +34,73 @@ const char* Logger::levelToString(LogLevel lvl)
 
 void Logger::LogHelper(const char* tag, LogLevel lvl, const char* fmt, va_list ap)
 {
-    (void)tag;
-    (void)lvl;
     RAIIMutex(the().m_logBufferMutex);
-    if (the().m_logBufferMutex.lock() == 0) {
-        kvsprintf(the().m_logBuffer, fmt, ap);
-        m_logBufferMutex.unlock();
+    ksprintf(the().m_logBuffer, "[%s] [%s] %s\n", tag, levelToString(lvl), fmt);
+    for (size_t i = 0; i < m_writersIdx; i++) {
+        if (the().m_writers[i] != nullptr) {
+            the().m_writers[i](m_logBuffer, ap);
+        }
     }
 }
 
 void Logger::Trace(const char* tag, const char* fmt, ...)
 {
-    va_list ap;
-    va_start(ap, fmt);
-    the().LogHelper(tag, lTRACE, fmt, ap);
-    va_end(ap);
+    if (lTRACE >= getLevel()) {
+        va_list ap;
+        va_start(ap, fmt);
+        the().LogHelper(tag, lTRACE, fmt, ap);
+        va_end(ap);
+    }
 }
 
 void Logger::Verbose(const char* tag, const char* fmt, ...)
 {
-    va_list ap;
-    va_start(ap, fmt);
-    the().LogHelper(tag, lVERBOSE, fmt, ap);
-    va_end(ap);
+    if (lVERBOSE >= getLevel()) {
+        va_list ap;
+        va_start(ap, fmt);
+        the().LogHelper(tag, lVERBOSE, fmt, ap);
+        va_end(ap);
+    }
 }
 
 void Logger::Debug(const char* tag, const char* fmt, ...)
 {
-    va_list ap;
-    va_start(ap, fmt);
-    the().LogHelper(tag, lDEBUG, fmt, ap);
-    va_end(ap);
+    if (lDEBUG >= getLevel()) {
+        va_list ap;
+        va_start(ap, fmt);
+        the().LogHelper(tag, lDEBUG, fmt, ap);
+        va_end(ap);
+    }
 }
 
 void Logger::Info(const char* tag, const char* fmt, ...)
 {
-    va_list ap;
-    va_start(ap, fmt);
-    the().LogHelper(tag, lINFO, fmt, ap);
-    va_end(ap);
+    if (lINFO >= getLevel()) {
+        va_list ap;
+        va_start(ap, fmt);
+        the().LogHelper(tag, lINFO, fmt, ap);
+        va_end(ap);
+    }
 }
 
 void Logger::Warning(const char* tag, const char* fmt, ...)
 {
-    va_list ap;
-    va_start(ap, fmt);
-    the().LogHelper(tag, lWARNING, fmt, ap);
-    va_end(ap);
+    if (lWARNING >= getLevel()) {
+        va_list ap;
+        va_start(ap, fmt);
+        the().LogHelper(tag, lWARNING, fmt, ap);
+        va_end(ap);
+    }
 }
 
 void Logger::Error(const char* tag, const char* fmt, ...)
 {
-    va_list ap;
-    va_start(ap, fmt);
-    the().LogHelper(tag, lERROR, fmt, ap);
-    va_end(ap);
+    if (lERROR >= getLevel()) {
+        va_list ap;
+        va_start(ap, fmt);
+        the().LogHelper(tag, lERROR, fmt, ap);
+        va_end(ap);
+    }
 }
 
 bool Logger::addWriter(LogWriter writer)
@@ -120,13 +132,12 @@ Logger& Logger::the()
 }
 
 Logger::Logger()
-    : m_logBufferMutex("LogBuffer")
+    : m_logBufferMutex("Logger")
     , m_writersIdx(0)
     , m_logLevel(lINFO)
 {
     // Default constructor
 }
-
 
 // Kernel argument callback
 static void argumentCallback(const char* lvl)

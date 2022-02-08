@@ -8,12 +8,12 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
+#include "Logger.hpp"
+#include "Panic.hpp"
 // System library functions
 #include <Library/stdio.hpp>
 #include <Library/time.hpp>
-#include <stdint.h>
 #include <Scheduler/tasks.hpp>
-#include <Panic.hpp>
 // Bootloader
 #include <Bootloader/Handoff.hpp>
 // Architecture specific code
@@ -31,6 +31,7 @@
 #include <Applications/spinner.hpp>
 // Meta
 #include <Support/defines.hpp>
+#include <stdint.h>
 
 static void printSplash();
 static void bootTone();
@@ -84,6 +85,8 @@ void kernelEntry(void* info, uint32_t magic)
     Arch::CPU::init();
     // Initialize devices
     Arch::CPU::criticalRegion(devInit);
+    Logger::setLevel(Logger::lINFO); // FIXME: Constructor value is not being respected???
+    Logger::addWriter(RS232::vprintf);
     // Initialize info from bootloader
     Boot::Handoff handoff(info, magic);
     Memory::init(handoff.MemoryMap());

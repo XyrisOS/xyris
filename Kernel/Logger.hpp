@@ -19,11 +19,12 @@ public:
 
 enum LogLevel {
     lTRACE,
-    lVERBOSE,
     lDEBUG,
+    lVERBOSE,
     lINFO,
     lWARNING,
     lERROR,
+    lNone,
 };
 
 typedef int (*LogWriter)(const char* fmt, va_list args);
