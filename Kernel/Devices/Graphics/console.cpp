@@ -14,6 +14,7 @@
 #include <Devices/Graphics/graphics.hpp>
 #include <Library/stdio.hpp>
 #include <Locking/Mutex.hpp>
+#include <Logger.hpp>
 #include <stddef.h>
 
 namespace Console {
@@ -177,7 +178,7 @@ static int putchar(unsigned c, void** ptr)
             }
             // Clear by resetting the double buffer and swapping.
             // TODO: Find a better way to do this?
-            debugf("Clearing screen\n");
+            Logger::Debug(__func__, "Clearing screen");
             Graphics::resetDoubleBuffer();
             Graphics::swap();
         } else if (c >= '0' && c <= '9') { // just another digit of a value
@@ -217,14 +218,14 @@ static int putchar(unsigned c, void** ptr)
     // Move to the next line
     // TODO: Get width of "screen" (replace 80 with width) (#275)
     if (cursorX >= 80) {
-        debugf("Move to the next line\n");
+        Logger::Debug(__func__, "Move to the next line");
         cursorX = 0;
         cursorY++;
     }
     // Clear the screen
     // TODO: Get height of "screen" (replace 25 with height) (#275)
     if (cursorY >= 25) {
-        debugf("Shift up the screen\n");
+        Logger::Debug(__func__, "Shift up the screen");
         //TODO: Shift text up and reset the bottom line
         cursorX = 0;
         cursorY = 25 - 1;

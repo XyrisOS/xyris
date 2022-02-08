@@ -38,7 +38,7 @@ void operator=(Logger const&) = delete;
 [[gnu::format(printf, 2, 3)]] static void Info(const char* tag, const char* fmt, ...);
 [[gnu::format(printf, 2, 3)]] static void Warning(const char* tag, const char* fmt, ...);
 [[gnu::format(printf, 2, 3)]] static void Error(const char* tag, const char* fmt, ...);
-[[gnu::format(printf, 2, 3)]] static void Print(const char* fmt, ...);
+[[gnu::format(printf, 1, 2)]] static void Print(const char* fmt, ...);
 
 static bool addWriter(LogWriter writer);
 static bool removeWriter(LogWriter writer);

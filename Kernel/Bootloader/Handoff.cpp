@@ -15,6 +15,7 @@
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
 #include <Memory/paging.hpp>
+#include <Logger.hpp>
 #include <Panic.hpp>
 // Generic devices
 #include <Devices/Graphics/console.hpp>
@@ -46,7 +47,7 @@ Handoff::Handoff(void* handoff, uint32_t magic)
     , m_magic(magic)
 {
     // Parse the handle based on the magic
-    debugf("Bootloader info at 0x%p\n", handoff);
+    Logger::Info(__func__, "Bootloader info at 0x%p", handoff);
     if (magic == STIVALE2_MAGIC) {
         m_bootType = Stivale2;
         parseStivale2(this, handoff);
@@ -64,7 +65,7 @@ Handoff::Handoff(void* handoff, uint32_t magic)
 
 void Handoff::parseStivale2(Handoff* that, void* handoff)
 {
-    debugf("Booted via Stivale2\n");
+    Logger::Info(__func__, "Booted via Stivale2");
     // Walk the list of tags in the header
     struct stivale2_struct* fixed = (struct stivale2_struct*)handoff;
     struct stivale2_tag* tag = (struct stivale2_tag*)(fixed->tags);
@@ -72,15 +73,16 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
         switch (tag->identifier) {
             case STIVALE2_STRUCT_TAG_MEMMAP_ID: {
                 auto memmap = (struct stivale2_struct_tag_memmap*)tag;
-                debugf("Found %Lu Stivale2 memmap entries.\n", memmap->entries);
-                if (memmap->entries > that->m_memoryMap.Count())
+                Logger::Debug(__func__, "Found %Lu Stivale2 memmap entries.", memmap->entries);
+                if (memmap->entries > that->m_memoryMap.Count()) {
                     panic("Not enough space to add all memory map entries!");
+                }
                 // Follows the tag list order in stivale2.h
                 for (size_t i = 0; i < memmap->entries; i++) {
                     auto entry = memmap->memmap[i];
                     uint64_t end = entry.base + entry.length - 1;
                     that->m_memoryMap[i] = Memory::Section(entry.base, end);
-                    debugf("[%zu] 0x%08LX-0x%08LX 0x%08LX\n", i, entry.base, end, entry.length);
+                    Logger::Debug(__func__, "[%zu] 0x%08LX-0x%08LX 0x%08LX", i, entry.base, end, entry.length);
                     // TODO: Make this a map that can be indexed
                     switch (entry.type) {
                         case STIVALE2_MMAP_USABLE:
@@ -121,25 +123,28 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
             case STIVALE2_STRUCT_TAG_CMDLINE_ID: {
                 auto cmdline = (struct stivale2_struct_tag_cmdline*)tag;
                 that->m_cmdline = (char*)(cmdline->cmdline);
-                debugf("Stivale2 cmdline: '%s'\n", that->m_cmdline);
+                Logger::Debug(__func__, "Stivale2 cmdline: '%s'", that->m_cmdline);
                 parseCommandLine(that->m_cmdline);
                 break;
             }
             case STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID: {
                 auto framebuffer = (struct stivale2_struct_tag_framebuffer*)tag;
-                debugf("Stivale2 framebuffer:\n");
-                debugf("\tAddress: 0x%08LX\n", framebuffer->framebuffer_addr);
-                debugf("\tResolution: %ux%ux%u\n",
+                Logger::Debug(
+                    __func__,
+                    "Stivale2 framebuffer:\n"
+                    "\tAddress: 0x%08LX\n"
+                    "\tResolution: %ux%ux%u\n"
+                    "\tPixel format:\n"
+                    "\t\tRed size:    %u\n"
+                    "\t\tRed shift:   %u\n"
+                    "\t\tGreen size:  %u\n"
+                    "\t\tGreen shift: %u\n"
+                    "\t\tBlue size:   %u\n"
+                    "\t\tBlue shift:  %u",
+                    framebuffer->framebuffer_addr,
                     framebuffer->framebuffer_width,
                     framebuffer->framebuffer_height,
-                    framebuffer->framebuffer_bpp);
-                debugf("\tPixel format:\n"
-                       "\t\tRed size:    %u\n"
-                       "\t\tRed shift:   %u\n"
-                       "\t\tGreen size:  %u\n"
-                       "\t\tGreen shift: %u\n"
-                       "\t\tBlue size:   %u\n"
-                       "\t\tBlue shift:  %u\n",
+                    framebuffer->framebuffer_bpp,
                     framebuffer->red_mask_size,
                     framebuffer->red_mask_shift,
                     framebuffer->green_mask_size,
@@ -163,14 +168,15 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 break;
             }
             default: {
-                // debugf("Unknown Stivale2 tag: 0x%016X\n", tag->identifier);
+                Logger::Debug(__func__, "Unknown Stivale2 tag: 0x%016LX", tag->identifier);
                 break;
             }
         }
 
         tag = (struct stivale2_tag*)tag->next;
     }
-    debugf("Done\n");
+
+    Logger::Debug(__func__, "Done parsing Stivale2 tags");
 }
 
 } // !namespace Handoff

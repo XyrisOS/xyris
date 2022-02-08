@@ -85,8 +85,13 @@ void kernelEntry(void* info, uint32_t magic)
     Arch::CPU::init();
     // Initialize devices
     Arch::CPU::criticalRegion(devInit);
-    Logger::setLevel(Logger::lINFO); // FIXME: Constructor value is not being respected???
     Logger::addWriter(RS232::vprintf);
+#if defined(DEBUG)
+    Logger::setLevel(Logger::lDEBUG);
+#elif defined(RELEASE)
+    Logger::setLevel(Logger::lINFO);
+#endif
+    Logger::Debug(__func__, "Debug");
     // Initialize info from bootloader
     Boot::Handoff handoff(info, magic);
     Memory::init(handoff.MemoryMap());
@@ -95,17 +100,13 @@ void kernelEntry(void* info, uint32_t magic)
     printSplash();
     // Print some info to show we did things right
     Time::TimeDescriptor time;
-    Console::printf(DBG_INFO "UTC: %i/%i/%i %i:%i\n",
+    Console::printf("UTC: %i/%i/%i %i:%i\n",
         time.getMonth(),
         time.getDay(),
         time.getYear(),
         time.getHour(),
         time.getMinutes());
-    // Get the CPU vendor and model data to print
-    const char* vendor = Arch::CPU::vendor();
-    const char* model = Arch::CPU::model();
-    Console::printf(DBG_INFO "%s %s\n", vendor, model);
-    RS232::printf("%s\n%s\n", vendor, model);
+    Logger::Info(__func__, "%s\n%s\n", Arch::CPU::vendor(), Arch::CPU::model());
 
     tasks_init();
     struct task compute, status, spinner;

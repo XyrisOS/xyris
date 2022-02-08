@@ -13,6 +13,7 @@
 #include <Arch/Memory.hpp>
 #include <Library/Bitset.hpp>
 #include <Memory/MemorySection.hpp>
+#include <Logger.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -38,8 +39,9 @@ public:
 
     [[gnu::always_inline]] void setUsed(Section& sect)
     {
-        debugf(
-            "0x%08zX-0x%08zX 0x%08zX [%zu] [%s]\n",
+        Logger::Debug(
+            __func__,
+            "0x%08zX-0x%08zX 0x%08zX [%zu] [%s]",
             sect.base(),
             sect.end(),
             sect.size(),
