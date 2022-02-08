@@ -10,8 +10,12 @@
  */
 #pragma once
 #include <stdarg.h>
+#include <Locking/Mutex.hpp>
+#include <Locking/RAII.hpp>
 
-namespace Log {
+class Logger
+{
+public:
 
 enum LogLevel {
     lTRACE,
@@ -24,17 +28,31 @@ enum LogLevel {
 
 typedef int (*LogWriter)(const char* fmt, va_list args);
 
-[[gnu::format(printf, 2, 3)]] void Trace(const char* tag, const char* fmt, ...);
-[[gnu::format(printf, 2, 3)]] void Verbose(const char* tag, const char* fmt, ...);
-[[gnu::format(printf, 2, 3)]] void Debug(const char* tag, const char* fmt, ...);
-[[gnu::format(printf, 2, 3)]] void Info(const char* tag, const char* fmt, ...);
-[[gnu::format(printf, 2, 3)]] void Warning(const char* tag, const char* fmt, ...);
-[[gnu::format(printf, 2, 3)]] void Error(const char* tag, const char* fmt, ...);
+[[gnu::format(printf, 2, 3)]] static void Trace(const char* tag, const char* fmt, ...);
+[[gnu::format(printf, 2, 3)]] static void Verbose(const char* tag, const char* fmt, ...);
+[[gnu::format(printf, 2, 3)]] static void Debug(const char* tag, const char* fmt, ...);
+[[gnu::format(printf, 2, 3)]] static void Info(const char* tag, const char* fmt, ...);
+[[gnu::format(printf, 2, 3)]] static void Warning(const char* tag, const char* fmt, ...);
+[[gnu::format(printf, 2, 3)]] static void Error(const char* tag, const char* fmt, ...);
 
-bool addWriter(LogWriter writer);
-bool removeWriter(LogWriter writer);
+static bool addWriter(LogWriter writer);
+static bool removeWriter(LogWriter writer);
 
-void setLevel(LogLevel level);
-LogLevel getLevel();
+static void setLevel(LogLevel level) { the().m_logLevel = level; }
+static LogLevel getLevel() { return the().m_logLevel; }
 
-} // !namespace Log
+static Logger& the();
+
+private:
+    Logger();
+    const char* levelToString(LogLevel lvl);
+    void LogHelper(const char* tag, LogLevel lvl, const char* fmt, va_list args);
+
+    static const uint8_t m_maxWriterCount = 2;
+    static const uint32_t m_maxBufferSize = 1024;
+    Mutex m_logBufferMutex;
+    size_t m_writersIdx;
+    LogLevel m_logLevel;
+    LogWriter m_writers[m_maxWriterCount];
+    char m_logBuffer[m_maxBufferSize];
+};

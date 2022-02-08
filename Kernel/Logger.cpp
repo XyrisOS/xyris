@@ -11,20 +11,8 @@
 #include "Logger.hpp"
 #include <Bootloader/Arguments.hpp>
 #include <Library/stdio.hpp>
-#include <Library/mutex.hpp>
 
-#define MAX_LOG_SIZE 1024
-#define MAX_WRITER_COUNT 2
-
-namespace Log {
-
-// static char logBuffer[MAX_LOG_SIZE];
-static Mutex logBufferMutex("LogBuffer");
-static LogWriter writers[MAX_WRITER_COUNT];
-static size_t writersIdx = 0;
-static LogLevel logLevel = lINFO;
-
-static const char* levelToString(LogLevel lvl)
+const char* Logger::levelToString(LogLevel lvl)
 {
     switch (lvl) {
         case lTRACE:
@@ -44,68 +32,80 @@ static const char* levelToString(LogLevel lvl)
     }
 }
 
-static void LogHelper(const char* tag, const char* fmt, va_list args)
+void Logger::LogHelper(const char* tag, LogLevel lvl, const char* fmt, va_list ap)
 {
     (void)tag;
-    (void)fmt;
-    (void)args;
-    if (logBufferMutex.Lock() == 0) {
-        // TODO
-        logBufferMutex.Unlock();
+    (void)lvl;
+    RAIIMutex(the().m_logBufferMutex);
+    if (the().m_logBufferMutex.lock() == 0) {
+        kvsprintf(the().m_logBuffer, fmt, ap);
+        m_logBufferMutex.unlock();
     }
 }
 
-void Trace(const char* tag, const char* fmt, ...)
+void Logger::Trace(const char* tag, const char* fmt, ...)
 {
-    (void)tag;
-    (void)fmt;
+    va_list ap;
+    va_start(ap, fmt);
+    the().LogHelper(tag, lTRACE, fmt, ap);
+    va_end(ap);
 }
 
-void Verbose(const char* tag, const char* fmt, ...)
+void Logger::Verbose(const char* tag, const char* fmt, ...)
 {
-    (void)tag;
-    (void)fmt;
+    va_list ap;
+    va_start(ap, fmt);
+    the().LogHelper(tag, lVERBOSE, fmt, ap);
+    va_end(ap);
 }
 
-void Debug(const char* tag, const char* fmt, ...)
+void Logger::Debug(const char* tag, const char* fmt, ...)
 {
-    (void)tag;
-    (void)fmt;
+    va_list ap;
+    va_start(ap, fmt);
+    the().LogHelper(tag, lDEBUG, fmt, ap);
+    va_end(ap);
 }
 
-void Info(const char* tag, const char* fmt, ...)
+void Logger::Info(const char* tag, const char* fmt, ...)
 {
-    (void)tag;
-    (void)fmt;
+    va_list ap;
+    va_start(ap, fmt);
+    the().LogHelper(tag, lINFO, fmt, ap);
+    va_end(ap);
 }
 
-void Warning(const char* tag, const char* fmt, ...)
+void Logger::Warning(const char* tag, const char* fmt, ...)
 {
-    (void)tag;
-    (void)fmt;
+    va_list ap;
+    va_start(ap, fmt);
+    the().LogHelper(tag, lWARNING, fmt, ap);
+    va_end(ap);
 }
 
-void Error(const char* tag, const char* fmt, ...)
+void Logger::Error(const char* tag, const char* fmt, ...)
 {
-    (void)tag;
-    (void)fmt;
+    va_list ap;
+    va_start(ap, fmt);
+    the().LogHelper(tag, lERROR, fmt, ap);
+    va_end(ap);
 }
 
-bool addWriter(LogWriter writer)
+bool Logger::addWriter(LogWriter writer)
 {
-    if (writersIdx < MAX_WRITER_COUNT) {
-        writers[writersIdx++] = writer;
+    if (the().m_writersIdx < the().m_maxWriterCount) {
+        the().m_writers[the().m_writersIdx++] = writer;
         return true;
     }
 
     return false;
 }
 
-bool removeWriter(LogWriter writer)
+bool Logger::removeWriter(LogWriter writer)
 {
-    for (size_t idx = 0; idx < writersIdx; idx++) {
-        if (writers[idx] == writer) {
-            writers[idx] = nullptr;
+    for (size_t idx = 0; idx < the().m_writersIdx; idx++) {
+        if (the().m_writers[idx] == writer) {
+            the().m_writers[idx] = nullptr;
             return true;
         }
     }
@@ -113,14 +113,18 @@ bool removeWriter(LogWriter writer)
     return false;
 }
 
-void setLevel(LogLevel level)
+Logger& Logger::the()
 {
-    logLevel = level;
+    static Logger instance;
+    return instance;
 }
 
-LogLevel getLevel()
+Logger::Logger()
+    : m_logBufferMutex("LogBuffer")
+    , m_writersIdx(0)
+    , m_logLevel(lINFO)
 {
-    return logLevel;
+    // Default constructor
 }
 
 
@@ -131,5 +135,3 @@ static void argumentCallback(const char* lvl)
 }
 
 KERNEL_PARAM(logLevelArg, "--log-level=", argumentCallback);
-
-} // !namespace Log
