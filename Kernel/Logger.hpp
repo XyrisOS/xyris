@@ -29,6 +29,9 @@ enum LogLevel {
 
 typedef int (*LogWriter)(const char* fmt, va_list args);
 
+Logger(Logger const&) = delete;
+void operator=(Logger const&) = delete;
+
 [[gnu::format(printf, 2, 3)]] static void Trace(const char* tag, const char* fmt, ...);
 [[gnu::format(printf, 2, 3)]] static void Verbose(const char* tag, const char* fmt, ...);
 [[gnu::format(printf, 2, 3)]] static void Debug(const char* tag, const char* fmt, ...);
@@ -38,7 +41,6 @@ typedef int (*LogWriter)(const char* fmt, va_list args);
 
 static bool addWriter(LogWriter writer);
 static bool removeWriter(LogWriter writer);
-
 static void setLevel(LogLevel level) { the().m_logLevel = level; }
 static LogLevel getLevel() { return the().m_logLevel; }
 
