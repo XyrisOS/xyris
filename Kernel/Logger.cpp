@@ -36,9 +36,14 @@ void Logger::LogHelper(const char* tag, LogLevel lvl, const char* fmt, va_list a
 {
     RAIIMutex(the().m_logBufferMutex);
     ksprintf(the().m_logBuffer, "[%s] [%s] %s\n", tag, levelToString(lvl), fmt);
+    LogHelperPrint(m_logBuffer, ap);
+}
+
+void Logger::LogHelperPrint(const char* fmt, va_list ap)
+{
     for (size_t i = 0; i < m_writersIdx; i++) {
         if (the().m_writers[i] != nullptr) {
-            the().m_writers[i](m_logBuffer, ap);
+            the().m_writers[i](fmt, ap);
         }
     }
 }
@@ -103,6 +108,14 @@ void Logger::Error(const char* tag, const char* fmt, ...)
     }
 }
 
+void Logger::Print(const char* fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    the().LogHelperPrint(fmt, ap);
+    va_end(ap);
+}
+
 bool Logger::addWriter(LogWriter writer)
 {
     if (the().m_writersIdx < the().m_maxWriterCount) {
@@ -142,6 +155,7 @@ Logger::Logger()
 // Kernel argument callback
 static void argumentCallback(const char* lvl)
 {
+    // FIXME: Update kernel argument parser to handle `=`
     (void)lvl;
 }
 

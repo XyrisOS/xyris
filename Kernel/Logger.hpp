@@ -38,6 +38,7 @@ void operator=(Logger const&) = delete;
 [[gnu::format(printf, 2, 3)]] static void Info(const char* tag, const char* fmt, ...);
 [[gnu::format(printf, 2, 3)]] static void Warning(const char* tag, const char* fmt, ...);
 [[gnu::format(printf, 2, 3)]] static void Error(const char* tag, const char* fmt, ...);
+[[gnu::format(printf, 2, 3)]] static void Print(const char* fmt, ...);
 
 static bool addWriter(LogWriter writer);
 static bool removeWriter(LogWriter writer);
@@ -50,6 +51,7 @@ private:
     Logger();
     const char* levelToString(LogLevel lvl);
     void LogHelper(const char* tag, LogLevel lvl, const char* fmt, va_list args);
+    void LogHelperPrint(const char* fmt, va_list args);
 
     static const uint8_t m_maxWriterCount = 2;
     static const uint32_t m_maxBufferSize = 1024;
