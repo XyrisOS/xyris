@@ -147,7 +147,11 @@ Logger& Logger::the()
 Logger::Logger()
     : m_logBufferMutex("Logger")
     , m_writersIdx(0)
+#if defined(RELEASE)
     , m_logLevel(lINFO)
+#elif defined(DEBUG)
+    , m_logLevel(lDEBUG)
+#endif
 {
     // Default constructor
 }

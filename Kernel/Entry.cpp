@@ -86,11 +86,6 @@ void kernelEntry(void* info, uint32_t magic)
     // Initialize devices
     Arch::CPU::criticalRegion(devInit);
     Logger::addWriter(RS232::vprintf);
-#if defined(DEBUG)
-    Logger::setLevel(Logger::lDEBUG);
-#elif defined(RELEASE)
-    Logger::setLevel(Logger::lINFO);
-#endif
     Logger::Debug(__func__, "Debug");
     // Initialize info from bootloader
     Boot::Handoff handoff(info, magic);
