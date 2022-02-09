@@ -30,7 +30,7 @@ class VariantTool:
         return os.path.join(self.abs, rel)
 
 
-def recursive_glob(env, root: str, extensions: list, ignored_dirs: list=[]):
+def recursive_glob(env, root: str, extensions: list, ignored_dirs: list=[], ignored_files: list=[]):
     """
     Finds all files in a root directory matching the provided file extensions while
     skipping any file within ignored directories.
@@ -53,7 +53,7 @@ def recursive_glob(env, root: str, extensions: list, ignored_dirs: list=[]):
 
         Finally, normalize the path and add it to the list of discovered source files.
         """
-        sources.extend(os.path.normpath(vt.to_variant(os.path.join(dirpath, file))) for file in files if file.endswith(extensions))
+        sources.extend(os.path.normpath(vt.to_variant(os.path.join(dirpath, file))) for file in files if file.endswith(extensions) and file not in ignored_files)
 
     return sources
 
