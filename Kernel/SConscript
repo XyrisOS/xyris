@@ -14,6 +14,8 @@ env.Append(
     ],
 )
 
+crti = env.File('./Arch/$ARCH/Assembly/crti.s')
+crtn = env.File('./Arch/$ARCH/Assembly/crtn.s')
 # Toolchain should supply crtbegin and crtend
 crtbegin = subprocess.check_output(
     [env.subst('$CC'), '-print-file-name=crtbegin.o']
@@ -29,16 +31,21 @@ extensions = [
     '.s',
 ]
 
-arch_sources = env.RecursiveGlob('./Arch/$ARCH', extensions)
-common_sources = env.RecursiveGlob('.', extensions, ['./Arch'])
+# Exclude crti.s and crtn.s from the glob since those are special
+arch_sources = env.RecursiveGlob(root='./Arch/$ARCH', extensions=extensions, ignored_files=['crti.s', 'crtn.s'])
+common_sources = env.RecursiveGlob(root='.', extensions=extensions, ignored_dirs=['./Arch'])
 
 kernel = env.Program(
     'kernel',
     Flatten([
-        crtend,
+        # crti, crtbegin, crtend, and crtn must be
+        # in this order or things will break!
+        crti,
         crtbegin,
         arch_sources,
-        common_sources
+        common_sources,
+        crtend,
+        crtn,
     ]),
     LIBS=[
         'gcc',
