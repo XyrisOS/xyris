@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <x86gprintrin.h>   // needed for __rdtsc
 #include <Arch/i686/timer.hpp> // TODO: Remove ASAP
+#include <Logger.hpp>
 
 /* forward declarations */
 static void _enqueue_task(struct tasklist *, task *);
@@ -112,13 +113,13 @@ static inline uint64_t _get_cpu_time_ns()
     return (__rdtsc()) / _instr_per_ns;
 }
 
-static void _print_task(const struct task *task)
+static void _print_task(const char* tag, const struct task *task)
 {
-    RS232::printf("%s is %s\n", task->name, _state_names[task->state]);
+    Logger::Debug(tag, "%s is %s", task->name, _state_names[task->state]);
 }
 
 #ifdef DEBUG
-#define TASK_ACTION(action, task) do { RS232::printf("%s ", action); _print_task(task); } while(0)
+#define TASK_ACTION(action, task) do { _print_task(action, task); } while(0)
 #else
 #define TASK_ACTION(action, task)
 #endif
@@ -126,9 +127,9 @@ static void _print_task(const struct task *task)
 static void _print_tasklist(const char *name, const struct tasklist *list)
 {
     struct task *task = list->head;
-    RS232::printf("%s:\n", name);
+    Logger::Verbose(__func__, "%s:", name);
     while (task != NULL) {
-        _print_task(task);
+        _print_task("\t", task);
         task = task->next;
     }
 }
@@ -138,7 +139,7 @@ static void _print_tasklist(const struct task *task)
     const struct tasklist *list = _state_lists[task->state];
     const char *state_name = _state_names[task->state];
     if (list == NULL) {
-        RS232::printf("no tasklist available for %s tasks.\n", state_name);
+        Logger::Warning(__func__, "no tasklist available for %s tasks.", state_name);
         return;
     }
 
@@ -171,7 +172,7 @@ void tasks_init()
         // this is not backed by dynamic memory
         .alloc = ALLOC_STATIC,
     };
-    TASK_ACTION("create task", this_task);
+    TASK_ACTION(__func__, this_task);
     // create a task for the cleaner and set it's state to "paused"
     (void) tasks_new(_cleaner_task_impl, &_cleaner_task, TASK_PAUSED, "[cleaner]");
     _cleaner_task.state = TASK_PAUSED;
@@ -204,7 +205,7 @@ static void _task_stopping()
     // it is run in the context of the stopping task
     tasks_exit();
     // prevent undefined behavior from returning to a random address
-    panic("Attempted to schedule a stopped task\n");
+    panic("Attempted to schedule a stopped task");
 }
 
 // emulate a stack push
@@ -257,7 +258,7 @@ static void _remove_task(struct tasklist *list, struct task *task, struct task *
 {
     // if this is true, something's not right...
     if (previous != NULL && previous->next != task) {
-        panic("Bogus arguments to _remove_task.\n");
+        panic("Bogus arguments to _remove_task.");
     }
     // update the head if necessary
     if (list->head == task) {
@@ -293,14 +294,14 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
         new_task = (struct task*)malloc(sizeof(struct task));
         // panic if the alloc fails (we have no fallback)
         if (new_task == NULL) {
-            panic("Unable to allocate memory for new task struct.\n");
+            panic("Unable to allocate memory for new task struct.");
         }
     }
     // allocate a page for this stack (we might change this later)
     // TODO: Should more than one page be allocated / freed?
     uint8_t *stack = (uint8_t *)Memory::newPage(1);
     if (stack == NULL) {
-        panic("Unable to allocate memory for new task stack.\n");
+        panic("Unable to allocate memory for new task stack.");
     }
     // remember, the stack grows up
     void *stack_pointer = stack + ARCH_PAGE_SIZE;
@@ -328,7 +329,7 @@ struct task *tasks_new(void (*entry)(void), struct task *storage, task_state sta
     if (state == TASK_READY) {
         _tasks_enqueue_ready(new_task);
     }
-    TASK_ACTION("create task", new_task);
+    TASK_ACTION(__func__, new_task);
     return new_task;
 }
 
@@ -422,7 +423,7 @@ void tasks_block_current(task_state reason)
 {
     _aquire_scheduler_lock();
     current_task->state = reason;
-    TASK_ACTION("block", current_task);
+    TASK_ACTION(__func__, current_task);
     _schedule();
     _release_scheduler_lock();
 }
@@ -431,7 +432,7 @@ void tasks_unblock(struct task *task)
 {
     _aquire_scheduler_lock();
     task->state = TASK_READY;
-    TASK_ACTION("unblock", task);
+    TASK_ACTION(__func__, task);
     _tasks_enqueue_ready(task);
     _release_scheduler_lock();
 }
@@ -441,7 +442,7 @@ void _wakeup(struct task *task)
     task->state = TASK_READY;
     task->wakeup_time = (0ULL - 1);
     _tasks_enqueue_ready(task);
-    TASK_ACTION("wakeup", task);
+    TASK_ACTION(__func__, task);
 }
 
 static void _on_timer()
@@ -458,7 +459,7 @@ static void _on_timer()
     while (task != NULL) {
         next = task->next;
         if (time >= task->wakeup_time) {
-            //RS232::printf("timer: waking sleeping task\n");
+            Logger::Verbose(__func__, "timer: waking sleeping task");
             _remove_task(&tasks_sleeping, task, pre);
             _wakeup(task);
             task->next = NULL;
@@ -475,7 +476,7 @@ static void _on_timer()
         if (time_delta >= _time_slice_remaining) {
             // schedule (and maybe pre-empt)
             // the schedule function will reset the time slice
-            //RS232::printf("timer: time slice expired\n");
+            Logger::Trace(__func__, "timer: time slice expired");
             need_schedule = true;
         } else {
             // decrement the time slice counter
@@ -497,7 +498,7 @@ void tasks_nano_sleep_until(uint64_t time)
     current_task->state = TASK_SLEEPING;
     current_task->wakeup_time = time;
     _enqueue_sleeping(current_task);
-    TASK_ACTION("sleep", current_task);
+    TASK_ACTION(__func__, current_task);
     _schedule();
     _release_scheduler_lock();
 }
@@ -510,7 +511,7 @@ void tasks_nano_sleep(uint64_t time)
 void tasks_exit()
 {
     // userspace cleanup can happen here
-    RS232::printf("task \"%s\" (0x%08lx) exiting\n", current_task->name, (uint32_t)current_task);
+    Logger::Debug(__func__, "task \"%s\" (0x%08lx) exiting", current_task->name, (uint32_t)current_task);
 
     _aquire_scheduler_lock();
     // all scheduling-specific operations must happen here
@@ -544,7 +545,7 @@ static void _cleaner_task_impl()
 
         while (tasks_stopped.head != NULL) {
             task = _dequeue_stopped();
-            RS232::printf("cleaning up task %s (0x%08lx)\n", task->name ? task->name : "N/A", (uint32_t)task);
+            Logger::Debug(__func__, "cleaning up task %s (0x%08lx)", task->name ? task->name : "N/A", (uint32_t)task);
             _clean_stopped_task(task);
         }
 
@@ -561,7 +562,7 @@ void tasks_sync_block(struct task_sync *ts)
     _aquire_scheduler_lock();
 #ifdef DEBUG
     if (ts->dbg_name != NULL) {
-        RS232::printf("blocking %s\n", ts->dbg_name);
+        Logger::Debug(__func__, "blocking %s", ts->dbg_name);
     }
 #endif
     // push the current task to the waiting queue
@@ -576,7 +577,7 @@ void tasks_sync_unblock(struct task_sync *ts)
     _aquire_scheduler_lock();
 #ifdef DEBUG
     if (ts->dbg_name != NULL) {
-        RS232::printf("unblocking %s\n", ts->dbg_name);
+        Logger::Debug(__func__, "unblocking %s", ts->dbg_name);
     }
 #endif
     // iterate all tasks that were blocked and unblock them

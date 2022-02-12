@@ -20,6 +20,7 @@
 #include <Memory/paging.hpp>
 #include <Support/sections.hpp>
 #include <Panic.hpp>
+#include <Logger.hpp>
 #include <stddef.h>
 
 #define PAGE_COUNT(s)   ((s) / ARCH_PAGE_SIZE) + 1;
@@ -98,9 +99,9 @@ static void initPhysical(MemoryMap* map)
         }
     }
 
-    debugf("Available memory: %zu MB\n", B_TO_MB(freeBytes));
-    debugf("Reserved memory: %zu MB\n", B_TO_MB(reservedBytes));
-    debugf("Total memory: %zu MB\n", B_TO_MB(freeBytes + reservedBytes));
+    Logger::Info(__func__, "Available memory: %zu MB", B_TO_MB(freeBytes));
+    Logger::Info(__func__, "Reserved memory: %zu MB", B_TO_MB(reservedBytes));
+    Logger::Info(__func__, "Total memory: %zu MB", B_TO_MB(freeBytes + reservedBytes));
 }
 
 static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table)
@@ -151,7 +152,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
 
     // Print a debug message to serial
     if (is_mapping_output_enabled) {
-        debugf("map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx\n", paddr.val(), vaddr.val(), pde, pte);
+        Logger::Debug(__func__, "map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx", paddr.val(), vaddr.val(), pde, pte);
     }
 
     // If the page's virtual address is not aligned
@@ -205,13 +206,13 @@ void mapKernelRangePhysical(Section sect)
 
 static void mapEarlyMem()
 {
-    debugf("==== MAP EARLY MEM ====\n");
+    Logger::Debug(__func__, "==== MAP EARLY MEM ====");
     mapKernelRangeVirtual(Section(EARLY_MEM_START, EARLY_KERNEL_START));
 }
 
 static void mapKernel()
 {
-    debugf("==== MAP HH KERNEL ====\n");
+    Logger::Debug(__func__, "==== MAP HH KERNEL ====");
     mapKernelRangePhysical(Section(Arch::Memory::pageAlign(KERNEL_START), KERNEL_END));
 }
 
@@ -276,7 +277,7 @@ uintptr_t getPageDirPhysAddr()
 static void argumentsCallback(const char* arg)
 {
     if (strcmp(arg, MAPPING_OUTPUT_FLAG) == 0) {
-        debugf("is_mapping_output_enabled = true");
+        Logger::Debug(__func__, "is_mapping_output_enabled = true");
         is_mapping_output_enabled = true;
     }
 }

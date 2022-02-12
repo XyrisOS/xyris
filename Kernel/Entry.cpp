@@ -8,12 +8,12 @@
  * @copyright Copyright the Xyris Contributors (c) 2019
  *
  */
+#include "Logger.hpp"
+#include "Panic.hpp"
 // System library functions
 #include <Library/stdio.hpp>
 #include <Library/time.hpp>
-#include <stdint.h>
 #include <Scheduler/tasks.hpp>
-#include <Panic.hpp>
 // Bootloader
 #include <Bootloader/Handoff.hpp>
 // Architecture specific code
@@ -21,16 +21,17 @@
 // Memory management & paging
 #include <Memory/paging.hpp>
 // Generic devices
-#include <Devices/Graphics/graphics.hpp>
-#include <Devices/Graphics/console.hpp>
 #include <Devices/Clock/rtc.hpp>
-#include <Devices/Serial/rs232.hpp>
+#include <Devices/Graphics/console.hpp>
+#include <Devices/Graphics/graphics.hpp>
 #include <Devices/PCSpeaker/spkr.hpp>
+#include <Devices/Serial/rs232.hpp>
 // Apps
 #include <Applications/primes.hpp>
 #include <Applications/spinner.hpp>
 // Meta
 #include <Support/defines.hpp>
+#include <stdint.h>
 
 static void printSplash();
 static void bootTone();
@@ -80,31 +81,24 @@ static void bootTone()
  */
 void kernelEntry(void* info, uint32_t magic)
 {
-    // Initialize the CPU
     Arch::CPU::init();
-    // Initialize devices
     Arch::CPU::criticalRegion(devInit);
-    // Initialize info from bootloader
+
     Boot::Handoff handoff(info, magic);
     Memory::init(handoff.MemoryMap());
     Graphics::init(handoff.FramebufferInfo());
-    // Print the splash screen to show we've booted into the kernel properly.
+    tasks_init();
+
     printSplash();
-    // Print some info to show we did things right
     Time::TimeDescriptor time;
-    Console::printf(DBG_INFO "UTC: %i/%i/%i %i:%i\n",
+    Console::printf("UTC: %i/%i/%i %i:%i\n",
         time.getMonth(),
         time.getDay(),
         time.getYear(),
         time.getHour(),
         time.getMinutes());
-    // Get the CPU vendor and model data to print
-    const char* vendor = Arch::CPU::vendor();
-    const char* model = Arch::CPU::model();
-    Console::printf(DBG_INFO "%s %s\n", vendor, model);
-    RS232::printf("%s\n%s\n", vendor, model);
+    Logger::Info(__func__, "%s\n%s\n", Arch::CPU::vendor(), Arch::CPU::model());
 
-    tasks_init();
     struct task compute, status, spinner;
     tasks_new(Apps::find_primes, &compute, TASK_READY, "prime_compute");
     tasks_new(Apps::show_primes, &status, TASK_READY, "prime_display");

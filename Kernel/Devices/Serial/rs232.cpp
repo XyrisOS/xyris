@@ -12,14 +12,15 @@
  *
  */
 
-#include <stdarg.h>
 #include <Arch/Arch.hpp>
 #include <Devices/Serial/rs232.hpp>
-#include <Memory/heap.hpp>
-#include <Library/stdio.hpp>
-#include <Locking/RAII.hpp>
-#include <Library/string.hpp>
 #include <Library/RingBuffer.hpp>
+#include <Library/stdio.hpp>
+#include <Library/string.hpp>
+#include <Locking/RAII.hpp>
+#include <Logger.hpp>
+#include <Memory/heap.hpp>
+#include <stdarg.h>
 
 #define RS_232_COM1_IRQ 0x04
 #define RS_232_COM3_IRQ 0x04
@@ -44,24 +45,29 @@ static Mutex mutex_rs232("rs232");
 static int received();
 static int is_transmit_empty();
 static char read_byte();
-static void callback(struct registers *regs);
+static void callback(struct registers* regs);
 
-static int received() {
+static int received()
+{
     return readByte(rs_232_port_base + RS_232_LINE_STATUS_REG) & 1;
 }
 
-static int is_transmit_empty() {
+static int is_transmit_empty()
+{
     return readByte(rs_232_port_base + RS_232_LINE_STATUS_REG) & 0x20;
 }
 
-static char read_byte() {
+static char read_byte()
+{
     lockedRegion([]() {
-        while (received() == 0);
-    }, mutex_rs232);
+        while (received() == 0)
+            ;
+    },
+        mutex_rs232);
     return readByte(rs_232_port_base + RS_232_DATA_REG);
 }
 
-static int vprintf_helper(unsigned c, void **ptr)
+static int vprintf_helper(unsigned c, void** ptr)
 {
     // Unfortunately very hacky...
     (void)ptr;
@@ -77,7 +83,7 @@ int vprintf(const char* fmt, va_list args)
     return retval;
 }
 
-int printf(const char *format, ...)
+int printf(const char* format, ...)
 {
     va_list args;
     int ret_val;
@@ -88,7 +94,8 @@ int printf(const char *format, ...)
     return ret_val;
 }
 
-static void callback(struct registers *regs) {
+static void callback(struct registers* regs)
+{
     (void)regs;
     // Grab the input character
     char in = read_byte();
@@ -96,16 +103,14 @@ static void callback(struct registers *regs) {
     if (in == '\r') {
         in = '\n';
     }
-    // Create a string and print it so that the
-    // user can see what they're typing.
-    char str[2] = {in, '\0'};
-    printf("%s", str);
+    printf("%c", in);
     // Add the character to the circular buffer
     ring.Enqueue(in);
 }
 
 // FIXME: Use separate ring buffers for COM1 & COM2
-void init(uint16_t com_id) {
+void init(uint16_t com_id)
+{
     // Register the IRQ callback
     rs_232_port_base = com_id;
     uint8_t IRQ = 0x20 + (com_id == RS_232_COM1 ? RS_232_COM1_IRQ : RS_232_COM2_IRQ);
@@ -122,8 +127,9 @@ void init(uint16_t com_id) {
     writeByte(rs_232_port_base + RS_232_LINE_CONTROL_REG, 0x00);
     // re-enable interrupts
     writeByte(rs_232_port_base + RS_232_INTERRUPT_ENABLE_REG, 0x01);
-    // Print out header info to the serial
-    printf("%s",
+
+    Logger::addWriter(vprintf);
+    Logger::Print(
         "\033[93m\n"
         "   _  __           _              _____\n"
         "  | |/ /_  _______(_)____   _   _|__  /\n"
@@ -132,16 +138,14 @@ void init(uint16_t com_id) {
         "/_/|_\\__, /_/  /_/____/    |___/____/\n"
         "    /____/\n"
         "\n\033[0m"
-        "Xyris Serial Output Debugger\n\n"
-
-    );
+        "Xyris Serial Output Debugger\n\n");
 }
 
-size_t read(char* buf, size_t count) {
+size_t read(char* buf, size_t count)
+{
     size_t bytes = 0;
     mutex_rs232.lock();
-    for (size_t idx = 0; idx < count && !ring.IsEmpty(); idx++)
-    {
+    for (size_t idx = 0; idx < count && !ring.IsEmpty(); idx++) {
         buf[idx] = ring.Dequeue();
         bytes++;
     }
@@ -149,7 +153,8 @@ size_t read(char* buf, size_t count) {
     return bytes;
 }
 
-size_t write(const char* buf, size_t count) {
+size_t write(const char* buf, size_t count)
+{
     // Wait for previous transfer to complete
     while (is_transmit_empty() == 0);
     size_t bytes = 0;
@@ -160,7 +165,8 @@ size_t write(const char* buf, size_t count) {
     return bytes;
 }
 
-int close() {
+int close()
+{
     return 0;
 }
 

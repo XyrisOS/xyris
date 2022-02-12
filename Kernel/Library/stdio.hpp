@@ -9,17 +9,7 @@
  *
  */
 #pragma once
-
 #include <stdarg.h>
-
-#ifndef EOF
-#define EOF (-1)
-#endif
-
-#define DBG_INFO "[ \033[37mINFO \033[0m] "
-#define DBG_WARN "[ \033[93mWARN \033[0m] "
-#define DBG_FAIL "[ \033[91mFAIL \033[0m] "
-#define DBG_OKAY "[ \033[92m OK  \033[0m] "
 
 typedef int (*printf_cb_fnptr_t)(unsigned c, void** helper);
 
@@ -59,20 +49,6 @@ int kvsprintf(char* buf, const char* fmt, va_list args);
  * The number of characters not written if negative.
  */
 int ksprintf(char* buf, const char* fmt, ...);
-
-/**
- * @brief Prints a statement to serial debugger if the kernel
- * is built with the debug flag defined. Max message size is
- * 1024 (including null terminator).
- * @param fmt Formatted C string
- * @param ... Sequence of additional arguments
- */
-#ifdef DEBUG
-#include <Devices/Serial/rs232.hpp>
-#define debugf(fmt, ...) RS232::printf(fmt, ##__VA_ARGS__)
-#else
-#define debugf(fmt, ...)
-#endif
 
 /**
  * @brief Prints a statement to serial debugger and the kernel framebuffer.

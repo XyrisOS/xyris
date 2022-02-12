@@ -21,6 +21,7 @@
 #include <Bootloader/Handoff.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
+#include <Logger.hpp>
 
 namespace Graphics {
 
@@ -37,7 +38,7 @@ void init(Framebuffer* fb)
     if (!info->getAddress())
         return;
     // Map in the framebuffer
-    debugf("==== MAP FRAMEBUFFER ====\n");
+    Logger::Debug(__func__, "==== MAP FRAMEBUFFER ====");
     Memory::mapKernelRangeVirtual(Memory::Section(
         (uintptr_t)info->getAddress(),
         (uintptr_t)info->getAddress() + (info->getPitch() * info->getHeight())

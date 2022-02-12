@@ -167,9 +167,9 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                     break;
 
                 if (*fmt == 'z') {
-#if (UINTPTR_MAX == 0xFFFFFFFF)
+#if (UINTPTR_MAX == UINT32_MAX)
                     flags |= PR_32;
-#elif (UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF)
+#elif (UINTPTR_MAX == UINT64_MAX)
                     flags |= PR_64;
 #else
 #error "Unknown UINTPTR_MAX value! Cannot compile printf_helper!"
