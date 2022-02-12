@@ -1,12 +1,8 @@
 ![Logo](https://media.githubusercontent.com/media/XyrisOS/artwork/stable/images/xyris-banner-full.png)
 
-<div style="text-align:center">
-    <a href="https://github.com/XyrisOS/xyris/actions/workflows/kernel.yml"><img alt="C/C++ CI" src="https://github.com/XyrisOS/xyris/actions/workflows/kernel.yml/badge.svg"></a>
-    <a href="https://github.com/XyrisOS/xyris/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/XyrisOS/xyris"></a>
-    <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/XyrisOS/xyris">
-    <a href="https://discord.gg/FNbZMr7p9d"><img alt="Discord" src="https://img.shields.io/discord/732032083647660123"></a>
-    <a href="https://github.com/XyrisOS/xyris/blob/dev/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/XyrisOS/xyris"></a>
-</div>
+[![License](https://img.shields.io/github/license/XyrisOS/xyris)](https://github.com/XyrisOS/xyris/blob/dev/LICENSE)
+[![Kernel CI](https://github.com/XyrisOS/xyris/actions/workflows/kernel.yml/badge.svg)](https://github.com/XyrisOS/xyris/actions/workflows/kernel.yml)
+[![Discord](https://img.shields.io/discord/732032083647660123.svg?logo=discord&logoColor=white&logoWidth=20&labelColor=7289DA&label=Discord&color=17cf48)](https://discord.gg/FNbZMr7p9d)
 
 ## Xyris
 Xyris (previously known as Panix) is a small, hobbyist kernel with the goal of becoming a fully-fledged microkernel with an emphasis on usability and security.
