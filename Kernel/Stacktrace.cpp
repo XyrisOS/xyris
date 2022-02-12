@@ -9,6 +9,7 @@
  *
  */
 
+#include "Logger.hpp"
 #include <Arch/Arch.hpp>
 #include <Devices/Graphics/console.hpp>
 #include <Devices/Serial/rs232.hpp>
@@ -23,22 +24,20 @@ namespace Stack {
 void printTrace(size_t max)
 {
     // Define our stack
-    struct Arch::stackframe* stk;
-    asm volatile("movl %%ebp, %0" : "=r"(stk)::);
+    struct Arch::stackframe* frame;
+    asm volatile(
+        "movl %%ebp, %0"
+        : "=r"(frame));
     Console::printf("\033[31mStack trace:\033[0m\n");
-    RS232::printf("\033[31mStack trace:\033[0m\n");
+    Logger::Print("\033[31mStack trace:\033[0m\n");
 
-    char buf[STACK_TRACE_BUF_SZ];
-    for (size_t frame = 0; stk != NULL && frame < max; ++frame) {
-        // Unwind to previous stack frame
-        ksprintf(buf, "0x%08X\n", stk->eip);
-        Console::printf("%s", buf);
-        RS232::printf("%s", buf);
-        // Check for a NULL stack frame to indicate the end
-        if ((uintptr_t)stk->ebp == 0x00000000) {
+    for (size_t i = 0; frame != NULL && i < max; ++i) {
+        Console::printf("0x%08zX\n", frame->eip);
+        Logger::Print("0x%08zX", frame->eip);
+        if ((uintptr_t)frame->ebp == 0x00000000) {
             break;
         }
-        stk = stk->ebp;
+        frame = frame->ebp;
     }
 }
 
