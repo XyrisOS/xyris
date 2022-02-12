@@ -21,11 +21,11 @@
 // Memory management & paging
 #include <Memory/paging.hpp>
 // Generic devices
-#include <Devices/Graphics/graphics.hpp>
-#include <Devices/Graphics/console.hpp>
 #include <Devices/Clock/rtc.hpp>
-#include <Devices/Serial/rs232.hpp>
+#include <Devices/Graphics/console.hpp>
+#include <Devices/Graphics/graphics.hpp>
 #include <Devices/PCSpeaker/spkr.hpp>
+#include <Devices/Serial/rs232.hpp>
 // Apps
 #include <Applications/primes.hpp>
 #include <Applications/spinner.hpp>
@@ -81,19 +81,15 @@ static void bootTone()
  */
 void kernelEntry(void* info, uint32_t magic)
 {
-    // Initialize the CPU
     Arch::CPU::init();
-    // Initialize devices
     Arch::CPU::criticalRegion(devInit);
-    Logger::addWriter(RS232::vprintf);
-    Logger::Debug(__func__, "Debug");
-    // Initialize info from bootloader
+
     Boot::Handoff handoff(info, magic);
     Memory::init(handoff.MemoryMap());
     Graphics::init(handoff.FramebufferInfo());
-    // Print the splash screen to show we've booted into the kernel properly.
+    tasks_init();
+
     printSplash();
-    // Print some info to show we did things right
     Time::TimeDescriptor time;
     Console::printf("UTC: %i/%i/%i %i:%i\n",
         time.getMonth(),
@@ -103,7 +99,6 @@ void kernelEntry(void* info, uint32_t magic)
         time.getMinutes());
     Logger::Info(__func__, "%s\n%s\n", Arch::CPU::vendor(), Arch::CPU::model());
 
-    tasks_init();
     struct task compute, status, spinner;
     tasks_new(Apps::find_primes, &compute, TASK_READY, "prime_compute");
     tasks_new(Apps::show_primes, &status, TASK_READY, "prime_display");
