@@ -12,10 +12,12 @@
  */
 #pragma once
 
+#include <Library/errno.hpp> // FIXME: Refactor this out
 #include <stdint.h>
-#include <Library/errno.hpp>
 
-template <typename T, size_t S>
+namespace XS {
+
+template<typename T, size_t S>
 class RingBuffer {
 public:
     /**
@@ -181,3 +183,5 @@ private:
     size_t length;
     int error;
 };
+
+} // !namespace XS

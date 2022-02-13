@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace LinkedList {
+namespace XS {
 
 template<typename T>
 class LinkedListNode {
@@ -297,4 +297,4 @@ private:
     size_t count;
 };
 
-} // !namespace LinkedList
+} // !namespace XS

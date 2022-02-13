@@ -13,10 +13,10 @@
 #include <XS/LinkedList.hpp>
 
 TEST_CASE("linked list operations", "[linkedlist]") {
-    LinkedList::LinkedList<uint8_t> list;
+    XS::LinkedList<uint8_t> list;
     // Ensure the constructor sets the head properly
     SECTION("constructor") {
-        LinkedList::LinkedList<uint8_t> list2 = LinkedList::LinkedList<uint8_t>(0);
+        XS::LinkedList<uint8_t> list2 = XS::LinkedList<uint8_t>(0);
         auto node = list2.Head();
         REQUIRE(node != NULL);
         REQUIRE(node->Data() == 0);

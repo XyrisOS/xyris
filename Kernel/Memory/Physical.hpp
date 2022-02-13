@@ -103,7 +103,7 @@ public:
     }
 
 private:
-    Bitset<MEM_BITMAP_SIZE> m_memory;
+    XS::Bitset<MEM_BITMAP_SIZE> m_memory;
 };
 
 }
