@@ -201,8 +201,7 @@ env.Pseudo(
         -rtc clock=host \
         -vga std \
         -serial stdio \
-        -monitor telnet:127.0.0.1:1234,server,nowait \
-        &
+        -monitor telnet:127.0.0.1:1234,server,nowait
         '''
     )
 )
@@ -218,8 +217,7 @@ env.Pseudo(
         -m 4G \
         -rtc clock=host \
         -vga std \
-        -serial stdio \
-        &
+        -serial stdio
         '''
     )
 )
