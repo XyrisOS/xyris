@@ -12,7 +12,7 @@
 #include <Arch/Arch.hpp>
 #include <Arch/Memory.hpp>
 #include <Bootloader/Arguments.hpp>
-#include <Library/Bitset.hpp>
+#include <XS/Bitset.hpp>
 #include <Locking/RAII.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>

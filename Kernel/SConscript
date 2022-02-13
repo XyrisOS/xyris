@@ -52,7 +52,7 @@ kernel = env.Program(
         crtn,
     ]),
     LIBS=[
-        'xs',
+        # 'xs',
         'gcc',
         'alloc',
     ],

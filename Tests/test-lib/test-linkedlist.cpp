@@ -10,7 +10,7 @@
  */
 #include <catch2/catch.hpp>
 // Linked list is header-only template
-#include <Library/LinkedList.hpp>
+#include <XS/LinkedList.hpp>
 
 TEST_CASE("linked list operations", "[linkedlist]") {
     LinkedList::LinkedList<uint8_t> list;

@@ -14,7 +14,7 @@
 
 #include <Arch/Arch.hpp>
 #include <Devices/Serial/rs232.hpp>
-#include <Library/RingBuffer.hpp>
+#include <XS/RingBuffer.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
 #include <Locking/RAII.hpp>
