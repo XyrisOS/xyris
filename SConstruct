@@ -183,46 +183,6 @@ if 'docs' not in COMMAND_LINE_TARGETS:
     env.Alias('kernel-release', kernel_targets_release)
 
 # ************************
-# * Kernel Phony Targets *
-# ************************
-
-# Allow user to specify the mode. Don't want to overwrite the actual 'MODE' construction
-# variable though, so we alias the environment variable 'MODE' to 'RUN_MODE'
-env['RUN_MODE'] = ARGUMENTS.get('MODE', 'Release')
-
-env.Pseudo(
-    env.Command(
-        'run-i686',
-        None,
-        '''
-        qemu-system-x86_64 \
-        -drive file=Distribution/i686/${RUN_MODE}/xyris.img,index=0,media=disk,format=raw \
-        -m 4G \
-        -rtc clock=host \
-        -vga std \
-        -serial stdio \
-        -monitor telnet:127.0.0.1:1234,server,nowait
-        '''
-    )
-)
-
-env.Pseudo(
-    env.Command(
-        'debug-i686',
-        None,
-        '''
-        qemu-system-x86_64 \
-        -S -s \
-        -drive file=Distribution/i686/${RUN_MODE}/xyris.img,index=0,media=disk,format=raw \
-        -m 4G \
-        -rtc clock=host \
-        -vga std \
-        -serial stdio
-        '''
-    )
-)
-
-# ************************
 # * Kernel Documentation *
 # ************************
 
