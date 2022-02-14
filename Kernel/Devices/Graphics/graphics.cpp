@@ -79,8 +79,10 @@ void putrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t color)
             pixel(curr_x, curr_y, color);
         }
     }
+
     // Swap after doing a large operation
-    swap();
+    // do slow this swap
+    //swap();
 }
 
 void resetDoubleBuffer()
