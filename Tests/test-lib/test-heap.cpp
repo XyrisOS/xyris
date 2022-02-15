@@ -7,11 +7,11 @@
 namespace Test {
 #include <Memory/Heap.hpp>
 namespace Memory {
-void *newPage(unsigned int n)
+void *newPage(unsigned long n)
 {
     return ::malloc(n);
 }
-void freePage(void *ptr, unsigned int n)
+void freePage(void *ptr, unsigned long n)
 {
     (void)n;
     ::free(ptr);
@@ -19,7 +19,7 @@ void freePage(void *ptr, unsigned int n)
 }
 }
 
-static void *testMalloc(unsigned int count)
+static void *testMalloc(unsigned long count)
 {
     printf("MALLOC(0x%08x)\n", count);
     void *res = Test::malloc(count);
@@ -27,7 +27,7 @@ static void *testMalloc(unsigned int count)
     return res;
 }
 
-static void *testRealloc(void *ptr, unsigned int new_size)
+static void *testRealloc(void *ptr, unsigned long new_size)
 {
     printf("REALLOC(%p, 0x%08x) = ", ptr, new_size);
     void *res = Test::realloc(ptr, new_size);
