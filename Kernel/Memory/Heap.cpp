@@ -247,7 +247,7 @@ void* malloc(size_t requestedSize)
                 continue;
             }
 
-            if (startedBet == 0) {
+            if (startedBet == 1) {
                 major = static_cast<Major*>(memoryList.Head());
                 startedBet = 0;
                 continue;
