@@ -33,7 +33,7 @@ void printTrace(size_t max)
 
     for (size_t i = 0; frame != NULL && i < max; ++i) {
         Console::printf("0x%08zX\n", frame->eip);
-        Logger::Print("0x%08zX", frame->eip);
+        Logger::Print("0x%08zX\n", frame->eip);
         if ((uintptr_t)frame->ebp == 0x00000000) {
             break;
         }
