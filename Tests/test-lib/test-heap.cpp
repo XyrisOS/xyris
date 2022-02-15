@@ -7,11 +7,14 @@
 namespace Test {
 #include <Memory/Heap.hpp>
 namespace Memory {
-void *newPage(unsigned long n)
+void *newPage(size_t n)
 {
+    // size - 1 is passed due to a Xyris bug
+    n += 1;
+    printf("PHYSICAL ALLOC: %zu\n", n);
     return ::malloc(n);
 }
-void freePage(void *ptr, unsigned long n)
+void freePage(void *ptr, size_t n)
 {
     (void)n;
     ::free(ptr);
@@ -23,7 +26,6 @@ static void *testMalloc(unsigned long count)
 {
     printf("MALLOC(0x%08x)\n", count);
     void *res = Test::malloc(count);
-    //printf("%p\n", res);
     return res;
 }
 
