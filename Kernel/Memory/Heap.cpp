@@ -326,6 +326,8 @@ void* malloc(size_t requestedSize)
                     major->setUsage(major->usage() + size + sizeof(Minor));
                     totalInUse += size;
 
+                    minor = newMinor;
+
                     // Update the pointer to the memory directly after the minor block
                     ptr = (void*)((uintptr_t)minor + sizeof(Minor));
 
