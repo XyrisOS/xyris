@@ -20,6 +20,7 @@
 #include <Locking/RAII.hpp>
 #include <Devices/Clock/rtc.hpp>
 #include <Panic.hpp>
+#include <Logger.hpp>
 
 #define HEAP_MAGIC 0x0B1E55ED
 #define HEAP_DEATH 0xBADA110C
@@ -39,7 +40,7 @@ public:
         , m_usage(sizeof(Major))
     {
         // Default constructor
-        debugf("heap: Major: constructed new major: addr: 0x%p, pages: %zu, size: %zu\n", this, m_pages, m_size);
+        Logger::Debug(__func__, "heap: Major: constructed new major: addr: 0x%p, pages: %zu, size: %zu", this, m_pages, m_size);
     }
 
     void setPages(size_t pages) { m_pages = pages; }
@@ -68,7 +69,7 @@ public:
         , m_requestedSize(requestedSize)
     {
         // Default constructor
-        debugf("heap: Minor: constructed new minor: addr: 0x%p, magic: 0x%08zX\n", this, m_magic);
+        Logger::Debug(__func__, "heap: Minor: constructed new minor: addr: 0x%p, magic: 0x%08zX", this, m_magic);
     }
 
     void setBlock(Major* block) { m_block = block; }
@@ -113,7 +114,7 @@ void init()
         magicHeapDead = (size_t)(rand() << BYTES_TO_BITS(sizeof(magicHeapOk) / 2) | rand());
         isMagicChosen = true;
 
-        debugf("heap: OK: 0x%08zX DEAD: 0x%08zX\n", magicHeapOk, magicHeapDead);
+        Logger::Debug(__func__, "heap: OK: 0x%08zX DEAD: 0x%08zX", magicHeapOk, magicHeapDead);
     }
 }
 
@@ -131,7 +132,7 @@ size_t getTotalInUse()
 
 static Major* allocateNewPage(size_t size)
 {
-    debugf("heap: allocateNewPage: size: %zu\n", size);
+    Logger::Debug(__func__, "heap: allocateNewPage: size: %zu", size);
     // Allocate enough to fit the data plus a major and minor block header
     size_t pages = size + sizeof(Major) + sizeof(Minor);
 
@@ -155,13 +156,13 @@ static Major* allocateNewPage(size_t size)
     Major* major = new (buffer) Major(pages);
     totalAllocated += major->size();
 
-    debugf("heap: allocateNewPage: major: 0x%p, pages: %zu totalAllocated: %zu\n", major, pages, totalAllocated);
+    Logger::Debug(__func__, "heap: allocateNewPage: major: 0x%p, pages: %zu totalAllocated: %zu", major, pages, totalAllocated);
     return major;
 }
 
 static inline void align(void** ptr)
 {
-    debugf("heap: align: before: 0x%p\n", *ptr);
+    Logger::Debug(__func__, "heap: align: before: 0x%p", *ptr);
     if (ALIGNMENT > 1) {
         *ptr = (void*)((uintptr_t)*ptr + ALIGN_INFO);
 
@@ -173,25 +174,25 @@ static inline void align(void** ptr)
 
         *((ALIGN_TYPE*)((uintptr_t)*ptr - ALIGN_INFO)) = diff + ALIGN_INFO;
     }
-    debugf("heap: align: after: 0x%p\n", *ptr);
+    Logger::Debug(__func__, "heap: align: after: 0x%p", *ptr);
 }
 
 static inline void unalign(void** ptr)
 {
-    debugf("heap: unalign: before: 0x%p\n", *ptr);
+    Logger::Debug(__func__, "heap: unalign: before: 0x%p", *ptr);
     if (ALIGNMENT > 1) {
         uintptr_t diff = *((ALIGN_TYPE*)((uintptr_t)*ptr - ALIGN_INFO));
         if (diff < (ALIGNMENT + ALIGN_INFO)) {
             *ptr = (void*)((uintptr_t)*ptr - diff);
         }
     }
-    debugf("heap: align: after: 0x%p\n", *ptr);
+    Logger::Debug(__func__, "heap: align: after: 0x%p", *ptr);
 }
 
 void* malloc(size_t requestedSize)
 {
     RAIIMutex raii(heapLock);
-    debugf("heap: malloc: requestedSize: %zu\n", requestedSize);
+    Logger::Debug(__func__, "heap: malloc: requestedSize: %zu", requestedSize);
     size_t size = requestedSize;
 
     // Adjust size so that there's enough space to store alignment info and
@@ -201,12 +202,12 @@ void* malloc(size_t requestedSize)
     }
 
     if (size == 0) {
-        debugf("heap: malloc returning nullptr\n");
+        Logger::Debug(__func__, "heap: malloc returning nullptr");
         return nullptr;
     }
 
     if (memoryList.IsEmpty()) {
-        debugf("heap: malloc: memory list is empty\n");
+        Logger::Debug(__func__, "heap: malloc: memory list is empty");
         // Initialization of first major block
         Major* root = allocateNewPage(size);
         if (root == nullptr) {
@@ -239,7 +240,7 @@ void* malloc(size_t requestedSize)
 
         // Case 1: Not enough space in this major block
         if (diff < size + sizeof(Minor)) {
-            debugf("heap: malloc: case 1\n");
+            Logger::Debug(__func__, "heap: malloc: case 1");
             if (major->Next()) {
                 major = static_cast<Major*>(major->Next());
                 continue;
@@ -263,7 +264,7 @@ void* malloc(size_t requestedSize)
 
         // Case 2: New block
         if (major->llMinor.Head() == nullptr) {
-            debugf("heap: malloc: case 2\n");
+            Logger::Debug(__func__, "heap: malloc: case 2");
             // Get a pointer to the region of memory directly after the major block
             void* buffer = (void*)((uintptr_t)major + sizeof(Major));
             // Use this region of memory as a minor block header
@@ -277,12 +278,12 @@ void* malloc(size_t requestedSize)
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
-            debugf("heap: malloc'd: 0x%p @ 2\n", ptr);
+            Logger::Debug(__func__, "heap: malloc'd: 0x%p @ 2", ptr);
             return ptr;
         }
 
         // Case 3: Block is in use and there's enough space at the start of the block
-        debugf("heap: malloc: case 3\n");
+        Logger::Debug(__func__, "heap: malloc: case 3");
         diff = (uintptr_t)major->llMinor.Head() - ((uintptr_t)major + sizeof(Major));
 
         // Space in the front?
@@ -301,18 +302,18 @@ void* malloc(size_t requestedSize)
 
             // Align the pointer to the nearest bounary (block headers may cause unalignment)
             align(&ptr);
-            debugf("heap: malloc'd: 0x%p @ 3\n", ptr);
+            Logger::Debug(__func__, "heap: malloc'd: 0x%p @ 3", ptr);
             return ptr;
         }
 
         // Case 4: There is enough space in this block, but is it contiguous?
-        debugf("heap: malloc: case 4\n");
+        Logger::Debug(__func__, "heap: malloc: case 4");
         Minor* minor = static_cast<Minor*>(major->llMinor.Head());
         // Loop within the block and check contiguity
         while (minor) {
             // Case 4.1: End of minor block in major block.
             if (minor->Next() == nullptr) {
-                debugf("heap: malloc: case 4.1\n");
+                Logger::Debug(__func__, "heap: malloc: case 4.1");
                 // The rest of the block is free, but is it big enough?
                 diff = ((uintptr_t)major + major->size()) - ((uintptr_t)minor + sizeof(Minor) + minor->size());
                 if (diff >= (size + sizeof(Minor))) {
@@ -329,14 +330,14 @@ void* malloc(size_t requestedSize)
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
                     align(&ptr);
-                    debugf("heap: malloc'd: 0x%p @ 4.1\n", ptr);
+                    Logger::Debug(__func__, "heap: malloc'd: 0x%p @ 4.1", ptr);
                     return ptr;
                 }
             }
 
             // Case 4.2: Is there space between two minor blocks?
             if (minor->Next()) {
-                debugf("heap: malloc: case 4.2\n");
+                Logger::Debug(__func__, "heap: malloc: case 4.2");
                 // Is the difference between this minor block and the next enough?
                 diff = (uintptr_t)minor->Next() - ((uintptr_t)minor + sizeof(Minor) + minor->size());
                 if (diff >= (size + sizeof(Minor))) {
@@ -353,7 +354,7 @@ void* malloc(size_t requestedSize)
 
                     // Align the pointer to the nearest bounary (block headers may cause unalignment)
                     align(&ptr);
-                    debugf("heap: malloc'd: 0x%p @ 4.2\n", ptr);
+                    Logger::Debug(__func__, "heap: malloc'd: 0x%p @ 4.2", ptr);
                     return ptr;
                 }
             }
@@ -363,7 +364,7 @@ void* malloc(size_t requestedSize)
 
         // Case 5: Block is full.
         if (major->Next()) {
-            debugf("heap: malloc: case 5\n");
+            Logger::Debug(__func__, "heap: malloc: case 5");
             if (startedBet == 1) {
                 major = static_cast<Major*>(memoryList.Head());
                 startedBet = 0;
@@ -379,14 +380,14 @@ void* malloc(size_t requestedSize)
             memoryList.InsertAfter(major, nextBlock);
         }
 
-        debugf("heap: malloc: getting major next\n");
+        Logger::Debug(__func__, "heap: malloc: getting major next");
         major = static_cast<Major*>(major->Next());
     }
 
     if (ptr) {
-        debugf("heap: malloc'd: 0x%p @ end\n", ptr);
+        Logger::Debug(__func__, "heap: malloc'd: 0x%p @ end", ptr);
     } else {
-        debugf("heap: malloc returning nullptr @ end\n");
+        Logger::Debug(__func__, "heap: malloc returning nullptr @ end");
     }
 
     return ptr;
@@ -396,7 +397,7 @@ void free(void* ptr)
 {
     RAIIMutex raii(heapLock);
     unalign(&ptr);
-    debugf("heap: free: freeing: 0x%p\n", ptr);
+    Logger::Debug(__func__, "heap: free: freeing: 0x%p", ptr);
     if (ptr == nullptr) {
         return;
     }
@@ -405,7 +406,7 @@ void free(void* ptr)
     size_t magic = minor->magic();
     if (magic != magicHeapOk)
     {
-        debugf("heap: free: minor: 0x%p, invalid magic 0x%08zX\n", minor, magic);
+        Logger::Debug(__func__, "heap: free: minor: 0x%p, invalid magic 0x%08zX", minor, magic);
         // Check for over-run errors
         if (((magic & 0xFFFFFF) == (magicHeapOk & 0xFFFFFF)) ||
             ((magic & 0xFFFF) == (magicHeapOk & 0xFFFF)) ||
