@@ -8,11 +8,44 @@
  * @copyright Copyright the Xyris Contributors (c) 2022
  *
  */
-#include "Heap.hpp"
+#ifdef TESTING
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <new>
+namespace Test {
+namespace Logger {
+void Debug(const char *function, const char *fmt,...) {
+    (void)function;
+    va_list ap;
+    //printf("%s: ", function);
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+    puts("");
+}
+}
+static void panic(const char *msg)
+{
+    printf("PANIC: %s\n", msg);
+    exit(1);
+}
+#define panicf(msg, ...) do { printf("PANIC: " msg "\n", __VA_ARGS__); exit(1); } while (0)
+namespace RTC {
+inline int getEpoch(void) { return 0; }
+}
+namespace Arch::Memory {
+class Address;
+}
+class Mutex {
+public: Mutex(const char* n) { }
+};
+class RAIIMutex {
+public: RAIIMutex(Mutex& m) { }
+};
+#else
 #include "New.hpp"
-#include "paging.hpp"
-#include <Arch/Memory.hpp>
-#include <Library/LinkedList.hpp>
 #include <Library/rand.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
@@ -21,6 +54,12 @@
 #include <Devices/Clock/rtc.hpp>
 #include <Panic.hpp>
 #include <Logger.hpp>
+#endif
+
+#include "Heap.hpp"
+#include "paging.hpp"
+#include <Arch/Memory.hpp>
+#include <Library/LinkedList.hpp>
 
 #define HEAP_MAGIC 0x0B1E55ED
 #define HEAP_DEATH 0xBADA110C
@@ -28,6 +67,9 @@
 #define ALIGNMENT 16 // Memory byte alignment
 #define ALIGN_TYPE uint8_t
 #define ALIGN_INFO sizeof(ALIGN_TYPE) * 16 // Size of alignment info
+
+#ifdef TESTING
+#endif
 
 class Minor;
 
@@ -511,6 +553,9 @@ void* realloc(void* originalPtr, size_t size)
     return ptr;
 }
 
+#ifdef TESTING
+} // namespace Test
+#else
 void* operator new(size_t size)
 {
     return malloc(size);
@@ -540,3 +585,4 @@ void operator delete[](void* p, long unsigned int)
 {
     free(p);
 }
+#endif
