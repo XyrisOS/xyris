@@ -20,17 +20,22 @@ namespace Apps {
 void spinner(void) {
     Console::printf("\n");
     int i = 0;
+    void* ptrOld = NULL;
     const char spinnay[] = { '|', '/', '-', '\\' };
     for (size_t size = 1; size < 1024 * 1024 * 1024; size++) {
         void* ptr = malloc(size);
-        if (ptr == nullptr) {
+        if (ptr == ptrOld) {
+            panicf("duplicated pointers (0x%p vs 0x%p)!", ptr, ptrOld);
+        }
+        else if (ptr == nullptr) {
             panic("null malloc in stress test!");
         }
         memset(ptr, 0xCAFEBABE, size / sizeof(0xCAFEBABE));
         // Display a spinner to know that we're still running.
         Console::printf("\e[s\e[24;0f%c Bytes: %zu\e[u", spinnay[i], size);
         i = (i + 1) % sizeof(spinnay);
-        free(ptr);
+        ptrOld = ptr;
+        // free(ptr);
     }
     Console::printf("Done!\n");
 /*
