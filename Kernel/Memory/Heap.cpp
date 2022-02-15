@@ -217,7 +217,7 @@ void* malloc(size_t requestedSize)
         memoryList.InsertFront(root);
     }
 
-    int32_t startedBet = 0;
+    bool startedBet = false;
     uint64_t bestSize = 0;
     Major* major = static_cast<Major*>(memoryList.Head());
 
@@ -225,7 +225,7 @@ void* malloc(size_t requestedSize)
         bestSize = bestBet->size() - bestBet->usage();
         if (bestSize > (size + sizeof(Minor))) {
             major = bestBet;
-            startedBet = 1;
+            startedBet = true;
         }
     }
 
@@ -246,9 +246,9 @@ void* malloc(size_t requestedSize)
                 continue;
             }
 
-            if (startedBet == 1) {
+            if (startedBet) {
                 major = static_cast<Major*>(memoryList.Head());
-                startedBet = 0;
+                startedBet = false;
                 continue;
             }
 
@@ -365,9 +365,9 @@ void* malloc(size_t requestedSize)
         // Case 5: Block is full.
         if (major->Next()) {
             Logger::Debug(__func__, "heap: malloc: case 5");
-            if (startedBet == 1) {
+            if (startedBet) {
                 major = static_cast<Major*>(memoryList.Head());
-                startedBet = 0;
+                startedBet = false;
                 continue;
             }
 
