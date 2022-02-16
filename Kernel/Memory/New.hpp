@@ -1,7 +1,7 @@
 /**
  * @file New.hpp
  * @author Keeton Feavel (keeton@xyr.is)
- * @brief
+ * @brief Placement new
  * @version 0.1
  * @date 2022-01-25
  *
