@@ -16,10 +16,6 @@ namespace LinkedList {
 
 class Node {
 public:
-    /**
-     * @brief Construct a new Linked List Node object
-     *
-     */
     Node()
         : m_Next(nullptr)
         , m_Prev(nullptr)
@@ -27,12 +23,6 @@ public:
         // Default constructor
     }
 
-    /**
-     * @brief Construct a new Linked List Node object
-     *
-     * @param n Next node in the list
-     * @param p Previous node in the list
-     */
     Node(Node* n, Node* p)
         : m_Next(n)
         , m_Prev(p)
@@ -40,45 +30,10 @@ public:
         // Complete constructor
     }
 
-    /**
-     * @brief Get the next node in the linked list
-     *
-     * @return Node* Pointer to next node
-     */
-    Node* Next()
-    {
-        return m_Next;
-    }
-
-    /**
-     * @brief Get the previous node in the linked list
-     *
-     * @return Node* Pointer to the previous node
-     */
-    Node* Previous()
-    {
-        return m_Prev;
-    }
-
-    /**
-     * @brief Set the node's next pointer
-     *
-     * @param n Pointer to next node
-     */
-    void SetNext(Node* n)
-    {
-        m_Next = n;
-    }
-
-    /**
-     * @brief Set the node's previous pointer
-     *
-     * @param n Pointer to the previous node
-     */
-    void SetPrevious(Node* n)
-    {
-        m_Prev = n;
-    }
+    Node* Next() { return m_Next; }
+    Node* Previous() { return m_Prev; }
+    void SetNext(Node* n) { m_Next = n; }
+    void SetPrevious(Node* n) { m_Prev = n; }
 
 private:
     Node* m_Next;
@@ -95,10 +50,7 @@ public:
         // Default constructor
     }
 
-    ~LinkedListUnmanaged()
-    {
-        // Unmanaged linked list does not destroy any nodes
-    }
+    ~LinkedListUnmanaged() = default;
 
     void InsertFront(Node* node)
     {
@@ -122,12 +74,6 @@ public:
         }
     }
 
-    /**
-     * @brief Insert a node before another.
-     *
-     * @param insert Node to be inserted.
-     * @param node Node to be inserted before.
-     */
     void InsertBefore(Node* insert, Node* node)
     {
         if (!insert)
@@ -182,6 +128,7 @@ public:
     {
         if (!head)
             return NULL;
+
         Node* currHead = head;
         Remove(currHead);
         return currHead;
@@ -191,6 +138,7 @@ public:
     {
         if (!tail)
             return NULL;
+
         Node* currTail = tail;
         Remove(currTail);
         return currTail;
@@ -200,6 +148,7 @@ public:
     {
         if (!node)
             return NULL;
+
         Node* before = node->Previous();
         Remove(before);
         return before;
@@ -209,47 +158,27 @@ public:
     {
         if (!node)
             return NULL;
+
         Node* after = node->Next();
         Remove(after);
         return after;
     }
 
-    /**
-     * @brief Get pointer to the head node
-     *
-     * @return Node* Pointer to head node
-     */
     Node* Head()
     {
         return head;
     }
 
-    /**
-     * @brief Get pointer to the tail node
-     *
-     * @return Node* Pointer to tail node
-     */
     Node* Tail()
     {
         return tail;
     }
 
-    /**
-     * @brief Get the number of items in the linked list
-     *
-     * @return size_t Number of items in the linked list
-     */
     size_t Count()
     {
         return count;
     }
 
-    /**
-     * @brief Check if the linked list is empty
-     *
-     * @return true The list is empty
-     * @return false The list is not empty
-     */
     bool IsEmpty()
     {
         return Count() == 0;
