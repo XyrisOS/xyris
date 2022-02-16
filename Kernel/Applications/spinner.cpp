@@ -10,42 +10,19 @@
  */
 #include <Applications/spinner.hpp>
 #include <Devices/Graphics/console.hpp>
-#include <Memory/Heap.hpp>
-#include <Library/string.hpp>
-#include <Arch/Memory.hpp>
-#include <Panic.hpp>
 
 namespace Apps {
 
 void spinner(void) {
     Console::printf("\n");
     int i = 0;
-    void* ptrOld = NULL;
     const char spinnay[] = { '|', '/', '-', '\\' };
-    for (size_t size = 1; size < 1024 * 1024 * 1024; size++) {
-        void* ptr = malloc(size);
-        if (ptr == ptrOld) {
-            panicf("duplicated pointers (0x%p vs 0x%p)!", ptr, ptrOld);
-        }
-        else if (ptr == nullptr) {
-            panic("null malloc in stress test!");
-        }
-        memset(ptr, 0xCAFEBABE, size / sizeof(0xCAFEBABE));
-        // Display a spinner to know that we're still running.
-        Console::printf("\e[s\e[24;0f%c Bytes: %zu\e[u", spinnay[i], size);
-        i = (i + 1) % sizeof(spinnay);
-        ptrOld = ptr;
-        // free(ptr);
-    }
-    Console::printf("Done!\n");
-/*
     while (true) {
         // Display a spinner to know that we're still running.
         Console::printf("\e[s\e[24;0f%c\e[u", spinnay[i]);
         i = (i + 1) % sizeof(spinnay);
         asm volatile("hlt");
     }
-*/
 }
 
 }
