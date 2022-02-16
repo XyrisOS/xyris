@@ -259,7 +259,7 @@ void* malloc(size_t requestedSize)
                 panic("heap: major block allocation failed");
             }
 
-            memoryList.InsertAfter(major, nextBlock);
+            memoryList.InsertAfter(nextBlock, major);
             major = nextBlock;
         }
 
@@ -380,7 +380,7 @@ void* malloc(size_t requestedSize)
                 panic("heap: major block allocation failed");
             }
 
-            memoryList.InsertAfter(major, nextBlock);
+            memoryList.InsertAfter(nextBlock, major);
         }
 
         Logger::Debug(__func__, "heap: malloc: getting major next");
