@@ -11,7 +11,11 @@
 #pragma once
 #include <stddef.h>
 
+#if defined(__xyris__)
+
 inline void *operator new(size_t, void *p) { return p; }
 inline void *operator new[](size_t, void *p) { return p; }
 inline void  operator delete  (void *, void *) { };
 inline void  operator delete[](void *, void *) { };
+
+#endif

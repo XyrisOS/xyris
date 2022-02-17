@@ -6,6 +6,10 @@ env = env.Clone()
 linkerscript = env.File('Arch/$ARCH/linker.ld')
 env.Append(
     LINKSCRIPT=linkerscript,
+    CPPDEFINES={
+        '__xyris__': None,
+        '__kernel__': None,
+    },
     CXXFLAGS=[
         '-fanalyzer',
         '-Wno-analyzer-malloc-leak',
