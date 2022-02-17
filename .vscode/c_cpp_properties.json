@@ -9,7 +9,9 @@
                 "COMMIT",
                 "VER_MAJOR",
                 "VER_MINOR",
-                "VER_PATCH"
+                "VER_PATCH",
+                "__xyris__",
+                "__kernel__"
             ],
             "compilerPath": "/usr/bin/gcc",
             "includePath": [
