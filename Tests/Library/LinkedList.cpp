@@ -9,7 +9,6 @@
  *
  */
 #include <catch2/catch.hpp>
-// Linked list is header-only template
 #include <Library/LinkedList.hpp>
 
 /**
