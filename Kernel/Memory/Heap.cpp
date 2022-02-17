@@ -512,6 +512,8 @@ void* realloc(void* originalPtr, size_t size)
     return ptr;
 }
 
+#if defined(__xyris__)
+
 void* operator new(size_t size)
 {
     return malloc(size);
@@ -541,3 +543,5 @@ void operator delete[](void* p, long unsigned int)
 {
     free(p);
 }
+
+#endif

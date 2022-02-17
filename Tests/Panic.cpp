@@ -2,6 +2,8 @@
 #include <Panic.hpp>
 #include <catch2/catch.hpp>
 
+namespace Test {
+
 [[noreturn]] void panic(const char* msg) {
     FAIL(
         "Panic while unit testing!\n" <<
@@ -19,3 +21,5 @@
 
     __builtin_unreachable();
 }
+
+} // !namespace Test
