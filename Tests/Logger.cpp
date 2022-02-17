@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "Memory/Arch.hpp"
+#include "Stubs/Memory/Arch.hpp"
 
 namespace Test {
 

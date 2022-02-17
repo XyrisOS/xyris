@@ -10,7 +10,7 @@
  */
 #include <catch2/catch.hpp>
 #include <cstdarg>
-#include "Arch.hpp"
+#include "../Stubs/Memory/Arch.hpp"
 
 namespace Test {
 
