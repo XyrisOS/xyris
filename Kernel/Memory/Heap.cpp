@@ -26,7 +26,7 @@
 #define HEAP_MAGIC 0x0B1E55ED
 #define HEAP_DEATH 0xBADA110C
 
-#define ALIGNMENT 16 // Memory byte alignment
+#define ALIGNMENT 4 // Memory byte alignment
 #define ALIGN_TYPE uint8_t
 #define ALIGN_INFO sizeof(ALIGN_TYPE) * 16 // Size of alignment info
 
