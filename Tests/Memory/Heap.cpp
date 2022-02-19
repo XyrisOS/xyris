@@ -11,7 +11,9 @@
 #include "../Stubs/Memory/Arch.hpp"
 #include <catch2/catch.hpp>
 #include <cstring>
+#include <cstdlib>
 #include <cstdarg>
+#include <ctime>
 
 namespace Test {
 
@@ -30,13 +32,13 @@ void* newPage(size_t n)
 {
     // size - 1 is passed due to a Xyris bug
     n += 1;
-    return ::malloc(n);
+    return std::malloc(n);
 }
 
 void freePage(void* ptr, size_t n)
 {
     (void)n;
-    ::free(ptr);
+    std::free(ptr);
 }
 
 } // !namespace Memory
@@ -53,8 +55,8 @@ TEST_CASE("heap stress test", "[heap]")
     SECTION("push all then pop all")
     {
         Test::Logger::Print("\tpush all then pop all\n");
-        const size_t count = 100;
-        const size_t allocSize = 1024 * 1024;
+        const size_t count = 1024;
+        const size_t allocSize = 1024;
         void* pointers[count];
         for (size_t pushAt = 0; pushAt < count; pushAt++) {
             void* ptr = Test::malloc(allocSize);
@@ -64,7 +66,7 @@ TEST_CASE("heap stress test", "[heap]")
                 REQUIRE(pointers[i] != ptr);
             }
 
-            memset(ptr, 'A', allocSize);
+            std::memset(ptr, 'A', allocSize);
             pointers[pushAt] = ptr;
         }
 
@@ -104,21 +106,21 @@ TEST_CASE("heap randomized stress test", "[heap]")
         std::memset(blocks, 0, sizeof(struct block) * maxBlocks);
 
         int transactions = 0;
-        time_t start_time = time(NULL);
+        time_t start_time = std::time(NULL);
 
         while (true) {
-            int position = rand() % maxBlocks;
+            int position = std::rand() % maxBlocks;
 
-            int diff = time(NULL) - start_time;
+            int diff = std::time(NULL) - start_time;
             // Ensure the test doesn't take too long
             REQUIRE(diff < (maxTime));
 
             int tps = (++transactions) / (diff + 1);
 
             if (blocks[position].data == NULL) {
-                blocks[position].size = rand() % maxSize;
+                blocks[position].size = std::rand() % maxSize;
                 blocks[position].data = (uint8_t*)Test::malloc(blocks[position].size);
-                blocks[position].key = rand() % 256;
+                blocks[position].key = std::rand() % 256;
 
                 Test::Logger::Print("%lu left, %i tps : %lu, %i : %i: allocating %i bytes with %i key\n",
                     (maxTime - diff),
