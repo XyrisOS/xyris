@@ -14,6 +14,9 @@ Xyris is designed to be readable first and foremost. Having been developed at [C
 ### How to Help
 We are constantly looking for people to help contribute to Xyris. If you would like to contribute driver code or a new feature, feel free to fork the repository and submit a pull request. We would love to have you help us make Xyris better! The [Getting Started](https://github.com/XyrisOS/xyris/wiki/Getting-Started) wiki page describes everything necessary to start developing.
 
+### Demos
+- [Minesweeper](https://github.com/Jmallone/Panix/tree/minesweeper) [(@jmallone)](https://github.com/Jmallone)
+
 ### License
 Xyris is available under the MIT license. This license may not apply to third party source code used by Xyris. Third party source code used is listed below.
 
