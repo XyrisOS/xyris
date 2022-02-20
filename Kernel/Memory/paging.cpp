@@ -75,20 +75,23 @@ static void pageFaultCallback(struct registers* regs)
 
 static void initPhysical(MemoryMap* map)
 {
-    size_t freeBytes = 0;
-    size_t reservedBytes = 0;
+    size_t freeMegabytes = 0;
+    size_t reservedMegabytes = 0;
 
     for (size_t i = 0; i < map->Count(); i++) {
         auto section = map->Get(i);
         if (section.initialized() && section.type() == Available) {
             Physical::Manager::the().setFree(section);
-            freeBytes += section.size();
+            freeMegabytes += B_TO_MB(section.size());
+            continue;
         }
+
+        reservedMegabytes += B_TO_MB(section.size());
     }
 
-    Logger::Info(__func__, "Available memory: %zu MB", B_TO_MB(freeBytes));
-    Logger::Info(__func__, "Reserved memory: %zu MB", B_TO_MB(reservedBytes));
-    Logger::Info(__func__, "Total memory: %zu MB", B_TO_MB(freeBytes + reservedBytes));
+    Logger::Info(__func__, "Available memory: %zu MB", freeMegabytes);
+    Logger::Info(__func__, "Reserved memory: %zu MB", reservedMegabytes);
+    Logger::Info(__func__, "Total memory: %zu MB", freeMegabytes + reservedMegabytes);
 }
 
 static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table)
