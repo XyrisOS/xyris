@@ -35,7 +35,7 @@ static uintptr_t pageDirectoryAddress;
 static struct Arch::Memory::Table* pageDirectoryVirtual[ARCH_PAGE_DIR_ENTRIES];
 
 // both of these must be page aligned for anything to work right at all
-[[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::DirectoryEntry pageDirectoryPhysical[ARCH_PAGE_DIR_ENTRIES];
+[[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Directory pageDirectory;
 [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Table pageTables[ARCH_PAGE_TABLE_ENTRIES];
 
 static void pageFaultCallback(struct registers* regs);
@@ -97,7 +97,7 @@ static void initPhysical(MemoryMap* map)
 static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table)
 {
     pageDirectoryVirtual[idx] = table;
-    pageDirectoryPhysical[idx] = {
+    pageDirectory.entries[idx] = {
         .present = 1,
         .readWrite = 1,
         .usermode = 0,
@@ -126,12 +126,12 @@ static void initDirectory()
         }
     }
     // recursively map the last page table to the page directory
-    mapKernelPageTable(ARCH_PAGE_TABLE_ENTRIES - 1, (struct Arch::Memory::Table*)&pageDirectoryPhysical[0]);
+    mapKernelPageTable(ARCH_PAGE_TABLE_ENTRIES - 1, (struct Arch::Memory::Table*)&pageDirectory.entries[0]);
     for (size_t i = ARCH_PAGE_TABLE_ENTRIES * (ARCH_PAGE_TABLE_ENTRIES - 1); i < ARCH_PAGE_TABLE_ENTRIES * ARCH_PAGE_TABLE_ENTRIES; i++) {
         mappedPages.Set(i);
     }
     // store the physical address of the page directory for quick access
-    pageDirectoryAddress = KADDR_TO_PHYS((uintptr_t)&pageDirectoryPhysical[0]);
+    pageDirectoryAddress = KADDR_TO_PHYS((uintptr_t)&pageDirectory.entries[0]);
 }
 
 void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
