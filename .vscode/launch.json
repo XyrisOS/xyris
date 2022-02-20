@@ -1,16 +1,15 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "name": "Debug Kernel",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/Distribution/i686/Debug/Kernel",
+            "program": "${workspaceRoot}/Meta/run.sh",
             "cwd": "${workspaceRoot}",
-            "args": [],
+            "args": [
+                "-d",
+            ],
             "targetArchitecture": "x64",
             "MIMode": "gdb",
             "customLaunchSetupCommands": [
@@ -24,7 +23,7 @@
                 { "text": "-enable-pretty-printing" },
                 { "text": "file ${workspaceRoot}/Distribution/debug/Kernel" }
             ],
-            "preLaunchTask": "Debug"
+            "preLaunchTask": "Build"
         }
     ]
 }
