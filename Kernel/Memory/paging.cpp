@@ -29,7 +29,6 @@ namespace Memory {
 
 static Mutex pagingLock("paging");
 
-static Physical::Manager physical;
 static Bitset<MEM_BITMAP_SIZE> mappedPages;
 
 static uintptr_t pageDirectoryAddress;
@@ -39,7 +38,6 @@ static struct Arch::Memory::Table* pageDirectoryVirtual[ARCH_PAGE_DIR_ENTRIES];
 [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::DirectoryEntry pageDirectoryPhysical[ARCH_PAGE_DIR_ENTRIES];
 [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Table pageTables[ARCH_PAGE_TABLE_ENTRIES];
 
-// Function prototypes
 static void pageFaultCallback(struct registers* regs);
 static void initPhysical(MemoryMap* map);
 static void initDirectory();
@@ -49,14 +47,12 @@ static uintptr_t findNextFreeVirtualAddress(size_t seq);
 static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table);
 static void argumentsCallback(const char* arg);
 
-// Kernel cmdline arguments
 static bool is_mapping_output_enabled = false;
 #define MAPPING_OUTPUT_FLAG "--enable-mapping-output"
 KERNEL_PARAM(enableMappingLogs, MAPPING_OUTPUT_FLAG, argumentsCallback);
 
 void init(MemoryMap* map)
 {
-    // we can set breakpoints or make a futile attempt to recover.
     Interrupts::registerHandler(Interrupts::EXCEPTION_PAGE_FAULT, pageFaultCallback);
     // populate the physical memory map based on bootloader information
     initPhysical(map);
@@ -85,7 +81,7 @@ static void initPhysical(MemoryMap* map)
     for (size_t i = 0; i < map->Count(); i++) {
         auto section = map->Get(i);
         if (section.initialized() && section.type() == Available) {
-            physical.setFree(section);
+            Physical::Manager::the().setFree(section);
             freeBytes += section.size();
         }
     }
@@ -176,7 +172,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
         .frame = paddr.frame().index,   // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
-    physical.setUsed(paddr);
+    Physical::Manager::the().setUsed(paddr);
     mappedPages.Set(vaddr.frame().index);
 }
 
@@ -227,7 +223,7 @@ void* newPage(size_t size)
     }
 
     for (size_t i = free_idx; i < free_idx + page_count; i++) {
-        size_t phys_page_idx = physical.findNextFreePhysicalAddress();
+        size_t phys_page_idx = Physical::Manager::the().findNextFreePhysicalAddress();
         if (phys_page_idx == SIZE_MAX) {
             return NULL;
         }
@@ -261,7 +257,7 @@ void freePage(void* page, size_t size)
         // this is the same as the line above
         struct Arch::Memory::TableEntry* pte = &(pageTables[i / ARCH_PAGE_TABLE_ENTRIES].pages[i % ARCH_PAGE_TABLE_ENTRIES]);
         // the frame field is actually the page frame's index basically it's frame 0, 1...(2^21-1)
-        physical.setFree(pte->frame);
+        Physical::Manager::the().setFree(pte->frame);
         // zero it out to unmap it
         memset(pte, 0, sizeof(struct Arch::Memory::TableEntry));
         // clear that tlb

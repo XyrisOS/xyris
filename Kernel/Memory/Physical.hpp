@@ -23,21 +23,23 @@ namespace Memory::Physical {
 
 class Manager {
 public:
+    Manager(Manager const&) = delete;
+    void operator=(Manager const&) = delete;
 
-    Manager()
-        : m_memory(1)
+    static Manager& the()
     {
-        // Always assume memory is reserved until proven otherwise
+        static Manager instance;
+        return instance;
     }
 
-    [[gnu::always_inline]] void setFree(Section& sect)
+    [[gnu::always_inline]] static void setFree(Section& sect)
     {
         for (size_t i = 0; i < sect.pages(); i++) {
             setFree(sect.base() + (i * ARCH_PAGE_SIZE));
         }
     }
 
-    [[gnu::always_inline]] void setUsed(Section& sect)
+    [[gnu::always_inline]] static void setUsed(Section& sect)
     {
         Logger::Debug(
             __func__,
@@ -53,34 +55,33 @@ public:
         }
     }
 
-    [[gnu::always_inline]] void setFree(Arch::Memory::Address addr)
+    [[gnu::always_inline]] static void setFree(Arch::Memory::Address addr)
     {
-        m_memory.Clear(ADDRESS_TO_PAGE_IDX(addr));
+        the().m_memory.Clear(ADDRESS_TO_PAGE_IDX(addr));
     }
 
-    [[gnu::always_inline]] void setUsed(Arch::Memory::Address addr)
+    [[gnu::always_inline]] static void setUsed(Arch::Memory::Address addr)
     {
-        m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
+        the().m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
     }
 
-    [[gnu::always_inline]] void setFree(uintptr_t addr)
+    [[gnu::always_inline]] static void setFree(uintptr_t addr)
     {
-        m_memory.Clear(ADDRESS_TO_PAGE_IDX(addr));
+        the().m_memory.Clear(ADDRESS_TO_PAGE_IDX(addr));
     }
 
-    [[gnu::always_inline]] void setUsed(uintptr_t addr)
+    [[gnu::always_inline]] static void setUsed(uintptr_t addr)
     {
-        m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
+        the().m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
     }
 
-    [[gnu::always_inline]] bool isFree(uintptr_t addr)
+    [[gnu::always_inline]] static bool isFree(uintptr_t addr)
     {
-        return m_memory.Test(ADDRESS_TO_PAGE_IDX(addr)) == 0;
+        return the().m_memory.Test(ADDRESS_TO_PAGE_IDX(addr)) == 0;
     }
 
-    [[gnu::always_inline]] bool isFree(Section& sect)
+    [[gnu::always_inline]] static bool isFree(Section& sect)
     {
-        // TODO: Optimize bitmap library to take number of bits to set
         for (size_t i = 0; i < sect.pages(); i++) {
             if (!isFree(sect.base()) + (i * ARCH_PAGE_SIZE)) {
                 return false;
@@ -90,13 +91,19 @@ public:
         return true;
     }
 
-    [[gnu::always_inline]] uintptr_t findNextFreePhysicalAddress()
+    [[gnu::always_inline]] static uintptr_t findNextFreePhysicalAddress()
     {
-        return m_memory.FindFirstBit(false);
+        return the().m_memory.FindFirstBit(false);
     }
 
 private:
     Bitset<MEM_BITMAP_SIZE> m_memory;
+
+    Manager()
+        : m_memory(1)
+    {
+        // Always assume memory is reserved until proven otherwise
+    }
 };
 
 }
