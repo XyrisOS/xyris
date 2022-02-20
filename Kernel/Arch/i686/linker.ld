@@ -37,7 +37,7 @@ SECTIONS
 
     _KERNEL_START = .;
 
-    .text ALIGN (4K) : AT(ADDR(.text) - _KERNEL_BASE) { *(.text) }
+    .text ALIGN (4K) : AT(ADDR(.text) - _KERNEL_BASE) { *(.text*) }
     .rodata ALIGN (4K) : AT(ADDR(.rodata) - _KERNEL_BASE)
     {
         /* Kernel command line arguments */
