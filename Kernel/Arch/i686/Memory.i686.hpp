@@ -189,34 +189,32 @@ private:
 #endif
 
 /**
- * @brief Invalidate the page at the given address. Implementations are architecture
- * specific.
+ * @brief Invalidate the page at the given address.
  *
- * @param addr Address of page to be invalidated
+ * @param virtAddr Virtual address of page to be invalidated
  */
-static inline void pageInvalidate(void* addr)
+static inline void pageInvalidate(void* virtAddr)
 {
    asm volatile(
        "invlpg (%0)"
        :
-       : "r" (addr)
+       : "r" (virtAddr)
        : "memory"
     );
 }
 
 /**
- * @brief Writes the address of the page directory to CR3.
- * Does not enable paging.
+ * @brief Writes the address of the page directory to CR3. Does not enable paging.
  *
- * @param pageDirPtr Address of page directory structure to be used
+ * @param pageDirPhysAddr Physical address of page directory structure to be used
  */
 __attribute__((always_inline))
-static inline void setPageDirectory(uintptr_t pageDirPtr)
+static inline void setPageDirectory(uintptr_t pageDirPhysAddr)
 {
     asm volatile(
         "mov %0, %%cr3"
         :
-        : "b" (pageDirPtr)
+        : "b" (pageDirPhysAddr)
         : "memory"
     );
 }

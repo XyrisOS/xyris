@@ -23,15 +23,13 @@
 #include <Logger.hpp>
 #include <stddef.h>
 
-#define PAGE_COUNT(s)   ((s) / ARCH_PAGE_SIZE) + 1;
+#define PAGE_COUNT(s) ((s) / ARCH_PAGE_SIZE) + 1;
 
 namespace Memory {
 
 static Mutex pagingLock("paging");
 
-static Bitset<MEM_BITMAP_SIZE> mappedPages;
-
-static uintptr_t pageDirectoryAddress;
+static Bitset<MEM_BITMAP_SIZE> virtualMemoryBitset;
 
 // both of these must be page aligned for anything to work right at all
 [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Directory pageDirectory;
@@ -53,7 +51,7 @@ void init(MemoryMap* map)
     initDirectory();
     mapEarlyMem();
     mapKernel();
-    Arch::Memory::setPageDirectory(Arch::Memory::pageAlign(pageDirectoryAddress));
+    Arch::Memory::setPageDirectory(Arch::Memory::pageAlign(KADDR_TO_PHYS((uintptr_t)&pageDirectory)));
     Arch::Memory::pagingEnable();
 }
 
@@ -112,12 +110,10 @@ static void initDirectory()
         }
     }
     // recursively map the last page table to the page directory
-    mapKernelPageTable(ARCH_PAGE_TABLE_ENTRIES - 1, (struct Arch::Memory::Table*)&pageDirectory.entries[0]);
+    mapKernelPageTable(ARCH_PAGE_TABLE_ENTRIES - 1, (struct Arch::Memory::Table*)&pageDirectory);
     for (size_t i = ARCH_PAGE_TABLE_ENTRIES * (ARCH_PAGE_TABLE_ENTRIES - 1); i < ARCH_PAGE_TABLE_ENTRIES * ARCH_PAGE_TABLE_ENTRIES; i++) {
-        mappedPages.Set(i);
+        virtualMemoryBitset.Set(i);
     }
-    // store the physical address of the page directory for quick access
-    pageDirectoryAddress = KADDR_TO_PHYS((uintptr_t)&pageDirectory.entries[0]);
 }
 
 void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
@@ -160,7 +156,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     };
     // Set the associated bit in the bitmaps
     Physical::Manager::the().setUsed(paddr);
-    mappedPages.Set(vaddr.frame().index);
+    virtualMemoryBitset.Set(vaddr.frame().index);
 }
 
 void mapKernelRangeVirtual(Section sect)
@@ -197,7 +193,7 @@ static void mapKernel()
  */
 static uintptr_t findNextFreeVirtualAddress(size_t seq)
 {
-    return mappedPages.FindFirstRange(seq, false);
+    return virtualMemoryBitset.FindFirstRange(seq, false);
 }
 
 void* newPage(size_t size)
@@ -241,7 +237,7 @@ void freePage(void* page, size_t size)
     size_t page_count = PAGE_COUNT(size);
     Arch::Memory::Address addr((uintptr_t)page);
     for (size_t i = addr.page().tableIndex; i < addr.page().tableIndex + page_count; i++) {
-        mappedPages.Clear(i);
+        virtualMemoryBitset.Clear(i);
         // this is the same as the line above
         struct Arch::Memory::TableEntry* pte = &(pageTables[i / ARCH_PAGE_TABLE_ENTRIES].pages[i % ARCH_PAGE_TABLE_ENTRIES]);
         // the frame field is actually the page frame's index basically it's frame 0, 1...(2^21-1)
@@ -257,13 +253,13 @@ bool isPresent(uintptr_t addr)
 {
     // Convert the address into an index and check whether the page is in the bitmap
     // TODO: Fix this function. It's inaccurate and can result in triple faults.
-    return mappedPages[addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT];
+    return virtualMemoryBitset[addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT];
 }
 
 // TODO: maybe enforce access control here in the future
 uintptr_t getPageDirPhysAddr()
 {
-    return pageDirectoryAddress;
+    return KADDR_TO_PHYS((uintptr_t)&pageDirectory);
 }
 
 } // !namespace Paging
