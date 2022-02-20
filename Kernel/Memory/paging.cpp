@@ -32,7 +32,6 @@ static Mutex pagingLock("paging");
 static Bitset<MEM_BITMAP_SIZE> mappedPages;
 
 static uintptr_t pageDirectoryAddress;
-static struct Arch::Memory::Table* pageDirectoryVirtual[ARCH_PAGE_DIR_ENTRIES];
 
 // both of these must be page aligned for anything to work right at all
 [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Directory pageDirectory;
@@ -44,27 +43,17 @@ static void initDirectory();
 static void mapEarlyMem();
 static void mapKernel();
 static uintptr_t findNextFreeVirtualAddress(size_t seq);
-static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table);
-static void argumentsCallback(const char* arg);
-
-static bool is_mapping_output_enabled = false;
-#define MAPPING_OUTPUT_FLAG "--enable-mapping-output"
-KERNEL_PARAM(enableMappingLogs, MAPPING_OUTPUT_FLAG, argumentsCallback);
+static void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table);
 
 void init(MemoryMap* map)
 {
     Interrupts::registerHandler(Interrupts::EXCEPTION_PAGE_FAULT, pageFaultCallback);
-    // populate the physical memory map based on bootloader information
+
     initPhysical(map);
-    // init our structures
     initDirectory();
-    // identity map the first 1 MiB of RAM
     mapEarlyMem();
-    // map in our higher-half kernel
     mapKernel();
-    // use our new set of page tables
     Arch::Memory::setPageDirectory(Arch::Memory::pageAlign(pageDirectoryAddress));
-    // flush the tlb and we're off to the races!
     Arch::Memory::pagingEnable();
 }
 
@@ -75,6 +64,7 @@ static void pageFaultCallback(struct registers* regs)
 
 static void initPhysical(MemoryMap* map)
 {
+    // populate the physical memory map based on bootloader information
     size_t freeMegabytes = 0;
     size_t reservedMegabytes = 0;
 
@@ -96,7 +86,6 @@ static void initPhysical(MemoryMap* map)
 
 static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table)
 {
-    pageDirectoryVirtual[idx] = table;
     pageDirectory.entries[idx] = {
         .present = 1,
         .readWrite = 1,
@@ -107,11 +96,8 @@ static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* ta
         .ignoredA = 0,
         .size = 0,
         .ignoredB = 0,
-        // compute the physical address of this page table the virtual address is obtained with the & operator and
-        // the offset is applied from the load address of the kernel we must shift it over 12 bits because we only
-        // care about the highest 20 bits for the page table
         // TODO: Get rid of this shift by using ``union Address``
-        .tableAddr = KADDR_TO_PHYS((uintptr_t)table) >> ARCH_PAGE_TABLE_ENTRY_SHIFT
+        .tableAddr = (uint32_t)KADDR_TO_PHYS((uintptr_t)table) >> ARCH_PAGE_TABLE_ENTRY_SHIFT
     };
 }
 
@@ -141,9 +127,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     size_t pte = vaddr.page().tableIndex;
 
     // Print a debug message to serial
-    if (is_mapping_output_enabled) {
-        Logger::Debug(__func__, "map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx", paddr.val(), vaddr.val(), pde, pte);
-    }
+    Logger::Trace(__func__, "map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx", paddr.val(), vaddr.val(), pde, pte);
 
     // If the page's virtual address is not aligned
     if (vaddr.page().offset) {
@@ -196,6 +180,7 @@ void mapKernelRangePhysical(Section sect)
 
 static void mapEarlyMem()
 {
+    // identity map the first 1 MiB of RAM
     Logger::Debug(__func__, "==== MAP EARLY MEM ====");
     mapKernelRangeVirtual(Section(EARLY_MEM_START, EARLY_KERNEL_START));
 }
@@ -279,14 +264,6 @@ bool isPresent(uintptr_t addr)
 uintptr_t getPageDirPhysAddr()
 {
     return pageDirectoryAddress;
-}
-
-static void argumentsCallback(const char* arg)
-{
-    if (strcmp(arg, MAPPING_OUTPUT_FLAG) == 0) {
-        Logger::Debug(__func__, "is_mapping_output_enabled = true");
-        is_mapping_output_enabled = true;
-    }
 }
 
 } // !namespace Paging
