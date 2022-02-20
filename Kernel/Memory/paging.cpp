@@ -29,7 +29,7 @@ namespace Memory {
 
 static Mutex pagingLock("paging");
 
-static Physical::PhysicalManager physical;
+static Physical::Manager physical;
 static Bitset<MEM_BITMAP_SIZE> mappedPages;
 
 static uintptr_t pageDirectoryAddress;

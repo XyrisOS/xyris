@@ -21,10 +21,10 @@
 
 namespace Memory::Physical {
 
-class PhysicalManager {
+class Manager {
 public:
 
-    PhysicalManager()
+    Manager()
         : m_memory(1)
     {
         // Always assume memory is reserved until proven otherwise
