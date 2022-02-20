@@ -131,7 +131,7 @@ static void initDirectory()
     for (size_t i = 0; i < ARCH_PAGE_DIR_ENTRIES - 1; i++) {
         mapKernelPageTable(i, &pageTables[i]);
         // clear out the page tables
-        for (size_t j = 0; j < ARCH_PAGE_DIR_ENTRIES; j++) {
+        for (size_t j = 0; j < ARCH_PAGE_TABLE_ENTRIES; j++) {
             memset(&pageTables[i].pages[j], 0, sizeof(struct Arch::Memory::TableEntry));
         }
     }
