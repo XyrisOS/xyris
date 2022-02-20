@@ -240,6 +240,17 @@ void* newPage(size_t size)
     return (void*)(free_idx * ARCH_PAGE_SIZE);
 }
 
+// TODO: Use assert here
+void* newPageMustSucceed(size_t size)
+{
+    void* addr = newPage(size);
+    if (addr == NULL) {
+        panic("Failed to get new page!");
+    }
+
+    return addr;
+}
+
 void freePage(void* page, size_t size)
 {
     RAIIMutex lock(pagingLock);

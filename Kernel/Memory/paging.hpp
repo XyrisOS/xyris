@@ -33,6 +33,10 @@ void init(MemoryMap* map);
  */
 void* newPage(size_t size);
 
+// TODO: Docs
+void* newPageMustSucceed(size_t size);
+
+
 /**
  * @brief Frees pages starting at a given page address.
  *
