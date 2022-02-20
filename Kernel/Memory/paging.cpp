@@ -84,18 +84,9 @@ static void initPhysical(MemoryMap* map)
 
     for (size_t i = 0; i < map->Count(); i++) {
         auto section = map->Get(i);
-        if (section.initialized()) {
-            switch (section.type())
-            {
-                case Available:
-                    physical.setFree(section);
-                    freeBytes += section.size();
-                    break;
-                default:
-                    physical.setUsed(section);
-                    reservedBytes += section.size();
-                    break;
-            }
+        if (section.initialized() && section.type() == Available) {
+            physical.setFree(section);
+            freeBytes += section.size();
         }
     }
 
@@ -230,16 +221,22 @@ void* newPage(size_t size)
     RAIIMutex lock(pagingLock);
     size_t page_count = PAGE_COUNT(size);
     size_t free_idx = findNextFreeVirtualAddress(page_count);
-    if (free_idx == SIZE_MAX)
+
+    if (free_idx == SIZE_MAX) {
         return NULL;
+    }
+
     for (size_t i = free_idx; i < free_idx + page_count; i++) {
         size_t phys_page_idx = physical.findNextFreePhysicalAddress();
-        if (phys_page_idx == SIZE_MAX)
+        if (phys_page_idx == SIZE_MAX) {
             return NULL;
+        }
+
         Arch::Memory::Address phys(phys_page_idx * ARCH_PAGE_SIZE);
         Arch::Memory::Address vaddr(i * ARCH_PAGE_SIZE);
         mapKernelPage(vaddr, phys);
     }
+
     return (void*)(free_idx * ARCH_PAGE_SIZE);
 }
 

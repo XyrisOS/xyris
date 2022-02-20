@@ -26,7 +26,7 @@
 #define ADDRESS_SPACE_SIZE  0x100000000
 // TODO: Add this to memory class (#326)
 #define ADDRESS_TO_PAGE_IDX(addr) ((addr) / ARCH_PAGE_SIZE)
-#define MEM_BITMAP_SIZE ((ADDRESS_SPACE_SIZE / ARCH_PAGE_SIZE) / (sizeof(size_t) * CHAR_BIT))
+#define MEM_BITMAP_SIZE (ADDRESS_SPACE_SIZE / ARCH_PAGE_SIZE)
 
 namespace Arch::Memory {
 

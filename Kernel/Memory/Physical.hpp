@@ -23,17 +23,17 @@ namespace Memory::Physical {
 
 class PhysicalManager {
 public:
-/*
+
     PhysicalManager()
-        : m_memory(SIZE_MAX)
+        : m_memory(1)
     {
         // Always assume memory is reserved until proven otherwise
     }
-*/
+
     [[gnu::always_inline]] void setFree(Section& sect)
     {
         for (size_t i = 0; i < sect.pages(); i++) {
-            setFree(ADDRESS_TO_PAGE_IDX(sect.base()) + i);
+            setFree(sect.base() + (i * ARCH_PAGE_SIZE));
         }
     }
 
@@ -82,10 +82,11 @@ public:
     {
         // TODO: Optimize bitmap library to take number of bits to set
         for (size_t i = 0; i < sect.pages(); i++) {
-            if (!isFree(ADDRESS_TO_PAGE_IDX(sect.base()) + i)) {
+            if (!isFree(sect.base()) + (i * ARCH_PAGE_SIZE)) {
                 return false;
             }
         }
+
         return true;
     }
 
