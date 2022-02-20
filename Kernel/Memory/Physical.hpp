@@ -55,30 +55,22 @@ public:
 
     [[gnu::always_inline]] void setFree(Arch::Memory::Address addr)
     {
-        if (!isFree(addr)) {
-            m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr));
-        }
+        m_memory.Clear(ADDRESS_TO_PAGE_IDX(addr));
     }
 
     [[gnu::always_inline]] void setUsed(Arch::Memory::Address addr)
     {
-        if (isFree(addr)) {
-            m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
-        }
+        m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
     }
 
     [[gnu::always_inline]] void setFree(uintptr_t addr)
     {
-        if (!isFree(addr)) {
-            m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr));
-        }
+        m_memory.Clear(ADDRESS_TO_PAGE_IDX(addr));
     }
 
     [[gnu::always_inline]] void setUsed(uintptr_t addr)
     {
-        if (isFree(addr)) {
-            m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
-        }
+        m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
     }
 
     [[gnu::always_inline]] bool isFree(uintptr_t addr)

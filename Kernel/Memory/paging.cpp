@@ -249,7 +249,7 @@ void freePage(void* page, size_t size)
     size_t page_count = PAGE_COUNT(size);
     Arch::Memory::Address addr((uintptr_t)page);
     for (size_t i = addr.page().tableIndex; i < addr.page().tableIndex + page_count; i++) {
-        mappedPages.Reset(i);
+        mappedPages.Clear(i);
         // this is the same as the line above
         struct Arch::Memory::TableEntry* pte = &(pageTables[i / ARCH_PAGE_TABLE_ENTRIES].pages[i % ARCH_PAGE_TABLE_ENTRIES]);
         // the frame field is actually the page frame's index basically it's frame 0, 1...(2^21-1)
