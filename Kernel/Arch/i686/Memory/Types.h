@@ -20,6 +20,10 @@
 #define ARCH_PAGE_TABLE_ENTRY_SHIFT 12          // Shift to convert address to page address (2^12 = 4096 = PAGE_SIZE)
 #define ARCH_PAGE_TABLE_ENTRY_MASK  0x3ff       // Mask off top 10 bits to get 0-1023 index
 
+#if defined(__cplusplus)
+namespace Arch::Memory {
+#endif
+
 /**
  * @brief Page frame structure. This represents a the
  * address to a single unit of memory in RAM.
@@ -101,3 +105,7 @@ struct Directory
 {
     struct DirectoryEntry entries[ARCH_PAGE_DIR_ENTRIES]; // Pointers that the Intel CPU uses to access pages in memory
 };
+
+#if defined(__cplusplus)
+} // !namespace Arch::Memory
+#endif

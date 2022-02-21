@@ -9,13 +9,13 @@
  *
  */
 #pragma once
+// TODO: Maybe rename these headers? Can't think of anything much better...
+#include <Arch/i686/Memory/Functions.h>
+#include <Arch/i686/Memory/Types.h>
 #include <stdint.h>
 #include <stddef.h>
 
 namespace Arch::Memory {
-// TODO: Maybe rename these headers? Can't think of anything much better...
-#include <Arch/i686/Memory/Types.h>
-#include <Arch/i686/Memory/Functions.h>
 
 /**
  * @brief Address class. Represents a memory address that can

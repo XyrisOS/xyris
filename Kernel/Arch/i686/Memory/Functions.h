@@ -14,6 +14,10 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#if defined(__cplusplus)
+namespace Arch::Memory {
+#endif
+
 /**
  * @brief Invalidate the page at the given address.
  *
@@ -67,3 +71,7 @@ static inline bool pageIsAligned(size_t addr)
 {
     return ((addr % ARCH_PAGE_SIZE) == 0);
 }
+
+#if defined(__cplusplus)
+} // !namespace Arch::Memory
+#endif
