@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #if defined(__i686__)
-#    include <Arch/i686/Memory.i686.hpp>
+#    include <Arch/i686/Memory.hpp>
 #endif
 
 #define B_TO_KB(b) ((b) / 1024)
