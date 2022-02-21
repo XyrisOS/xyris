@@ -100,7 +100,7 @@ static void initDirectory()
         mapKernelPageTable(i, &pageTables[i]);
         // clear out the page tables
         for (size_t j = 0; j < ARCH_PAGE_TABLE_ENTRIES; j++) {
-            memset(&pageTables[i].pages[j], 0, sizeof(struct Arch::Memory::TableEntry));
+            memset(&pageTables[i].entries[j], 0, sizeof(struct Arch::Memory::TableEntry));
         }
     }
     // recursively map the last page table to the page directory
@@ -125,7 +125,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     }
 
     // If the page is already mapped into memory
-    Arch::Memory::TableEntry* entry = &(pageTables[pde].pages[pte]);
+    Arch::Memory::TableEntry* entry = &(pageTables[pde].entries[pte]);
     if (entry->present) {
         if (entry->frameAddr == paddr.frame().index) {
             // this page was already mapped the same way
@@ -135,7 +135,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
         panic("Attempted to map already mapped page.\n");
     }
     // Set the page information
-    pageTables[pde].pages[pte] = {
+    pageTables[pde].entries[pte] = {
         .present = 1,                       // The page is present
         .readWrite = 1,                     // The page has r/w permissions
         .usermode = 0,                      // These are kernel pages
@@ -233,7 +233,7 @@ void freePage(void* page, size_t size)
     for (size_t i = addr.page().tableIndex; i < addr.page().tableIndex + page_count; i++) {
         virtualMemoryBitset.Clear(i);
         // this is the same as the line above
-        struct Arch::Memory::TableEntry* pte = &(pageTables[i / ARCH_PAGE_TABLE_ENTRIES].pages[i % ARCH_PAGE_TABLE_ENTRIES]);
+        struct Arch::Memory::TableEntry* pte = &(pageTables[i / ARCH_PAGE_TABLE_ENTRIES].entries[i % ARCH_PAGE_TABLE_ENTRIES]);
         // the frame field is actually the page frame's index basically it's frame 0, 1...(2^21-1)
         Physical::Manager::the().setFree(pte->frameAddr);
         // zero it out to unmap it

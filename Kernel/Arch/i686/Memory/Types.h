@@ -73,7 +73,7 @@ struct TableEntry
  */
 struct Table
 {
-   struct TableEntry pages[ARCH_PAGE_TABLE_ENTRIES]; // All entries for the table
+   struct TableEntry entries[ARCH_PAGE_TABLE_ENTRIES]; // All entries for the table
 };
 
 /**

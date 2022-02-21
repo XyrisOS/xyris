@@ -15,6 +15,7 @@
 #    include <Arch/i686/Memory/Address.hpp>
 #    include <Arch/i686/Memory/Functions.h>
 #    include <Arch/i686/Memory/Types.h>
+#    include <Arch/i686/Memory/Walker.hpp>
 #endif
 
 #define B_TO_KB(b) ((b) / 1024)
