@@ -30,8 +30,13 @@
 #include <Applications/primes.hpp>
 #include <Applications/spinner.hpp>
 // Meta
-#include <Support/defines.hpp>
 #include <stdint.h>
+
+#define BUILD_DATE \
+    (((__DATE__)[7] - '0') * 1000 + \
+    ((__DATE__)[8] - '0') * 100  + \
+    ((__DATE__)[9] - '0') * 10   + \
+    ((__DATE__)[10] - '0') * 1)
 
 static void printSplash();
 static void bootTone();
