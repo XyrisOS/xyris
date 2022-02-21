@@ -1,19 +1,15 @@
 /**
- * @file Memory.i686.hpp
+ * @file Address.hpp
  * @author Keeton Feavel (keeton@xyr.is)
- * @brief i686 memory structures and definitions. C & C++ compatible header.
+ * @brief i686 memory address helper class
  * @version 0.1
- * @date 2021-10-26
+ * @date 2022-02-20
  *
- * @copyright Copyright the Xyris Contributors (c) 2021
+ * @copyright Copyright the Xyris Contributors (c) 2022
  *
  */
 #pragma once
-// TODO: Maybe rename these headers? Can't think of anything much better...
-#include <Arch/i686/Memory/Functions.h>
 #include <Arch/i686/Memory/Types.h>
-#include <stdint.h>
-#include <stddef.h>
 
 namespace Arch::Memory {
 
@@ -24,57 +20,68 @@ namespace Arch::Memory {
  * by also including an uintptr_t representation.
  *
  */
-class Address
-{
+class Address {
 public:
-    Address(uintptr_t addr) {
+    Address(uintptr_t addr)
+    {
         m_addr.val = addr;
     }
 
-    Address(struct Frame frame) {
+    Address(struct Frame frame)
+    {
         m_addr.frame = frame;
     }
 
-    Address(struct Page page) {
+    Address(struct Page page)
+    {
         m_addr.page = page;
     }
 
-    operator struct Page() {
+    operator struct Page()
+    {
         return m_addr.page;
     }
 
-    operator struct Frame() {
+    operator struct Frame()
+    {
         return m_addr.frame;
     }
 
-    operator uintptr_t() {
+    operator uintptr_t()
+    {
         return m_addr.val;
     }
 
-    uintptr_t operator+= (const uintptr_t& val) {
+    uintptr_t operator+=(const uintptr_t& val)
+    {
         m_addr.val += val;
         return m_addr.val;
     }
 
-    uintptr_t operator-= (const uintptr_t& val) {
+    uintptr_t operator-=(const uintptr_t& val)
+    {
         m_addr.val -= val;
         return m_addr.val;
     }
 
-    uintptr_t operator= (const uintptr_t& val) {
+    uintptr_t operator=(const uintptr_t& val)
+    {
         m_addr.val = val;
         return m_addr.val;
     }
 
-    struct Page page() {
+    struct Page page()
+    {
         return m_addr.page;
     }
 
-    struct Frame frame() {
+    struct Frame frame()
+    {
         return m_addr.frame;
     }
 
-    uintptr_t val() {
+    uintptr_t val()
+    {
         return m_addr.val;
     }
 
