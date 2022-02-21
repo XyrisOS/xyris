@@ -9,13 +9,8 @@
  * @copyright Copyright Keeton Feavel and Micah Switzer (c) 2019
  *
  */
-#include <Arch/Arch.hpp>
 #include <Arch/Memory.hpp>
-#include <Bootloader/Arguments.hpp>
 #include <Library/Bitset.hpp>
-#include <Locking/RAII.hpp>
-#include <Library/stdio.hpp>
-#include <Library/string.hpp>
 #include <Memory/Physical.hpp>
 #include <Memory/paging.hpp>
 #include <Support/sections.hpp>
