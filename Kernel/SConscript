@@ -6,6 +6,10 @@ env = env.Clone()
 linkerscript = env.File('Arch/$ARCH/linker.ld')
 env.Append(
     LINKSCRIPT=linkerscript,
+    CPPDEFINES={
+        '__xyris__': None,
+        '_kernel__': None,
+    },
     CXXFLAGS=[
         '-fanalyzer',
     ],
@@ -48,8 +52,9 @@ kernel = env.Program(
         crtn,
     ]),
     LIBS=[
+        # 'xs',
         'gcc',
-        'alloc'
+        'alloc',
     ],
 )
 

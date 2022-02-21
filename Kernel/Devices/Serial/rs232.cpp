@@ -14,7 +14,7 @@
 
 #include <Arch/Arch.hpp>
 #include <Devices/Serial/rs232.hpp>
-#include <Library/RingBuffer.hpp>
+#include <XS/RingBuffer.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
 #include <Locking/RAII.hpp>
@@ -39,7 +39,7 @@
 namespace RS232 {
 
 static uint16_t rs_232_port_base;
-static RingBuffer<char, 1024> ring;
+static XS::RingBuffer<char, 1024> ring;
 static Mutex mutex_rs232("rs232");
 
 static int received();

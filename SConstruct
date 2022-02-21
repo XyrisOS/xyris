@@ -102,6 +102,7 @@ env = Environment(
         'VER_NAME': '\\"$VERSION_NAME\\"',
     },
     CPPPATH=[
+        '#',
         '#Kernel',
         '#Thirdparty',
         '#Libraries',
@@ -141,6 +142,17 @@ if 'docs' not in COMMAND_LINE_TARGETS:
     kernel_targets_debug = []
     kernel_targets_release = []
     for target_env in kernel_environments:
+        # TODO: Uncomment as soon as there's source files in XS
+        #
+        # libxs = target_env.SConscript(
+        #     'XS/SConscript',
+        #     variant_dir='$BUILD_DIR/libxs',
+        #     duplicate=0,
+        #     exports={
+        #         'env': target_env
+        #     },
+        # )
+        # Default(libxs)
         liballoc = target_env.SConscript(
             'Libraries/liballoc/SConscript',
             variant_dir='$BUILD_DIR/liballoc',
@@ -226,6 +238,7 @@ env = Environment(
         '-ftest-coverage',
     ],
     CPPPATH=[
+        '#',
         '#Tests',
         '#Kernel',
         '#Thirdparty',

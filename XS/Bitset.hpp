@@ -17,6 +17,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+namespace XS {
+
 template<size_t S>
 class Bitset {
 public:
@@ -164,3 +166,5 @@ private:
         return bit % TypeSize();
     }
 };
+
+} // !namespace XS

@@ -12,7 +12,7 @@
 #include <Arch/Arch.hpp>
 #include <Arch/Memory.hpp>
 #include <Bootloader/Arguments.hpp>
-#include <Library/Bitset.hpp>
+#include <XS/Bitset.hpp>
 #include <Locking/RAII.hpp>
 #include <Library/stdio.hpp>
 #include <Library/string.hpp>
@@ -30,7 +30,7 @@ namespace Memory {
 static Mutex pagingLock("paging");
 
 static Physical::PhysicalManager physical;
-static Bitset<MEM_BITMAP_SIZE> mappedPages;
+static XS::Bitset<MEM_BITMAP_SIZE> mappedPages;
 
 static uintptr_t pageDirectoryAddress;
 static struct Arch::Memory::Table* pageDirectoryVirtual[ARCH_PAGE_DIR_ENTRIES];
