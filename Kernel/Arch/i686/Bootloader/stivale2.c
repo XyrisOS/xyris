@@ -10,7 +10,8 @@
  */
 #include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Arch/i686/Bootloader/Loader.hpp>
-#include <Arch/i686/Memory.i686.hpp>
+#include <Arch/i686/Memory/Types.h>
+#include <Arch/i686/Memory/Functions.h>
 #include <Arch/i686/regs.hpp>
 #include <Support/sections.hpp>
 #include <stdint.h>
@@ -187,7 +188,7 @@ static void stage1MapBootloader(void)
         struct TableEntry* bootTableEntry = &bootTable->pages[bootMemoryIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
         bootTableEntry->present = 1;
         bootTableEntry->readWrite = 1;
-        bootTableEntry->frame = bootMemoryIdx;
+        bootTableEntry->frameAddr = bootMemoryIdx;
     }
 }
 
@@ -220,7 +221,7 @@ static void stage1MapHighMemory(void)
         struct TableEntry* kernelMemoryTableEntry = &kernelPageTable[0].pages[kernelMemoryIdx & (0x400 | ARCH_PAGE_TABLE_ENTRY_MASK)];
         kernelMemoryTableEntry->present = 1;
         kernelMemoryTableEntry->readWrite = 1;
-        kernelMemoryTableEntry->frame = kernelMemoryIdx - (KERNEL_BASE >> ARCH_PAGE_TABLE_ENTRY_SHIFT);
+        kernelMemoryTableEntry->frameAddr = kernelMemoryIdx - (KERNEL_BASE >> ARCH_PAGE_TABLE_ENTRY_SHIFT);
     }
 }
 
@@ -245,7 +246,7 @@ static void stage1MapLowMemory(void)
         struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.pages[pageIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
         lowMemoryTableEntry->present = 1;
         lowMemoryTableEntry->readWrite = 1;
-        lowMemoryTableEntry->frame = pageIdx;
+        lowMemoryTableEntry->frameAddr = pageIdx;
     }
 }
 

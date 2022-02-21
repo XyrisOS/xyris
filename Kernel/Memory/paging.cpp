@@ -26,7 +26,8 @@ static Bitset<MEM_BITMAP_SIZE> virtualMemoryBitset;
 
 // both of these must be page aligned for anything to work right at all
 [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Directory pageDirectory;
-[[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Table pageTables[ARCH_PAGE_TABLE_ENTRIES];
+// page tables for the entire 32-bit address space
+[[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Table pageTables[ARCH_PAGE_DIR_ENTRIES];
 
 static void pageFaultCallback(struct registers* regs);
 static void initPhysical(MemoryMap& map);
@@ -126,7 +127,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     // If the page is already mapped into memory
     Arch::Memory::TableEntry* entry = &(pageTables[pde].pages[pte]);
     if (entry->present) {
-        if (entry->frame == paddr.frame().index) {
+        if (entry->frameAddr == paddr.frame().index) {
             // this page was already mapped the same way
             return;
         }
@@ -135,17 +136,17 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     }
     // Set the page information
     pageTables[pde].pages[pte] = {
-        .present = 1,                   // The page is present
-        .readWrite = 1,                 // The page has r/w permissions
-        .usermode = 0,                  // These are kernel pages
-        .writeThrough = 0,              // Disable write through
-        .cacheDisable = 0,              // The page is cached
-        .accessed = 0,                  // The page is unaccessed
-        .dirty = 0,                     // The page is clean
-        .pageAttrTable = 0,             // The page has no attribute table
-        .global = 0,                    // The page is local
-        .unused = 0,                    // Ignored
-        .frame = paddr.frame().index,   // The last 20 bits are the frame
+        .present = 1,                       // The page is present
+        .readWrite = 1,                     // The page has r/w permissions
+        .usermode = 0,                      // These are kernel pages
+        .writeThrough = 0,                  // Disable write through
+        .cacheDisable = 0,                  // The page is cached
+        .accessed = 0,                      // The page is unaccessed
+        .dirty = 0,                         // The page is clean
+        .pageAttrTable = 0,                 // The page has no attribute table
+        .global = 0,                        // The page is local
+        .unused = 0,                        // Ignored
+        .frameAddr = paddr.frame().index,   // The last 20 bits are the frame
     };
     // Set the associated bit in the bitmaps
     Physical::Manager::the().setUsed(paddr);
@@ -234,7 +235,7 @@ void freePage(void* page, size_t size)
         // this is the same as the line above
         struct Arch::Memory::TableEntry* pte = &(pageTables[i / ARCH_PAGE_TABLE_ENTRIES].pages[i % ARCH_PAGE_TABLE_ENTRIES]);
         // the frame field is actually the page frame's index basically it's frame 0, 1...(2^21-1)
-        Physical::Manager::the().setFree(pte->frame);
+        Physical::Manager::the().setFree(pte->frameAddr);
         // zero it out to unmap it
         memset(pte, 0, sizeof(struct Arch::Memory::TableEntry));
         // clear that tlb
@@ -245,7 +246,6 @@ void freePage(void* page, size_t size)
 bool isPresent(uintptr_t addr)
 {
     // Convert the address into an index and check whether the page is in the bitmap
-    // TODO: Fix this function. It's inaccurate and can result in triple faults.
     return virtualMemoryBitset[addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT];
 }
 
