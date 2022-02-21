@@ -23,6 +23,8 @@
 #define B_TO_MB(b) KB_TO_MB(B_TO_KB(b))
 #define B_TO_GB(b) MB_TO_GB(B_TO_MB(b))
 
+#define PAGE_COUNT(s) ((s) / ARCH_PAGE_SIZE) + 1;
+
 #define ADDRESS_SPACE_SIZE  0x100000000
 // TODO: Add this to memory class (#326)
 #define ADDRESS_TO_PAGE_IDX(addr) ((addr) / ARCH_PAGE_SIZE)

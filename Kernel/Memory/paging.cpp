@@ -23,8 +23,6 @@
 #include <Logger.hpp>
 #include <stddef.h>
 
-#define PAGE_COUNT(s) ((s) / ARCH_PAGE_SIZE) + 1;
-
 namespace Memory {
 
 static Mutex pagingLock("paging");
