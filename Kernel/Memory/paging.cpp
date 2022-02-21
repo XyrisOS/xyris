@@ -34,14 +34,14 @@ static Bitset<MEM_BITMAP_SIZE> virtualMemoryBitset;
 [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Table pageTables[ARCH_PAGE_TABLE_ENTRIES];
 
 static void pageFaultCallback(struct registers* regs);
-static void initPhysical(MemoryMap* map);
+static void initPhysical(MemoryMap& map);
 static void initDirectory();
 static void mapEarlyMem();
 static void mapKernel();
 static uintptr_t findNextFreeVirtualAddress(size_t seq);
 static void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table);
 
-void init(MemoryMap* map)
+void init(MemoryMap& map)
 {
     Interrupts::registerHandler(Interrupts::EXCEPTION_PAGE_FAULT, pageFaultCallback);
 
@@ -58,14 +58,14 @@ static void pageFaultCallback(struct registers* regs)
     panic(regs);
 }
 
-static void initPhysical(MemoryMap* map)
+static void initPhysical(MemoryMap& map)
 {
     // populate the physical memory map based on bootloader information
     size_t freeMegabytes = 0;
     size_t reservedMegabytes = 0;
 
-    for (size_t i = 0; i < map->Count(); i++) {
-        auto section = map->Get(i);
+    for (size_t i = 0; i < map.Count(); i++) {
+        auto section = map.Get(i);
         if (section.initialized() && section.type() == Available) {
             Physical::Manager::the().setFree(section);
             freeMegabytes += B_TO_MB(section.size());
