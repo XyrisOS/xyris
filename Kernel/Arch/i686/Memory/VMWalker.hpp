@@ -1,5 +1,5 @@
 /**
- * @file Walker.hpp
+ * @file VMWalker.hpp
  * @author Keeton Feavel (keeton@xyr.is)
  * @brief Virtual memory structure walker
  * @version 0.1
