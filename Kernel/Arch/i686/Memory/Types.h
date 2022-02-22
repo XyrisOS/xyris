@@ -25,17 +25,6 @@ namespace Arch::Memory {
 #endif
 
 /**
- * @brief Virtual address structure. Represents an address
- * in virtual memory that redirects to a physical page frame.
- * (Chunk of virtual memory)
- */
-struct VirtualAddress {
-    uint32_t offset      : 12;  // Page offset address
-    uint32_t tableIndex  : 10;  // Page table entry
-    uint32_t dirIndex    : 10;  // Page directory entry
-};
-
-/**
  * @brief Page frame structure. This represents a the
  * address to a single unit of memory in RAM.
  * (Chunk of physical memory)
@@ -64,6 +53,18 @@ struct TableEntry
     uint32_t global             : 1;  // Prevents the TLB from updating the address
     uint32_t unused             : 3;  // Amalgamation of unused and reserved bits
     uint32_t frameAddr          : 20; // Frame address (shifted right 12 bits)
+
+#if defined(__cplusplus)
+    struct Frame* getPageFrame()
+    {
+        return reinterpret_cast<struct Frame*>(frameAddr);
+    }
+
+    uintptr_t getVirtualAddressValue()
+    {
+        return frameAddr;
+    }
+#endif
 };
 
 /**
@@ -74,6 +75,13 @@ struct TableEntry
 struct Table
 {
    struct TableEntry entries[ARCH_PAGE_TABLE_ENTRIES]; // All entries for the table
+
+#if defined(__cplusplus)
+    struct TableEntry* getTableEntry(size_t idx)
+    {
+        return &entries[idx];
+    }
+#endif
 };
 
 /**
@@ -93,6 +101,13 @@ struct DirectoryEntry
     uint32_t size               : 1;  // Is the page 4 Mb (enabled) or 4 Kb (disabled)?
     uint32_t ignoredB           : 4;  // Ignored
     uint32_t tableAddr          : 20; // Physical address of the table
+
+#if defined(__cplusplus)
+    struct Table* getTable()
+    {
+        return reinterpret_cast<struct Table*>(tableAddr);
+    }
+#endif
 };
 
 /**
@@ -104,6 +119,41 @@ struct DirectoryEntry
 struct Directory
 {
     struct DirectoryEntry entries[ARCH_PAGE_DIR_ENTRIES]; // Pointers that the Intel CPU uses to access pages in memory
+
+#if defined(__cplusplus)
+    struct DirectoryEntry* getDirectoryEntry(size_t idx)
+    {
+        return &entries[idx];
+    }
+#endif
+};
+
+/**
+ * @brief Virtual address structure. Represents an address
+ * in virtual memory that redirects to a physical page frame.
+ * (Chunk of virtual memory)
+ */
+struct VirtualAddress {
+    uint32_t offset      : 12;  // Page offset address
+    uint32_t tableIndex  : 10;  // Page table entry
+    uint32_t dirIndex    : 10;  // Page directory entry
+
+#if defined(__cplusplus)
+    uintptr_t getPhysicalAddress(struct Directory* dir)
+    {
+        struct DirectoryEntry* dirEntry = dir->getDirectoryEntry(dirIndex);
+        if (!dirEntry->present) {
+            // TODO: Map in the table I guess
+        }
+        struct Table* table = dirEntry->getTable();
+        struct TableEntry* tableEntry = table->getTableEntry(tableIndex);
+        if (!tableEntry->present) {
+            // TODO: Something I guess
+        }
+
+        return tableEntry->frameAddr * ARCH_PAGE_SIZE + offset;
+    }
+#endif
 };
 
 #if defined(__cplusplus)
