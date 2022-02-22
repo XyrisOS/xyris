@@ -113,14 +113,14 @@ static void initDirectory()
 void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
 {
     // Set the page directory entry (pde) and page table entry (pte)
-    size_t pde = vaddr.page().dirIndex;
-    size_t pte = vaddr.page().tableIndex;
+    size_t pde = vaddr.virtualAddress().dirIndex;
+    size_t pte = vaddr.virtualAddress().tableIndex;
 
     // Print a debug message to serial
     Logger::Trace(__func__, "map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx", paddr.val(), vaddr.val(), pde, pte);
 
     // If the page's virtual address is not aligned
-    if (vaddr.page().offset) {
+    if (vaddr.virtualAddress().offset) {
         panicf("Attempted to map a non-page-aligned virtual address.\n(Address: 0x%08lX)\n", vaddr.val());
     }
 
@@ -230,7 +230,7 @@ void freePage(void* page, size_t size)
     RAIIMutex lock(pagingLock);
     size_t page_count = PAGE_COUNT(size);
     Arch::Memory::Address addr((uintptr_t)page);
-    for (size_t i = addr.page().tableIndex; i < addr.page().tableIndex + page_count; i++) {
+    for (size_t i = addr.virtualAddress().tableIndex; i < addr.virtualAddress().tableIndex + page_count; i++) {
         virtualMemoryBitset.Clear(i);
         // this is the same as the line above
         struct Arch::Memory::TableEntry* pte = &(pageTables[i / ARCH_PAGE_TABLE_ENTRIES].entries[i % ARCH_PAGE_TABLE_ENTRIES]);

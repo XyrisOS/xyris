@@ -32,12 +32,12 @@ public:
         m_addr.frame = frame;
     }
 
-    Address(struct Page page)
+    Address(struct VirtualAddress page)
     {
         m_addr.page = page;
     }
 
-    operator struct Page()
+    operator struct VirtualAddress()
     {
         return m_addr.page;
     }
@@ -70,7 +70,7 @@ public:
         return m_addr.val;
     }
 
-    struct Page page()
+    struct VirtualAddress virtualAddress()
     {
         return m_addr.page;
     }
@@ -87,7 +87,7 @@ public:
 
 private:
     union {
-        struct Page page;
+        struct VirtualAddress page;
         struct Frame frame;
         uintptr_t val;
     } m_addr;

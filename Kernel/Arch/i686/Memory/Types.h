@@ -25,6 +25,17 @@ namespace Arch::Memory {
 #endif
 
 /**
+ * @brief Virtual address structure. Represents an address
+ * in virtual memory that redirects to a physical page frame.
+ * (Chunk of virtual memory)
+ */
+struct VirtualAddress {
+    uint32_t offset      : 12;  // Page offset address
+    uint32_t tableIndex  : 10;  // Page table entry
+    uint32_t dirIndex    : 10;  // Page directory entry
+};
+
+/**
  * @brief Page frame structure. This represents a the
  * address to a single unit of memory in RAM.
  * (Chunk of physical memory)
@@ -33,17 +44,6 @@ namespace Arch::Memory {
 struct Frame {
     uint32_t offset : 12; // Page offset address
     uint32_t index  : 20; // Page frame index
-};
-
-/**
- * @brief Virtual address structure. Represents an address
- * in virtual memory that redirects to a physical page frame.
- * (Chunk of virtual memory)
- */
-struct Page {
-    uint32_t offset      : 12;  // Page offset address
-    uint32_t tableIndex  : 10;  // Page table entry
-    uint32_t dirIndex    : 10;  // Page directory entry
 };
 
 /**
