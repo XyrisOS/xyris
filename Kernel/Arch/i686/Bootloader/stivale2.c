@@ -188,7 +188,7 @@ static void stage1MapBootloader(void)
         struct TableEntry* bootTableEntry = &bootTable->entries[bootMemoryIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
         bootTableEntry->present = 1;
         bootTableEntry->readWrite = 1;
-        bootTableEntry->frameAddr = bootMemoryIdx;
+        bootTableEntry->pageAddr = bootMemoryIdx;
     }
 }
 
@@ -221,7 +221,7 @@ static void stage1MapHighMemory(void)
         struct TableEntry* kernelMemoryTableEntry = &kernelPageTable[0].entries[kernelMemoryIdx & (0x400 | ARCH_PAGE_TABLE_ENTRY_MASK)];
         kernelMemoryTableEntry->present = 1;
         kernelMemoryTableEntry->readWrite = 1;
-        kernelMemoryTableEntry->frameAddr = kernelMemoryIdx - (KERNEL_BASE >> ARCH_PAGE_TABLE_ENTRY_SHIFT);
+        kernelMemoryTableEntry->pageAddr = kernelMemoryIdx - (KERNEL_BASE >> ARCH_PAGE_TABLE_ENTRY_SHIFT);
     }
 }
 
@@ -246,7 +246,7 @@ static void stage1MapLowMemory(void)
         struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.entries[pageIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
         lowMemoryTableEntry->present = 1;
         lowMemoryTableEntry->readWrite = 1;
-        lowMemoryTableEntry->frameAddr = pageIdx;
+        lowMemoryTableEntry->pageAddr = pageIdx;
     }
 }
 

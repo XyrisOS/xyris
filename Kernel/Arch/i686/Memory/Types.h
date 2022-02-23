@@ -25,14 +25,20 @@ namespace Arch::Memory {
 #endif
 
 /**
- * @brief Page frame structure. This represents a the
- * address to a single unit of memory in RAM.
- * (Chunk of physical memory)
+ * @brief A page is a representation of a virtual address that makes it easier
+ * to get the index and offset of a virtual address. Offset is the offset into
+ * the page and index is the combined value of the directory and table indexes,
+ * which comprise the upper 20 bits of a virtual address.
+ *
+ * This does not represent an additional layer of indirection but is rather another
+ * representation of a virtual address. The *only* time this should be used is when
+ * setting the ``pageAddr`` value in a ``TableEntry`` since ``index`` is the physical
+ * address of the beginning of the page in physical memory.
  *
  */
-struct Frame {
-    uint32_t offset : 12; // Page offset address
-    uint32_t index  : 20; // Page frame index
+struct Page {
+    uint32_t offset     : 12; // Offset into the page
+    uint32_t pageAddr   : 20; // Physical address of the page
 };
 
 /**
@@ -52,17 +58,17 @@ struct TableEntry
     uint32_t pageAttrTable      : 1;  // Page attribute table (memory cache control)
     uint32_t global             : 1;  // Prevents the TLB from updating the address
     uint32_t unused             : 3;  // Amalgamation of unused and reserved bits
-    uint32_t frameAddr          : 20; // Frame address (shifted right 12 bits)
+    uint32_t pageAddr           : 20; // Page address (shifted right 12 bits)
 
 #if defined(__cplusplus)
-    struct Frame* getPageFrame()
+    struct Page* getPageFrame()
     {
-        return reinterpret_cast<struct Frame*>(frameAddr);
+        return reinterpret_cast<struct Page*>(pageAddr);
     }
 
-    uintptr_t getVirtualAddressValue()
+    uintptr_t getPhysicalAddress()
     {
-        return frameAddr;
+        return pageAddr * ARCH_PAGE_SIZE;
     }
 #endif
 };
@@ -151,7 +157,7 @@ struct VirtualAddress {
             // TODO: Something I guess
         }
 
-        return tableEntry->frameAddr * ARCH_PAGE_SIZE + offset;
+        return tableEntry->pageAddr * ARCH_PAGE_SIZE + offset;
     }
 #endif
 };

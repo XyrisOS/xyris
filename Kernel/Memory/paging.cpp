@@ -103,6 +103,7 @@ static void initDirectory()
             memset(&pageTables[i].entries[j], 0, sizeof(struct Arch::Memory::TableEntry));
         }
     }
+
     // recursively map the last page table to the page directory
     mapKernelPageTable(ARCH_PAGE_TABLE_ENTRIES - 1, (struct Arch::Memory::Table*)&pageDirectory);
     for (size_t i = ARCH_PAGE_TABLE_ENTRIES * (ARCH_PAGE_TABLE_ENTRIES - 1); i < ARCH_PAGE_TABLE_ENTRIES * ARCH_PAGE_TABLE_ENTRIES; i++) {
@@ -127,7 +128,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     // If the page is already mapped into memory
     Arch::Memory::TableEntry* entry = &(pageTables[pde].entries[pte]);
     if (entry->present) {
-        if (entry->frameAddr == paddr.frame().index) {
+        if (entry->pageAddr == paddr.page().pageAddr) {
             // this page was already mapped the same way
             return;
         }
@@ -146,11 +147,11 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
         .pageAttrTable = 0,                 // The page has no attribute table
         .global = 0,                        // The page is local
         .unused = 0,                        // Ignored
-        .frameAddr = paddr.frame().index,   // The last 20 bits are the frame
+        .pageAddr = paddr.page().pageAddr,  // The last 20 bits are the page address
     };
     // Set the associated bit in the bitmaps
     Physical::Manager::the().setUsed(paddr);
-    virtualMemoryBitset.Set(vaddr.frame().index);
+    virtualMemoryBitset.Set(vaddr.page().pageAddr);
 }
 
 void mapKernelRangeVirtual(Section sect)
@@ -235,7 +236,7 @@ void freePage(void* page, size_t size)
         // this is the same as the line above
         struct Arch::Memory::TableEntry* pte = &(pageTables[i / ARCH_PAGE_TABLE_ENTRIES].entries[i % ARCH_PAGE_TABLE_ENTRIES]);
         // the frame field is actually the page frame's index basically it's frame 0, 1...(2^21-1)
-        Physical::Manager::the().setFree(pte->frameAddr);
+        Physical::Manager::the().setFree(pte->pageAddr);
         // zero it out to unmap it
         memset(pte, 0, sizeof(struct Arch::Memory::TableEntry));
         // clear that tlb

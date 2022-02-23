@@ -27,24 +27,24 @@ public:
         m_addr.val = addr;
     }
 
-    Address(struct Frame frame)
-    {
-        m_addr.frame = frame;
-    }
-
-    Address(struct VirtualAddress page)
+    Address(struct Page page)
     {
         m_addr.page = page;
     }
 
-    operator struct VirtualAddress()
+    Address(struct VirtualAddress vaddr)
     {
-        return m_addr.page;
+        m_addr.vaddr = vaddr;
     }
 
-    operator struct Frame()
+    operator struct VirtualAddress()
     {
-        return m_addr.frame;
+        return m_addr.vaddr;
+    }
+
+    operator struct Page()
+    {
+        return m_addr.page;
     }
 
     operator uintptr_t()
@@ -72,12 +72,12 @@ public:
 
     struct VirtualAddress virtualAddress()
     {
-        return m_addr.page;
+        return m_addr.vaddr;
     }
 
-    struct Frame frame()
+    struct Page page()
     {
-        return m_addr.frame;
+        return m_addr.page;
     }
 
     uintptr_t val()
@@ -87,8 +87,8 @@ public:
 
 private:
     union {
-        struct VirtualAddress page;
-        struct Frame frame;
+        struct VirtualAddress vaddr;
+        struct Page page;
         uintptr_t val;
     } m_addr;
 };
