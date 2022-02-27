@@ -30,18 +30,16 @@ static Bitset<MEM_BITMAP_SIZE> virtualMemoryBitset;
 [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Table pageTables[ARCH_PAGE_DIR_ENTRIES];
 
 static void pageFaultCallback(struct registers* regs);
-static void initPhysical(MemoryMap& map);
 static void initDirectory();
 static void mapEarlyMem();
 static void mapKernel();
 static uintptr_t findNextFreeVirtualAddress(size_t seq);
 static void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table);
 
-void init(MemoryMap& map)
+void init()
 {
     Interrupts::registerHandler(Interrupts::EXCEPTION_PAGE_FAULT, pageFaultCallback);
 
-    initPhysical(map);
     initDirectory();
     mapEarlyMem();
     mapKernel();
@@ -52,28 +50,6 @@ void init(MemoryMap& map)
 static void pageFaultCallback(struct registers* regs)
 {
     panic(regs);
-}
-
-static void initPhysical(MemoryMap& map)
-{
-    // populate the physical memory map based on bootloader information
-    size_t freeMegabytes = 0;
-    size_t reservedMegabytes = 0;
-
-    for (size_t i = 0; i < map.Count(); i++) {
-        auto section = map.Get(i);
-        if (section.initialized() && section.type() == Available) {
-            Physical::Manager::the().setFree(section);
-            freeMegabytes += B_TO_MB(section.size());
-            continue;
-        }
-
-        reservedMegabytes += B_TO_MB(section.size());
-    }
-
-    Logger::Info(__func__, "Available memory: %zu MB", freeMegabytes);
-    Logger::Info(__func__, "Reserved memory: %zu MB", reservedMegabytes);
-    Logger::Info(__func__, "Total memory: %zu MB", freeMegabytes + reservedMegabytes);
 }
 
 static inline void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table)
@@ -147,7 +123,7 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
         .pageAttrTable = 0,                 // The page has no attribute table
         .global = 0,                        // The page is local
         .unused = 0,                        // Ignored
-        .pageAddr = paddr.page().pageAddr,  // The last 20 bits are the page address
+        .pageAddr = paddr.page().pageAddr,  // Page physical address
     };
     // Set the associated bit in the bitmaps
     Physical::Manager::the().setUsed(paddr);
@@ -203,7 +179,7 @@ void* newPage(size_t size)
 
     for (size_t i = free_idx; i < free_idx + page_count; i++) {
         size_t phys_page_idx = Physical::Manager::the().findNextFreePhysicalAddress();
-        if (phys_page_idx == SIZE_MAX) {
+        if (phys_page_idx == Physical::Manager::npos) {
             return NULL;
         }
 

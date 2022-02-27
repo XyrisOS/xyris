@@ -15,6 +15,8 @@
 #define ARCH_PAGE_DIR_ENTRIES       1024
 #define ARCH_PAGE_TABLE_ENTRIES     1024
 #define ARCH_PAGE_SIZE              4096
+#define ARCH_TABLE_SIZE             ARCH_PAGE_SIZE
+#define ARCH_DIRECTORY_SIZE         ARCH_PAGE_SIZE
 #define ARCH_PAGE_ALIGN             0xFFFFF000
 #define ARCH_PAGE_DIR_ENTRY_SHIFT   22          // Shift to convert address to 0-1023 directory index
 #define ARCH_PAGE_TABLE_ENTRY_SHIFT 12          // Shift to convert address to page address (2^12 = 4096 = PAGE_SIZE)
@@ -51,8 +53,8 @@ struct TableEntry
     uint32_t present            : 1;  // Page present in memory
     uint32_t readWrite          : 1;  // Read-only if clear, readwrite if set
     uint32_t usermode           : 1;  // Supervisor level only if clear
-    uint32_t writeThrough       : 1;  // Page level write through
-    uint32_t cacheDisable       : 1;  // Disables TLB caching of page entry
+    uint32_t writeThrough       : 1;  // Update memory at the same time as cache
+    uint32_t cacheDisable       : 1;  // Always read from main memory
     uint32_t accessed           : 1;  // Has the page been accessed since last refresh?
     uint32_t dirty              : 1;  // Has the page been written to since last refresh?
     uint32_t pageAttrTable      : 1;  // Page attribute table (memory cache control)
@@ -61,11 +63,6 @@ struct TableEntry
     uint32_t pageAddr           : 20; // Page address (shifted right 12 bits)
 
 #if defined(__cplusplus)
-    struct Page* getPageFrame()
-    {
-        return reinterpret_cast<struct Page*>(pageAddr);
-    }
-
     uintptr_t getPhysicalAddress()
     {
         return pageAddr * ARCH_PAGE_SIZE;
@@ -100,20 +97,13 @@ struct DirectoryEntry
     uint32_t present            : 1;  // Is the page present in physical memory?
     uint32_t readWrite          : 1;  // Is the page read/write or read-only?
     uint32_t usermode           : 1;  // Can the page be accessed in usermode?
-    uint32_t writeThrough       : 1;  // Is write-through cache enabled?
-    uint32_t cacheDisable       : 1;  // Can the page be cached?
+    uint32_t writeThrough       : 1;  // Update memory at the same time as cache
+    uint32_t cacheDisable       : 1;  // Always read from main memory
     uint32_t accessed           : 1;  // Has the page been accessed?
     uint32_t ignoredA           : 1;  // Ignored
     uint32_t size               : 1;  // Is the page 4 Mb (enabled) or 4 Kb (disabled)?
     uint32_t ignoredB           : 4;  // Ignored
     uint32_t tableAddr          : 20; // Physical address of the table
-
-#if defined(__cplusplus)
-    struct Table* getTable()
-    {
-        return reinterpret_cast<struct Table*>(tableAddr);
-    }
-#endif
 };
 
 /**
@@ -143,23 +133,6 @@ struct VirtualAddress {
     uint32_t offset      : 12;  // Page offset address
     uint32_t tableIndex  : 10;  // Page table entry
     uint32_t dirIndex    : 10;  // Page directory entry
-
-#if defined(__cplusplus)
-    uintptr_t getPhysicalAddress(struct Directory* dir)
-    {
-        struct DirectoryEntry* dirEntry = dir->getDirectoryEntry(dirIndex);
-        if (!dirEntry->present) {
-            // TODO: Map in the table I guess
-        }
-        struct Table* table = dirEntry->getTable();
-        struct TableEntry* tableEntry = table->getTableEntry(tableIndex);
-        if (!tableEntry->present) {
-            // TODO: Something I guess
-        }
-
-        return tableEntry->pageAddr * ARCH_PAGE_SIZE + offset;
-    }
-#endif
 };
 
 #if defined(__cplusplus)

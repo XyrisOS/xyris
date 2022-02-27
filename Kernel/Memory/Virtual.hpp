@@ -12,44 +12,57 @@
 
 
 #include <Arch/Memory.hpp>
+#include <Memory/Physical.hpp>
 #include <Locking/Mutex.hpp>
 
 namespace Memory::Virtual {
 
+enum MapFlags
+{
+    READ_ONLY,
+    USERMODE,
+    WRITE_THROUGH,
+    CACHE_DISABLE,
+};
+
 class Manager {
 public:
-    Manager(struct Arch::Memory::Directory* dir)
+    Manager(struct Arch::Memory::Directory& dir, uintptr_t rangeStart, size_t rangeSize)
         : m_directory(dir)
+        , m_rangeStart(rangeStart)
+        , m_rangeSize(rangeSize)
+        , m_searchStart(rangeStart)
     {
-        //
+        // Default constructor
     }
 
-    Manager(const char* lockName, struct Arch::Memory::Directory* dir)
+    Manager(const char* lockName, struct Arch::Memory::Directory& dir, uintptr_t rangeStart, size_t rangeSize)
         : m_lock(lockName)
         , m_directory(dir)
+        , m_rangeStart(rangeStart)
+        , m_rangeSize(rangeSize)
+        , m_searchStart(rangeStart)
     {
-        //
+        // Named lock constructor
+
     }
 
-    /**
-     * @brief Allocate and map in new virtual memory.
-     *
-     * @param size Desired size in bytes. Will be mapped in ``ARCH_PAGE_SIZE`` chunks.
-     * @return void* Pointer to allocated and mapped memory.
-     */
-    virtual void* map(size_t size);
-
-    /**
-     * @brief Free and unmap virtual memory.
-     *
-     * @param addr Pointer to memory region to be unmapped.
-     * @param size Size in bytes of memory to be unmapped. Will be unmapped in ``ARCH_PAGE_SIZE` chunks.
-     */
+    // TODO: Not virtual
+    virtual void* map(size_t size, enum MapFlags flags);
     virtual void unmap(void* addr, size_t size);
 
 private:
     Mutex m_lock;
-    struct Arch::Memory::Directory* m_directory;
+    struct Arch::Memory::Directory& m_directory;
+    size_t m_rangeStart;
+    size_t m_rangeSize;
+    size_t m_searchStart;
+
+    static const size_t npos = SIZE_MAX;
+
+    void mapPhysicalToVirtual(uintptr_t paddr, uintptr_t vaddr, enum MapFlags flags);
+    struct Arch::Memory::Table& getTable(size_t directoryIndex);
+    uintptr_t findFirstFreePage();
 };
 
 }

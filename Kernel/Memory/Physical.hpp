@@ -14,6 +14,7 @@
 #include <Library/Bitset.hpp>
 #include <Memory/MemorySection.hpp>
 #include <Logger.hpp>
+#include <Panic.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -21,6 +22,7 @@
 
 namespace Memory::Physical {
 
+// FIXME: Mutex lock all of these operations
 class Manager {
 public:
     Manager(Manager const&) = delete;
@@ -31,6 +33,30 @@ public:
         static Manager instance;
         return instance;
     }
+
+    static void initialize(MemoryMap& map)
+    {
+        // populate the physical memory map based on bootloader information
+        size_t freeMegabytes = 0;
+        size_t reservedMegabytes = 0;
+
+        for (size_t i = 0; i < map.Count(); i++) {
+            auto section = map.Get(i);
+            if (section.initialized() && section.type() == Available) {
+                setFree(section);
+                freeMegabytes += B_TO_MB(section.size());
+                continue;
+            }
+
+            reservedMegabytes += B_TO_MB(section.size());
+        }
+
+        Logger::Info(__func__, "Available memory: %zu MB", freeMegabytes);
+        Logger::Info(__func__, "Reserved memory: %zu MB", reservedMegabytes);
+        Logger::Info(__func__, "Total memory: %zu MB", freeMegabytes + reservedMegabytes);
+    }
+
+    // TODO: Make private (start)
 
     [[gnu::always_inline]] static void setFree(Section& sect)
     {
@@ -91,10 +117,43 @@ public:
         return true;
     }
 
+    // TODO: Make private (end)
+
+
+    /**
+     * @brief Return the next available physical page address
+     *
+     * @return uintptr_t Physical page address
+     */
+    [[gnu::always_inline]] static uintptr_t getPage()
+    {
+        uintptr_t pAddr = findNextFreePhysicalAddress();
+        if (pAddr == npos) {
+            panic("Out of memory!");
+        }
+
+        // Convert a frame index to physical address
+        setUsed(PAGE_IDX_TO_ADDRESS(pAddr));
+        return PAGE_IDX_TO_ADDRESS(pAddr);
+    }
+
+    /**
+     * @brief Mark page as available.
+     *
+     * @param physAddr Physical address of page frame
+     */
+    [[gnu::always_inline]] static void freePage(uintptr_t physAddr)
+    {
+        setFree(physAddr);
+    }
+
+    // FIXME: Doesn't return an address -- returns a frame index
     [[gnu::always_inline]] static uintptr_t findNextFreePhysicalAddress()
     {
         return the().m_memory.FindFirstBit(false);
     }
+
+    static const size_t npos = SIZE_MAX;
 
 private:
     Bitset<MEM_BITMAP_SIZE> m_memory;

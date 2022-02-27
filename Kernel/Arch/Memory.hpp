@@ -28,6 +28,7 @@
 
 #define ADDRESS_SPACE_SIZE 0x100000000
 // TODO: Add this to memory class (#326)
+#define PAGE_IDX_TO_ADDRESS(idx) ((idx) * ARCH_PAGE_SIZE)
 #define ADDRESS_TO_PAGE_IDX(addr) ((addr) / ARCH_PAGE_SIZE)
 #define MEM_BITMAP_SIZE (ADDRESS_SPACE_SIZE / ARCH_PAGE_SIZE)
 

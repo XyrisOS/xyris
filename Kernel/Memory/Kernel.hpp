@@ -36,30 +36,6 @@ public:
     }
 
     /**
-     * @brief Initialize the virtual address space using the provided memory map.
-     * Used to determine what regions of memory should be reserved (i.e. BIOS, ACPI, etc.).
-     *
-     * @param map Memory map from bootloader handoff
-     */
-    void initialize(MemoryMap& map);
-
-    /**
-     * @brief Allocate and map in new virtual memory.
-     *
-     * @param size Desired size in bytes. Will be mapped in ``ARCH_PAGE_SIZE`` chunks.
-     * @return void* Pointer to allocated and mapped memory.
-     */
-    virtual void* map(size_t size);
-
-    /**
-     * @brief Free and unmap virtual memory.
-     *
-     * @param addr Pointer to memory region to be unmapped.
-     * @param size Size in bytes of memory to be unmapped. Will be unmapped in ``ARCH_PAGE_SIZE` chunks.
-     */
-    virtual void unmap(void* addr, size_t size);
-
-    /**
      * @brief Get the physical address of the kernel virtual memory page directory.
      *
      * @return uintptr_t Physical address of the kernel virtual memory page directory.
@@ -86,7 +62,7 @@ private:
     [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Table m_tables[ARCH_PAGE_TABLE_ENTRIES];
 
     Kernel()
-        : Manager("kernel-virtual", &m_directoryKernel)
+        : Manager("kernel-virtual", m_directoryKernel, KERNEL_START, ADDRESS_SPACE_SIZE - KERNEL_START)
     {
         Interrupts::registerHandler(Interrupts::EXCEPTION_PAGE_FAULT, pageFaultException);
     }

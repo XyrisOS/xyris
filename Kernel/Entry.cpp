@@ -20,6 +20,7 @@
 #include <Arch/Arch.hpp>
 // Memory management & paging
 #include <Memory/paging.hpp>
+#include <Memory/Physical.hpp>
 // Generic devices
 #include <Devices/Clock/rtc.hpp>
 #include <Devices/Graphics/console.hpp>
@@ -90,7 +91,8 @@ void kernelEntry(void* info, uint32_t magic)
     Arch::CPU::criticalRegion(devInit);
 
     Boot::Handoff handoff(info, magic);
-    Memory::init(handoff.MemoryMap());
+    Memory::Physical::Manager::initialize(handoff.MemoryMap());
+    Memory::init();
     Graphics::init(handoff.FramebufferInfo());
     tasks_init();
 
