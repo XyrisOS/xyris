@@ -13,6 +13,7 @@
 #include <Library/Bitset.hpp>
 #include <Memory/Physical.hpp>
 #include <Memory/paging.hpp>
+#include <Memory/Virtual.hpp>
 #include <Support/sections.hpp>
 #include <Panic.hpp>
 #include <Logger.hpp>
@@ -35,6 +36,7 @@ static void mapEarlyMem();
 static void mapKernel();
 static uintptr_t findNextFreeVirtualAddress(size_t seq);
 static void mapKernelPageTable(size_t idx, struct Arch::Memory::Table* table);
+static Virtual::Manager virtualManager("virtual", pageDirectory, ARCH_DIR_ALIGN(KERNEL_START), ARCH_DIR_ALIGN_UP(KERNEL_END - KERNEL_START));
 
 void init()
 {

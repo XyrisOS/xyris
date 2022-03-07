@@ -21,6 +21,8 @@
 #define ARCH_PAGE_DIR_ENTRY_SHIFT   22          // Shift to convert address to 0-1023 directory index
 #define ARCH_PAGE_TABLE_ENTRY_SHIFT 12          // Shift to convert address to page address (2^12 = 4096 = PAGE_SIZE)
 #define ARCH_PAGE_TABLE_ENTRY_MASK  0x3ff       // Mask off top 10 bits to get 0-1023 index
+#define ARCH_DIR_ALIGN(x) ((x) & 0xFFC00000)
+#define ARCH_DIR_ALIGN_UP(x) (((x) + (0x00400000 - 1)) & 0xFFC00000)
 
 #if defined(__cplusplus)
 namespace Arch::Memory {

@@ -19,15 +19,16 @@ namespace Memory::Virtual {
 
 enum MapFlags
 {
-    READ_ONLY,
-    USERMODE,
-    WRITE_THROUGH,
-    CACHE_DISABLE,
+    NONE = 0,
+    READ_ONLY = 1,
+    USERMODE = 2,
+    WRITE_THROUGH = 4,
+    CACHE_DISABLE = 8,
 };
 
 class Manager {
 public:
-    Manager(struct Arch::Memory::Directory& dir, uintptr_t rangeStart, size_t rangeSize)
+    Manager(Arch::Memory::Directory& dir, uintptr_t rangeStart, size_t rangeSize)
         : m_directory(dir)
         , m_rangeStart(rangeStart)
         , m_rangeSize(rangeSize)
@@ -36,7 +37,7 @@ public:
         // Default constructor
     }
 
-    Manager(const char* lockName, struct Arch::Memory::Directory& dir, uintptr_t rangeStart, size_t rangeSize)
+    Manager(const char* lockName, Arch::Memory::Directory& dir, uintptr_t rangeStart, size_t rangeSize)
         : m_lock(lockName)
         , m_directory(dir)
         , m_rangeStart(rangeStart)
@@ -51,18 +52,21 @@ public:
     virtual void* map(size_t size, enum MapFlags flags);
     virtual void unmap(void* addr, size_t size);
 
+    void mapPhysicalToVirtual(uintptr_t paddr, uintptr_t vaddr, enum MapFlags flags = NONE);
+    uintptr_t findFirstFreePageRange(size_t range);
+    uintptr_t findFirstFreePage() { return findFirstFreePageRange(1); }
+    bool virtualToPhysical(Arch::Memory::Address vaddr, Arch::Memory::Address& result);
+
+    static const size_t npos = SIZE_MAX;
+
 private:
     Mutex m_lock;
-    struct Arch::Memory::Directory& m_directory;
+    Arch::Memory::Directory& m_directory;
     size_t m_rangeStart;
     size_t m_rangeSize;
     size_t m_searchStart;
 
-    static const size_t npos = SIZE_MAX;
-
-    void mapPhysicalToVirtual(uintptr_t paddr, uintptr_t vaddr, enum MapFlags flags);
-    struct Arch::Memory::Table& getTable(size_t directoryIndex);
-    uintptr_t findFirstFreePage();
+    Arch::Memory::Table& getTable(size_t directoryIndex);
 };
 
 }
