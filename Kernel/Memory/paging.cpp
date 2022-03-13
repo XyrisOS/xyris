@@ -81,12 +81,6 @@ static void initDirectory()
             memset(&pageTables[i].entries[j], 0, sizeof(struct Arch::Memory::TableEntry));
         }
     }
-
-    // recursively map the last page table to the page directory
-    mapKernelPageTable(ARCH_PAGE_TABLE_ENTRIES - 1, (struct Arch::Memory::Table*)&pageDirectory);
-    for (size_t i = ARCH_PAGE_TABLE_ENTRIES * (ARCH_PAGE_TABLE_ENTRIES - 1); i < ARCH_PAGE_TABLE_ENTRIES * ARCH_PAGE_TABLE_ENTRIES; i++) {
-        virtualMemoryBitset.Set(i);
-    }
 }
 
 void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)

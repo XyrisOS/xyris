@@ -9,8 +9,6 @@
  *
  */
 #pragma once
-
-
 #include <Arch/Memory.hpp>
 #include <Memory/Physical.hpp>
 #include <Locking/Mutex.hpp>
@@ -32,6 +30,7 @@ public:
         : m_directory(dir)
         , m_rangeStart(rangeStart)
         , m_rangeSize(rangeSize)
+        , m_rangeEnd(rangeStart + rangeSize)
         , m_searchStart(rangeStart)
     {
         // Default constructor
@@ -45,28 +44,28 @@ public:
         , m_searchStart(rangeStart)
     {
         // Named lock constructor
-
     }
 
-    // TODO: Not virtual
-    virtual void* map(size_t size, enum MapFlags flags);
-    virtual void unmap(void* addr, size_t size);
-
-    void mapPhysicalToVirtual(uintptr_t paddr, uintptr_t vaddr, enum MapFlags flags = NONE);
-    uintptr_t findFirstFreePageRange(size_t range);
-    uintptr_t findFirstFreePage() { return findFirstFreePageRange(1); }
-    bool virtualToPhysical(Arch::Memory::Address vaddr, Arch::Memory::Address& result);
+    void* map(uintptr_t addr, size_t size, enum MapFlags flags);
+    void unmap(void* addr, size_t size);
 
     static const size_t npos = SIZE_MAX;
 
-private:
+protected:
     Mutex m_lock;
     Arch::Memory::Directory& m_directory;
     size_t m_rangeStart;
     size_t m_rangeSize;
+    size_t m_rangeEnd;
     size_t m_searchStart;
 
+    void initDirectory();
+    void mapPhysicalToVirtual(uintptr_t paddr, uintptr_t vaddr, enum MapFlags flags = NONE);
     Arch::Memory::Table& getTable(size_t directoryIndex);
+    uintptr_t findFirstFreePageRange(size_t range);
+    bool isPageFree(Arch::Memory::Address vaddr);
+    bool isPageRangeFree(Arch::Memory::Address vaddr, size_t size);
+    bool virtualToPhysical(Arch::Memory::Address vaddr, Arch::Memory::Address& result);
 };
 
 }

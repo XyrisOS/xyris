@@ -24,6 +24,7 @@
 #define B_TO_MB(b) KB_TO_MB(B_TO_KB(b))
 #define B_TO_GB(b) MB_TO_GB(B_TO_MB(b))
 
+#define B_TO_PAGES(bytes) (((bytes) + ARCH_PAGE_SIZE - 1) / ARCH_PAGE_SIZE)
 #define PAGE_COUNT(s) ((s) / ARCH_PAGE_SIZE) + 1;
 
 #define ADDRESS_SPACE_SIZE 0x100000000

@@ -1,13 +1,31 @@
 #include "Virtual.hpp"
+#include <Locking/RAII.hpp>
 #include <Panic.hpp>
 
 namespace Memory::Virtual {
 
-void* Manager::map(size_t size, enum MapFlags flags)
+void* Manager::map(uintptr_t addr, size_t size, enum MapFlags flags)
 {
-    (void)size;
-    (void)flags;
-    return nullptr;
+    size = B_TO_PAGES(size);
+    if (addr == npos) {
+        // Automatically find the next available location
+        addr = findFirstFreePageRange(size);
+    } else {
+        // Attempt to map at the requested location
+        if (addr < m_rangeStart || addr + size > m_rangeEnd) {
+            return nullptr;
+        }
+        if (!isPageRangeFree(addr, size)) {
+            return nullptr;
+        }
+    }
+
+    for (uintptr_t i = 0; i < size; i++) {
+        mapPhysicalToVirtual(Physical::Manager::the().getPage(), addr, flags);
+        addr += ARCH_PAGE_SIZE;
+    }
+
+    return (void*)addr;
 }
 
 void Manager::unmap(void* addr, size_t size)
@@ -76,6 +94,29 @@ void Manager::mapPhysicalToVirtual(uintptr_t paddr, uintptr_t vaddr, enum MapFla
     }
 }
 
+void Manager::initDirectory()
+{
+    Arch::Memory::Address paddrDir;
+    if (!virtualToPhysical((uintptr_t)&m_directory, paddrDir))
+    {
+        panic("Failed to get directory physical address!");
+    }
+
+    // recursively map the last page table to the page directory
+    m_directory.entries[ARCH_PAGE_TABLE_ENTRIES - 1] = {
+        .present = 0,
+        .readWrite = 0,
+        .usermode = 0,
+        .writeThrough = 0,
+        .cacheDisable = 0,
+        .accessed = 0,
+        .ignoredA = 0,
+        .size = 0,
+        .ignoredB = 0,
+        .tableAddr = paddrDir.page().pageAddr,
+    };
+}
+
 Arch::Memory::Table& Manager::getTable(size_t directoryIndex)
 {
     // 0xFFC00000 represents the end of the virtual address space
@@ -92,16 +133,14 @@ uintptr_t Manager::findFirstFreePageRange(size_t range)
     size_t freeRange = 0;
     Arch::Memory::Address freeRangeAddress(npos);
     Arch::Memory::Address startAddr(m_searchStart);
-    Arch::Memory::Address endAddr(m_rangeStart + m_rangeSize);
+    Arch::Memory::Address endAddr(m_rangeEnd);
     Logger::Debug(__func__, "Start: 0x%08zX, Size: 0x%08zX, End: 0x%08zX", (size_t)startAddr.val(), m_rangeSize, (size_t)endAddr.val());
-    for (size_t dirIdx = startAddr.virtualAddress().dirIndex; dirIdx < endAddr.virtualAddress().dirIndex; dirIdx++)
-    {
+    for (size_t dirIdx = startAddr.virtualAddress().dirIndex; dirIdx < endAddr.virtualAddress().dirIndex; dirIdx++) {
         Logger::Debug(__func__, "Enter directory (%zu)", dirIdx);
         Arch::Memory::DirectoryEntry& dirEntry = m_directory.entries[dirIdx];
         if (!dirEntry.present) {
             Logger::Debug(__func__, "Directory (idx: %zu) not present", dirIdx);
-            if (freeRange == 0)
-            {
+            if (freeRange == 0) {
                 freeRangeAddress = Arch::Memory::Address(Arch::Memory::VirtualAddress {
                     .offset = 0,
                     .tableIndex = 0,
@@ -110,8 +149,7 @@ uintptr_t Manager::findFirstFreePageRange(size_t range)
             }
 
             freeRange += ARCH_PAGE_TABLE_ENTRIES;
-            if (freeRange >= range)
-            {
+            if (freeRange >= range) {
                 // Implicit conversion to uintptr_t
                 return freeRangeAddress;
             }
@@ -128,26 +166,22 @@ uintptr_t Manager::findFirstFreePageRange(size_t range)
 
         Logger::Debug(__func__, "tableIdxStart: %zu", tableIdxStart);
         Arch::Memory::Table& table = getTable(dirIdx);
-        for (size_t tableIdx = tableIdxStart; tableIdx < ARCH_PAGE_TABLE_ENTRIES; tableIdx++)
-        {
+        for (size_t tableIdx = tableIdxStart; tableIdx < ARCH_PAGE_TABLE_ENTRIES; tableIdx++) {
             // TODO: Make this able to return before the end of a page table (see TODO at start of function)
 
             Logger::Debug(__func__, "Enter table (%zu)", tableIdx);
             Arch::Memory::TableEntry& tableEntry = table.entries[tableIdx];
-            if (!tableEntry.present)
-            {
+            if (!tableEntry.present) {
                 Logger::Debug(__func__, "Table (idx: %zu) not present", tableIdx);
-                if (freeRange == 0)
-                {
-                    freeRangeAddress =  Arch::Memory::Address(Arch::Memory::VirtualAddress {
+                if (freeRange == 0) {
+                    freeRangeAddress = Arch::Memory::Address(Arch::Memory::VirtualAddress {
                         .offset = 0,
                         .tableIndex = tableIdx,
                         .dirIndex = dirIdx,
                     });
                 }
 
-                if (++freeRange >= range)
-                {
+                if (++freeRange >= range) {
                     // Implicit conversion to uintptr_t
                     return freeRangeAddress;
                 }
@@ -164,6 +198,36 @@ uintptr_t Manager::findFirstFreePageRange(size_t range)
 
     // Absolutely nothing free in this directory.
     return npos;
+}
+
+bool Manager::isPageFree(Arch::Memory::Address vaddr)
+{
+    vaddr = Arch::Memory::pageAlign(vaddr);
+    Arch::Memory::DirectoryEntry& dirEntry = m_directory.entries[vaddr.virtualAddress().dirIndex];
+    if (!dirEntry.present) {
+        return false;
+    }
+
+    Arch::Memory::Table& table = getTable(vaddr.virtualAddress().dirIndex);
+    Arch::Memory::TableEntry& tableEntry = table.entries[vaddr.virtualAddress().tableIndex];
+    if (!tableEntry.present) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Manager::isPageRangeFree(Arch::Memory::Address vaddr, size_t size)
+{
+    size = Arch::Memory::pageAlignUp(size);
+    vaddr = Arch::Memory::pageAlign(vaddr);
+    for (uintptr_t page = vaddr; page < vaddr + size; page += ARCH_PAGE_SIZE) {
+        if (!isPageFree(page)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool Manager::virtualToPhysical(Arch::Memory::Address vaddr, Arch::Memory::Address& result)

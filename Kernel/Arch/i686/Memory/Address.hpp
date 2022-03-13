@@ -22,6 +22,8 @@ namespace Arch::Memory {
  */
 class Address {
 public:
+    Address() = default;
+
     Address(uintptr_t addr)
     {
         m_addr.val = addr;

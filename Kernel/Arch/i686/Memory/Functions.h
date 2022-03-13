@@ -55,9 +55,20 @@ static inline void setPageDirectory(uintptr_t pageDirPhysAddr)
  * @param addr Address to be aligned
  * @return uintptr_t Page aligned address value
  */
-static inline uintptr_t pageAlign(size_t addr)
+static inline uintptr_t pageAlign(uintptr_t addr)
 {
     return addr & ARCH_PAGE_ALIGN;
+}
+
+/**
+ * @brief Aligns the provided address to the start of its next corresponding page address.
+ *
+ * @param addr Address to be aligned
+ * @return uintptr_t Page aligned address value
+ */
+static inline uintptr_t pageAlignUp(uintptr_t addr)
+{
+    return (addr + ~ARCH_PAGE_ALIGN) & ARCH_PAGE_ALIGN;
 }
 
 /**
@@ -67,7 +78,7 @@ static inline uintptr_t pageAlign(size_t addr)
  * @return true Address is aligned to page boundary
  * @return false Address is not aligned to a page boundary
  */
-static inline bool pageIsAligned(size_t addr)
+static inline bool pageIsAligned(uintptr_t addr)
 {
     return ((addr % ARCH_PAGE_SIZE) == 0);
 }

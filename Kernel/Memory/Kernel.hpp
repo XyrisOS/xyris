@@ -35,25 +35,7 @@ public:
         return instance;
     }
 
-    /**
-     * @brief Get the physical address of the kernel virtual memory page directory.
-     *
-     * @return uintptr_t Physical address of the kernel virtual memory page directory.
-     */
-    static uintptr_t getPageDirectoryPhysicalAddress() { return KADDR_TO_PHYS((uintptr_t)&the().m_directoryKernel); }
-
-    /**
-     * @brief Determine if an address is mapped into the virtual address space.
-     *
-     * @param addr Address to be examined.
-     * @return true Address is mapped into the virtual address space.
-     * @return false Address is not mapped into the virtual address space.
-     */
-    static bool isAddressMapped(uintptr_t addr) { return the().m_memory[addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT]; }
-
 private:
-    Bitset<MEM_BITMAP_SIZE> m_memory;
-
     /* both of these must be page aligned for anything to work right at all
        must be static for the section attributes to be applied */
     // kernel page directory
@@ -62,18 +44,17 @@ private:
     [[gnu::section(".page_tables,\"aw\", @nobits#")]] static struct Arch::Memory::Table m_tables[ARCH_PAGE_TABLE_ENTRIES];
 
     Kernel()
-        : Manager("kernel-virtual", m_directoryKernel, KERNEL_START, ADDRESS_SPACE_SIZE - KERNEL_START)
+        : Manager("kernel-virtual", m_directoryKernel, ARCH_DIR_ALIGN(KERNEL_START), ARCH_DIR_ALIGN_UP(KERNEL_END - KERNEL_START))
     {
         Interrupts::registerHandler(Interrupts::EXCEPTION_PAGE_FAULT, pageFaultException);
+        Manager::initDirectory();
     }
 
     static void pageFaultException(struct registers* registers) { panic(registers); }
 
-    static void initPhysical(MemoryMap* map);
-    static void initDirectory();
-    static void mapEarlyMemory();
-    static void mapKernelBinary();
-    static void mapKernelPageTable();
+    void mapEarlyMemory();
+    void mapKernelBinary();
+    void mapKernelPageTable();
 };
 
 }
