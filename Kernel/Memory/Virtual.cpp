@@ -4,28 +4,28 @@
 
 namespace Memory::Virtual {
 
-void* Manager::map(uintptr_t addr, size_t size, enum MapFlags flags)
+void* Manager::map(uintptr_t vaddr, size_t size, enum MapFlags flags)
 {
     size = B_TO_PAGES(size);
-    if (addr == npos) {
+    if (vaddr == npos) {
         // Automatically find the next available location
-        addr = findFirstFreePageRange(size);
+        vaddr = findFirstFreePageRange(size);
     } else {
         // Attempt to map at the requested location
-        if (addr < m_rangeStart || addr + size > m_rangeEnd) {
+        if (vaddr < m_rangeStart || vaddr + size > m_rangeEnd) {
             return nullptr;
         }
-        if (!isPageRangeFree(addr, size)) {
+        if (!isPageRangeFree(vaddr, size)) {
             return nullptr;
         }
     }
 
     for (uintptr_t i = 0; i < size; i++) {
-        mapPhysicalToVirtual(Physical::Manager::the().getPage(), addr, flags);
-        addr += ARCH_PAGE_SIZE;
+        mapPhysicalToVirtual(Physical::Manager::the().getPage(), vaddr, flags);
+        vaddr += ARCH_PAGE_SIZE;
     }
 
-    return (void*)addr;
+    return (void*)vaddr;
 }
 
 void Manager::unmap(void* addr, size_t size)
