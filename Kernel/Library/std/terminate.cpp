@@ -12,6 +12,9 @@
 
 namespace std {
 
+// Function prototypes (to make compiler happy)
+[[noreturn]] void terminate();
+
 [[noreturn]] void terminate()
 {
     panic("std::terminate called!");

@@ -11,6 +11,9 @@
 
 namespace std {
 
+// Function prototypes (to make compiler happy)
+int uncaught_exceptions() throw();
+
 /**
  * Replaces the deprecated `bool uncaught_exception()` since C++17.
  * Detects how many exceptions have been thrown or rethrown and not yet

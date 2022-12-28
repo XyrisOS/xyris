@@ -19,9 +19,10 @@ exception::exception() throw()
 {
     // Stubbed
 }
-exception::exception(const exception&) throw()
+exception::exception(const exception& e) throw()
 {
     // Stubbed
+    (void)e;
 }
 
 exception::~exception()
@@ -29,8 +30,9 @@ exception::~exception()
     // Stubbed
 }
 
-exception& exception::operator=(const exception&) throw()
+exception& exception::operator=(const exception& e) throw()
 {
+    (void)e;
     return *this;
 }
 
@@ -47,8 +49,10 @@ bad_alloc::bad_alloc() throw()
     // Stubbed
 }
 
-bad_alloc::bad_alloc(const bad_alloc&) throw()
+bad_alloc::bad_alloc(const bad_alloc& e) throw()
+    : exception()
 {
+    (void)e;
     // Stubbed
 }
 
@@ -57,8 +61,9 @@ bad_alloc::~bad_alloc()
     // Stubbed
 }
 
-bad_alloc& bad_alloc::operator=(const bad_alloc&) throw()
+bad_alloc& bad_alloc::operator=(const bad_alloc& e) throw()
 {
+    (void)e;
     return *this;
 }
 
@@ -75,9 +80,11 @@ bad_cast::bad_cast() throw()
     // Stubbed
 }
 
-bad_cast::bad_cast(const bad_cast&) throw()
+bad_cast::bad_cast(const bad_cast& e) throw()
+    : exception()
 {
     // Stubbed
+    (void)e;
 }
 
 bad_cast::~bad_cast()
@@ -85,8 +92,9 @@ bad_cast::~bad_cast()
     // Stubbed
 }
 
-bad_cast& bad_cast::operator=(const bad_cast&) throw()
+bad_cast& bad_cast::operator=(const bad_cast& e) throw()
 {
+    (void)e;
     return *this;
 }
 
@@ -103,9 +111,11 @@ bad_typeid::bad_typeid() throw()
     // Stubbed
 }
 
-bad_typeid::bad_typeid(const bad_typeid& __rhs) throw()
+bad_typeid::bad_typeid(const bad_typeid& e) throw()
+    : exception()
 {
     // Stubbed
+    (void)e;
 }
 
 bad_typeid::~bad_typeid()
@@ -113,8 +123,9 @@ bad_typeid::~bad_typeid()
     // Stubbed
 }
 
-bad_typeid& bad_typeid::operator=(const bad_typeid& __rhs) throw()
+bad_typeid& bad_typeid::operator=(const bad_typeid& e) throw()
 {
+    (void)e;
     return *this;
 }
 
@@ -131,9 +142,11 @@ bad_array_new_length::bad_array_new_length() throw()
     // Stubbed
 }
 
-bad_array_new_length::bad_array_new_length(const bad_array_new_length&) throw()
+bad_array_new_length::bad_array_new_length(const bad_array_new_length& e) throw()
+    : bad_alloc()
 {
     // Stubbed
+    (void)e;
 }
 
 bad_array_new_length::~bad_array_new_length()
@@ -141,8 +154,9 @@ bad_array_new_length::~bad_array_new_length()
     // Stubbed
 }
 
-bad_array_new_length& bad_array_new_length::operator=(const bad_array_new_length&) throw()
+bad_array_new_length& bad_array_new_length::operator=(const bad_array_new_length& e) throw()
 {
+    (void)e;
     return *this;
 }
 
