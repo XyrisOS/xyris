@@ -1,5 +1,5 @@
 /**
- * @file cxx.cpp
+ * @file cxa_heap_operators.cpp
  * @author Micah Switzer <mswitzer@cedarville.edu>
  * @brief C++ dynamic memory management functions
  * @version 0.1
