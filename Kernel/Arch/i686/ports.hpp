@@ -16,7 +16,7 @@
  */
 #pragma once
 #include <stdint.h>
-#include <Arch/i686/Arch.i686.hpp>
+#include <Arch/i686/Arch.hpp>
 
 /**
  * @brief Reads a byte (8 bits) off the CPU bus at a given port address

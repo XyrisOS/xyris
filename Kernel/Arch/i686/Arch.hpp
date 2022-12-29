@@ -1,5 +1,5 @@
 /**
- * @file Arch.i686.hpp
+ * @file Arch.hpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief i686 architecture implementation of Arch.hpp
  * @version 0.1

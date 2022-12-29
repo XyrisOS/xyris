@@ -14,6 +14,7 @@
 #include <Library/Bitset.hpp>
 #include <Memory/MemorySection.hpp>
 #include <Logger.hpp>
+#include <Panic.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -21,23 +22,50 @@
 
 namespace Memory::Physical {
 
-class PhysicalManager {
+// FIXME: Mutex lock all of these operations
+class Manager {
 public:
-/*
-    PhysicalManager()
-        : m_memory(SIZE_MAX)
+    Manager(Manager const&) = delete;
+    void operator=(Manager const&) = delete;
+
+    static Manager& the()
     {
-        // Always assume memory is reserved until proven otherwise
+        static Manager instance;
+        return instance;
     }
-*/
-    [[gnu::always_inline]] void setFree(Section& sect)
+
+    static void initialize(MemoryMap& map)
+    {
+        // populate the physical memory map based on bootloader information
+        size_t freeMegabytes = 0;
+        size_t reservedMegabytes = 0;
+
+        for (size_t i = 0; i < map.Count(); i++) {
+            auto section = map.Get(i);
+            if (section.initialized() && section.type() == Available) {
+                setFree(section);
+                freeMegabytes += B_TO_MB(section.size());
+                continue;
+            }
+
+            reservedMegabytes += B_TO_MB(section.size());
+        }
+
+        Logger::Info(__func__, "Available memory: %zu MB", freeMegabytes);
+        Logger::Info(__func__, "Reserved memory: %zu MB", reservedMegabytes);
+        Logger::Info(__func__, "Total memory: %zu MB", freeMegabytes + reservedMegabytes);
+    }
+
+    // TODO: Make private (start)
+
+    [[gnu::always_inline]] static void setFree(Section& sect)
     {
         for (size_t i = 0; i < sect.pages(); i++) {
-            setFree(ADDRESS_TO_PAGE_IDX(sect.base()) + i);
+            setFree(sect.base() + (i * ARCH_PAGE_SIZE));
         }
     }
 
-    [[gnu::always_inline]] void setUsed(Section& sect)
+    [[gnu::always_inline]] static void setUsed(Section& sect)
     {
         Logger::Debug(
             __func__,
@@ -53,57 +81,88 @@ public:
         }
     }
 
-    [[gnu::always_inline]] void setFree(Arch::Memory::Address addr)
+    [[gnu::always_inline]] static void setFree(Arch::Memory::Address addr)
     {
-        if (!isFree(addr)) {
-            m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr));
-        }
+        the().m_memory.Clear(ADDRESS_TO_PAGE_IDX(addr));
     }
 
-    [[gnu::always_inline]] void setUsed(Arch::Memory::Address addr)
+    [[gnu::always_inline]] static void setUsed(Arch::Memory::Address addr)
     {
-        if (isFree(addr)) {
-            m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
-        }
+        the().m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
     }
 
-    [[gnu::always_inline]] void setFree(uintptr_t addr)
+    [[gnu::always_inline]] static void setFree(uintptr_t addr)
     {
-        if (!isFree(addr)) {
-            m_memory.Reset(ADDRESS_TO_PAGE_IDX(addr));
-        }
+        the().m_memory.Clear(ADDRESS_TO_PAGE_IDX(addr));
     }
 
-    [[gnu::always_inline]] void setUsed(uintptr_t addr)
+    [[gnu::always_inline]] static void setUsed(uintptr_t addr)
     {
-        if (isFree(addr)) {
-            m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
-        }
+        the().m_memory.Set(ADDRESS_TO_PAGE_IDX(addr));
     }
 
-    [[gnu::always_inline]] bool isFree(uintptr_t addr)
+    [[gnu::always_inline]] static bool isFree(uintptr_t addr)
     {
-        return m_memory.Test(ADDRESS_TO_PAGE_IDX(addr)) == 0;
+        return the().m_memory.Test(ADDRESS_TO_PAGE_IDX(addr)) == 0;
     }
 
-    [[gnu::always_inline]] bool isFree(Section& sect)
+    [[gnu::always_inline]] static bool isFree(Section& sect)
     {
-        // TODO: Optimize bitmap library to take number of bits to set
         for (size_t i = 0; i < sect.pages(); i++) {
-            if (!isFree(ADDRESS_TO_PAGE_IDX(sect.base()) + i)) {
+            if (!isFree(sect.base()) + (i * ARCH_PAGE_SIZE)) {
                 return false;
             }
         }
+
         return true;
     }
 
-    [[gnu::always_inline]] uintptr_t findNextFreePhysicalAddress()
+    // TODO: Make private (end)
+
+
+    /**
+     * @brief Return the next available physical page address
+     *
+     * @return uintptr_t Physical page address
+     */
+    [[gnu::always_inline]] static uintptr_t getPage()
     {
-        return m_memory.FindFirstBit(false);
+        uintptr_t pAddr = findNextFreePhysicalAddress();
+        if (pAddr == npos) {
+            panic("Out of memory!");
+        }
+
+        // Convert a frame index to physical address
+        setUsed(PAGE_IDX_TO_ADDRESS(pAddr));
+        return PAGE_IDX_TO_ADDRESS(pAddr);
     }
+
+    /**
+     * @brief Mark page as available.
+     *
+     * @param physAddr Physical address of page frame
+     */
+    [[gnu::always_inline]] static void freePage(uintptr_t physAddr)
+    {
+        setFree(physAddr);
+    }
+
+    // FIXME: Doesn't return an address -- returns a frame index
+    [[gnu::always_inline]] static uintptr_t findNextFreePhysicalAddress()
+    {
+        return the().m_memory.FindFirstBit(false);
+    }
+
+    static const size_t npos = SIZE_MAX;
 
 private:
     Bitset<MEM_BITMAP_SIZE> m_memory;
+
+    Manager()
+        : m_memory(1)
+    {
+        // Always assume memory is reserved until proven otherwise
+    }
 };
 
 }

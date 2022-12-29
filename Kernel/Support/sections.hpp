@@ -26,6 +26,8 @@ extern size_t _EARLY_KERNEL_END;
 extern size_t _KERNEL_BASE;
 #define KERNEL_BASE ((uintptr_t)&_KERNEL_BASE)
 
+extern size_t _KERNEL_SIZE;
+#define KERNEL_SIZE ((size_t)&_KERNEL_SIZE)
 extern size_t _KERNEL_START;
 #define KERNEL_START ((uintptr_t)&_KERNEL_START)
 extern size_t _KERNEL_END;

@@ -21,7 +21,7 @@ namespace Memory {
  * @brief Sets up the environment, page directories etc and enables paging.
  *
  */
-void init(MemoryMap* map);
+void init();
 
 /**
  * @brief Returns a new page in memory for use.
@@ -32,6 +32,10 @@ void init(MemoryMap* map);
  * @return void* Page memory address
  */
 void* newPage(size_t size);
+
+// TODO: Docs
+void* newPageMustSucceed(size_t size);
+
 
 /**
  * @brief Frees pages starting at a given page address.

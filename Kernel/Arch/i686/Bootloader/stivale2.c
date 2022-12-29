@@ -10,7 +10,8 @@
  */
 #include <Arch/i686/Bootloader/EarlyPanic.hpp>
 #include <Arch/i686/Bootloader/Loader.hpp>
-#include <Arch/i686/Memory.i686.hpp>
+#include <Arch/i686/Memory/Types.h>
+#include <Arch/i686/Memory/Functions.h>
 #include <Arch/i686/regs.hpp>
 #include <Support/sections.hpp>
 #include <stdint.h>
@@ -184,10 +185,10 @@ static void stage1MapBootloader(void)
     // Map in the entire bootloader information linked list
     for (uintptr_t addr = stivale2InfoAddr; addr < stivale2InfoEnd; addr += ARCH_PAGE_SIZE) {
         size_t bootMemoryIdx = addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
-        struct TableEntry* bootTableEntry = &bootTable->pages[bootMemoryIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
+        struct TableEntry* bootTableEntry = &bootTable->entries[bootMemoryIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
         bootTableEntry->present = 1;
         bootTableEntry->readWrite = 1;
-        bootTableEntry->frame = bootMemoryIdx;
+        bootTableEntry->pageAddr = bootMemoryIdx;
     }
 }
 
@@ -217,10 +218,10 @@ static void stage1MapHighMemory(void)
         size_t kernelMemoryIdx = addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
         // OR the mask with 0x400 so that pagesDirectoryEntry is used after kernelDirectoryEntry.
         // This only works because these two pages tables are next to each other in memory.
-        struct TableEntry* kernelMemoryTableEntry = &kernelPageTable[0].pages[kernelMemoryIdx & (0x400 | ARCH_PAGE_TABLE_ENTRY_MASK)];
+        struct TableEntry* kernelMemoryTableEntry = &kernelPageTable[0].entries[kernelMemoryIdx & (0x400 | ARCH_PAGE_TABLE_ENTRY_MASK)];
         kernelMemoryTableEntry->present = 1;
         kernelMemoryTableEntry->readWrite = 1;
-        kernelMemoryTableEntry->frame = kernelMemoryIdx - (KERNEL_BASE >> ARCH_PAGE_TABLE_ENTRY_SHIFT);
+        kernelMemoryTableEntry->pageAddr = kernelMemoryIdx - (KERNEL_BASE >> ARCH_PAGE_TABLE_ENTRY_SHIFT);
     }
 }
 
@@ -242,10 +243,10 @@ static void stage1MapLowMemory(void)
     // Map in the entirety of low-memory and stage1
     for (uintptr_t addr = ARCH_PAGE_SIZE; addr < EARLY_KERNEL_END; addr += ARCH_PAGE_SIZE) {
         size_t pageIdx = addr >> ARCH_PAGE_TABLE_ENTRY_SHIFT;
-        struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.pages[pageIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
+        struct TableEntry* lowMemoryTableEntry = &lowMemoryPageTable.entries[pageIdx & ARCH_PAGE_TABLE_ENTRY_MASK];
         lowMemoryTableEntry->present = 1;
         lowMemoryTableEntry->readWrite = 1;
-        lowMemoryTableEntry->frame = pageIdx;
+        lowMemoryTableEntry->pageAddr = pageIdx;
     }
 }
 

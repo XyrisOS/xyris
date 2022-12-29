@@ -40,20 +40,14 @@
         {
             "type": "shell",
             "label": "Run (Release)",
-            "command": "scons",
-            "args": [
-                "run-i686"
-            ],
+            "command": "MODE=Release ${workspaceRoot}/Meta/run.sh",
             "group": "none",
             "problemMatcher": []
         },
         {
             "type": "shell",
             "label": "Run (Debug)",
-            "command": "scons",
-            "args": [
-                "run-i686"
-            ],
+            "command": "MODE=Debug ${workspaceRoot}/Meta/run.sh",
             "group": "none",
             "options": {
                 "env": {
@@ -65,9 +59,9 @@
         {
             "type": "shell",
             "label": "Debug",
-            "command": "scons",
+            "command": "MODE=Debug ${workspaceRoot}/Meta/run.sh",
             "args": [
-                "debug-i686"
+                "-d"
             ],
             "group": "none",
             "options": {

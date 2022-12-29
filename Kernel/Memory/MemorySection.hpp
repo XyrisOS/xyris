@@ -30,21 +30,21 @@ class Section {
 public:
     Section()
         : m_base(0)
-        , m_end(0)
+        , m_size(0)
         , m_type(Unknown)
     {
     }
 
-    Section(const uintptr_t base, const uintptr_t end)
+    Section(const uintptr_t base, const uintptr_t size)
         : m_base(base)
-        , m_end(end)
+        , m_size(size)
         , m_type(Unknown)
     {
     }
 
-    Section(const uintptr_t base, const uintptr_t end, const Type type)
+    Section(const uintptr_t base, const uintptr_t size, const Type type)
         : m_base(base)
-        , m_end(end)
+        , m_size(size)
         , m_type(type)
     {
     }
@@ -61,12 +61,12 @@ public:
 
     [[gnu::always_inline]] uintptr_t end()
     {
-        return m_end;
+        return m_base + m_size;
     }
 
     [[gnu::always_inline]] uintptr_t size()
     {
-        return m_end - m_base;
+        return m_size;
     }
 
     [[gnu::always_inline]] uintptr_t pages()
@@ -120,7 +120,7 @@ public:
 
 private:
     uintptr_t m_base;
-    uintptr_t m_end;
+    uintptr_t m_size;
     enum Type m_type;
 };
 

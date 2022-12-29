@@ -9,7 +9,7 @@
  *
  */
 #pragma once
-#include <Arch/i686/Arch.i686.hpp>
+#include <Arch/i686/Arch.hpp>
 #include <stdint.h>
 
 #define ARCH_EXCEPTION_NUM 32           // Hardware exception count

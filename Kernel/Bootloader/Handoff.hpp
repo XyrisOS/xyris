@@ -95,7 +95,7 @@ public:
     const void* Handle()                        { return m_handle; }
     Graphics::Framebuffer* FramebufferInfo()    { return &m_framebuffer; }
     HandoffBootloaderType* BootType()           { return &m_bootType; }
-    Memory::MemoryMap* MemoryMap()              { return &m_memoryMap; }
+    Memory::MemoryMap& MemoryMap()              { return m_memoryMap; }
 
 private:
     static void parseStivale2(Handoff* that, void* handoff);

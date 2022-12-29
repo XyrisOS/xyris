@@ -41,7 +41,7 @@ void init(Framebuffer* fb)
     Logger::Debug(__func__, "==== MAP FRAMEBUFFER ====");
     Memory::mapKernelRangeVirtual(Memory::Section(
         (uintptr_t)info->getAddress(),
-        (uintptr_t)info->getAddress() + (info->getPitch() * info->getHeight())
+        (info->getPitch() * info->getHeight())
     ));
     // Alloc the backbuffer
     backbuffer = malloc(info->getPitch() * info->getHeight());

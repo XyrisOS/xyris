@@ -30,7 +30,7 @@ int liballoc_unlock()
 
 void* liballoc_alloc(unsigned int count)
 {
-    return Memory::newPage(count * ARCH_PAGE_SIZE - 1);
+    return Memory::newPageMustSucceed(count * ARCH_PAGE_SIZE - 1);
 }
 
 int liballoc_free(void* page, unsigned int count)
@@ -39,4 +39,34 @@ int liballoc_free(void* page, unsigned int count)
     return 0;
 }
 
+}
+
+void* operator new(size_t size)
+{
+    return malloc(size);
+}
+
+void* operator new[](size_t size)
+{
+    return malloc(size);
+}
+
+void operator delete(void* p)
+{
+    free(p);
+}
+
+void operator delete[](void* p)
+{
+    free(p);
+}
+
+void operator delete(void* p, long unsigned int)
+{
+    free(p);
+}
+
+void operator delete[](void* p, long unsigned int)
+{
+    free(p);
 }

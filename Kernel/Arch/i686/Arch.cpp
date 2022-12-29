@@ -1,5 +1,5 @@
 /**
- * @file Arch.i686.cpp
+ * @file Arch.cpp
  * @author Keeton Feavel (keetonfeavel@cedarville.edu)
  * @brief i686 architecture implementation of Arch.hpp
  * @version 0.1
@@ -9,7 +9,7 @@
  *
  */
 // Architecture (i686) specific header
-#include <Arch/i686/Arch.i686.hpp>
+#include <Arch/i686/Arch.hpp>
 #include <Arch/i686/regs.hpp>
 #include <Arch/i686/gdt.hpp>
 #include <Arch/i686/idt.hpp>

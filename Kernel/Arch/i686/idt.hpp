@@ -10,7 +10,7 @@
  */
 
 #pragma once
-#include <Arch/i686/Arch.i686.hpp>
+#include <Arch/i686/Arch.hpp>
 #include <stdint.h>
 
 namespace IDT {

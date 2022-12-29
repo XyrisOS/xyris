@@ -19,8 +19,7 @@ namespace Apps {
 // this value can be tweaked based on memory constraints
 #define PRIME_MAX_SQRT 4000
 #define PRIME_MAX (PRIME_MAX_SQRT * PRIME_MAX_SQRT)
-#define PRIMES_SIZE (PRIME_MAX / (sizeof(size_t) * CHAR_BIT))
-static Bitset<PRIMES_SIZE> map(SIZE_MAX);
+static Bitset<PRIME_MAX> map(1);
 
 static size_t prime_current;
 
@@ -29,7 +28,7 @@ void find_primes(void)
     for (prime_current = 2; prime_current < PRIME_MAX_SQRT; prime_current++) {
         if (!map.Test(prime_current)) continue;
         for (size_t j = prime_current * prime_current; j < PRIME_MAX; j += prime_current) {
-            map.Reset(j);
+            map.Clear(j);
         }
     }
 }

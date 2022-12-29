@@ -3,7 +3,13 @@
         {
             "name": "Xyris i686",
             "defines": [
-                "__i686__"
+                "__i686__",
+                "VER_NAME",
+                "REPO_URL",
+                "COMMIT",
+                "VER_MAJOR",
+                "VER_MINOR",
+                "VER_PATCH"
             ],
             "compilerPath": "/usr/bin/gcc",
             "includePath": [
