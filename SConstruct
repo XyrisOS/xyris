@@ -106,8 +106,14 @@ env = Environment(
         '#Thirdparty',
         '#Libraries',
     ],
-    LIMINE_INSTALL=File('#Thirdparty/limine/limine-install-linux-x86_32'),
 )
+
+limine_env = Environment(
+    CFLAGS=['-std=c11', '-Wall', '-Wextra', '-Werror'],
+    CC='gcc',
+)
+limine_deploy = limine_env.Program(source="#Thirdparty/limine/limine-deploy.c")
+env["LIMINE_INSTALL"] = limine_deploy
 
 # ************************
 # * Kernel Build Targets *
@@ -169,6 +175,7 @@ if 'docs' not in COMMAND_LINE_TARGETS:
                     kernel
                 ]
         )
+        env.Depends(image, limine_deploy)
         Default(image)
 
         kernel_targets_all.extend([liballoc, kernel, image])
