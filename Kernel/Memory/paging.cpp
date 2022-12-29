@@ -40,11 +40,12 @@ static Virtual::Manager virtualManager("virtual", pageDirectory, ARCH_DIR_ALIGN(
 
 void init()
 {
+    // DONE: Move logic from this point until next TODO into Kernel.hpp/.cpp
     Interrupts::registerHandler(Interrupts::EXCEPTION_PAGE_FAULT, pageFaultCallback);
-
     initDirectory();
-    mapEarlyMem();
-    mapKernel();
+    // TODO: Move logic from this point on into Kernel.hpp/.cpp
+    mapEarlyMem();  // Map early memory into kernel page tables in a 1:1 manner
+    mapKernel();    // Map kernel into kernel page tables
     Arch::Memory::setPageDirectory(Arch::Memory::pageAlign(KADDR_TO_PHYS((uintptr_t)&pageDirectory)));
     Arch::Memory::pagingEnable();
 }
@@ -145,13 +146,13 @@ static void mapEarlyMem()
 {
     // identity map the first 1 MiB of RAM
     Logger::Debug(__func__, "==== MAP EARLY MEM ====");
-    mapKernelRangeVirtual(Section(EARLY_MEM_START, EARLY_KERNEL_START));
+    mapKernelRangeVirtual(Section(EARLY_MEM_START, EARLY_KERNEL_START - EARLY_MEM_START));
 }
 
 static void mapKernel()
 {
     Logger::Debug(__func__, "==== MAP HH KERNEL ====");
-    mapKernelRangePhysical(Section(Arch::Memory::pageAlign(KERNEL_START), KERNEL_END));
+    mapKernelRangePhysical(Section(Arch::Memory::pageAlign(KERNEL_START), Arch::Memory::pageAlignUp(KERNEL_SIZE)));
 }
 
 /**

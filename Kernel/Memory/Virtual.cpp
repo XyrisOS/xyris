@@ -135,7 +135,7 @@ uintptr_t Manager::findFirstFreePageRange(size_t range)
     Arch::Memory::Address startAddr(m_searchStart);
     Arch::Memory::Address endAddr(m_rangeEnd);
     Logger::Debug(__func__, "Start: 0x%08zX, Size: 0x%08zX, End: 0x%08zX", (size_t)startAddr.val(), m_rangeSize, (size_t)endAddr.val());
-    for (size_t dirIdx = startAddr.virtualAddress().dirIndex; dirIdx < endAddr.virtualAddress().dirIndex; dirIdx++) {
+    for (uint32_t dirIdx = startAddr.virtualAddress().dirIndex; dirIdx < endAddr.virtualAddress().dirIndex; dirIdx++) {
         Logger::Debug(__func__, "Enter directory (%zu)", dirIdx);
         Arch::Memory::DirectoryEntry& dirEntry = m_directory.entries[dirIdx];
         if (!dirEntry.present) {
@@ -159,14 +159,14 @@ uintptr_t Manager::findFirstFreePageRange(size_t range)
 
         // Always start at 0, unless this is the first iteration inside the directory entries, in which case
         // we want to start on the page table index correlating to the startAddr.
-        size_t tableIdxStart = 0;
+        uint32_t tableIdxStart = 0;
         if (dirIdx == startAddr.virtualAddress().dirIndex) {
             tableIdxStart = startAddr.virtualAddress().tableIndex;
         }
 
         Logger::Debug(__func__, "tableIdxStart: %zu", tableIdxStart);
         Arch::Memory::Table& table = getTable(dirIdx);
-        for (size_t tableIdx = tableIdxStart; tableIdx < ARCH_PAGE_TABLE_ENTRIES; tableIdx++) {
+        for (uint32_t tableIdx = tableIdxStart; tableIdx < ARCH_PAGE_TABLE_ENTRIES; tableIdx++) {
             // TODO: Make this able to return before the end of a page table (see TODO at start of function)
 
             Logger::Debug(__func__, "Enter table (%zu)", tableIdx);

@@ -80,9 +80,9 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 // Follows the tag list order in stivale2.h
                 for (size_t i = 0; i < memmap->entries; i++) {
                     auto entry = memmap->memmap[i];
-                    uint64_t end = entry.base + entry.length - 1;
-                    that->m_memoryMap[i] = Memory::Section(entry.base, end);
-                    Logger::Debug(__func__, "[%zu] 0x%08LX-0x%08LX 0x%08LX", i, entry.base, end, entry.length);
+                    uint64_t end = entry.base + entry.length;
+                    that->m_memoryMap[i] = Memory::Section(entry.base, entry.length);
+
                     // TODO: Make this a map that can be indexed
                     switch (entry.type) {
                         case STIVALE2_MMAP_USABLE:
@@ -117,6 +117,8 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                             that->m_memoryMap[i].setType(Memory::Unknown);
                             break;
                     }
+
+                    Logger::Debug(__func__, "[%zu] 0x%08LX-0x%08LX 0x%08LX [%s]", i, entry.base, end, entry.length, that->m_memoryMap[i].typeString());
                 }
                 break;
             }
