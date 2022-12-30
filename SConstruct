@@ -106,6 +106,7 @@ env = Environment(
         '#Thirdparty',
         '#Libraries',
     ],
+    USEPREFIX=False,
 )
 
 limine_deploy = env.SConscript(
@@ -120,19 +121,19 @@ env["LIMINE_INSTALL"] = limine_deploy
 # ************************
 
 kernel_environments = [
-    # i686 ELF (debug)
+    # x86_64 ELF (debug)
     env.Clone(
         tools=[
             'nasm',
-            'i686_elf',
+            'x86_64_elf',
             'mode_debug',
         ],
     ),
-    # i686 ELF (release)
+    # x86_64 ELF (release)
     env.Clone(
         tools=[
             'nasm',
-            'i686_elf',
+            'x86_64_elf',
             'mode_release',
         ],
     ),
@@ -144,8 +145,10 @@ if 'docs' not in COMMAND_LINE_TARGETS:
     # Build a list of all build targets associated with the kernel
     # Includes all dependencies, kernels, bootable images, etc.
     kernel_targets_all = []
-    kernel_targets_debug = []
-    kernel_targets_release = []
+    kernel_targets = {
+        "debug": [],
+        "release": [],
+    }
     for target_env in kernel_environments:
         kernel = target_env.SConscript(
             'Kernel/SConscript',
@@ -171,13 +174,11 @@ if 'docs' not in COMMAND_LINE_TARGETS:
         kernel_targets_all.extend([kernel, image])
 
         # Add targets to kernel_targets_[MODE] list
-        target_list_name = 'kernel_targets_' + target_env['MODE'].lower()
-        targets_list = globals()[target_list_name]
-        targets_list.extend([kernel, image])
+        kernel_targets[target_env['MODE'].lower()].extend([kernel, image])
 
     # Mode specific kernel targets
-    env.Alias('kernel-debug', kernel_targets_debug)
-    env.Alias('kernel-release', kernel_targets_release)
+    env.Alias('kernel-debug', kernel_targets["debug"])
+    env.Alias('kernel-release', kernel_targets["release"])
 
 # ************************
 # * Kernel Documentation *
