@@ -108,11 +108,11 @@ env = Environment(
     ],
 )
 
-limine_env = Environment(
-    CFLAGS=['-std=c11', '-Wall', '-Wextra', '-Werror'],
-    CC='gcc',
+limine_deploy = env.SConscript(
+    "Limine.scons",
+    variant_dir="$BUILD_DIR/limine",
+    duplicate=False,
 )
-limine_deploy = limine_env.Program(source="#Thirdparty/limine/limine-deploy.c")
 env["LIMINE_INSTALL"] = limine_deploy
 
 # ************************
