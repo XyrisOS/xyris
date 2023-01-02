@@ -27,7 +27,7 @@ const char* Logger::levelToString(LogLevel lvl)
 
 void Logger::LogHelper(const char* tag, LogLevel lvl, const char* fmt, va_list ap)
 {
-    sprintf(the().m_logBuffer, "[%s] [%s] %s\n", tag, levelToString(lvl), fmt);
+    sprintf(the().m_logBuffer, "[%-16s] %-22s %s\n", levelToString(lvl), tag, fmt);
     LogHelperPrint(m_logBuffer, ap);
 }
 
