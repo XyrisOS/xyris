@@ -22,7 +22,7 @@ jobs:
         submodules: true
     # Debug
     - name: 'Build Kernel (Debug)'
-      run: scons kernel-debug
+      run: scons -j$(nproc) kernel-debug
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
@@ -30,7 +30,7 @@ jobs:
         path: Distribution/i686/Debug/xyris.img
     # Release
     - name: 'Build Kernel (Release)'
-      run: scons kernel-release
+      run: scons -j$(nproc) kernel-release
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
@@ -52,7 +52,7 @@ jobs:
     # Unit Tests
     - name: Build and Run Tests
       run: |
-        scons tests
+        scons -j$(nproc) tests
         ./Distribution/Tests/tests -r junit --out Tests/report.xml
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v2
