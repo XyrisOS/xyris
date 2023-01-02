@@ -103,12 +103,12 @@ void itoa(int n, char str[])
     reverse(str);
 }
 
-void* memset(void* bufptr, int value, size_t size)
+void* memset(void* ptr, int val, size_t size)
 {
-    unsigned char* buf = (unsigned char*)bufptr;
-    for (size_t i = 0; i < size; i++)
-        buf[i] = (unsigned char)value;
-    return bufptr;
+	for (uint32_t i = 0; i < size ; i++) {
+		((uint8_t*)ptr)[i] = val;
+    }
+	return ptr;
 }
 
 int memcmp(const void* ptr1, const void* ptr2, size_t num)
@@ -126,23 +126,42 @@ int memcmp(const void* ptr1, const void* ptr2, size_t num)
 
 void* memmove(void* destptr, const void* srcptr, size_t size)
 {
-    unsigned char* dst = (unsigned char*)destptr;
-    const unsigned char* src = (const unsigned char*)srcptr;
+    uint8_t* dst = (uint8_t*)destptr;
+    const uint8_t* src = (const uint8_t*)srcptr;
     if (dst < src) {
-        for (size_t i = 0; i < size; i++)
+        for (size_t i = 0; i < size; i++) {
             dst[i] = src[i];
+        }
     } else {
-        for (size_t i = size; i != 0; i--)
+        for (size_t i = size; i; i--) {
             dst[i - 1] = src[i - 1];
+        }
     }
+
     return destptr;
 }
 
-void* memcpy(void* dstptr, const void* srcptr, size_t size)
+void* memcpy(void* dst, const void* src, size_t size)
 {
-    unsigned char* dst = (unsigned char*)dstptr;
-    const unsigned char* src = (const unsigned char*)srcptr;
-    for (size_t i = 0; i < size; i++)
-        dst[i] = src[i];
-    return dstptr;
+    uint8_t *bDst;
+    uint8_t *bSrc;
+    size_t *lDst = (size_t*)dst;
+    size_t *lSrc  = (size_t*)src;
+
+    while (size >= sizeof(size_t))
+    {
+        *lDst++ = *lSrc++;
+        size -= sizeof(size_t);
+    }
+
+    bDst = (uint8_t*)lDst;
+    bSrc  = (uint8_t*)lSrc;
+
+    while (size > 0)
+    {
+        *bDst++ = *bSrc++;
+        size -= 1;
+    }
+
+    return dst;
 }
