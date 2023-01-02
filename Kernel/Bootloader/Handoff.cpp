@@ -118,7 +118,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                             break;
                     }
 
-                    Logger::Debug(__func__, "[%zu] 0x%08LX-0x%08LX 0x%08LX [%s]", i, entry.base, end, entry.length, that->m_memoryMap[i].typeString());
+                    Logger::Debug(__func__, "[%zu] 0x%0Lx-0x%0Lx 0x%0Lx [%s]", i, entry.base, end, entry.length, that->m_memoryMap[i].typeString());
                 }
                 break;
             }
@@ -134,7 +134,7 @@ void Handoff::parseStivale2(Handoff* that, void* handoff)
                 Logger::Debug(
                     __func__,
                     "Stivale2 framebuffer:\n"
-                    "\tAddress: 0x%08LX\n"
+                    "\tAddress: 0x%0Lx\n"
                     "\tResolution: %ux%ux%u\n"
                     "\tPixel format:\n"
                     "\t\tRed size:    %u\n"

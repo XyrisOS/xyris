@@ -91,11 +91,11 @@ void mapKernelPage(Arch::Memory::Address vaddr, Arch::Memory::Address paddr)
     size_t pte = vaddr.virtualAddress().tableIndex;
 
     // Print a debug message to serial
-    Logger::Trace(__func__, "map 0x%08lx to 0x%08lx, pde = 0x%08lx, pte = 0x%08lx", paddr.val(), vaddr.val(), pde, pte);
+    Logger::Trace(__func__, "map 0x%0zx to 0x%0zx, pde = 0x%0zx, pte = 0x%0zx", paddr.val(), vaddr.val(), pde, pte);
 
     // If the page's virtual address is not aligned
     if (vaddr.virtualAddress().offset) {
-        panicf("Attempted to map a non-page-aligned virtual address.\n(Address: 0x%08lX)\n", vaddr.val());
+        panicf("Attempted to map a non-page-aligned virtual address.\n(Address: 0x%0zx)\n", vaddr.val());
     }
 
     // If the page is already mapped into memory
