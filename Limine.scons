@@ -1,0 +1,7 @@
+env = Environment(
+    CFLAGS=['-std=c11', '-Wall', '-Wextra', '-Werror'],
+)
+
+limine_deploy = env.Program(source="Thirdparty/limine/limine-deploy.c")
+
+Return("limine_deploy")
