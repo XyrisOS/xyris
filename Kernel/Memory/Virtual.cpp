@@ -134,7 +134,7 @@ uintptr_t Manager::findFirstFreePageRange(size_t range)
     Arch::Memory::Address freeRangeAddress(npos);
     Arch::Memory::Address startAddr(m_searchStart);
     Arch::Memory::Address endAddr(m_rangeEnd);
-    Logger::Debug(__func__, "Start: 0x%08zX, Size: 0x%08zX, End: 0x%08zX", (size_t)startAddr.val(), m_rangeSize, (size_t)endAddr.val());
+    Logger::Debug(__func__, "Start: 0x%0zX, Size: 0x%0zX, End: 0x%0zX", (size_t)startAddr.val(), m_rangeSize, (size_t)endAddr.val());
     for (uint32_t dirIdx = startAddr.virtualAddress().dirIndex; dirIdx < endAddr.virtualAddress().dirIndex; dirIdx++) {
         Logger::Debug(__func__, "Enter directory (%zu)", dirIdx);
         Arch::Memory::DirectoryEntry& dirEntry = m_directory.entries[dirIdx];

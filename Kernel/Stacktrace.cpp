@@ -32,8 +32,8 @@ void printTrace(size_t max)
     Logger::Print("\033[31mStack trace:\033[0m\n");
 
     for (size_t i = 0; frame != NULL && i < max; ++i) {
-        Console::printf("0x%08zX\n", frame->eip);
-        Logger::Print("0x%08zX\n", frame->eip);
+        Console::printf("0x%0zx\n", frame->eip);
+        Logger::Print("0x%0zx\n", frame->eip);
         if ((uintptr_t)frame->ebp == 0x00000000) {
             break;
         }

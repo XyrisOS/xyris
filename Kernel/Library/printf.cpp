@@ -41,33 +41,33 @@ Revised May 12, 2000
 
 %[flag][width][.prec][mod][conv]
 flag:
-    -    left justify, pad right w/ blanks      DONE
-    0    pad left w/ 0 for numerics             DONE
-    +    always print sign, + or -              no
-    ' '    (blank)                              no
-    #    (???)                                  no
+    -           left justify, pad right w/ blanks       DONE
+    0           pad left w/ 0 for numerics              DONE
+    +           always print sign, + or -               no
+    ' '         (blank)                                 no
+    #           (???)                                   no
 
-width:        (field width)                     DONE
+width:          (field width)                           DONE
 
-prec:        (precision)                        no
+prec:           (precision)                             no
 
 conv:
-    d,i  decimal int                            DONE
-    u    decimal unsigned                       DONE
-    o    octal                                  DONE
-    x,X    hex                                  DONE
-    f,e,g,E,G float                             no
-    c    char                                   DONE
-    s    string                                 DONE
-    p    ptr                                    DONE
-    z    size_t                                 DONE
+    d,i         decimal int                             DONE
+    u           decimal unsigned                        DONE
+    o           octal                                   DONE
+    x,X         hex                                     DONE
+    f,e,g,E,G   float                                   no
+    c           char                                    DONE
+    s           string                                  DONE
+    p           ptr                                     DONE
+    z           size_t                                  DONE
 
 mod:
-    N    near ptr                               DONE
-    F    far ptr                                no
-    h    short (16-bit) int                     DONE
-    l    long (32-bit) int                      DONE
-    L    long long (64-bit) int                 DONE
+    N           near ptr                                DONE
+    F           far ptr                                 no
+    h           short (16-bit) int                      DONE
+    l           long (32-bit) int                       DONE
+    L           long long (64-bit) int                  DONE
 *****************************************************************************/
 
 /* Assume: width of stack == width of int. Don't use sizeof(char *) or
@@ -123,8 +123,8 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                 /* found %, get next char and advance state to check if next char is a flag */
                 state++;
                 fmt++;
-                /* FALL THROUGH */
                 /* STATE 1: AWAITING FLAGS (%-0) */
+                [[fallthrough]];
             case 1:
                 if (*fmt == '%') /* %% */
                 {
@@ -147,8 +147,8 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                     flags |= PR_LZ;
                     fmt++;
                 }
-                /* FALL THROUGH */
                 /* STATE 2: AWAITING (NUMERIC) FIELD WIDTH */
+                [[fallthrough]];
             case 2:
                 if (*fmt >= '0' && *fmt <= '9') {
                     given_wd = 10 * given_wd + (*fmt - '0');
@@ -156,16 +156,16 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                 }
                 /* not field width: advance state to check if it's a modifier */
                 state++;
-                /* FALL THROUGH */
                 /* STATE 3: AWAITING MODIFIER CHARS (FNlh) */
+                [[fallthrough]];
             case 3:
                 if (*fmt == 'F') {
                     flags |= PR_FP;
                     break;
                 }
-                if (*fmt == 'N')
+                if (*fmt == 'N') {
                     break;
-
+                }
                 if (*fmt == 'z') {
 #if (UINTPTR_MAX == UINT32_MAX)
                     flags |= PR_32;
@@ -190,25 +190,37 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                 }
                 /* not modifier: advance state to check if it's a conversion char */
                 state++;
-                /* FALL THROUGH */
                 /* STATE 4: AWAITING CONVERSION CHARS (Xxpndiuocs) */
+                [[fallthrough]];
             case 4: {
                 where = buf + PR_BUFLEN - 1;
                 *where = '\0';
                 switch (*fmt) {
                     case 'X':
                         flags |= PR_CA;
-                        /* FALL THROUGH */
                         /* xxx - far pointers (%Fp, %Fn) not yet supported */
+                        [[fallthrough]];
                     case 'x':
                     case 'p':
+                        /* pointers should be padded with '0' */
+                        flags |= PR_LZ;
+                        /* set width of output based on size of pointer */
+                        given_wd = sizeof(size_t) * 2;
+#if (UINTPTR_MAX == UINT32_MAX)
+                        flags |= PR_32;
+#elif (UINTPTR_MAX == UINT64_MAX)
+                        flags |= PR_64;
+#else
+#error "Unknown UINTPTR_MAX value! Cannot compile printf_helper!"
+#endif
+                        [[fallthrough]];
                     case 'n':
                         radix = 16;
                         goto DO_NUM;
                     case 'd':
                     case 'i':
                         flags |= PR_SG;
-                        /* FALL THROUGH */
+                        [[fallthrough]];
                     case 'u':
                         radix = 10;
                         goto DO_NUM;
@@ -222,17 +234,19 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                             num = va_arg(args, unsigned long);
                         /* h=short=16 bits (signed or unsigned) */
                         else if (flags & PR_16) {
-                            if (flags & PR_SG)
+                            if (flags & PR_SG) {
                                 num = va_arg(args, int);
-                            else
+                            } else {
                                 num = va_arg(args, int);
+                            }
                         }
                         /* no h nor l: sizeof(int) bits (signed or unsigned) */
                         else {
-                            if (flags & PR_SG)
+                            if (flags & PR_SG) {
                                 num = va_arg(args, int);
-                            else
+                            } else {
                                 num = va_arg(args, unsigned int);
+                            }
                         }
                         /* take care of sign */
                         if (flags & PR_SG) {
@@ -248,12 +262,13 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
 
                             temp = (unsigned long)num % radix;
                             where--;
-                            if (temp < 10)
+                            if (temp < 10) {
                                 *where = (unsigned char)(temp + '0');
-                            else if (flags & PR_CA)
+                            } else if (flags & PR_CA) {
                                 *where = (unsigned char)(temp - 10 + 'A');
-                            else
+                            } else {
                                 *where = (unsigned char)(temp - 10 + 'a');
+                            }
                             num = (unsigned long)num / radix;
                         } while (num != 0);
                         goto EMIT;
@@ -270,8 +285,9 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                         where = va_arg(args, unsigned char*);
                     EMIT:
                         actual_wd = strlen((const char*)where);
-                        if (flags & PR_WS)
+                        if (flags & PR_WS) {
                             actual_wd++;
+                        }
                         /* if we pad left with ZEROES, do the sign now */
                         if ((flags & (PR_WS | PR_LZ)) == (PR_WS | PR_LZ)) {
                             fn('-', &ptr);
@@ -297,10 +313,11 @@ int printf_helper(const char* fmt, va_list args, printf_cb_fnptr_t fn, void* ptr
                             count++;
                         }
                         /* pad on right with spaces (for left justify) */
-                        if (given_wd < actual_wd)
+                        if (given_wd < actual_wd) {
                             given_wd = 0;
-                        else
+                        } else {
                             given_wd -= actual_wd;
+                        }
                         for (; given_wd; given_wd--) {
                             fn(' ', &ptr);
                             count++;
