@@ -1,13 +1,13 @@
 image: ghcr.io/xyrisos/xyris-build/xyris-build:3.5.0
 aliases:
     # Building
-    build: scons
-    debug: scons kernel-debug
-    release: scons kernel-release
+    build: scons -j$(nproc)
+    debug: scons -j$(nproc) kernel-debug
+    release: scons -j$(nproc) kernel-release
     # Testing
     test:
       script:
-        - scons tests
+        - scons -j$(nproc) tests
         - ./Distribution/Tests/tests
     # Documentation
     docs: scons docs
