@@ -1,5 +1,11 @@
 import os
 Import('env')
+env.Append(
+    CPPDEFINES={
+        'ARCH_PAGE_SIZE': 4096,
+        'TESTING': None,
+    },
+)
 
 extensions = [
     '.c',
@@ -10,7 +16,7 @@ sources = env.RecursiveGlob(".", extensions)
 
 tests = env.Program(
     'tests',
-    sources
+    sources,
 )
 
 Return('tests')

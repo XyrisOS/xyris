@@ -17,6 +17,9 @@
 #    include <Arch/i686/Memory/Types.h>
 #endif
 
+#define BYTE_SIZE 8
+#define BYTES_TO_BITS(b) ((b) * BYTE_SIZE)
+
 #define B_TO_KB(b) ((b) / 1024)
 #define KB_TO_MB(kb) ((kb) / 1024)
 #define MB_TO_GB(mb) ((mb) / 1024)

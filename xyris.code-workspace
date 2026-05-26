@@ -22,6 +22,10 @@
 			"@copyright Copyright the Xyris Contributors (c) {year}"
 		],
 		"clang-format.fallbackStyle": "Webkit",
-		"C_Cpp.intelliSenseEngineFallback": "Enabled"
+		"C_Cpp.intelliSenseEngineFallback": "Enabled",
+        "C_Cpp.exclusionPolicy": "checkFilesAndFolders",
+        "C_Cpp.codeAnalysis.exclude": {
+            "${workspaceRoot}/Tests/**": true
+        },
 	}
 }

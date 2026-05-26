@@ -12,7 +12,7 @@
 #include <Arch/Memory.hpp>
 #include <Scheduler/tasks.hpp>
 #include <Panic.hpp>
-#include <Memory/heap.hpp>
+#include <Memory/Heap.hpp>
 #include <Library/stdio.hpp>
 #include <Devices/Serial/rs232.hpp>
 #include <stdint.h>

@@ -171,7 +171,7 @@ void* newPage(size_t size)
     size_t free_idx = findNextFreeVirtualAddress(page_count);
 
     if (free_idx == SIZE_MAX) {
-        return NULL;
+        return nullptr;
     }
 
     for (size_t i = free_idx; i < free_idx + page_count; i++) {
