@@ -30,6 +30,8 @@
 // Apps
 #include <Applications/primes.hpp>
 #include <Applications/spinner.hpp>
+#include <Applications/fbtest.hpp>
+#include <Applications/piper.hpp>
 // Meta
 #include <stdint.h>
 
@@ -106,10 +108,21 @@ void kernelEntry(void* info, uint32_t magic)
         time.getMinutes());
     Logger::Info(__func__, "%s\n%s\n", Arch::CPU::vendor(), Arch::CPU::model());
 
-    struct task compute, status, spinner;
+    /*
+        LIST OF AVAILABLE TASKS:
+        - prime_compute
+        - prime_display
+        - spinner
+        - fbtest
+        - piper
+    */
+
+    struct task compute, status, spinner, piper; // add fbtest back to list when needed.
     tasks_new(Apps::find_primes, &compute, TASK_READY, "prime_compute");
     tasks_new(Apps::show_primes, &status, TASK_READY, "prime_display");
     tasks_new(Apps::spinner, &spinner, TASK_READY, "spinner");
+    // tasks_new(Apps::fbtest, &fbtest, TASK_READY, "fbtest");
+    tasks_new(Apps::piper, &piper, TASK_READY, "piper");
     // Now that we're done make a joyful noise
     bootTone();
 
